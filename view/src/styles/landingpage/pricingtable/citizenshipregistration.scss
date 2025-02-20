@@ -10,7 +10,7 @@ $containersonidlebgcolor: #e2e4e1;
 
 #citizenshipregistration {
 position:absolute;
-background-color: rgba(0, 0, 0, 0.8);
+background-color: rgba(0, 0, 0, 0.9);
 border:1vh solid green;
 height:100%;
 width:100%;
@@ -54,7 +54,7 @@ width:100%;
 
 #citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer {
 position:relative;
-border:1vh solid red;
+border:0.1vh solid white;
 height:10%;
 width:100%;
 margin-left:auto;
@@ -68,14 +68,20 @@ height:100%;
 display:flex;
 justify-content:center;
 align-items:center;
+color:white;
 }
 
+.citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-omsiapawastonavigationcontainer {
+background-color:white;
+border:0.1vh solid black;
+font-weight:900;
+color:black;
+}
 .citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication {
 position:relative;
 font: auto {
  family: $sub-font;
 }
-color:white;
 }
 
 #paymenttpyesview {
@@ -92,6 +98,100 @@ height:100%;
 width:100%;
 margin-left:auto;
 margin-right:auto;
+}
+
+#omsiapawastocitizenshippayment-requirementscontainer {
+position:relative;
+border:1vh dotted white;
+border-right:none;
+height:100%;
+padding:20px 30px;
+overflow-y:scroll;
+}
+
+/* width */
+#omsiapawastocitizenshippayment-requirementscontainer::-webkit-scrollbar {
+width: 10px;
+}
+
+/* Track */
+#omsiapawastocitizenshippayment-requirementscontainer::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#omsiapawastocitizenshippayment-requirementscontainer::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#omsiapawastocitizenshippayment-requirementscontainer::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+
+.omsiapawastocitizenshippayment-requirementscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+letter-spacing:0.1vh;
+}
+
+#omsiapawastocitizenshippayment-paymentcontainer {
+position:relative;
+border:1vh solid red;
+height:100%;
+}
+
+#omsiapawastocitizenshippayment-paymentcontainer-userdetailscontainer {
+position:relative;
+border:1vh solid green;
+height:40%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+padding:20px 10px;
+}
+
+.omsiapawastocitizenshippayment-paymentcontainer-userdetailscontainer-colcontainer {
+position:relative;
+border:1vh solid red;
+height:50%;
+display:flex;
+align-items:center;
+}
+
+.omsiapawastocitizenshippayment-paymentcontainer-userdetailscontainer-dataheaderindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+letter-spacing:0.1vh;
+}
+
+#omsiapawastocitizenshippayment-paymentcontainer-buttonsandloadingindicatorcontainer {
+position:relative;
+border:1vh solid green;
+height:60%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#omsiapawastocitizenshippayment-paymentcontainer-buttonsandloadingindicatorcontainer-acquirecitizenshippayingomsiapawastocreditsbutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+font: auto {
+ family: $sub-font;
+}
+color:yellow;
+padding:20px 30px;
 }
 
 }
