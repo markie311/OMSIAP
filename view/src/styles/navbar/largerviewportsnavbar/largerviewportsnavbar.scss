@@ -1,0 +1,84 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+ 
+@media only screen and (min-width: 1200px) {
+
+#largerviewportsnavbar {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#largerviewportsnavbar-headerindicationscontainer {
+position:relative;
+height:100%;
+}
+
+#largerviewportsnavbar-headerindicationscontainer-rowcontainer {
+position:relative;
+height:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#largerviewportsnavbar-headerindicationscontainer-rowcontainer-omsiaplogocolcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:flex-end;
+align-items:center;
+}
+
+#largerviewportsnavbar-headerindicationscontainer-rowcontainer-omsiaplogo {
+position:relative;
+border-radius:50%;
+border:0.1vh solid white;
+height:85%;
+width:60%;
+}
+
+#largerviewportsnavbar-headerindicationscontainer-rowcontainer-headerindicationscontainer {
+position:relative;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:flex-start;
+}
+
+.largerviewportsnavbar-headerindicationscontainer-rowcontainer-headerindication {
+position:relative;
+font: auto {
+    family: $sub-font;
+}
+color:white;
+text-align:center;
+}
+
+#largerviewportsnavbar-dropdownscontainer {
+position:relative;
+height:100%;    
+}
+
+#largerviewportsnavbar-dropdownscontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.largerviewportsnavbar-dropdownscontainer-rowcontainer-colcontainer {
+position:relative;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+}

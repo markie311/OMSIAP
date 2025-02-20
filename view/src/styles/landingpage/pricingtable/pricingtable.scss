@@ -1,0 +1,287 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+
+@media only screen and (max-width: 600px) {
+
+#pricingtable {
+position:relative;
+height:auto;
+width:100%; 
+margin-top:10vh;
+margin-left:auto;
+margin-right:auto;
+padding:0px 20px;
+}
+
+#pricingtable-headerindicationscontainer {
+position: relative;
+height:auto;
+}
+
+#pricingtable-headerindicationscontainer-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+padding: 35px 0px;
+}
+
+.pricingtable-headerindicationscontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+}
+
+#pricingtable-pricingtablecontainer {
+position:relative;
+}
+
+#pricingtable-headerindicationscontainer-accordionscontainer {
+position:relative;
+height:70%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer {
+position:relative;
+background-color: #2b2929;
+height:25%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+margin-top:10vh;
+padding:5px 15px;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer-checkboxheaderindication {
+position:relative;
+background-color:rgb(129, 129, 12);
+border:0.1vh solid yellow;
+font: auto {
+family:$sub-font;
+}
+color:white;
+padding:15px 20px;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer {
+position:relative;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-pricingcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:flex-end;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-pricingcontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-bestvaluecontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-bestvaluecontainer-bestvalueindication {
+position:relative;
+background-color:rgb(129, 129, 12);
+border:0.1vh solid yellow;
+height:8vh;
+font: auto {
+family:$sub-font;
+}
+color:white;
+text-align:center;
+padding:15px 20px;
+top:-4vh;
+left:2vh;
+}
+
+}
+
+@media only screen and (min-width: 1200px) {  
+
+#pricingtable {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%; 
+margin-top:10vh;
+margin-left:auto;
+margin-right:auto;
+padding:0px 220px;
+}
+
+#pricingtable-headerindicationscontainer {
+position: relative;
+}
+
+#pricingtable-headerindicationscontainer-headerindicationscontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+padding:30px 10px;
+}
+
+.pricingtable-headerindicationscontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family:$sub-font;
+}
+color:white;
+}
+
+#pricingtable-pricingtablecontainer {
+position:relative;
+border:1vh solid yellow;
+height:auto;
+padding:0;
+}
+
+#pricingtable-headerindicationscontainer-accordionscontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.pricingtable-headerindicationscontainer-accordionscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+ weight:900;
+}
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer {
+position:relative;
+background-color: #2b2929;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+margin-top:3vh;
+top:50px;
+left:80px;
+padding:30px 15px;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer-checkboxheaderindication {
+position:relative;
+background-color:rgb(129, 129, 12);
+border:0.1vh solid yellow;
+font: auto {
+ family:$sub-font;
+}
+color:white;
+padding:15px 20px;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer {
+position:relative;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-pricingcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:flex-end;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-pricingcontainer-headerindication {
+position:relative;
+font: auto {
+    family: $sub-font;
+}
+color:white;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-bestvaluecontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+}
+
+.pricingtable-pricingtablecontainer-rowcontainer-bestvaluecontainer-bestvalueindication {
+position:relative;
+background-color:rgb(129, 129, 12);
+border:0.1vh solid yellow;
+height:8vh;
+font: auto {
+    family:$sub-font;
+}
+color:white;
+text-align:center;
+padding:15px 20px;
+top:-4vh;
+}
+
+}

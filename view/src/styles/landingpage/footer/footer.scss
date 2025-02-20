@@ -1,0 +1,149 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (max-width: 600px) { 
+
+#footer {
+position:relative;
+background-color:$mainbgcolor;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+margin-top:5vh;
+padding:20px 20px;
+}
+
+.footer-colcontainer {
+position:relative;
+height:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+#footer-colcontainer-logocontainer {
+position:relative;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#footer-colcontainer-logocontainer-logocontainer {
+position:relative;
+height:auto;
+}
+
+#footer-colcontainer-logocontainer-logocontainer-logo {
+position:relative;
+border-radius:50%;
+height:100%;
+width: 100%;
+}
+
+#footer-colcontainer-logocontainer-headerindicationscontainer {
+position:relative;
+height:auto;
+}
+
+.footer-colcontainer-logocontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+    family: $sub-font;
+}
+color:white;
+}
+
+.footer-colcontainer-headerindication {
+position:relative;
+font: auto {
+    family: $sub-font;
+}
+color:white;
+text-align:center;
+}
+
+#footer-colcontainer-tuxedoimage {
+position:relative;
+height:30vh;
+width:100%;
+}
+}
+
+@media only screen and (min-width: 1200px) { 
+
+#footer {
+position:relative;
+background-color:$mainbgcolor;
+height:70vh;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+padding:100px 220px;
+}
+
+.footer-colcontainer {
+position:relative;
+height:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+#footer-colcontainer-logocontainer {
+position:relative;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#footer-colcontainer-logocontainer-logocontainer {
+position:relative;
+height:100%;
+}
+
+#footer-colcontainer-logocontainer-logocontainer-logo {
+position:relative;
+border-radius:50%;
+height:70%;
+width: 20vh;
+left:-5vh;
+}
+
+#footer-colcontainer-logocontainer-headerindicationscontainer {
+position:relative;
+height:100%;
+}
+
+.footer-colcontainer-logocontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+.footer-colcontainer-headerindication {
+position:relative;
+font: auto {
+    family: $sub-font;
+}
+color:white;
+text-align:center;
+}
+
+#footer-colcontainer-tuxedoimage {
+position:relative;
+height:30vh;
+width:100%;
+}
+
+}

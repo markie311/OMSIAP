@@ -1,0 +1,97 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+
+@media only screen and (min-width: 1200px) { 
+
+#citizenshipregistration {
+position:absolute;
+background-color: rgba(0, 0, 0, 0.8);
+border:1vh solid green;
+height:100%;
+width:100%;
+z-index:1;
+display:none;
+}
+
+#citizenshipregistration-navigationcontainer {
+position:relative;
+border:1vh solid red;
+height:10%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.citizenshipregistration-navigationcontainer-navigationcontainer {
+position:relative;
+border:0.1vh solid green;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.citizenshipregistration-navigationcontainer-navigationcontainer-navigationheaderindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+user-select:none;
+}
+
+#citizenshipregistration-viewcontainer {
+position:relative;
+border:1vh solid green;
+height:90%;
+width:100%;
+}
+
+#citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer {
+position:relative;
+border:1vh solid red;
+height:10%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer {
+position:relative;
+border:1vh solid green;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+#paymenttpyesview {
+position:relative;
+border:1vh solid red;
+height:90%;
+width:100%;
+}
+
+#omsiapawastocitizenshippayment {
+position:relative;
+border:1vh solid green;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+}

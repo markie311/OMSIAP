@@ -1,0 +1,96 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (max-width: 600px) {
+  
+#omsiapsvideo {
+position:relative;
+height:100vh;
+width:100%;
+margin-top:10vh;
+}
+
+#omsiapsvideo-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-backgroundimagecontainer-backgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-playbuttoncontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#omsiapsvideo-playbuttoncontainer-playbutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+border-radius:50%;
+height:10vh;
+width:10vh;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+}
+
+@media only screen and (min-width: 1200px) {
+
+#omsiapsvideo {
+position:relative;
+height:100vh;
+width:100%;
+margin-top:10vh;
+}
+
+#omsiapsvideo-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-backgroundimagecontainer-backgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-playbuttoncontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#omsiapsvideo-playbuttoncontainer-playbutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+border-radius:50%;
+height:10vh;
+width:10vh;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+}

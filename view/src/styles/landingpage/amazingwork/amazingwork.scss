@@ -1,0 +1,107 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (max-width: 600px) {
+  
+#amazingwork {
+position:relative;
+height:90vh;
+width:100%;
+padding:0px 20px;
+margin-top:5vh;
+}
+
+#amazingwork-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.amazingwork-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+text-align:center;
+}
+
+#amazingwork-contentcontainer {
+position:relative;
+background-color:black; 
+height:70%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#amazingwork-contentcontainer-soonheaderindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+letter-spacing:3vh;
+}
+    
+}
+
+@media only screen and (min-width: 1200px) { 
+
+#amazingwork {
+position:relative;
+height:90vh;
+width:100%;
+padding:0px 220px;
+margin-top:5vh;
+}
+
+#amazingwork-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.amazingwork-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+#amazingwork-contentcontainer {
+position:relative;
+background-color:black; 
+height:70%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#amazingwork-contentcontainer-soonheaderindication {
+position:relative;
+font: auto {
+ family:$sub-font;
+}
+color:white;
+letter-spacing:3vh;
+}
+
+}

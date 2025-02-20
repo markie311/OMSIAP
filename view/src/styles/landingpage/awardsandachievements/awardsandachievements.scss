@@ -1,0 +1,250 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (max-width: 600px) {
+
+#awardsandachievements {
+position:relative;
+height:auto;
+width:100%;        
+padding:0px 0px;
+margin-top:5vh;
+}
+
+#awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer {
+position:relative;
+height:30%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+padding:40px 5px;
+}
+
+
+#awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer-headerindicationscontainer {
+position:relative;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+#awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer-viewallawardsandachievementsbuttoncontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:40px 5px;
+}
+
+#awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer-viewallawardsandachievementsbuttoncontainer-viewallawardsandachievementsbutton {
+position:relative;
+background-color:yellow;
+border:none;
+border-radius:5px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:black;
+padding:15px 30px;
+}
+
+#awardsandachievements-awardsandachievementsrowcontainer {
+position:relative;
+height:70%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer {
+position:relative;
+height:25%;
+padding:10px 10px;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer {
+position:relative;
+border-top:0.2vh solid white;
+border-bottom:0.2vh solid white;
+height:100%;
+padding:10px 0px;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-countcontainer {
+position:relative;
+height:100%;
+padding-top:15px;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-awardsandachievementscontainer {
+position:relative;
+height:100%;  
+padding-top:15px; 
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-displayimagecontainer {
+position:relative;
+height:100%; 
+padding-top:15px;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-arrowcontainer {
+position:relative;
+height:100%;  
+padding-top:15px;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+user-select:none;
+}
+
+}
+
+@media only screen and (min-width: 1200px) {
+
+#awardsandachievements {
+ position:relative;
+ height:110vh;
+ width:100%;        
+ padding:0px 220px;
+ margin-top:5vh;
+}
+
+#awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer {
+position:relative;
+height:30%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+
+#awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer-headerindicationscontainer {
+position:relative;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+#awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer-viewallawardsandachievementsbuttoncontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#awardsandachievements-headerindicationsandviewallawardsandachievementsbuttonrowcontainer-viewallawardsandachievementsbuttoncontainer-viewallawardsandachievementsbutton {
+position:relative;
+background-color:yellow;
+border:none;
+border-radius:5px;
+font: auto {
+ family: $sub-font;
+ weight:900;
+}
+color:black;
+padding:15px 30px;
+}
+
+#awardsandachievements-awardsandachievementsrowcontainer {
+position:relative;
+height:70%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer {
+position:relative;
+height:25%;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer {
+position:relative;
+border-top:0.2vh solid white;
+border-bottom:0.2vh solid white;
+height:100%;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-countcontainer {
+position:relative;
+height:100%;
+padding-top:15px;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-awardsandachievementscontainer {
+position:relative;
+height:100%;  
+padding-top:15px; 
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-displayimagecontainer {
+position:relative;
+height:100%; 
+padding-top:15px;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-arrowcontainer {
+position:relative;
+height:100%;  
+padding-top:15px;
+}
+
+.awardsandachievements-awardsandachievementsrowcontainer-layoutcontainer-positioningcontainer-rowcontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+ weight:900;
+}
+color:white;
+user-select:none;
+}
+
+}

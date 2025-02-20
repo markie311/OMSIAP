@@ -1,0 +1,308 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+
+@media only screen and (max-width: 600px) { 
+
+#hope {
+position:relative;
+height:auto;
+width:100%;
+}
+
+#hope-header {
+position:relative;
+height:50vh;
+width:100%;    
+}
+
+#hopeheader-displayimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#hopeheader-displayimagecontainer-displayimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#hopeheader-headerindicationscontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+padding:10px 20px;
+}
+
+.hopeheader-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+    family: $sub-font;
+    weight:900;
+}
+color:black;
+text-align:center;
+}
+
+#abouthope {
+position:relative;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+padding:0px 20px;
+margin-top:10vh;
+}
+
+#abouthope-headerindicationscontainer-displayimage {
+position:relative;
+height:60%;
+width:95%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#abouthope-headerindicationscontainer {
+position:relative;
+height:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.abouthope-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+text-align:center;
+margin-top:3vh;
+}
+
+#abouthope-displayimagescontainer {
+position:relative;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.abouthope-displayimagescontainer-displayimagescontainer {
+position:relative;
+height:30vh;
+}
+
+.abouthope-displayimagescontainer-displayimagescontainer-displayimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#abouthope-subjectscontainer {
+position:relative;
+height:auto;
+}
+
+#abouthope-subjectscontainer-subjectscontainer {
+position:relative;
+background-color:rgb(44, 44, 8);
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+padding:10px;
+margin-top:3vh;
+}
+
+#abouthope-subjectscontainer-needanyhelpcontainer {
+position:relative;
+height:auto;
+width:100%;
+padding:10px 15px;
+}
+
+.abouthope-subjectscontainer-needanyhelpcontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+.abouthope-subjectscontainer-subjectscontainer-colcontainer {
+position:relative;
+height:10vh;
+padding:10px 10px;
+display:flex;
+align-items:center;
+}
+
+.abouthope-subjectscontainer-subjectscontainer-colcontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+        
+
+}
+
+ 
+@media only screen and (min-width: 1200px) { 
+
+#hope {
+position:relative;
+height:auto;
+width:100%;
+}
+
+#hope-header {
+position:relative;
+height:50vh;
+width:100%;    
+}
+
+#hopeheader-displayimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#hopeheader-displayimagecontainer-displayimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#hopeheader-headerindicationscontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.hopeheader-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+ weight:900;
+}
+color:black;
+}
+
+#abouthope {
+position:relative;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+padding:0px 220px;
+margin-top:10vh;
+}
+
+#abouthope-headerindicationscontainer-displayimage {
+position:relative;
+height:60%;
+width:95%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#abouthope-headerindicationscontainer {
+position:relative;
+height:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.abouthope-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+#abouthope-displayimagescontainer {
+position:relative;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.abouthope-displayimagescontainer-displayimagescontainer {
+position:relative;
+height:30vh;
+}
+
+.abouthope-displayimagescontainer-displayimagescontainer-displayimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#abouthope-subjectscontainer {
+position:relative;
+height:auto;
+}
+
+#abouthope-subjectscontainer-subjectscontainer {
+position:relative;
+background-color:rgb(44, 44, 8);
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+padding:10px;
+margin-top:3vh;
+}
+
+#abouthope-subjectscontainer-needanyhelpcontainer {
+position:relative;
+height:auto;
+width:100%;
+padding:10px 15px;
+padding-top:150px;
+}
+
+.abouthope-subjectscontainer-needanyhelpcontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+.abouthope-subjectscontainer-subjectscontainer-colcontainer {
+position:relative;
+height:10vh;
+padding:10px 10px;
+display:flex;
+align-items:center;
+}
+
+.abouthope-subjectscontainer-subjectscontainer-colcontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+}

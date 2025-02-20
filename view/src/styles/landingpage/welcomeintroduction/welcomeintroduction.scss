@@ -1,0 +1,200 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #2b2b31;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (max-width: 600px) {
+
+#welcomeintroduction {
+position:relative;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+margin-top:5vh;
+}
+
+#welcomeintroduction-headerindicationscontainer {
+position:relative;  
+height:auto;
+}
+
+#welcomeintroduction-headerindicationscontainer-headerindicationscontainer {
+position:relative;
+height:auto;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.welcomeintroduction-headerindicationscontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+#welcomeintroduction-headerindicationscontainer-displayimagescontainer {
+position:relative;
+height:auto;
+width:100%;
+}
+
+#welcomeintroduction-headerindicationscontainer-displayimagescontainer-backgroundimage {
+display:none;
+}
+
+#welcomeintroduction-displayimagescontainer {
+position:relative;
+height:auto;   
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer {
+position:relative;
+height:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer1 {
+padding:10px 10px 15px 20px;
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer2 {
+padding:1px 25px 1px 20px;
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer3 {
+padding:30px 5px 30px 5px;
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer4 {
+padding:30px 10px 40px 10px;
+}
+
+.welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer-backgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+}
+
+@media only screen and (min-width: 1200px) {
+
+#welcomeintroduction {
+position:relative;
+height:80vh;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+padding:40px 220px;
+margin-top:5vh;
+}
+
+#welcomeintroduction-headerindicationscontainer {
+position:relative;  
+}
+
+#welcomeintroduction-headerindicationscontainer {
+position:relative;
+height:100%;
+}
+
+#welcomeintroduction-headerindicationscontainer-headerindicationscontainer {
+position:relative;
+height:50%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.welcomeintroduction-headerindicationscontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+#welcomeintroduction-headerindicationscontainer-displayimagescontainer {
+position:relative;
+height:50%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#welcomeintroduction-headerindicationscontainer-displayimagescontainer-backgroundimage {
+position:relative;
+border-radius:50%;
+height:60%;
+width:30%;
+top:-1vh;
+left:20vh;
+animation: animatewelcomeintroductionlogo 5s infinite;
+}
+
+@keyframes animatewelcomeintroductionlogo {
+50% {transform: rotate(360deg);}
+}
+
+#welcomeintroduction-displayimagescontainer {
+position:relative;
+height:100%;   
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer {
+position:relative;
+height:50%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer1 {
+padding:40px 40px 20px 40px;
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer2 {
+padding:10px 60px 10px 60px;
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer3 {
+padding:80px 20px 80px 20px;
+}
+
+#welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer4 {
+padding:80px 40px 100px 40px;
+}
+
+.welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer-backgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+}

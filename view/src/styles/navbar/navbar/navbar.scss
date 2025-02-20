@@ -1,0 +1,26 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (max-width: 600px) {
+#navbar {
+position:relative;
+background-color:black;
+height:20vh;
+width:100%;
+margin-top:5vh;
+}
+}
+
+@media only screen and (min-width: 1200px) {
+#navbar {
+position:relative;
+background-color:black;
+height:20vh;
+width:100%;
+margin-top:5vh;
+}
+}

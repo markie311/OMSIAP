@@ -1,0 +1,92 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (max-width: 600px) {
+
+#smallerviewportsnavbar {
+position:relative;
+height:20vh;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#smallerviewportsnavbar-headerindicationsandbackgroundimagecontainer {
+position:relative;
+height:100%;
+}
+
+#smallerviewportsnavbar-headerindicationsandbackgroundimagecontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#smallerviewportsnavbar-headerindicationsandbackgroundimagecontainer-rowcontainer-omsiaplogocontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:0;
+}
+
+#smallerviewportsnavbar-headerindicationsandbackgroundimagecontainer-rowcontainer-omsiaplogo {
+position:relative;
+border-radius: 50%;
+height: 60%;
+width:80%;
+}
+
+#smallerviewportsnavbar-headerindicationsandbackgroundimagecontainer-rowcontainer-headerindicationscontainer {
+position:relative;
+height:100%;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+}
+
+.smallerviewportsnavbar-headerindicationsandbackgroundimagecontainer-rowcontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+text-align:center;
+}
+
+#smallerviewportsnavbar-hamburgercontainer {
+position:relative;
+height:100%;  
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#smallerviewportsnavbar-hamburger {
+position:relative;
+background-color:white;
+height:6vh;
+width:14vw;
+display:flex;
+flex-direction:column;
+justify-content:space-evenly;
+align-items:center;
+padding:10px;
+}
+
+.smallerviewportsnavbar-hamburger-line {
+position:relative;
+background-color:rgb(66, 64, 64);
+height:0.5vh;
+width:100%;
+}
+
+}
