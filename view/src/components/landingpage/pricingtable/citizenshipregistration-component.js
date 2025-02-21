@@ -11,10 +11,13 @@ import '../../../styles/landingpage/pricingtable/citizenshipregistration.scss';
 
 export default function CitizenshipRegistration() {
 
+ const [typesofpaymentview, typesofpaymentviewcb] = useState("OMSIAPAWASTO");
  const [payingomsiapawastocreditsloadingindication, payingomsiapawastocreditsloadingindicationcb] = useState(false);
+
 
  return (
     <Col id="citizenshipregistration">
+
       <Row id="citizenshipregistration-navigationcontainer">
         <Col xs={3}
              md={2}
@@ -27,46 +30,111 @@ export default function CitizenshipRegistration() {
             }}>Back /</p>
         </Col>
       </Row>
-      <Col id="citizenshipregistration-viewcontainer">
-        <Row id="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer">
+
+      <Row id="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer">
           <Col xs={4}
                md={4}
                lg={4}         
                className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-omsiapawastonavigationcontainer">
-            <p className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication">OMSIAPAWASTO Currency</p>
-          </Col>
-          <Col xs={4}
-               md={4}
-               lg={4}         
-               className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer">
-            <p className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication">Gcash</p>
-          </Col>
-          <Col xs={4}
-               md={4}
-               lg={4}         
-               className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer">
-            <p className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication">Borrow</p>
-          </Col>
-        </Row>
-        
-        <PaymentTypesView payingomsiapawastocreditsloadingindication={payingomsiapawastocreditsloadingindication}/>
+            <p className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication"
+               onClick={(evt)=> {
 
+                const _paymenttypecontainer = evt.target.parentElement;
+                const _allpaymenttypecontainer = document.querySelectorAll(".citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer");
+                
+                for ( let i = 0; i < _allpaymenttypecontainer.length; i++ ) {
+                  _allpaymenttypecontainer[i].style.backgroundColor = "black";
+                  _allpaymenttypecontainer[i].style.color = "white";
+                }
+
+                _paymenttypecontainer.style.backgroundColor = "white";
+                _paymenttypecontainer.style.color = "black";
+
+                typesofpaymentviewcb((paymenttype)=> paymenttype = "OMSIAPAWASTO");
+
+               }}>OMSIAPAWASTO Currency</p>
+          </Col>
+          <Col xs={4}
+               md={4}
+               lg={4}         
+               className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer">
+            <p className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication"
+               onClick={(evt)=> {
+
+                  const _paymenttypecontainer = evt.target.parentElement;
+                  const _allpaymenttypecontainer = document.querySelectorAll(".citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer");
+                  
+                  for ( let i = 0; i < _allpaymenttypecontainer.length; i++ ) {
+                    _allpaymenttypecontainer[i].style.backgroundColor = "black";
+                    _allpaymenttypecontainer[i].style.color = "white";
+                  }
+
+                  _paymenttypecontainer.style.backgroundColor = "white";
+                  _paymenttypecontainer.style.color = "black";
+
+                  typesofpaymentviewcb((paymenttype)=> paymenttype = "Gcash");
+
+              }}>Gcash</p>
+          </Col>
+          <Col xs={4}
+               md={4}
+               lg={4}         
+               className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer">
+            <p className="citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication"
+                onClick={(evt)=> {
+
+                  const _paymenttypecontainer = evt.target.parentElement;
+                  const _allpaymenttypecontainer = document.querySelectorAll(".citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer");
+                  
+                  for ( let i = 0; i < _allpaymenttypecontainer.length; i++ ) {
+                    _allpaymenttypecontainer[i].style.backgroundColor = "black";
+                    _allpaymenttypecontainer[i].style.color = "white";
+                  }
+  
+                  _paymenttypecontainer.style.backgroundColor = "white";
+                  _paymenttypecontainer.style.color = "black";
+
+                  typesofpaymentviewcb((paymenttype)=> paymenttype = "Borrow");
+  
+                 }}>Borrow</p>
+          </Col>
+      </Row>
+
+      <Col id="citizenshipregistration-viewcontainer">
+        <PaymentTypesView typesofpaymentview={typesofpaymentview}
+                          typesofpaymentviewcb={typesofpaymentviewcb}/>
       </Col>
+
+      
+
     </Col>
  )
 }
-
+///  <PaymentTypesView payingomsiapawastocreditsloadingindication={payingomsiapawastocreditsloadingindication}/>
 function PaymentTypesView(props) {
- return (
-  <Col id="paymenttpyesview"> 
-    <OMSIAPAWASTOCITIZENSHIPPAYMENT payingomsiapawastocreditsloadingindication={props.payingomsiapawastocreditsloadingindication}/>
-  </Col>
- )
+
+  if ( props.typesofpaymentview === "OMSIAPAWASTO" ) {
+   return (
+      <Col id="paymenttpyesview"> 
+        <OMSIAPAWASTOCITIZENSHIPPAYMENT payingomsiapawastocreditsloadingindication={props.payingomsiapawastocreditsloadingindication}
+                                        typesofpaymentview={props.typesofpaymentview}
+                                        typesofpaymentviewcb={props.typesofpaymentviewcb}/>
+      </Col>
+   )
+  }
+
+  if ( props.typesofpaymentview === "Gcash" ) {
+   return (
+    <h1>Gcash</h1>
+   )
+  }
+
 }
 
 function OMSIAPAWASTOCITIZENSHIPPAYMENT(props) {
   return (
    <Row id="omsiapawastocitizenshippayment">
+     
      <Col xs={12}
           md={3}
           lg={3}
@@ -162,6 +230,7 @@ function OMSIAPAWASTOCITIZENSHIPPAYMENT(props) {
           }
         </Col>
      </Col>
+     
    </Row>
   )
 }
