@@ -37,7 +37,8 @@ export default function LandingPage(props) {
         <OMSIAPSVideo />
         <AwardsAndAchievements />
         <AmazingWork  />
-        <PricingTable />
+        <PricingTable citizenshipregistrationtype={props.citizenshipregistrationtype}
+                      citizenshipregistrationtypecb={props.citizenshipregistrationtypecb}/>
         <MeetOurProfessional />
         <Articles />
         <Map />
@@ -48,7 +49,8 @@ export default function LandingPage(props) {
 
       <Awards />
 
-      <CitizenshipRegistration />
+      <CitizenshipRegistration citizenshipregistrationtype={props.citizenshipregistrationtype}
+                               citizenshipregistrationtypecb={props.citizenshipregistrationtypecb}/>
       
     </Col>
  )

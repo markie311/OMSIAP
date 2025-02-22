@@ -47,6 +47,8 @@ function OMSIAPCore() {
     }
   } 
 
+  const [citizenshipregistrationtype, citizenshipregistrationtypecb] = useState("MFATIP");
+
   useEffect(()=> {
 
     $viewportscreenbreakpoints.xsviewportscreenbreakpoint();
@@ -60,7 +62,9 @@ function OMSIAPCore() {
                id="omsiapcore">
      <Routes>
         <Route path='/'
-               element={<LandingPage viewport={viewport}/>}>
+               element={<LandingPage viewport={viewport} 
+                                     citizenshipregistrationtype={citizenshipregistrationtype}
+                                     citizenshipregistrationtypecb={citizenshipregistrationtypecb}/>}>
         </Route>
         <Route path='/test'
                element={<HOPE viewport={viewport}/>}>

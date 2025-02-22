@@ -45,167 +45,402 @@ color:white;
 user-select:none;
 }
 
-#citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer {
-position:relative;
-border:0.1vh solid white;
-height:10%;
-width:100%;
-margin-left:auto;
-margin-right:auto;
-}
-
-.citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-navigationcontainer {
-position:relative;
-border:1vh solid green;
-height:100%;
-display:flex;
-justify-content:center;
-align-items:center;
-color:white;
-}
-
-.citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-omsiapawastonavigationcontainer {
-background-color:white;
-border:0.1vh solid black;
-font-weight:900;
-color:black;
-}
-.citizenshipregistration-viewcontainer-typesofpaymentnavigationcontainer-colcontainer-navigationheaderindication {
-position:relative;
-border-radius:10px;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-padding:10px 20px;
-letter-spacing:0.2vh;
-user-select:none;
-}
-
-#citizenshipregistration-viewcontainer {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer {
 position:relative;
 border:1vh solid red;
-height:80%;
+height:90%;
 width:100%;
-}
-
-#paymenttpyesview {
-position:relative;
-border:1vh solid yellow;
-height:100%;
-width:100%;
-}
-
-#omsiapawastocitizenshippayment {
-position:relative;
-border:1vh solid magenta;
-height:100%;
-width:100%;
-margin-left:auto;
-margin-right:auto;
-}
-
-#omsiapawastocitizenshippayment-typesofpaymentviewcontainer-omsiapawastotypeofpayment {
-position:relative;
-border:1vh solid red;
-height:100%;
-width:100%;
-margin-left:auto;
-margin-right:auto;
-}
-
-#omsiapawastocitizenshippayment-requirementscontainer {
-position:relative;
-border:1vh dotted white;
-border-right:none;
-height:100%;
-padding:20px 30px;
 overflow-y:scroll;
 }
 
 /* width */
-#omsiapawastocitizenshippayment-requirementscontainer::-webkit-scrollbar {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer::-webkit-scrollbar {
 width: 20px;
 }
 
 /* Track */
-#omsiapawastocitizenshippayment-requirementscontainer::-webkit-scrollbar-track {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer::-webkit-scrollbar-track {
 box-shadow: inset 0 0 5px grey; 
 border-radius: 10px;
 }
 
 /* Handle */
-#omsiapawastocitizenshippayment-requirementscontainer::-webkit-scrollbar-thumb {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer::-webkit-scrollbar-thumb {
 background: blue; 
 border-radius: 10px;
 }
 
 /* Handle on hover */
-#omsiapawastocitizenshippayment-requirementscontainer::-webkit-scrollbar-thumb:hover {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer::-webkit-scrollbar-thumb:hover {
 background: dodgerblue; 
 }
-
-.omsiapawastocitizenshippayment-requirementscontainer-headerindication {
+///// start of MFATIP registration type container
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipheaderindicationscontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+width:100%;
+padding:180px 120px;
+} 
+.citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipheaderindicationscontainer-headerindication {
 position:relative;
 font: auto {
  family: $sub-font;
 }
 color:white;
-letter-spacing:0.1vh;
 }
-
-#omsiapawastocitizenshippayment-paymentcontainer {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer {
 position:relative;
-border:1vh solid red;
-height:100%;
-}
-
-#omsiapawastocitizenshippayment-paymentcontainer-userdetailscontainer {
-position:relative;
-border:1vh solid green;
-height:40%;
+border:1vh solid white;
+height:auto;
 width:100%;
 margin-left:auto;
 margin-right:auto;
-padding:20px 10px;
 }
-
-.omsiapawastocitizenshippayment-paymentcontainer-userdetailscontainer-colcontainer {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer {
 position:relative;
 border:1vh solid red;
-height:50%;
-display:flex;
-align-items:center;
+height:auto;
+padding:20px;
 }
-
-.omsiapawastocitizenshippayment-paymentcontainer-userdetailscontainer-dataheaderindication {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer-headerindication {
 position:relative;
 font: auto {
  family: $sub-font;
 }
 color:white;
-letter-spacing:0.1vh;
 }
-
-#omsiapawastocitizenshippayment-paymentcontainer-buttonsandloadingindicatorcontainer {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer {
 position:relative;
 border:1vh solid green;
-height:60%;
+height:auto;
+padding:20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameheaderindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameinputfield {
+position:relative;
+background-color:transparent;
+border: 1px solid transparent;
+border-bottom:0.1vh solid white;
+height:5vh;
+width:90%;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnamereminder {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+margin-top:3vh;
+}
+
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+padding:20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberinputfield {
+position:relative;
+background-color:transparent;
+border: 1px solid transparent;
+border-bottom:0.1vh solid white;
+height:5vh;
+width:90%;
+font: auto {
+    family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberreminder {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+margin-top:3vh;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+padding:20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobinputfield {
+position:relative;
+height:5vh;
+width:90%;
+font: auto {
+family: $sub-font;
+}
+padding:10px 20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobreminder {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+margin-top:3vh;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+padding:20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselectlabel {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselect {
+position:relative;
+height:5vh;
+width:90%;
+font: auto {
+ family:$sub-font;
+}
+margin-top:1vh;
+padding:10px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofbirthcertificateinputfieldcolcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+padding:20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificateheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificatelabel {
+position:relative;
+background-color:white;
+border-radius:20px;
+font: auto {
+ family:$sub-font;
+}
+color:black;
+padding:20px 35px;
+}
+.citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificateinputfield {
+position:relative;
+display:none;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofbirthcertificateinputfieldcolcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+padding:20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificateheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificatelabel {
+position:relative;
+background-color:white;
+border-radius:20px;
+font: auto {
+family:$sub-font;
+}
+color:black;
+padding:20px 35px;
+}
+.citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificateinputfield {
+position:relative;
+display:none;
+}
+
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofvalidgovernmentidinputfieldcolcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+padding:20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidlabel {
+position:relative;
+background-color:white;
+border-radius:20px;
+font: auto {
+family:$sub-font;
+}
+color:black;
+padding:20px 35px;
+}
+.citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidinputfield {
+position:relative;
+display:none;
+}
+
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofvalidgovernmentidinputfieldcolcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+padding:20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidlabel {
+position:relative;
+background-color:white;
+border-radius:20px;
+font: auto {
+family:$sub-font;
+}
+color:black;
+padding:20px 35px;
+}
+.citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidinputfield {
+position:relative;
+display:none;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-submitbuttoncontainer {
+position:relative;
+border:1vh solid red;
+padding:40px 20px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-submitbuttoncontainer-submitbutton {
+position:relative;
+background-color:magenta;
+border:0.1vh solid white;
+border-radius:15px;
+font: auto {
+ famly: $sub-font;
+}
+color:white;
+padding:20px 85px;
+}
+
+/// end of MFATIP registration type container
+
+//// start of public citizenship registration
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-publiccitizenshipregistrationheaderindicationscontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+padding:180px 120px; 
+}
+.citizenshipregistration-citizenshipregistrationtypeviewcontainer-publiccitizenshipregistrationheaderindicationscontainer {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-publiccitizenshippaymentbuttoncontainer {
+position:relative;
+border:1vh solid red;
+padding:120px;
 display:flex;
 justify-content:center;
 align-items:center;
 }
-
-#omsiapawastocitizenshippayment-paymentcontainer-buttonsandloadingindicatorcontainer-acquirecitizenshippayingomsiapawastocreditsbutton {
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-publiccitizenshippaymentbuttoncontainer-publiccitizenshippaymentbutton {
 position:relative;
-background-color:transparent;
-border:0.1vh solid white;
-border-radius:5px;
+background-color:magenta;
+border-radius:20px;
+height:10vh;
+width:30%;
 font: auto {
  family: $sub-font;
 }
-color:yellow;
-padding:20px 30px;
+color:white;
 }
-
+/// end of public citizenship registration
+//// start of private citizenship registration
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-privatecitizebshipregistrationheaderindicationscontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+padding:180px 120px;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-privatecitizebshipregistrationheaderindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family:$sub-font;
+}
+color:white;
+}
+.citizenshipregistration-citizenshipregistrationtypeviewcontainer-privatecitizebshipregistrationheaderindicationscontainer-headerindication {
+position:relative;
+font: auto {
+ family:$sub-font;
+}
+color:white;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-privatecitizenshippaymentbuttoncontainer {
+position:relative;
+border:1vh solid red;
+padding:120px;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+#citizenshipregistration-citizenshipregistrationtypeviewcontainer-privatecitizenshippaymentbuttoncontainer-publiccitizenshippaymentbutton {
+position:relative;
+background-color:magenta;
+border-radius:20px;
+height:10vh;
+width:30%;
+font: auto {
+    family: $sub-font;
+}
+color:white;
+}
+/// end of private citizenship registration
 }

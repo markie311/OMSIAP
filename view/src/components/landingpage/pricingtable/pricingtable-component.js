@@ -10,7 +10,7 @@ Accordion } from 'react-bootstrap';
 import '../../../styles/landingpage/pricingtable/pricingtable.scss';
 
 
-export default function PricingTable() {
+export default function PricingTable(props) {
  return (
   <Row id="pricingtable">
     <Col xs={12}
@@ -188,8 +188,9 @@ export default function PricingTable() {
              className="pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer">
           <p className="pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer-checkboxheaderindication"
              onClick={()=> {
+               props.citizenshipregistrationtypecb((citizenshipregistrationtype)=> citizenshipregistrationtype = "MFATIP");
                const _citizenshipregistration = document.querySelector("#citizenshipregistration");
-               _citizenshipregistration.style.display = "block"
+               _citizenshipregistration.style.display = "block";
              }}>&#10004;</p>
         </Col>
         <Col xs={6}
@@ -198,7 +199,7 @@ export default function PricingTable() {
              className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer">
             <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">(M)ontly (F)inancial (A)llocation (T)o (I)ndividual (P)eople or MFATIP</p>
             <h3 className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Free / Life time registration</h3>
-            <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Get started with your free registration today and for a life-time account! Increase your personal growth financially with OMSIAP starting it with a free registration and a life time profile with OMSIAP recieving financial allocation every month!</p>
+            <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Start your journey to financial growth with OMSIAP. Register for free today and receive monthly financial allocations with your lifetime membership.</p>
         </Col>
         <Col xs={2}
              md={2}
@@ -221,6 +222,7 @@ export default function PricingTable() {
              className="pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer">
           <p className="pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer-checkboxheaderindication"
              onClick={()=> {
+              props.citizenshipregistrationtypecb((citizenshipregistrationtype)=> citizenshipregistrationtype = "Public citizenship");
               const _citizenshipregistration = document.querySelector("#citizenshipregistration");
               _citizenshipregistration.style.display = "block"
             }}>&#10004;</p>
@@ -230,8 +232,8 @@ export default function PricingTable() {
              lg={6}
              className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer">
             <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Public citizenship</p>
-            <h3 className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Monthly</h3>
-            <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Increase your potential personal growth financially with OMSIAP. More pencetage's basis financial allocation that you can recieve every month!</p>
+            <h3 className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Monthly expiration</h3>
+            <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Maximize your financial growth potential with OMSIAP. Receive higher percentage-based monthly allocations!</p>
         </Col>
         <Col xs={2}
              md={2}
@@ -254,6 +256,7 @@ export default function PricingTable() {
              className="pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer">
           <p className="pricingtable-pricingtablecontainer-rowcontainer-checkboxcontainer-checkboxheaderindication"
              onClick={()=> {
+              props.citizenshipregistrationtypecb((citizenshipregistrationtype)=> citizenshipregistrationtype = "Private citizenship");
               const _citizenshipregistration = document.querySelector("#citizenshipregistration");
               _citizenshipregistration.style.display = "block"
              }}>&#10004;</p>
@@ -262,9 +265,9 @@ export default function PricingTable() {
              md={6}
              lg={6}
              className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer">
-            <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Monthly</p>
-            <h3 className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Every three months</h3>
-            <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Increase your potential personal growth financially with OMSIAP. More pencetage's basis financial allocation that you can recieve every month!</p>
+            <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Private citizenship</p>
+            <h3 className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Every three months expiration</h3>
+            <p className="pricingtable-pricingtablecontainer-rowcontainer-headerindicationscontainer-headerindication">Maximize your financial growth potential with OMSIAP. Receive higher percentage-based monthly allocations!</p>
         </Col>
         <Col xs={2}
              md={2}
