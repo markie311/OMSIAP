@@ -26,15 +26,7 @@ export default function Market(props) {
  return (
   <Col id="market">
     <Col id='market-positioningcontainer'>  
-     <Col id="market-navigationcontainer">
-     <NavBar viewport={props.viewport}/>
-     </Col>
-     <Col id="market-contentcontainer">
-      <MarketCarousel />
-      <ProductNavigation viewport={props.viewport}/>
-      <ProductList />
-      <Footer />
-     </Col>
+      <MarketingPage />
     </Col>
 
     <QuickLookProductDescriptionModal />
@@ -618,3 +610,318 @@ function ProductDescriptionModalProductDescriptionNavigationModalView(props) {
   }
 
 }
+
+
+function MarketingPage() {
+// Sample data - replace with your actual data
+const categories = [
+{ id: 1, name: "Electronics", description: "Latest gadgets and electronic devices for your tech needs" },
+{ id: 2, name: "Clothing", description: "Trendy and comfortable clothing for all seasons" },
+{ id: 3, name: "Home & Kitchen", description: "Essential items to make your house a home" },
+{ id: 4, name: "Beauty & Personal Care", description: "Premium products for your self-care routine" }
+];
+
+const products = [
+{ 
+id: 1, 
+name: "Wireless Headphones", 
+price: 89.99, 
+category: 1, 
+image: "../images/market/products/watch.jpg",
+description: "High-quality wireless headphones with noise cancellation and 20-hour battery life. Perfect for music lovers and professionals alike."
+},
+{ 
+id: 2, 
+name: "Smart Watch", 
+price: 199.99, 
+category: 1, 
+image: "../images/market/products/watch.jpg",
+description: "Track your fitness, receive notifications, and more with this sleek smartwatch. Water-resistant and long-lasting battery."
+},
+{ 
+id: 3, 
+name: "Cotton T-Shirt", 
+price: 24.99, 
+category: 2, 
+image: "../images/market/products/watch.jpg",
+description: "Soft, comfortable cotton t-shirt available in multiple colors. A wardrobe essential for any season."
+},
+{ 
+id: 4, 
+name: "Denim Jeans", 
+price: 59.99, 
+category: 2, 
+image: "../images/market/products/watch.jpg",
+description: "Classic denim jeans with a modern fit. Durable and stylish for everyday wear."
+},
+{ 
+id: 5, 
+name: "Coffee Maker", 
+price: 79.99, 
+category: 3, 
+image: "../images/market/products/watch.jpg",
+description: "Programmable coffee maker that brews up to 12 cups. Start your day right with the perfect cup of coffee."
+},
+{ 
+id: 6, 
+name: "Moisturizer", 
+price: 34.99, 
+category: 4, 
+image: "../images/market/products/watch.jpg",
+description: "Hydrating moisturizer for all skin types. Keeps your skin soft and supple throughout the day."
+}
+];
+
+// State management
+const [selectedCategory, setSelectedCategory] = useState(null);
+const [cart, setCart] = useState([]);
+const [isCartOpen, setIsCartOpen] = useState(false);
+const [selectedProduct, setSelectedProduct] = useState(null);
+
+// Filter products by selected category
+const filteredProducts = selectedCategory 
+? products.filter(product => product.category === selectedCategory) 
+: products;
+
+// Add product to cart
+const addToCart = (product) => {
+const existingItem = cart.find(item => item.id === product.id);
+
+if (existingItem) {
+setCart(cart.map(item => 
+item.id === product.id 
+? { ...item, quantity: item.quantity + 1 } 
+: item
+));
+} else {
+setCart([...cart, { ...product, quantity: 1 }]);
+}
+};
+
+// Remove from cart
+const removeFromCart = (productId) => {
+setCart(cart.filter(item => item.id !== productId));
+};
+
+// Calculate total items in cart
+const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+
+// Calculate total price
+const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
+
+return (
+<div className="marketing-page">
+{/* Header */}
+<header className="header">
+<div className="logo">
+<h1>Your Brand</h1>
+</div>
+<nav className="nav">
+<ul>
+  <li><a href="#home">Home</a></li>
+  <li><a href="#products">Products</a></li>
+  <li><a href="#about">About</a></li>
+  <li><a href="#contact">Contact</a></li>
+</ul>
+</nav>
+<div className="cart-icon" onClick={() => setIsCartOpen(!isCartOpen)}>
+<div className="cart-button">
+  <span className="material-icons">shopping_cart</span>
+  {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
+</div>
+</div>
+</header>
+
+{/* Hero Section */}
+<section className="hero">
+<div className="hero-content">
+<h2>Quality Products for Every Need</h2>
+<p>Discover our premium selection of products designed to enhance your lifestyle</p>
+<button className="btn-primary">Shop Now</button>
+</div>
+</section>
+
+{/* Categories Section */}
+<section className="categories-section" id="categories">
+<h2>Browse Categories</h2>
+<div className="categories-container">
+<div 
+  className={`category-card ${selectedCategory === null ? 'active' : ''}`}
+  onClick={() => setSelectedCategory(null)}
+>
+  <h3>All Products</h3>
+  <p>View our complete collection</p>
+</div>
+
+{categories.map(category => (
+  <div 
+    key={category.id} 
+    className={`category-card ${selectedCategory === category.id ? 'active' : ''}`}
+    onClick={() => setSelectedCategory(category.id)}
+  >
+    <h3>{category.name}</h3>
+    <p>{category.description}</p>
+  </div>
+))}
+</div>
+</section>
+
+{/* Products Section */}
+<section className="products-section" id="products">
+<h2>Our Products</h2>
+{selectedCategory !== null && (
+<div className="selected-category">
+  <h3>{categories.find(c => c.id === selectedCategory)?.name}</h3>
+  <p>{categories.find(c => c.id === selectedCategory)?.description}</p>
+</div>
+)}
+
+<div className="products-grid">
+{filteredProducts.map(product => (
+  <div className="product-card" key={product.id}>
+    <div className="product-image">
+      <img src={product.image} alt={product.name} />
+    </div>
+    <div className="product-info">
+      <h3>{product.name}</h3>
+      <p className="product-price">${product.price}</p>
+      <p className="product-short-desc">{product.description.substring(0, 70)}...</p>
+      <div className="product-actions">
+        <button 
+          className="btn-view" 
+          onClick={() => setSelectedProduct(product)}
+        >
+          View Details
+        </button>
+        <button 
+          className="btn-add-to-cart"
+          onClick={() => addToCart(product)}
+        >
+          Add to Cart
+        </button>
+      </div>
+    </div>
+  </div>
+))}
+</div>
+</section>
+
+{/* Product Modal */}
+{selectedProduct && (
+<div className="product-modal">
+<div className="modal-content">
+  <span className="close-modal" onClick={() => setSelectedProduct(null)}>&times;</span>
+  <div className="modal-body">
+    <div className="modal-image">
+      <img src={selectedProduct.image} alt={selectedProduct.name} />
+    </div>
+    <div className="modal-details">
+      <h3>{selectedProduct.name}</h3>
+      <p className="modal-price">${selectedProduct.price}</p>
+      <p className="category-tag">
+        {categories.find(c => c.id === selectedProduct.category)?.name}
+      </p>
+      <p className="modal-description">{selectedProduct.description}</p>
+      <button 
+        className="btn-add-to-cart"
+        onClick={() => {
+          addToCart(selectedProduct);
+          setSelectedProduct(null);
+        }}
+      >
+        Add to Cart
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+)}
+
+{/* Cart Sidebar */}
+<div className={`cart-sidebar ${isCartOpen ? 'open' : ''}`}>
+<div className="cart-header">
+<h3>Your Cart</h3>
+<span className="close-cart" onClick={() => setIsCartOpen(false)}>&times;</span>
+</div>
+
+<div className="cart-items">
+{cart.length === 0 ? (
+  <p className="empty-cart">Your cart is empty</p>
+) : (
+  <>
+    {cart.map(item => (
+      <div className="cart-item" key={item.id}>
+        <div className="cart-item-image">
+          <img src={item.image} alt={item.name} />
+        </div>
+        <div className="cart-item-details">
+          <h4>{item.name}</h4>
+          <p>${item.price} × {item.quantity}</p>
+        </div>
+        <button 
+          className="remove-item"
+          onClick={() => removeFromCart(item.id)}
+        >
+          &times;
+        </button>
+      </div>
+    ))}
+    
+    <div className="cart-total">
+      <p>Total: <span>${totalPrice}</span></p>
+    </div>
+    
+    <button className="btn-checkout">Proceed to Checkout</button>
+  </>
+)}
+</div>
+</div>
+
+{/* Testimonials Section */}
+<section className="testimonials-section">
+<h2>What Our Customers Say</h2>
+<div className="testimonials-container">
+<div className="testimonial">
+  <p>"The quality of products I received was exceptional. Will definitely shop again!"</p>
+  <p className="customer-name">- Sarah J.</p>
+</div>
+<div className="testimonial">
+  <p>"Fast shipping and excellent customer service. Highly recommend!"</p>
+  <p className="customer-name">- Michael T.</p>
+</div>
+<div className="testimonial">
+  <p>"I love the variety of products available. Something for everyone!"</p>
+  <p className="customer-name">- Lisa R.</p>
+</div>
+</div>
+</section>
+
+{/* Footer */}
+<footer className="footer">
+<div className="footer-content">
+<div className="footer-section">
+  <h3>Your Brand</h3>
+  <p>Providing quality products since 2010</p>
+</div>
+<div className="footer-section">
+  <h3>Quick Links</h3>
+  <ul>
+    <li><a href="#home">Home</a></li>
+    <li><a href="#products">Products</a></li>
+    <li><a href="#about">About Us</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</div>
+<div className="footer-section">
+  <h3>Contact Us</h3>
+  <p>Email: info@yourbrand.com</p>
+  <p>Phone: (555) 123-4567</p>
+</div>
+</div>
+<div className="footer-bottom">
+<p>&copy; 2025 Your Brand. All rights reserved.</p>
+</div>
+</footer>
+</div>
+);
+};

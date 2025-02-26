@@ -19,6 +19,8 @@ import Cart from './components/cart/cart-component.js';
 import ServiceDetails from './components/landingpage/services/servicedetails-component.js';
 import ReadMoreAboutArticles from './components/landingpage/articles/readmoreaboutarticles-component.js'
 import MFATIPProfileAccount from './components/mfatip/profileaccount-component.js'
+import UserAccount from './components/useraccount/useraccount-component.js'
+import CheckoutPage from './components/checkout/checkout-component.js'
 
 function OMSIAPCore() {
 
@@ -114,7 +116,8 @@ function OMSIAPCore() {
         merchandise_count: 0,
         total_payment: 0,
         totalshipment: 0,
-      }
+      },
+      merchandises: []
     }
   });
   /// user data
@@ -165,8 +168,15 @@ function OMSIAPCore() {
                element={<ReadMoreAboutArticles viewport={viewport}/>}>
         </Route>
 
-        <Route path='/mfatipprofileaccount'
-               element={<MFATIPProfileAccount viewport={viewport}/>}>
+        <Route path='/useraccount'
+               element={<UserAccount viewport={viewport}/>}>
+        </Route>
+
+        <Route path='/useraccount'
+               element={<UserAccount viewport={viewport}/>}>
+        </Route>
+        <Route path='/checkout'
+               element={<CheckoutPage viewport={viewport}/>}>
         </Route>
 
      </Routes>

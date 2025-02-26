@@ -39,8 +39,8 @@ function Header() {
  return ( 
     <Row id="mfatipheaderrowcontariner">
       <Col xs={12}
-           md={4}
-           lg={4}
+           md={5}
+           lg={5}
            id="mfatipheaderrowcontariner-headerindicationscontainer">
         <h4 className="mfatipheaderrowcontariner-headerindicationscontainer-headerindication">Building Your Path to Personal Success</h4>
         <br/>
@@ -50,8 +50,8 @@ function Header() {
         <p className="mfatipheaderrowcontariner-headerindicationscontainer-headerindication">Accelerate your personal growth by receiving monthly financial allocations through your MFATIP profile. Our team will be present to support your success. We pride ourselves on providing excellent service to individuals, ensuring a positive experience for everyone.</p>
       </Col>
       <Col xs={12}
-           md={8}
-           lg={8}
+           md={7}
+           lg={7}
            id="mfatipheaderrowcontariner-dataheaderindicationcontainer">
         <Row id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer">
          <Col xs={12}
@@ -233,258 +233,277 @@ function SetUpMFATIPACCOUNT(props) {
              }}>Back /</p>
        </Col>
      </Row>
-     <Col id="setupmfatipaccount-headerindicationscontainer">
-      <p className="">Registering an MFATIP or (M)onthly (F)inancial (A)llocation (T)o (I)ndividual (P)eople Requirements</p>
-          <br/>
-          <p className="setupmfatipaccount-headerindicationscontainer-headerindication">By registreting to have  a MFATIP (M)ontlhy (Financial) (A)llocation (T)o (I)ndividual (P)eople profile with OMSIAP, OMSIAP will give financial allocation to your MFATIP profile or account each month that you can also withdraw monthly the reason why you must follow the strict procudere's written below.</p>
-          <br />
-          <ul className="setupmfatipaccount-headerindicationscontainer-headerindication">
-            <li>Make sure to write consistent personal details to avoid dual accounts</li>
-            <br />
-            <p>HAVING DUAL ACCOUNTS WILL RESULT INTO</p>
-            <ul>
-              <li>Forfeiting of your other MFATIP (M)onthly) (F)ianancial (A)llocation (T)o (I)ndividual (P)eople account profile of a same name that was validated by the OMSIAP system and it's personel's that is not a different person and it is you creating another MFATIP account profile to recieve more financial allocation each month.</li>
-               <li>Risking to lose your first registered MFATIP account profile</li>
-            </ul>
-            <br />
-            <li>Make sure to have the same Gcash account name and number with your MFATIP account profile registered</li>
-            <br/>
-            <p>WHY DO I NEED TO REGISTER MY MFATIP ACCOUNT PROFILE WITH A SAME GCASH ACCOUNT NAME AND NUMBER?</p>
-            <ul>
-              <li>Because when sending your financial allocation each month, Gcash was mainly used send the credits that before, it was validated strictly what if the MFATIP account profile was not the same with your Gcash accounts. This system is very simple yet it is very powerful to determine user falsifications and scams</li>
-            </ul>
-             <p>Why do I need to avoid registering my MFATIP account profile that was not the same with my Gcash account name and number?</p>
-             <ul>
-              <li>Because when widthdrawing your financial allocations each month also specially depositing amounts here at OMSIAP, the screenshots of the transactions made in Gcash was mainly asked to be send it to OMSIAP before recieving and sending credits. For further validation for example if it is the not the same person or not, compared to your MFATIP accounts and Gcash account name and number, the credits will be send instead to the first who transacted the widthdrawal or depositing an amount here at OMSIAP with legal proofs.</li>
-            </ul>
-            <br/>
-            <li>Make sure to have a clearer capture on your photo's uploading your documents</li>
-            <br />
-            <p>WHY DO I HAVE TO HAVE A CLEARER CAPTURE UPLOADING MY DOCUMENTS</p>
-            <ul>
-              <li>All documents that are sent to OMSIAP will be printed and complied to your documents saved and stored with the OMSIAP database and offfice's ( storage's of personal details documents )</li>
-            </ul>
-          </ul>
-     </Col>
-      <Row id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer">
-        <Col xs={12}
-            md={12}
-            lg={12}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer">
-          <h1 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer-headerindication">PERSONAL DETAILS</h1>
-        </Col>
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameheaderindication">First name</p>
-          <input id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameinputfield" 
-                 type="text"
-                 onChange={(evt)=> {
-
-                  props.user.personaldetails.name.firstname = evt.target.value;
-
-               }}/>
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnamereminder">Make sure to write your first name the same in your first name in your Gcash account</p>
-        </Col>  
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameheaderindication">Middle name</p>
-          <input id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameinputfield" 
-                 type="text"
-                 onChange={(evt)=> {
-
-                  props.user.personaldetails.name.middlename = evt.target.value;
-
-               }}/>
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnamereminder">Make sure to write your middle name the same in your middle name in your Gcash account</p>
-        </Col>  <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameheaderindication">Last name</p>
-          <input id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameinputfield" 
-                 onChange={(evt)=> {
-
-                  props.user.personaldetails.name.lastname = evt.target.value;
-
-                }}/>
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnamereminder">Make sure to write your last name the same in your last name in your Gcash account</p>
-        </Col>
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberheaderindication">Phone number</p>
-          <input id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberinputfield" 
-                 type="number"
-                 onChange={(evt)=> {
-
-                  props.user.personaldetails.contactdetails.phonenumber = evt.target.value;
-
-               }}/>
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberreminder">Make sure to write your phone number the same in your Gcash account number</p>
-        </Col>
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobheaderindication">Date Of Birth ( DOB )</p>
-          <input id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobinputfield" 
-                 type="date"
-                 onChange={(evt)=> {
-                  props.user.personaldetails.dob = evt.target.value;
-                 }}/>
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobreminder">Make sure to write your full name the same in your Gcash account</p>
-        </Col>
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusheaderindication">Civil status</p>
-          <label for="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselect" 
-                 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselectlabel">Choose a civil status:</label>
-          <select id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselect"
-                   onChange={(evt)=> {
-                    props.user.personaldetails.civilstatus = evt.target.value;
-                   }}>
-            <option value="Single">Single</option>
-            <option value="Married">Married</option>
-            <option value="Divorced">Divorced</option>
-            <option value="Widowed">Widowed</option>
-            <option value="Separated">Separated</option>
-            <option value="In a civil partnership">In a civil partnership</option>
-            <option value="Former civil partner in a civil partnership that has ended">Former civil partner in a civil partnership that has ended</option>
-        </select>
-        </Col>
-        <Col xs={12}
-            md={12}
-            lg={12}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer">
-          <h1 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer-headerindication">NEEDED DOCUMENTS</h1>
-        </Col>
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofbirthcertificateinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificateheaderindication">FRONT PHOTO OF BIRTH CERTIFICATE</p>
-          <img src="../images/landingpage/citizenshipregistration/blackquestionmark.png"
-                  id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofbirthcertificateinputfieldcolcontainer-blackquestionmarkimage"/>
-              <br/>
-          <input type="file" 
-                 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificatelabel" 
-                 className="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificateinputfield" 
-                 onChange={(evt)=> {
-
-                    const _frontphotoofbirthcertificateimage = document.querySelector("#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofbirthcertificateinputfieldcolcontainer-blackquestionmarkimage");
-                    const _frontphotoofbirthcertificatefile =  document.querySelector("#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificatelabel");
-
-                    _frontphotoofbirthcertificateimage.src = URL.createObjectURL(_frontphotoofbirthcertificatefile.files[0]);
-
-                 }}/>
-          
-          <label for="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificatelabel" 
-                 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificatelabel">
-            Choose file
-          </label>
-
-        </Col>
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofbirthcertificateinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificateheaderindication">BACK PHOTO OF BIRTH CERTIFICATE</p>
-        
-          <img src="../images/landingpage/citizenshipregistration/blackquestionmark.png"
-                  id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofbirthcertificateinputfieldcolcontainer-blackquestionmarkimage"/>
-              <br/>
-          <input type="file" 
-                 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificatelabel" 
-                 className="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificateinputfield" 
-                 onChange={(evt)=> {
-
-                  const _backphotoofbirthcertificateimage = document.querySelector("#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofbirthcertificateinputfieldcolcontainer-blackquestionmarkimage");
-                  const _backphotoofbirthcertificatefile =  document.querySelector("#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificatelabel");
-
-                  _backphotoofbirthcertificateimage.src = URL.createObjectURL(_backphotoofbirthcertificatefile.files[0]);
-
-               }}/>
-          
-          <label for="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificatelabel" 
-                 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificatelabel">
-          Choose file
-          </label>
-
-        </Col>
-
-        <Col xs={12}
-            md={12}
-            lg={12}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer">
-          <h1 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer-headerindication"></h1>
-        </Col>
-
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofvalidgovernmentidinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidheaderindication">FRONT PHOTO OF BIRTH CERTIFICATE</p>
-          <img src="../images/landingpage/citizenshipregistration/blackquestionmark.png"
-                  id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofvalidgovernmentidinputfieldcolcontainer-blackquestionmarkimage"/>
-              <br/>
-          <input type="file" 
-                  id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidlabel"
-                  className="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidinputfield" 
-                  onChange={(evt)=> {
-
-                    const _frontphotoofbirthcertificateimage = document.querySelector("#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofvalidgovernmentidinputfieldcolcontainer-blackquestionmarkimage");
-                    const _frontphotoofbirthcertificatefile =  document.querySelector("#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidlabel");
-
-                    _frontphotoofbirthcertificateimage.src = URL.createObjectURL(_frontphotoofbirthcertificatefile.files[0]);
-
-                 }}/>
-          
-          <label for="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidlabel" 
-                 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidlabel">
-          Choose file
-          </label>
-
-        </Col>
-        <Col xs={12}
-            md={3}
-            lg={3}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofvalidgovernmentidinputfieldcolcontainer">
-          <p id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidheaderindication">BACK PHOTO OF THE SAME VALID GOVERMENT ID</p>
-          <img src="../images/landingpage/citizenshipregistration/blackquestionmark.png"
-                  id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofvalidgovernmentidinputfieldcolcontainer-blackquestionmarkimage"/>
-              <br/>
-          <input type="file" 
-                 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidlabel" 
-                 className="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidinputfield" 
-                 onChange={(evt)=> {
-
-                  const _backphotoofbirthcertificateimage = document.querySelector("#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofvalidgovernmentidinputfieldcolcontainer-blackquestionmarkimage");
-                  const _backphotoofbirthcertificatefile =  document.querySelector("#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidlabel");
-
-                  _backphotoofbirthcertificateimage.src = URL.createObjectURL(_backphotoofbirthcertificatefile.files[0]);
-
-               }}/>
-          
-          <label for="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidlabel" 
-                 id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidlabel">
-          Choose file
-          </label>
-
-        </Col>
-        <Col xs={12}
-            md={12}
-            lg={12}
-            id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-submitbuttoncontainer">
-          <button id="setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-submitbuttoncontainer-submitbutton">SUBMIT</button>
-        </Col>
-    </Row>
+     <MFATIPRegistrationForm />
+     
    </Col>
  )
 }
+
+
+function MFATIPRegistrationForm() { 
+  // State for form data
+  const [formData, setFormData] = useState({
+    firstName: '',
+    middleName: '',
+    lastName: '',
+    phoneNumber: '',
+    dateOfBirth: '',
+    civilStatus: '',
+    birthCertificateFront: null,
+    birthCertificateBack: null,
+    governmentIdFront: null,
+    governmentIdBack: null
+  });
+
+  // State for image previews
+  const [previews, setPreviews] = useState({
+    birthCertificateFront: null,
+    birthCertificateBack: null,
+    governmentIdFront: null,
+    governmentIdBack: null
+  });
+
+  // Handle text input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value
+    });
+  };
+
+  // Handle file input changes
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    
+    if (files && files[0]) {
+      // Update form data with file
+      setFormData({
+        ...formData,
+        [name]: files[0]
+      });
+      
+      // Create image preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreviews({
+          ...previews,
+          [name]: event.target.result
+        });
+      };
+      reader.readAsDataURL(files[0]);
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('Form submitted:', formData);
+    // Here you would typically send the data to your backend
+  };
+
+  return (
+    <div className="registration-container">
+      <h2>Registration Form</h2>
+      
+      <form onSubmit={handleSubmit}>
+        <div className="form-section">
+          <h3>Personal Information</h3>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="firstName">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="middleName">Middle Name</label>
+              <input
+                type="text"
+                id="middleName"
+                name="middleName"
+                value={formData.middleName}
+                onChange={handleInputChange}
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="lastName">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+          </div>
+          
+          <div className="form-row">
+            <div className="form-group">
+              <label htmlFor="phoneNumber">Phone Number</label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="dateOfBirth">Date of Birth</label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                name="dateOfBirth"
+                value={formData.dateOfBirth}
+                onChange={handleInputChange}
+                required
+              />
+            </div>
+            
+            <div className="form-group">
+              <label htmlFor="civilStatus">Civil Status</label>
+              <select
+                id="civilStatus"
+                name="civilStatus"
+                value={formData.civilStatus}
+                onChange={handleInputChange}
+                required
+              >
+                <option value="">Select Status</option>
+                <option value="single">Single</option>
+                <option value="married">Married</option>
+                <option value="divorced">Divorced</option>
+                <option value="widowed">Widowed</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        
+        <div className="form-section">
+          <h3>Document Uploads</h3>
+          
+          <div className="document-row">
+            <div className="document-group">
+              <h4>Birth Certificate</h4>
+              
+              <div className="document-uploads">
+                <div className="upload-item">
+                  <label htmlFor="birthCertificateFront">
+                    <div className="upload-label">Front Side</div>
+                    <div className={`upload-preview ${previews.birthCertificateFront ? 'has-image' : ''}`}>
+                      {previews.birthCertificateFront ? (
+                        <img src={previews.birthCertificateFront} alt="Birth Certificate Front" />
+                      ) : (
+                        <div className="upload-placeholder">Click to upload</div>
+                      )}
+                    </div>
+                  </label>
+                  <input
+                    type="file"
+                    id="birthCertificateFront"
+                    name="birthCertificateFront"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    required
+                    hidden
+                  />
+                </div>
+                
+                <div className="upload-item">
+                  <label htmlFor="birthCertificateBack">
+                    <div className="upload-label">Back Side</div>
+                    <div className={`upload-preview ${previews.birthCertificateBack ? 'has-image' : ''}`}>
+                      {previews.birthCertificateBack ? (
+                        <img src={previews.birthCertificateBack} alt="Birth Certificate Back" />
+                      ) : (
+                        <div className="upload-placeholder">Click to upload</div>
+                      )}
+                    </div>
+                  </label>
+                  <input
+                    type="file"
+                    id="birthCertificateBack"
+                    name="birthCertificateBack"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    required
+                    hidden
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="document-row">
+            <div className="document-group">
+              <h4>Government ID</h4>
+              
+              <div className="document-uploads">
+                <div className="upload-item">
+                  <label htmlFor="governmentIdFront">
+                    <div className="upload-label">Front Side</div>
+                    <div className={`upload-preview ${previews.governmentIdFront ? 'has-image' : ''}`}>
+                      {previews.governmentIdFront ? (
+                        <img src={previews.governmentIdFront} alt="Government ID Front" />
+                      ) : (
+                        <div className="upload-placeholder">Click to upload</div>
+                      )}
+                    </div>
+                  </label>
+                  <input
+                    type="file"
+                    id="governmentIdFront"
+                    name="governmentIdFront"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    required
+                    hidden
+                  />
+                </div>
+                
+                <div className="upload-item">
+                  <label htmlFor="governmentIdBack">
+                    <div className="upload-label">Back Side</div>
+                    <div className={`upload-preview ${previews.governmentIdBack ? 'has-image' : ''}`}>
+                      {previews.governmentIdBack ? (
+                        <img src={previews.governmentIdBack} alt="Government ID Back" />
+                      ) : (
+                        <div className="upload-placeholder">Click to upload</div>
+                      )}
+                    </div>
+                  </label>
+                  <input
+                    type="file"
+                    id="governmentIdBack"
+                    name="governmentIdBack"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    required
+                    hidden
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div className="form-actions">
+          <button type="reset" className="btn-secondary">Reset</button>
+          <button type="submit" className="btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  );
+};

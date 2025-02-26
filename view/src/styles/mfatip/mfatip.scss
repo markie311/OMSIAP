@@ -9,33 +9,50 @@ $containersonidlebgcolor: #e2e4e1;
 
 #mfatip {
 position:relative;
-border:1vh solid magenta;
 height:100%;
 width:100%;
 }
 
 #mfatip-landingpageview {
 position:absolute;
-border:1vh solid red;
 height:100%;
 width:100%;
 overflow-y:scroll;
 }
 
+/* width */
+#mfatip-landingpageview::-webkit-scrollbar {
+width: 20px;
+}
+
+/* Track */
+#mfatip-landingpageview::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#mfatip-landingpageview::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#mfatip-landingpageview::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
 #mfatipheaderrowcontariner {
 position:relative;
-border:1vh solid green;
 height:auto;
 width:100%;
 margin-left:auto;
 margin-right:auto;
 margin-top:5vh;
-padding:0px 220px;
+padding:50px 220px;
 }
 
 #mfatipheaderrowcontariner-headerindicationscontainer {
 position:relative;
-border:1vh solid red;
 height:auto;
 display:flex;
 flex-direction:column;
@@ -52,14 +69,12 @@ color:white;
 
 #mfatipheaderrowcontariner-dataheaderindicationcontainer {
 position:relative;
-border:1vh solid magenta;
 height:auto;
-padding:0;
+padding:70px;
 }
 
 #mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
 width:100%;
 margin-left:auto;
@@ -68,14 +83,12 @@ margin-right:auto;
 
 #mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer {
 position:relative;
-border:1vh solid yellow;
 height:auto;
 padding:0;
 }
 
 #mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer {
 position:relative;
-border:1vh solid dodgerblue;
 height:auto;
 width:100%;
 margin-left:auto;
@@ -84,20 +97,20 @@ margin-right:auto;
 
 .mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer {
 position:relative;
-border:1vh solid red;
 height:40vh;
 }
 
 .mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer {
 position:relative;
 background-color: brown;
+border-radius:40%;
 height:100%;
 width:100%;
-border-radius:5px;
+border-radius:40px;
+padding:20px;
 }
 .mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer {
 position:relative;
-border:1vh solid white;
 height:50%;
 display:flex;
 justify-content:center;
@@ -113,9 +126,9 @@ text-align:center;
 }
 #mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datadisplayimagecontainer {
 position:relative;
-border:1vh solid pink;
 height:30vh;
 width:100%;
+padding:20px;
 }
 
 #mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datadisplayimagecontainer-datadisplayimage {
@@ -126,7 +139,6 @@ width:100%;
 
 #mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-ownerbackgroundimagecontainer {
 position:relative;
-border:1vh solid magenta;
 height:auto;  
 }
 
@@ -139,33 +151,29 @@ width:100%;
 //// start of hope header
 #hopeheader {
 position:relative;
-border:1vh solid magenta;
 height:auto;
 width:100%;
 margin-left:auto;
 margin-right:auto;
 margin-top:5vh;
-padding:0px 220px;
+padding:130px 220px;
 }
 #hopeheader-displayimagescontainer {
 position:relative;
-border:1vh solid white;
 height:auto;
+padding:70px;
 }
 .hopeheader-displayimagescontainer-rowcontainer-colcontainer {
 position:relative;
-border:1vh solid green;
 height:65vh;
 }
 #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage1 {
 position:absolute;
-border:0.1vh solid black;
 height:100%;
 width:100%;
 }
 #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage2 {
 position:absolute;
-border:0.1vh solid black;
 height:40%;
 width:140%;
 top:0;
@@ -182,7 +190,6 @@ transform: translate(10%,10%);
 }
 #hopeheader-hopeheader-headerindicationscontainer {
 position:relative;
-border:1vh solid white;
 height:auto;
 display:flex;
 flex-direction:column;
@@ -200,7 +207,6 @@ color:white;
 //// start of mfatip configuration
 #mfatipconfiguration {
 position:relative;
-border:1vh solid red;
 height:auto;
 width:100%;
 margin-top:5vh;
@@ -208,7 +214,6 @@ padding:0px 220px;
 }
 #mfatipconfiguration-headerindicationcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
 width:100%;
 display:flex;
@@ -226,7 +231,6 @@ color:white;
 }
 #mfatipconfiguration-configurationmodalrowcontainer {
 position:relative;
-border:1vh solid violet;
 height:auto;
 width:100%;
 margin-left:auto;
@@ -237,7 +241,6 @@ padding:30px 220px;
 position:relative;
 background-color:white;
 border-radius:20px;
-border:1vh solid white;
 height:auto;
 margin-top:5vh;
 padding:60px 30px;
@@ -278,7 +281,6 @@ margin-right:auto;
 #setupmfatipaccount {
 position:absolute;
 background-color:white;
-border:1vh solid red;
 height:100%;
 width:100%;
 margin-left:auto;
@@ -286,17 +288,38 @@ margin-right:auto;
 display:none;
 overflow-y:scroll;
 }
+
+/* width */
+#setupmfatipaccount::-webkit-scrollbar {
+width: 20px;
+}
+
+/* Track */
+#setupmfatipaccount::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#setupmfatipaccount::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#setupmfatipaccount::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
 #setupmfatipaccount-navigationcontainer {
 position:relative;
-border:1vh solid green;
 height:10%;
 width:100%;
 margin-left:auto;
 margin-right:auto;
+padding:10px 30px;
 }
 .setupmfatipaccount-navigationcontainer-navigationheaderindicationcontainer {
 position:relative;
-border:1vh solid red;
 height:auto;
 display:flex;
 align-items:center;
@@ -305,15 +328,15 @@ align-items:center;
 position:relative;
 font: auto {
  family: $sub-font;
+ weight:900;
 }
 user-select:none;
 }
 #setupmfatipaccount-headerindicationscontainer {
 position:relative;
-border:1vh solid magenta;
 height:auto;
 width:100%;
-padding:180px 120px;
+padding:130px 120px;
 }
 .setupmfatipaccount-headerindicationscontainer-headerindication {
 position:relative;
@@ -324,27 +347,26 @@ family: $sub-font;
 
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer {
 position:relative;
-border:1vh solid white;
 height:auto;
 width:100%;
 margin-left:auto;
 margin-right:auto;
+padding:100px 180px;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer {
 position:relative;
-border:1vh solid red;
 height:auto;
-padding:20px;
+padding:40px 20px;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer-headerindication {
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
 padding:20px;
 }
@@ -352,6 +374,7 @@ padding:20px;
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameinputfield {
@@ -363,19 +386,20 @@ height:5vh;
 width:90%;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnamereminder {
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 margin-top:3vh;
 }
 
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
 padding:20px;
 }
@@ -383,6 +407,7 @@ padding:20px;
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberinputfield {
@@ -391,21 +416,22 @@ background-color:transparent;
 border: 1px solid transparent;
 border-bottom:0.1vh solid black;
 height:5vh;
-width:90%;
+width:20%;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberreminder {
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 margin-top:3vh;
 }
 #setupmfatipaccountcitizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
 padding:20px;
 }
@@ -413,6 +439,7 @@ padding:20px;
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobinputfield {
@@ -421,6 +448,7 @@ height:5vh;
 width:90%;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 padding:10px 20px;
 }
@@ -428,12 +456,12 @@ padding:10px 20px;
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 margin-top:3vh;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
 padding:20px;
 }
@@ -441,12 +469,14 @@ padding:20px;
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselectlabel {
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselect {
@@ -455,25 +485,29 @@ height:5vh;
 width:90%;
 font: auto {
 family:$sub-font;
+weight:900;
 }
 margin-top:1vh;
 padding:10px;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofbirthcertificateinputfieldcolcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
 padding:20px;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificateheaderindication {
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofbirthcertificateinputfieldcolcontainer-blackquestionmarkimage {
 position:relative;
-border:1vh solid red;
 height:80%;
 width:80%;
 margin-left:auto;
@@ -486,6 +520,7 @@ border:0.1vh solid black;
 border-radius:20px;
 font: auto {
 family:$sub-font;
+weight:900;
 }
 color:black;
 padding:20px 35px;
@@ -496,19 +531,22 @@ display:none;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofbirthcertificateinputfieldcolcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
 padding:20px;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificateheaderindication {
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofbirthcertificateinputfieldcolcontainer-blackquestionmarkimage {
 position:relative;
-border:1vh solid red;
 height:80%;
 width:80%;
 margin-left:auto;
@@ -521,6 +559,7 @@ border:0.1vh solid black;
 border-radius:20px;
 font: auto {
 family:$sub-font;
+weight:900;
 }
 color:black;
 padding:20px 35px;
@@ -532,19 +571,22 @@ display:none;
 
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofvalidgovernmentidinputfieldcolcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
 padding:20px;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidheaderindication {
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofvalidgovernmentidinputfieldcolcontainer-blackquestionmarkimage {
 position:relative;
-border:1vh solid red;
 height:80%;
 width:80%;
 margin-left:auto;
@@ -557,6 +599,7 @@ border:0.1vh solid black;
 border-radius:20px;
 font: auto {
 family:$sub-font;
+weight:900;
 }
 color:black;
 padding:20px 35px;
@@ -568,19 +611,22 @@ display:none;
 
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofvalidgovernmentidinputfieldcolcontainer {
 position:relative;
-border:1vh solid green;
 height:auto;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
 padding:20px;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidheaderindication {
 position:relative;
 font: auto {
 family: $sub-font;
+weight:900;
 }
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofvalidgovernmentidinputfieldcolcontainer-blackquestionmarkimage {
 position:relative;
-border:1vh solid red;
 height:80%;
 width:80%;
 margin-left:auto;
@@ -593,6 +639,7 @@ border:0.1vh solid black;
 border-radius:20px;
 font: auto {
 family:$sub-font;
+weight:900;
 }
 color:black;
 padding:20px 35px;
@@ -603,8 +650,7 @@ display:none;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-submitbuttoncontainer {
 position:relative;
-border:1vh solid red;
-padding:40px 20px;
+padding:140px 20px;
 }
 #setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-submitbuttoncontainer-submitbutton {
 position:relative;
@@ -612,9 +658,226 @@ background-color:magenta;
 border:0.1vh solid white;
 border-radius:15px;
 font: auto {
-famly: $sub-font;
+family: $sub-font;
+weight:900;
 }
 padding:20px 85px;
 }
 //// end of set up mfatip account
+/// 
+/// 
+
+/* RegistrationForm.css */
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+}
+
+body {
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+line-height: 1.6;
+background-color: #f5f7fa;
+color: #333;
+}
+
+.registration-container {
+max-width: 1000px;
+margin: 2rem auto;
+padding: 2rem;
+background-color: black;
+border-radius: 8px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+text-align: center;
+margin-bottom: 2rem;
+color: #2c3e50;
+}
+
+h3 {
+margin-bottom: 1.5rem;
+padding-bottom: 0.5rem;
+border-bottom: 1px solid #eaeaea;
+color: #34495e;
+}
+
+h4 {
+margin-bottom: 1rem;
+color: #34495e;
+}
+
+.form-section {
+margin-bottom: 2rem;
+}
+
+.form-row {
+display: flex;
+flex-wrap: wrap;
+gap: 1.5rem;
+margin-bottom: 1.5rem;
+}
+
+.form-group {
+flex: 1;
+min-width: 200px;
+}
+
+label {
+display: block;
+margin-bottom: 0.5rem;
+font-weight: 600;
+color: #2c3e50;
+}
+
+input[type="text"],
+input[type="tel"],
+input[type="date"],
+select {
+width: 100%;
+padding: 0.75rem;
+border: 1px solid #ddd;
+border-radius: 4px;
+font-size: 1rem;
+transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="date"]:focus,
+select:focus {
+border-color: #3498db;
+outline: none;
+box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Document upload section */
+.document-row {
+margin-bottom: 2rem;
+}
+
+.document-uploads {
+display: flex;
+flex-wrap: wrap;
+gap: 1.5rem;
+}
+
+.upload-item {
+flex: 1;
+min-width: 200px;
+}
+
+.upload-label {
+margin-bottom: 0.5rem;
+font-weight: 600;
+color: #2c3e50;
+}
+
+.upload-preview {
+width: 100%;
+height: 200px;
+border: 2px dashed #ddd;
+border-radius: 4px;
+display: flex;
+align-items: center;
+justify-content: center;
+cursor: pointer;
+transition: all 0.3s ease;
+overflow: hidden;
+}
+
+.upload-preview:hover {
+border-color: #3498db;
+background-color: rgba(52, 152, 219, 0.05);
+}
+
+.upload-preview.has-image {
+border-style: solid;
+border-color: #3498db;
+}
+
+.upload-preview img {
+width: 100%;
+height: 100%;
+object-fit: contain;
+}
+
+.upload-placeholder {
+color: #7f8c8d;
+font-size: 0.9rem;
+}
+
+/* Form actions */
+.form-actions {
+display: flex;
+justify-content: flex-end;
+gap: 1rem;
+margin-top: 2rem;
+}
+
+button {
+padding: 0.75rem 1.5rem;
+border: none;
+border-radius: 4px;
+font-size: 1rem;
+font-weight: 600;
+cursor: pointer;
+transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+background-color: #3498db;
+color: white;
+}
+
+.btn-primary:hover {
+background-color: #2980b9;
+}
+
+.btn-secondary {
+background-color: #ecf0f1;
+color: #2c3e50;
+}
+
+.btn-secondary:hover {
+background-color: #dde4e6;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+.registration-container {
+padding: 1.5rem;
+margin: 1rem;
+}
+
+.form-row, .document-uploads {
+flex-direction: column;
+gap: 1rem;
+}
+
+.form-group, .upload-item {
+min-width: 100%;
+}
+
+.upload-preview {
+height: 150px;
+}
+}
+
+@media (max-width: 480px) {
+.registration-container {
+padding: 1rem;
+margin: 0.5rem;
+}
+
+.form-actions {
+flex-direction: column;
+}
+
+button {
+width: 100%;
+}
+}
+    
 }

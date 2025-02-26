@@ -51,7 +51,7 @@ export default function LargerViewportsNavbar() {
 
             <Dropdown.Menu>
               
-            <Dropdown.Item href="#/action-1">Of Macky's Ink And Paper</Dropdown.Item>
+            <Dropdown.Item href="useraccount">MY ACCOUNT</Dropdown.Item>
          
             </Dropdown.Menu>
           </Dropdown>
@@ -83,7 +83,7 @@ export default function LargerViewportsNavbar() {
 
             <Dropdown.Menu>
                 <Dropdown.Item href="/monthlyfinanceallocationtoindividualpeople">ABOUT: ( M )onthly ( F )inance ( A )llocation ( T )o  ( I )ndividual ( P )eople</Dropdown.Item>
-                <Dropdown.Item href="/mfatipprofileaccount">PROFILE ACCOUNT: ( M )onthly ( F )inance ( A )llocation ( T )o  ( I )ndividual ( P )eople </Dropdown.Item>
+                <Dropdown.Item href="/useraccount">PROFILE ACCOUNT: ( M )onthly ( F )inance ( A )llocation ( T )o  ( I )ndividual ( P )eople </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Col>
