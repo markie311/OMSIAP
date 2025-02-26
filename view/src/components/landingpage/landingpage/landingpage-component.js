@@ -22,6 +22,7 @@ import Footer from '../footer/footer-component.js';
 import VideoPlayer from '../../videoplayer/videoplayer-component.js'
 import Awards from '../../awards/awards-component.js'
 import CitizenshipRegistration from '../../landingpage/pricingtable/citizenshipregistration-component.js'
+import PrivacyPolicy from '../../privacypolicy/privacypolicy-component.js'
 
 export default function LandingPage(props) {
 
@@ -29,6 +30,7 @@ export default function LandingPage(props) {
 
  return(
     <Col id="landingpage">
+      
       <Col id="landingpage-view">
         <NavBar viewport={props.viewport}/>
         <WelcomeIntroduction />
@@ -37,8 +39,8 @@ export default function LandingPage(props) {
         <OMSIAPSVideo />
         <AwardsAndAchievements />
         <AmazingWork  />
-        <PricingTable citizenshipregistrationtype={props.citizenshipregistrationtype}
-                      citizenshipregistrationtypecb={props.citizenshipregistrationtypecb}/>
+        <PricingTable  citizenshipregistrationtype={props.citizenshipregistrationtype}
+                       citizenshipregistrationtypecb={props.citizenshipregistrationtypecb}/>
         <MeetOurProfessional />
         <Articles />
         <Map />
@@ -49,8 +51,14 @@ export default function LandingPage(props) {
 
       <Awards />
 
-      <CitizenshipRegistration citizenshipregistrationtype={props.citizenshipregistrationtype}
-                               citizenshipregistrationtypecb={props.citizenshipregistrationtypecb}/>
+      <CitizenshipRegistration  user={props.user}
+                                usercb={props.usercb} 
+                                
+                                
+                                citizenshipregistrationtype={props.citizenshipregistrationtype}
+                                citizenshipregistrationtypecb={props.citizenshipregistrationtypecb}/>
+
+       <PrivacyPolicy />
       
     </Col>
  )

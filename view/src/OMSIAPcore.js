@@ -17,6 +17,8 @@ import Market from './components/market/market-component.js';
 import MonthlyFinanceAllocationToIndividualPeople from './components/mfatip/mfatip-component.js';
 import Cart from './components/cart/cart-component.js';
 import ServiceDetails from './components/landingpage/services/servicedetails-component.js';
+import ReadMoreAboutArticles from './components/landingpage/articles/readmoreaboutarticles-component.js'
+import MFATIPProfileAccount from './components/mfatip/profileaccount-component.js'
 
 function OMSIAPCore() {
 
@@ -49,6 +51,74 @@ function OMSIAPCore() {
 
   const [citizenshipregistrationtype, citizenshipregistrationtypecb] = useState("MFATIP");
 
+  //// user data 
+  const [user, usercb] = useState({ 
+    id: "",
+    name: {
+      firstname: "",
+      middlename: "",
+      lastname: "",
+      nickname: ""
+    },
+    contact: {
+      phonenumber: "",
+      telephonenumber: "",
+      emailaddress: "",
+      address: {
+        street: "",
+        baranggay: "",
+        trademark: "",
+        city: "",
+        province: "",
+        country: ''
+      }
+    },
+    personalinformation: {
+      age: 0,
+      sex: "",
+      bloodtype: "",
+      dob: "",
+      citizenship: "",
+      civil_status: "",
+      government_issued_identification: "" 
+    },
+    credits: {
+      omsiapawasto: {
+        id: "",
+        amount: 0,
+        transactions: {
+          deposit: [],
+          widthdrawal: [],
+          successful_deposits: [],
+          successful_widthdrawals: []
+        }
+      }
+    },
+    order: {
+      name: {
+        firstname: "",
+        middlename: "",
+        lastname: ""
+      },
+      shippingdetails: {
+        street: "",
+        baranggay: "",
+        city: "",
+        province: "",
+        country: "",
+        postal_zipcode: ""
+      },
+      paymentdetails: {
+        merchandise_total: 0,
+        merchandise_total_weight: 0,
+        merchandise_count: 0,
+        total_payment: 0,
+        totalshipment: 0,
+      }
+    }
+  });
+  /// user data
+
   useEffect(()=> {
 
     $viewportscreenbreakpoints.xsviewportscreenbreakpoint();
@@ -62,18 +132,28 @@ function OMSIAPCore() {
                id="omsiapcore">
      <Routes>
         <Route path='/'
-               element={<LandingPage viewport={viewport} 
+               element={<LandingPage viewport={viewport}
+               
+                                     user={user}
+                                     usercb={usercb}
+
                                      citizenshipregistrationtype={citizenshipregistrationtype}
-                                     citizenshipregistrationtypecb={citizenshipregistrationtypecb}/>}>
+                                     citizenshipregistrationtypecb={citizenshipregistrationtypecb}
+
+                                     />}>
         </Route>
         <Route path='/test'
-               element={<HOPE viewport={viewport}/>}>
+               element={<HOPE viewport={viewport}
+                              citizenshipregistrationtype={citizenshipregistrationtype}
+                              citizenshipregistrationtypecb={citizenshipregistrationtypecb}/>}>
         </Route>
         <Route path='/market'
                element={<Market viewport={viewport}/>}>
         </Route>
         <Route path='/monthlyfinanceallocationtoindividualpeople'
-               element={<MonthlyFinanceAllocationToIndividualPeople viewport={viewport}/>}>
+               element={<MonthlyFinanceAllocationToIndividualPeople viewport={viewport}
+                                                                    user={user}
+                                                                    usercb={usercb}/>}>
         </Route>
         <Route path='/cart'
                element={<Cart />}>
@@ -81,6 +161,14 @@ function OMSIAPCore() {
         <Route path='/servicedetails'
                element={<ServiceDetails />}>
         </Route>
+        <Route path='/readmoreaboutarticles'
+               element={<ReadMoreAboutArticles viewport={viewport}/>}>
+        </Route>
+
+        <Route path='/mfatipprofileaccount'
+               element={<MFATIPProfileAccount viewport={viewport}/>}>
+        </Route>
+
      </Routes>
     </Container>
   );

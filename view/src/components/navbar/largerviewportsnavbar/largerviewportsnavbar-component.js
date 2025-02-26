@@ -78,12 +78,12 @@ export default function LargerViewportsNavbar() {
              className="largerviewportsnavbar-dropdownscontainer-rowcontainer-colcontainer">
           <Dropdown>
             <Dropdown.Toggle variant="dark" id="dropdown-basic">
-                FOR YOUR SELF-GROWTH
+                FOR YOUR PERSONAL-GROWTH
             </Dropdown.Toggle>
 
             <Dropdown.Menu>
-                <Dropdown.Item href="/monthlyfinanceallocationtoindividualpeople">( M )onthly ( F )inance ( A )llocation ( T )o  ( I )ndividual ( P )eople</Dropdown.Item>
-               
+                <Dropdown.Item href="/monthlyfinanceallocationtoindividualpeople">ABOUT: ( M )onthly ( F )inance ( A )llocation ( T )o  ( I )ndividual ( P )eople</Dropdown.Item>
+                <Dropdown.Item href="/mfatipprofileaccount">PROFILE ACCOUNT: ( M )onthly ( F )inance ( A )llocation ( T )o  ( I )ndividual ( P )eople </Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Col>

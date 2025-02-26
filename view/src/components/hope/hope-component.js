@@ -16,6 +16,7 @@ import '../../styles/hope/hope.scss';
 
 import NavBar from '../navbar/navbar/navbar-component.js';
 import PricingTable from '../landingpage/pricingtable/pricingtable-component.js';
+import Footer from '../landingpage/footer/footer-component.js';
 
 export default function HOPE(props) {
 
@@ -27,7 +28,7 @@ export default function HOPE(props) {
     <NavBar viewport={props.viewport}/>
     <Header />
     <AboutHOPE />
-    <PricingTable />
+    <Footer />
   </Col>
  )
 }
@@ -62,8 +63,11 @@ function AboutHOPE() {
          id="abouthope-headerindicationscontainer">
       <img src="../images/hope/laptopandcoffee.jpg"
            id="abouthope-headerindicationscontainer-displayimage"/>
-      <h1 className="abouthope-headerindicationscontainer-headerindication">Solutions for a Modern Business Landscape</h1>
-      <p className="abouthope-headerindicationscontainer-headerindication">In today's fast-paced and ever-evolving market, businesses require innovative solutions to stay ahead of the curve. At Tector, we specialize in providing cutting-edge services tailored to the unique needs of modern enterprises. Our comprehensive suite of offerings includes advanced technological integrations, strategic business consulting, and customized support services designed to optimize operations and drive growth. We understand the challenges that contemporary businesses face, and we are committed to delivering solutions that not only meet but exceed expectations. Partner with Tector and experience the transformation of your business landscape through our expertise and dedication to excellence.</p>
+      <br/>
+      <h1 className="abouthope-headerindicationscontainer-headerindication">Honesties On Constitutional Promises Evaluation (H) (O) (P) (E)</h1>
+      <br/>
+      <p className="abouthope-headerindicationscontainer-headerindication">It all began with one man's dedication and hard work. His efforts evolved into meaningful experiences that he shared freely with others, transcending fatigue, struggles, and financial constraints to create purposeful opportunities. This motivation grew through experiences in various industries, from Business Process Outsourcing (BPO) to remote work opportunities with different companies. These combined experiences led to a single solution: That is to evaluating government systems and establishing an alternative framework that ensures precision in industrial projects, market operations, to success, pension management system and this is, this is, HOPE.</p>
+      <br/>
      <Row id="abouthope-displayimagescontainer">
        <Col xs={6}
             md={6}

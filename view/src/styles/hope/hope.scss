@@ -163,10 +163,31 @@ color:white;
 
 #hope {
 position:relative;
-height:auto;
+height:100%;
 width:100%;
+overflow-y:scroll;
+}
+/* width */
+#hope::-webkit-scrollbar {
+width: 20px;
 }
 
+/* Track */
+#hope::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#hope::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#hope::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
 #hope-header {
 position:relative;
 height:50vh;
@@ -210,7 +231,7 @@ height:auto;
 width:100%;
 margin-left:auto;
 margin-right:auto;
-padding:0px 220px;
+padding:50px 220px;
 margin-top:10vh;
 }
 

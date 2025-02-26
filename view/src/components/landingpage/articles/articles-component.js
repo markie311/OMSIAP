@@ -7,9 +7,17 @@ import { Row,
          Col,
          Accordion } from 'react-bootstrap';
 
+import { useLocation,
+useNavigate
+} from 'react-router-dom';
+
 import '../../../styles/landingpage/articles/articles.scss';
 
 export default function Articles() {
+
+   const location = useLocation();
+    const navigate = useNavigate();
+
  return (
     <Col id="articles">
      <Col id="articles-headerindicationscontainer">
@@ -50,7 +58,10 @@ export default function Articles() {
                       md={6}
                       lg={6}
                       className="articles-articlescontainer-rowcontainer-positioningcolcontainer-layoutcontainer-articledetailscontainer-topicanddatecontainer-topiccontainer">
-                    <p className="articles-articlescontainer-rowcontainer-positioningcolcontainer-layoutcontainer-articledetailscontainer-topicanddatecontainer-topiccontainer-continuereadingheaderindication">Continue reading</p>
+                    <p className="articles-articlescontainer-rowcontainer-positioningcolcontainer-layoutcontainer-articledetailscontainer-topicanddatecontainer-topiccontainer-continuereadingheaderindication"
+                       onClick={()=> {
+                        navigate("./readmoreaboutarticles")
+                       }}>Continue reading</p>
                  </Col>
                  <Col xs={6}
                       md={6}

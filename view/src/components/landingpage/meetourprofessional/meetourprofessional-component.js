@@ -33,7 +33,7 @@ export default function MeetOurProfessional() {
               </Col>
               <Col className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer">
                 <div className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer">
-                  <h4 className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Mark Anthony Below</h4>
+                  <h4 className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Mark Anthony Beloy</h4>
                   <p className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Owner</p>
                 </div>
               </Col>
@@ -54,7 +54,7 @@ export default function MeetOurProfessional() {
               </Col>
               <Col className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer">
                 <div className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer">
-                  <h4 className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Mark Anthony Below</h4>
+                  <h4 className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Mark Anthony Beloy</h4>
                   <p className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Owner</p>
                 </div>
               </Col>
@@ -75,7 +75,7 @@ export default function MeetOurProfessional() {
               </Col>
               <Col className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer">
                 <div className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer">
-                  <h4 className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Mark Anthony Below</h4>
+                  <h4 className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Mark Anthony Beloy</h4>
                   <p className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Owner</p>
                 </div>
               </Col>
@@ -96,7 +96,7 @@ export default function MeetOurProfessional() {
               </Col>
               <Col className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer">
                 <div className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer">
-                  <h4 className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Mark Anthony Below</h4>
+                  <h4 className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Mark Anthony Beloy</h4>
                   <p className="meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication">Owner</p>
                 </div>
               </Col>
