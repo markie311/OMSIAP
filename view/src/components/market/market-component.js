@@ -1,7 +1,8 @@
-
 import '../../styles/market/market.scss';
 // components/MarketingComponent.js
 import React, { useState, useEffect, useCallback } from 'react';
+
+import { useNavigate } from "react-router-dom";
 
 // Sample product data
 const initialProducts = [
@@ -55,7 +56,9 @@ const initialProducts = [
   }
 ];
 
-const Market = () => {
+const Market = (props) => {
+
+  const navigate = useNavigate();
   
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
@@ -286,48 +289,50 @@ const Market = () => {
 
   // Filter products based on selected category and price range
   const filteredProducts = products.filter(product => {
-    
+
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                           product.description.toLowerCase().includes(searchQuery.toLowerCase());
     
     return matchesCategory && matchesPrice && matchesSearch;
+
   });
 
   // Cart functions
-  const addToCart = (product) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      // Increase quantity if already in cart
-      setCart(cart.map(item => 
-        item.id === product.id 
-          ? { ...item, quantity: item.quantity + 1 } 
-          : item
-      ));
-    } else {
-      // Add new item to cart
-      setCart([...cart, { ...product, quantity: 1 }]);
-    }
-  };
-
-  const removeFromCart = (productId) => {
-    setCart(cart.filter(item => item.id !== productId));
-  };
-
-  const updateQuantity = (productId, newQuantity) => {
-    if (newQuantity < 1) {
-      removeFromCart(productId);
-      return;
-    }
-    
+ // Cart functions
+ const addToCart = (product) => {
+  const existingItem = cart.find(item => item.id === product.id);
+  
+  if (existingItem) {
+    // Increase quantity if already in cart
     setCart(cart.map(item => 
-      item.id === productId 
-        ? { ...item, quantity: newQuantity } 
+      item.id === product.id 
+        ? { ...item, quantity: item.quantity + 1 } 
         : item
     ));
-  };
+  } else {
+    // Add new item to cart
+    setCart([...cart, { ...product, quantity: 1 }]);
+  }
+};
+
+const removeFromCart = (productId) => {
+  setCart(cart.filter(item => item.id !== productId));
+};
+
+const updateQuantity = (productId, newQuantity) => {
+  if (newQuantity < 1) {
+    removeFromCart(productId);
+    return;
+  }
+  
+  setCart(cart.map(item => 
+    item.id === productId 
+      ? { ...item, quantity: newQuantity } 
+      : item
+  ));
+};
 
   // Calculate cart total
   const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
@@ -501,8 +506,14 @@ const Market = () => {
               <div className="cart-total">
                 <h3>Total: ${cartTotal.toFixed(2)}</h3>
               </div>
-              <button className="checkout-button">
-                <a href={"/checkout"} id="checkout-button-atag">Proceed to Checkout</a>
+              <button className="checkout-button"
+                      onClick={()=> {
+                        alert(cart.length)
+                        props.cartcb(cart)
+                        alert(JSON.stringify(props.cart))
+                        navigate('/checkout')
+                      }}>
+                <p id="checkout-button-atag">Proceed to Checkout</p>
               </button>
             </div>
           </>

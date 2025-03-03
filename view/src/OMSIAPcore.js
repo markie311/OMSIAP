@@ -67,7 +67,7 @@ function OMSIAPCore() {
 
   const [citizenshipregistrationtype, citizenshipregistrationtypecb] = useState("MFATIP");
 
-  //// user data 
+  //// start user data 
   const [user, usercb] = useState(
     { 
     id: "qwerty1234qwefdln-A-1",
@@ -149,7 +149,43 @@ function OMSIAPCore() {
     }
   );
 
-  /// user data
+  /// end of user data
+
+  /// start of product data 
+
+  /// all of the products
+  const [alloftheproducts, alloftheproductscb] = useState([
+    {
+      id: 1,
+      name: 'Premium Headphones',
+      price: 299.99,
+      category: 'electronics',
+      description: 'High-quality noise-cancelling headphones with premium sound.',
+      images: ['../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg'],
+      stock: 15,
+      rating: 4.8,
+      reviews: 127,
+      specifications: [
+        { name: 'Battery Life', value: '30 hours' },
+        { name: 'Noise Cancellation', value: 'Active' },
+        { name: 'Connectivity', value: 'Bluetooth 5.0' },
+        { name: 'Weight', value: '250g' }
+      ],
+      videoUrl: '/api/placeholder/640/360', // Placeholder for video URL
+      features: [
+        'Active noise cancellation',
+        'Transparency mode',
+        'Spatial audio',
+        'Voice assistant compatibility'
+      ],
+      warranty: '2 years manufacturer warranty'
+    }
+  ])
+
+  /// cart 
+  const [cart, cartcb] = useState([]); 
+
+  /// end of product data 
 
   useEffect( ()=> {
 
@@ -387,7 +423,15 @@ function OMSIAPCore() {
                               citizenshipregistrationtypecb={citizenshipregistrationtypecb}/>}>
         </Route>
         <Route path='/market'
-               element={<Market viewport={viewport}/>}>
+               element={<Market viewport={viewport}
+               
+                                alloftheproducts={alloftheproducts}
+                                alloftheproductscb={alloftheproductscb}
+                                
+                                cart={cart}
+                                cartcb={cartcb}
+                                
+                                updatecomponent={updatecomponent}/>}>
         </Route>
         <Route path='/monthlyfinanceallocationtoindividualpeople'
                element={<MonthlyFinanceAllocationToIndividualPeople viewport={viewport}
@@ -417,10 +461,16 @@ function OMSIAPCore() {
         </Route>
 
         <Route path='/checkout'
-               element={<CheckoutPage viewport={viewport}/>}>
+               element={<CheckoutPage viewport={viewport}
+               
+                                      cart={cart}
+                                      cartcb={cartcb}/>}>
         </Route>
         <Route path='/placeorder'
-               element={<PlaceOrder viewport={viewport}/>}>
+               element={<PlaceOrder viewport={viewport}
+                
+                                    cart={cart}
+                                    cartcb={cartcb}/>}>
         </Route>
 
         <Route path='/mfatip/loginregister'

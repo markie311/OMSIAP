@@ -7,7 +7,7 @@ import { useLocation,
 import '../../styles/checkout/checkout.scss';
 
 
-const CheckoutPage = () => {
+const CheckoutPage = (props) => {
 
   const navigate = useNavigate();
 
@@ -326,7 +326,7 @@ const CheckoutPage = () => {
                     
                     <button type="submit" className="checkout-button"
                             onClick={()=> {
-                              navigate("/placeorder")
+                              navigate('/placeorder')
                             }}>
                       Place Order
                     </button>

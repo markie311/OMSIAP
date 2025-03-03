@@ -8,6 +8,8 @@ import generateInt32StringsDataType from '../lib/generateInt32StringDataType.js'
 
 import '../../styles/registrationpage/registrationpage.scss';
 
+import axiosCreatedInstance from '../lib/axiosutil.js';
+
 const RegistrationPage = (props) => {
   const navigate = useNavigate();
 
@@ -60,7 +62,7 @@ const RegistrationPage = (props) => {
   
   const [errors, setErrors] = useState({});
 
-  const handleSignIn = (e) => {
+  const handleSignIn = async (e) => {
     e.preventDefault();
     signinbuttonloadingindicationcb(true);
     
@@ -69,7 +71,8 @@ const RegistrationPage = (props) => {
       signinbuttonloadingindicationcb(false);
       return;
     }
-
+  
+    {/*
     // Simulate API call
     setTimeout(() => {
       // Check if the user has multiple accounts with the same name
@@ -92,6 +95,15 @@ const RegistrationPage = (props) => {
         signinbuttonloadingindicationcb(false);
       }
     }, 1000);
+    */}
+
+    await axiosCreatedInstance.post("/people/registration", {
+      data: "mac"
+     }).then((response)=> {
+       console.log(response.data)
+    })
+
+
   };
 
   const completeSignIn = () => {

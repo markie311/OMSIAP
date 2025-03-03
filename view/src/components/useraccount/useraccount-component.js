@@ -447,7 +447,7 @@ const UserAccount = (props) => {
                       </div>
                       <div className="transaction-amount">
                         <span className={transaction.amount >= 0 ? 'amount-positive' : 'amount-negative'}>
-                          {transaction.amount >= 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}
+                          {transaction.amount >= 0 ? '+' : ''}${Math.abs(transaction.amount).toFixed(2)}  
                         </span>
                       </div>
                     </div>

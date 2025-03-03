@@ -6,7 +6,7 @@ import { useLocation,
 
 import '../../styles/placeorder/placeorder.scss';
 
-const PlaceOrder = () => {
+const PlaceOrder = (props) => {
  const [formData, setFormData] = useState({
     firstName: '',
     middleName: '',
@@ -172,7 +172,12 @@ const PlaceOrder = () => {
               </div>
             </div>
 
-            <button type="submit" className="place-order-button">
+            <button type="submit" 
+                    className="place-order-button" 
+                    onClick={()=> {
+                      alert(props.cart.length)
+                      alert(JSON.stringify(props.cart))
+                    }}>
               Place Order
             </button>
           </form>
