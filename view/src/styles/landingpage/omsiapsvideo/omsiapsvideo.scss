@@ -5,8 +5,9 @@ $mainbgcolor: #202020;
 $subbgcolor: #27272b;
 $containersonidlebgcolor: #e2e4e1;
 
+/* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {
-  
+
 #omsiapsvideo {
 position:relative;
 height:100vh;
@@ -50,6 +51,145 @@ color:white;
 
 }
 
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+
+#omsiapsvideo {
+position:relative;
+height:100vh;
+width:100%;
+margin-top:10vh;
+}
+
+#omsiapsvideo-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-backgroundimagecontainer-backgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-playbuttoncontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#omsiapsvideo-playbuttoncontainer-playbutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+border-radius:50%;
+height:10vh;
+width:10vh;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+
+#omsiapsvideo {
+position:relative;
+height:100vh;
+width:100%;
+margin-top:10vh;
+}
+
+#omsiapsvideo-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-backgroundimagecontainer-backgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-playbuttoncontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#omsiapsvideo-playbuttoncontainer-playbutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+border-radius:50%;
+height:10vh;
+width:10vh;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+
+#omsiapsvideo {
+position:relative;
+height:100vh;
+width:100%;
+margin-top:10vh;
+}
+
+#omsiapsvideo-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-backgroundimagecontainer-backgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#omsiapsvideo-playbuttoncontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#omsiapsvideo-playbuttoncontainer-playbutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+border-radius:50%;
+height:10vh;
+width:10vh;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
 @media only screen and (min-width: 1200px) {
 
 #omsiapsvideo {

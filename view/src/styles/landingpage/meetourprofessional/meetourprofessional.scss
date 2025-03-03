@@ -6,6 +6,7 @@ $subbgcolor: #27272b;
 $containersonidlebgcolor: #e2e4e1;
 
 
+/* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {
 
 #meetourprofessional {
@@ -120,6 +121,340 @@ text-align:center;
 
 }
 
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {  
+
+#meetourprofessional {
+position:relative;
+height:90vh;
+width:100%;
+padding:0px 220px;
+}
+
+#meetourprofessional-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.meetourprofessional-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+text-align:center;
+}
+
+#meetourprofessional-theprofessionalscontainer {
+position:relative;
+height:70%;
+width:100%;
+}
+
+#meetourprofessional-theprofessionalscontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer {
+position:relative;
+height:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer {
+position:relative;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer {
+position:absolute;
+background-color:black;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-photocontainer {
+position: absolute;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-photocontainer-photo {
+position:relative;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer {
+position:relative;
+height:100%;
+width:100%;     
+display:flex;
+justify-content:center;
+align-items:flex-end;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer {
+position:relative;
+background-color:rgb(109, 109, 26);
+border-bottom:1vh solid yellow;
+height:15vh;
+width:90%;
+top:8vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;    
+}
+
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {  
+
+#meetourprofessional {
+position:relative;
+height:90vh;
+width:100%;
+padding:0px 220px;
+}
+
+#meetourprofessional-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.meetourprofessional-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+text-align:center;
+}
+
+#meetourprofessional-theprofessionalscontainer {
+position:relative;
+height:70%;
+width:100%;
+}
+
+#meetourprofessional-theprofessionalscontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer {
+position:relative;
+height:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer {
+position:relative;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer {
+position:absolute;
+background-color:black;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-photocontainer {
+position: absolute;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-photocontainer-photo {
+position:relative;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer {
+position:relative;
+height:100%;
+width:100%;     
+display:flex;
+justify-content:center;
+align-items:flex-end;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer {
+position:relative;
+background-color:rgb(109, 109, 26);
+border-bottom:1vh solid yellow;
+height:15vh;
+width:90%;
+top:8vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;    
+}
+
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {  
+
+#meetourprofessional {
+position:relative;
+height:90vh;
+width:100%;
+padding:0px 220px;
+}
+
+#meetourprofessional-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.meetourprofessional-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+text-align:center;
+}
+
+#meetourprofessional-theprofessionalscontainer {
+position:relative;
+height:70%;
+width:100%;
+}
+
+#meetourprofessional-theprofessionalscontainer-rowcontainer {
+position:relative;
+height:100%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer {
+position:relative;
+height:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer {
+position:relative;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer {
+position:absolute;
+background-color:black;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-photocontainer {
+position: absolute;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-photocontainer-photocontainer-photo {
+position:relative;
+height:100%;
+width:100%;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer {
+position:relative;
+height:100%;
+width:100%;     
+display:flex;
+justify-content:center;
+align-items:flex-end;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer {
+position:relative;
+background-color:rgb(109, 109, 26);
+border-bottom:1vh solid yellow;
+height:15vh;
+width:90%;
+top:8vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.meetourprofessional-theprofessionalscontainer-rowcontainer-meetourprofessionalcolcontainer-positioningcontainer-detailscontainer-detailslayoutcontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;    
+}
+
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
 @media only screen and (min-width: 1200px) {  
 
 #meetourprofessional {

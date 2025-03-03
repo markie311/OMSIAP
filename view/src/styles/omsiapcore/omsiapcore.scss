@@ -16,6 +16,42 @@ overflow:hidden;
 }
 }
 
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+#omsiapcore {
+position:relative;
+background-color:$mainbgcolor;
+height:100%;
+width:100%;
+padding:0;
+overflow:hidden;
+}
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+#omsiapcore {
+position:relative;
+background-color:$mainbgcolor;
+height:100vh;
+width:100vw;
+padding:0;
+overflow:hidden;
+}
+} 
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+#omsiapcore {
+position:relative;
+background-color:$mainbgcolor;
+height:100%;
+width:100%;
+padding:0;
+overflow:hidden;
+}
+} 
+
 @media only screen and (min-width: 1200px) {
 #omsiapcore {
 position:relative;

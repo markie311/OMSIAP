@@ -23,16 +23,31 @@ import VideoPlayer from '../../videoplayer/videoplayer-component.js'
 import Awards from '../../awards/awards-component.js'
 import CitizenshipRegistration from '../../landingpage/pricingtable/citizenshipregistration-component.js'
 import PrivacyPolicy from '../../privacypolicy/privacypolicy-component.js'
+import UserAccount from '../../useraccount/useraccount-component.js'
+import LoadingIndicator from '../../loadingindicator/loadingindicator-component.js'
+import RegistrationPage from '../../registrationpage/registrationpage-component.js'
+
 
 export default function LandingPage(props) {
 
  const url = "https://www.youtube.com/watch?v=LXb3EKWsInQ";
 
+ const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(true);
+
+ const handleLogout = () => {
+  // Add your logout logic here
+  console.log('User logged out');
+  setIsLogoutModalOpen(false);
+  // Redirect to login page or perform other logout actions
+};
+
  return(
     <Col id="landingpage">
       
       <Col id="landingpage-view">
-        <NavBar viewport={props.viewport}/>
+        <NavBar viewport={props.viewport}
+                user={props.user}
+                usercb={props.usercb}/>
         <WelcomeIntroduction />
         <RapportAdvertisement />
         <Services />
@@ -58,7 +73,11 @@ export default function LandingPage(props) {
                                 citizenshipregistrationtype={props.citizenshipregistrationtype}
                                 citizenshipregistrationtypecb={props.citizenshipregistrationtypecb}/>
 
-       <PrivacyPolicy />
+      <LoadingIndicator loadingindicatormodal={props.loadingindicatormodal}
+                        loadingindicatormodalcb={props.loadingindicatormodalcb}
+                        
+                        userdashboardmodal={props.userdashboardmodal}
+                        userdashboardmodalcb={props.userdashboardmodalcb}/>
       
     </Col>
  )

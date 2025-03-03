@@ -22,7 +22,8 @@ export default function NavBar(props) {
         )
         :
         (
-         <LargerViewportsNavbar />
+         <LargerViewportsNavbar user={props.user}
+                                usercb={props.usercb}/>
         )
       }
     </Col>

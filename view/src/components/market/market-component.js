@@ -1,927 +1,647 @@
-import React, {
-    useState,
-    useEffect
-  } from 'react';
-
-import { Row, 
-         Col,
-         Dropdown,
-         Carousel,
-         Accordion
-       } from 'react-bootstrap';
-    
-import { useLocation,
-         useNavigate
-        } from 'react-router-dom';
 
 import '../../styles/market/market.scss';
+// components/MarketingComponent.js
+import React, { useState, useEffect, useCallback } from 'react';
 
-import Footer from '../landingpage/footer/footer-component.js';
+// Sample product data
+const initialProducts = [
+  {
+    id: 1,
+    name: "Wireless Headphones",
+    price: 129.99,
+    description: "Premium wireless headphones with noise cancellation and 30-hour battery life.",
+    images: ["headphones-1.jpg", "headphones-2.jpg", "headphones-3.jpg"],
+    category: "Electronics"
+  },
+  {
+    id: 2,
+    name: "Smart Watch",
+    price: 199.99,
+    description: "Track your fitness, check notifications, and more with this stylish smartwatch.",
+    images: ["smartwatch-1.jpg", "smartwatch-2.jpg"],
+    category: "Electronics"
+  },
+  {
+    id: 3,
+    name: "Coffee Maker",
+    price: 89.99,
+    description: "Brew perfect coffee every morning with this programmable coffee maker.",
+    images: ["coffeemaker-1.jpg", "coffeemaker-2.jpg", "coffeemaker-3.jpg"],
+    category: "Home"
+  },
+  {
+    id: 4,
+    name: "Yoga Mat",
+    price: 34.99,
+    description: "Non-slip, eco-friendly yoga mat for your daily practice.",
+    images: ["yogamat-1.jpg", "yogamat-2.jpg"],
+    category: "Fitness"
+  },
+  {
+    id: 5,
+    name: "Desk Lamp",
+    price: 49.99,
+    description: "Adjustable LED desk lamp with multiple brightness levels and color temperatures.",
+    images: ["lamp-1.jpg", "lamp-2.jpg"],
+    category: "Home"
+  },
+  {
+    id: 6,
+    name: "Water Bottle",
+    price: 24.99,
+    description: "BPA-free insulated water bottle that keeps drinks cold for 24 hours.",
+    images: ["bottle-1.jpg", "bottle-2.jpg"],
+    category: "Fitness"
+  }
+];
 
-
-export default function Market(props) {
-
-  const [productdescriptionmodalproductdescriptionnavigationmodalview, productdescriptionmodalproductdescriptionnavigationmodalviewcb] = useState("Description");
-
- return (
-  <Col id="market">
-    <Col id='market-positioningcontainer'>  
-      <MarketingPage />
-    </Col>
-
-    <QuickLookProductDescriptionModal />
-
-    <ProductDescriptionModal productdescriptionmodalproductdescriptionnavigationmodalview={productdescriptionmodalproductdescriptionnavigationmodalview}
-                             productdescriptionmodalproductdescriptionnavigationmodalviewcb={productdescriptionmodalproductdescriptionnavigationmodalviewcb}/>
-
-  </Col>
- )
-}
-
-function NavBar(props) {
+const Market = () => {
   
-  const location = useLocation();
-  const navigate = useNavigate();
+  const [products, setProducts] = useState([]);
+  const [cart, setCart] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
 
- return (
-  <Col id="market-navbar">
+  const carouselSlides = [
     {
-      props.viewport === 'xs' ? 
-      (
-        <Row id="market-smallernavbar-rowcontainer">
-          <Col xs={6}
-               md={12}
-               lg={12}
-               className="market-smallernavbar-rowcontainer-colcontainer">
-            <h1 className="market-smallernavbar-rowcontainer-colcontainer-headerindication">DEPOT</h1>
-          </Col>
-          <Col xs={6}
-               md={12}
-               lg={12}
-               className="market-smallernavbar-rowcontainer-colcontainer">
-            <Row id="market-smallernavbar-rowcontainer-colcontainer-rowcontainer">
-              <Col xs={6}
-                   md={6}
-                   lg={6}
-                   className="market-smallernavbar-rowcontainer-colcontainer-rowcontainer-colcontainer">
-                <p className="market-smallernavbar-rowcontainer-colcontainer-headerindication">MENU</p>
-              </Col>
-              <Col xs={6}
-                   md={6}
-                   lg={6}
-                   className="market-smallernavbar-rowcontainer-colcontainer-rowcontainer-colcontainer">
-                <div id="market-smallernavbar-rowcontainer-colcontainer-rowcontainer-colcontainer-hamburger">
-                  <div className="market-smallernavbar-rowcontainer-colcontainer-rowcontainer-colcontainer-hamburger-hamburgerline">
-
-                  </div>
-                  <div className="market-smallernavbar-rowcontainer-colcontainer-rowcontainer-colcontainer-hamburger-hamburgerline">
-
-                  </div>
-                  <div className="market-smallernavbar-rowcontainer-colcontainer-rowcontainer-colcontainer-hamburger-hamburgerline">
-
-                  </div>
-                </div>
-              </Col>
-            </Row>
-          </Col>
-        </Row>
-      )
-      :
-      (
-       <Row id="market-navbar-rowcontainer">
-         <Col xs={12}
-              md={1}
-              lg={1}
-              className="market-navbar-rowcontainer-colcontainer">
-           <p className="market-navbar-rowcontainer-colcontainer-headerindication">HOME</p>
-         </Col>
-         <Col xs={12}
-              md={1}
-              lg={1}
-              className="market-navbar-rowcontainer-colcontainer">
-           <p className="market-navbar-rowcontainer-colcontainer-headerindication">SHOP</p>
-         </Col>
-         <Col xs={12}
-              md={1}
-              lg={1}
-              className="market-navbar-rowcontainer-colcontainer">
-           <p className="market-navbar-rowcontainer-colcontainer-headerindication">PAGES</p>
-         </Col>
-         <Col xs={12}
-              md={1}
-              lg={1}
-              className="market-navbar-rowcontainer-colcontainer">
-             <p className="market-navbar-rowcontainer-colcontainer-headerindication">ELEMENTS</p>
-         </Col>
-         <Col xs={12}
-              md={6}
-              lg={6}
-              className="market-navbar-rowcontainer-colcontainer">
-            <h1 className="market-navbar-rowcontainer-colcontainer-headerindication">DEPOT</h1>
-         </Col>
-         <Col xs={12}
-              md={1}
-              lg={1}
-              className="market-navbar-rowcontainer-colcontainer">
-            <p className="market-navbar-rowcontainer-colcontainer-headerindication"
-               onClick={() => {
-                navigate('/cart')
-               }}>CART <span>($170)</span></p>
-         </Col>
-         <Col xs={12}
-              md={1}
-              lg={1}
-              className="market-navbar-rowcontainer-colcontainer">
-          <p className="market-navbar-rowcontainer-colcontainer-headerindication">LOGIN</p>
-         </Col>
-         <Col xs={12}
-              md={12}
-              lg={12}
-              id="market-navbar-rowcontainer-navigationmenucontainer">
-         </Col>
-       </Row> 
-      )
+      image: '../images/market/products/watch.jpg',
+      title: 'Spring Collection 2025',
+      description: 'Discover our latest products with exclusive discounts for a limited time.',
+      buttonText: 'Shop Now',
+      buttonLink: '#spring-collection'
+    },
+    {
+      image: '../images/market/products/watch.jpg',
+      title: 'Premium Electronics',
+      description: 'High-quality headphones, smartwatches, and more with 2-year warranty.',
+      buttonText: 'Explore',
+      buttonLink: '#electronics'
+    },
+    {
+      image: '../images/market/products/watch.jpg',
+      title: 'Free Shipping',
+      description: 'Enjoy free shipping on all orders over $50. No coupon needed.',
+      buttonText: 'Learn More',
+      buttonLink: '#shipping'
     }
-  </Col>
- )
-}
+  ];
 
-function MarketCarousel(props) {
+  // Sample product data - replace with your API call
+  useEffect(() => {
+    // Simulating API fetch
+    const fetchProducts = () => {
+      const sampleProducts = [
+        {
+          id: 1,
+          name: 'Premium Headphones',
+          price: 299.99,
+          category: 'electronics',
+          description: 'High-quality noise-cancelling headphones with premium sound.',
+          images: ['../images/market/products/watch.jpg', '../images/market/products/watch.jpg', '../images/market/products/watch.jpg'],
+          stock: 15,
+          rating: 4.8,
+          reviews: 127,
+          specifications: [
+            { name: 'Battery Life', value: '30 hours' },
+            { name: 'Noise Cancellation', value: 'Active' },
+            { name: 'Connectivity', value: 'Bluetooth 5.0' },
+            { name: 'Weight', value: '250g' }
+          ],
+          videoUrl: '/api/placeholder/640/360', // Placeholder for video URL
+          features: [
+            'Active noise cancellation',
+            'Transparency mode',
+            'Spatial audio',
+            'Voice assistant compatibility'
+          ],
+          warranty: '2 years manufacturer warranty'
+        },
+        {
+          id: 2,
+          name: 'Designer Watch',
+          price: 199.99,
+          category: 'accessories',
+          description: 'Elegant timepiece with leather strap and Swiss movement.',
+          images: ['../images/market/products/watch.jpg', '../images/market/products/watch.jpg', '../images/market/products/watch.jpg'],
+          stock: 8,
+          rating: 4.5,
+          reviews: 84,
+          specifications: [
+            { name: 'Movement', value: 'Swiss Quartz' },
+            { name: 'Water Resistance', value: '50 meters' },
+            { name: 'Case Material', value: 'Stainless Steel' },
+            { name: 'Band Material', value: 'Genuine Leather' }
+          ],
+          videoUrl: '/api/placeholder/640/360',
+          features: [
+            'Luminous hands',
+            'Sapphire crystal glass',
+            'Date display',
+            'Chronograph function'
+          ],
+          warranty: '1 year limited warranty'
+        },
+        {
+          id: 3,
+          name: 'Wireless Earbuds',
+          price: 149.99,
+          category: 'electronics',
+          description: 'True wireless earbuds with long battery life and water resistance.',
+          images: ['../images/market/products/watch.jpg', '../images/market/products/watch.jpg', '../images/market/products/watch.jpg'],
+          stock: 20,
+          rating: 4.3,
+          reviews: 156,
+          specifications: [
+            { name: 'Battery Life', value: '8 hours (28 with case)' },
+            { name: 'Water Resistance', value: 'IPX7' },
+            { name: 'Connectivity', value: 'Bluetooth 5.2' },
+            { name: 'Charging', value: 'USB-C & Wireless' }
+          ],
+          videoUrl: '/api/placeholder/640/360',
+          features: [
+            'Touch controls',
+            'Active noise cancellation',
+            'Ambient sound mode',
+            'Auto-pause when removed'
+          ],
+          warranty: '1 year warranty'
+        },
+        {
+          id: 4,
+          name: 'Leather Wallet',
+          price: 59.99,
+          category: 'accessories',
+          description: 'Genuine leather wallet with RFID protection.',
+          images: ['../images/market/products/watch.jpg', '../images/market/products/watch.jpg', '../images/market/products/watch.jpg'],
+          stock: 25,
+          rating: 4.2,
+          reviews: 63,
+          specifications: [
+            { name: 'Material', value: 'Full-grain Leather' },
+            { name: 'Card Slots', value: '8' },
+            { name: 'Dimensions', value: '4.5" x 3.5"' },
+            { name: 'RFID Protection', value: 'Yes' }
+          ],
+          videoUrl: '/api/placeholder/640/360',
+          features: [
+            'RFID blocking technology',
+            'Multiple card slots',
+            'Bill compartment',
+            'ID window'
+          ],
+          warranty: '1 year warranty'
+        },
+        {
+          id: 5,
+          name: 'Smart Speaker',
+          price: 129.99,
+          category: 'electronics',
+          description: 'Voice-controlled smart speaker with premium sound quality.',
+          images: ['../images/market/products/watch.jpg', '../images/market/products/watch.jpg', '../images/market/products/watch.jpg'],
+          stock: 12,
+          rating: 4.6,
+          reviews: 92,
+          specifications: [
+            { name: 'Connectivity', value: 'Wi-Fi, Bluetooth' },
+            { name: 'Power', value: '30W' },
+            { name: 'Voice Assistant', value: 'Multiple platform support' },
+            { name: 'Microphones', value: '6 far-field mics' }
+          ],
+          videoUrl: '/api/placeholder/640/360',
+          features: [
+            'Multi-room audio',
+            'Voice control',
+            'Smart home integration',
+            'Audio streaming'
+          ],
+          warranty: '1 year limited warranty'
+        },
+        {
+          id: 6,
+          name: 'Sunglasses',
+          price: 89.99,
+          category: 'accessories',
+          description: 'Polarized sunglasses with UV protection.',
+          images: ['../images/market/products/watch.jpg', '../images/market/products/watch.jpg', '../images/market/products/watch.jpg'],
+          stock: 18,
+          rating: 4.1,
+          reviews: 47,
+          specifications: [
+            { name: 'Frame Material', value: 'Acetate' },
+            { name: 'Lens Material', value: 'Polarized Glass' },
+            { name: 'UV Protection', value: '100%' },
+            { name: 'Weight', value: '25g' }
+          ],
+          videoUrl: '/api/placeholder/640/360',
+          features: [
+            'Polarized lenses',
+            'UV400 protection',
+            'Lightweight design',
+            'Spring hinges'
+          ],
+          warranty: '6 months warranty'
+        },
+        {
+          id: 7,
+          name: 'Sunglasses',
+          price: 89.99,
+          category: 'accessories',
+          description: 'Polarized sunglasses with UV protection.',
+          images: ['../images/market/products/watch.jpg', '../images/market/products/watch.jpg', '../images/market/products/watch.jpg'],
+          stock: 18,
+          rating: 4.1,
+          reviews: 47,
+          specifications: [
+            { name: 'Frame Material', value: 'Acetate' },
+            { name: 'Lens Material', value: 'Polarized Glass' },
+            { name: 'UV Protection', value: '100%' },
+            { name: 'Weight', value: '25g' }
+          ],
+          videoUrl: '/api/placeholder/640/360',
+          features: [
+            'Polarized lenses',
+            'UV400 protection',
+            'Lightweight design',
+            'Spring hinges'
+          ],
+          warranty: '6 months warranty'
+        }
+      ];
 
- const [index, setIndex] = useState(0);
+      setProducts(sampleProducts);
+      
+      // Extract unique categories
+      const uniqueCategories = [...new Set(sampleProducts.map(product => product.category))];
+      setCategories(uniqueCategories);
+    };
 
- const handleSelect = (selectedIndex) => {
-      setIndex(selectedIndex);
+    fetchProducts();
+  }, []);
+
+  // Filter products based on selected category and price range
+  const filteredProducts = products.filter(product => {
+    
+    const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
+    const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max;
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesCategory && matchesPrice && matchesSearch;
+  });
+
+  // Cart functions
+  const addToCart = (product) => {
+    const existingItem = cart.find(item => item.id === product.id);
+    
+    if (existingItem) {
+      // Increase quantity if already in cart
+      setCart(cart.map(item => 
+        item.id === product.id 
+          ? { ...item, quantity: item.quantity + 1 } 
+          : item
+      ));
+    } else {
+      // Add new item to cart
+      setCart([...cart, { ...product, quantity: 1 }]);
+    }
   };
 
- return (
-    <Col id="carousel">
-      <Carousel activeIndex={index} onSelect={handleSelect}>
-      <Carousel.Item>
-        <img src="../images/hope/market.jpg"
-              className="carousel-backgroundimage"/>
-        <Carousel.Caption>
-          <h3>First slide label</h3>
-          <p>Nulla vitae elit libero, a pharetra augue mollis interdum.</p>
-        </Carousel.Caption>
-      </Carousel.Item>
-      <Carousel.Item>
-        <img src="../images/hope/market.jpg"
-            className="carousel-backgroundimage"/>
-        <Carousel.Caption>
-          <h3>Second slide label</h3>
-          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-        </Carousel.Caption>
-      </Carousel.Item>
-      <Carousel.Item> 
-          <img src="../images/hope/market.jpg"
-              className="carousel-backgroundimage"/>
-        <Carousel.Caption>
-          <h3>Third slide label</h3>
-          <p>
-            Praesent commodo cursus magna, vel scelerisque nisl consectetur.
-          </p>
-        </Carousel.Caption>
-      </Carousel.Item>
-      </Carousel>
-   </Col>
-)
-}
+  const removeFromCart = (productId) => {
+    setCart(cart.filter(item => item.id !== productId));
+  };
 
-function ProductNavigation(props) {
- return (
-   <Col id="productnavigation">
-    {
-      props.viewport === "xs" ? 
-      (
-        <Col id="productnavigation-smallerviewports">
-        <Accordion defaultActiveKey="0">
-         <Accordion.Item eventKey="0">
-          <Accordion.Header>CATEGORIES</Accordion.Header>
-          <Accordion.Body>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-            minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-          </Accordion.Body>
-         </Accordion.Item>
-         <Accordion.Item eventKey="1">
-          <Accordion.Header>FILTER</Accordion.Header>
-          <Accordion.Body>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-            minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-            aliquip ex ea commodo consequat. Duis aute irure dolor in
-            reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-            pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-            culpa qui officia deserunt mollit anim id est laborum.
-          </Accordion.Body>
-         </Accordion.Item>
-       </Accordion>
-       </Col>
-      )
-      :
-      (
-        <Row id="productnavigation-rowcontainer">
-        <Col xs={8}
-             md={8}
-             lg={8}
-             className="productnavigation-colcontainer">
-         <Row id="productnavigation-colcontainer-productcategoryrowcontainer">
-         {
-          ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'].map((data, dataindx)=> {
-            return (
-             <Col xs={12}
-                  md={3}
-                  lg={3}
-                  className="productnavigation-colcontainer-productcategoryrowcontainer-colcontainer">
-               <p className="productnavigation-colcontainer-productcategoryrowcontainer-colcontainer-productcategoryheaderindication">Sample text</p>
-             </Col>
-            )
-          })
-         }
-         </Row>
-        </Col>
-        <Col xs={4}
-             md={4}
-             lg={4}
-             className="productnavigation-colcontainer">
-          <Accordion defaultActiveKey="0">
-          <Accordion.Item eventKey="0">
-            <Accordion.Header>Filter</Accordion.Header>
-            <Accordion.Body>
-              Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do
-              eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-              minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-              aliquip ex ea commodo consequat. Duis aute irure dolor in
-              reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-              pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-              culpa qui officia deserunt mollit anim id est laborum.
-            </Accordion.Body>
-          </Accordion.Item>
-        </Accordion>
-        </Col>
-        </Row>
-      )
+  const updateQuantity = (productId, newQuantity) => {
+    if (newQuantity < 1) {
+      removeFromCart(productId);
+      return;
     }
- </Col>
-)
-}
+    
+    setCart(cart.map(item => 
+      item.id === productId 
+        ? { ...item, quantity: newQuantity } 
+        : item
+    ));
+  };
 
-function ProductList() {
- return (
-  <Col id="productlist">
-    <Col id="productlist-loadingindicationcontainer">
-     <p className="productlist-loadingindicationcontainer-loadingheaderindication">LOADING...</p>
-    </Col>
-    <Row id="productlist-productlistrowcontainer">
-     <Col xs={12}
-          md={3}
-          lg={3}
-          className="productlist-productlistrowcontainer-positioningcolcontainer">
-       <Col className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer">
-         <Col className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-productdetailscontainer"
-               onClick={()=> {
-                const _productdescriptionmodal = document.querySelector('#productdescriptionmodal');
-                _productdescriptionmodal.style.display = "block";
-               }}>
-           <Col className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-productdetailscontainer-productdisplayimagecontainer">
-             <img src="../images/market/products/watch.jpg"
-                  className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-productdetailscontainer-productdisplayimagecontainer-productdisplayimage"/>
-           </Col>
-           <Col className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-productdetailscontainer-productdetailscontainer">
-             <p className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-productdetailscontainer-productdetailscontainer-productdetailsheaderindication">NEON WATCH</p>
-             <p className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-productdetailscontainer-productdetailscontainer-productdetailsheaderindication">$60</p>
-           </Col>
-         </Col>
-         <Col className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-quicklookcontainer">
-          <p className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-quicklookcontainer-headerindication"
-             onClick={(evt)=> {
-              const _productdescriptionmodal = document.querySelector("#quicklookproductdescriptionmodal");
-              _productdescriptionmodal.style.display = "flex";
-             }}>QUICK LOOK</p>
-          <p className="productlist-productlistrowcontainer-positioningcolcontainer-layoutcontainer-quicklookcontainer-headerindication">ADD TO CART</p>
-         </Col>
-       </Col>
-     </Col>
-    </Row>
-  </Col>
- )
-}
+  // Calculate cart total
+  const cartTotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
 
-function QuickLookProductDescriptionModal() {
+  // Open product detail modal
+  const openProductModal = (product) => {
+    setSelectedProduct(product);
+    setIsModalOpen(true);
+    setActiveImageIndex(0);
+    setShowVideo(false);
+  };
 
-  const [index, setIndex] = useState(0);
+  // Close product detail modal
+  const closeProductModal = () => {
+    setIsModalOpen(false);
+    setSelectedProduct(null);
+  };
 
-  const handleSelect = (selectedIndex) => {
-       setIndex(selectedIndex);
-   };
+  // Function to change active image in the modal
+  const changeActiveImage = (index) => {
+    setActiveImageIndex(index);
+    setShowVideo(false);
+  };
+
+  // Function to toggle video view
+  const toggleVideo = () => {
+    setShowVideo(!showVideo);
+  };
+
+  // Format rating display with stars
+  const displayRating = (rating) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    let stars = '★'.repeat(fullStars);
+    
+    if (hasHalfStar) {
+      stars += '½';
+    }
+    
+    return stars;
+  };
 
   return (
-   <Col id="quicklookproductdescriptionmodal">
-     <div id="quicklookproductdescriptionmodal-positioningcontainer">
-      <Row id="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer">
-        <Col xs={12}
-             md={6}
-             lg={6}
-             className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer">
-           <Carousel activeIndex={index} onSelect={handleSelect}>
-            <Carousel.Item>
-              <img src="../images/hope/market.jpg"
-                    className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-productdisplayimage"/>
-            </Carousel.Item>
-            <Carousel.Item>
-              <img src="../images/hope/market.jpg"
-                  className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-productdisplayimage"/>
-            </Carousel.Item>
-            <Carousel.Item> 
-                <img src="../images/hope/market.jpg"
-                    className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-productdisplayimage"/>
-            </Carousel.Item>
-           </Carousel>
-        </Col>
-        <Col className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer">
-          <div id="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-closebuttoncontainer">
-            <p id="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-closebuttoncontainer-closebuttonheaderindication"
-               onClick={()=> {
-                const _productdescriptionmodal = document.querySelector("#quicklookproductdescriptionmodal");
-                _productdescriptionmodal.style.display = "none";
-               }}>x</p>
+    <div className="ecommerce-app">
+
+      <header className="header">
+        <div className="logo">
+          <h1>ShopEase</h1>
+        </div>
+        <div className="search-bar">
+          <input 
+            type="text" 
+            placeholder="Search products..." 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="cart-icon">
+          <button onClick={() => document.getElementById('cart-sidebar').classList.toggle('open')}>
+            Cart ({cart.reduce((total, item) => total + item.quantity, 0)})
+          </button>
+        </div>
+      </header>
+
+
+      <main className="main-content">
+        <aside className="filters-sidebar">
+          <div className="filter-section">
+            <h3>Categories</h3>
+            <div className="category-filters">
+              <button 
+                className={selectedCategory === 'all' ? 'active' : ''} 
+                onClick={() => setSelectedCategory('all')}
+              >
+                All Products
+              </button>
+              {categories.map(category => (
+                <button 
+                  key={category} 
+                  className={selectedCategory === category ? 'active' : ''}
+                  onClick={() => setSelectedCategory(category)}
+                >
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </button>
+              ))}
+            </div>
           </div>
-          <p className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-headerindication">NEON WATCH</p>
-          <p className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-headerindication">$160</p>
-          <p className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-headerindication">Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ut ullamcorper leo, eget euismod orci. Cum sociis natoque penatibus et magnis dis parturient montes nascetur ridiculus mus. Vestibulum ultricies aliquam convallis.</p>
 
-          
-          <Row id="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-rowcontainer">
-            <Col xs={6}
-                 md={6}
-                 lg={6}
-                 className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-rowcontainer-colcontainer">
-            </Col>
-            <Col xs={6}
-                 md={6}
-                 lg={6}
-                 className="quicklookproductdescriptionmodal-positioningcontainer-rowcontainer-colcontainer-rowcontainer-colcontainer">
-            </Col>
-          </Row>
-        </Col>
-      </Row>
-     </div>
-   </Col>
-  )
-}
+          <div className="filter-section">
+            <h3>Price Range</h3>
+            <div className="price-filter">
+              <span>${priceRange.min}</span>
+              <input 
+                type="range" 
+                min="0" 
+                max="1000" 
+                value={priceRange.max} 
+                onChange={(e) => setPriceRange({...priceRange, max: parseInt(e.target.value)})}
+              />
+              <span>${priceRange.max}</span>
+            </div>
+          </div>
+        </aside>
 
-function ProductDescriptionModal(props) {
- return (
-  <Col id="productdescriptionmodal">
-    <Col id="productdescriptionmodal-mainviewcontainer">
+        <section className="products-grid">
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map(product => (
+              <div key={product.id} className="product-card">
+                <div className="product-image">
+                  <img src={product.images[0]} alt={product.name} />
+                </div>
+                <div className="product-info">
+                  <h3>{product.name}</h3>
+                  <p className="product-price">${product.price.toFixed(2)}</p>
+                  <p className="product-category">{product.category}</p>
+                  <div className="product-rating">
+                    <span>{displayRating(product.rating)}</span>
+                    <span className="review-count">({product.reviews})</span>
+                  </div>
+                </div>
+                <div className="product-actions">
+                  <button onClick={() => openProductModal(product)} className="view-details">
+                    View Details
+                  </button>
+                  <button onClick={() => addToCart(product)} className="add-to-cart">
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="no-products">
+              <p>No products match your current filters.</p>
+            </div>
+          )}
+        </section>
+      </main>
 
-     <Col id="productdescriptionmodal-navigationcontainer">
-      <NavBar viewport={props.viewport}/>
-     </Col>
-
-     <Col id="productdescriptionmodal-scrollableviewcontainer">
-      <Row id="productdescriptionmodal-productcategorylistcontainer">
-        <Col xs={2}
-            md={1}
-            lg={1}
-            className="productdescriptionmodal-productcategorylistcontainer-productcategoryheaderindicationcontainer">
-          <p className="productdescriptionmodal-productcategorylistcontainer-productcategoryheaderindicationcontainer-backheaderindication"
-             onClick={()=> {
-               const _productdescriptionmodal = document.querySelector('#productdescriptionmodal');
-               _productdescriptionmodal.style.display = "none";
-             }}>Back</p>
-        </Col>
-        <Col xs={2}
-            md={1}
-            lg={1}
-            className="productdescriptionmodal-productcategorylistcontainer-productcategoryheaderindicationcontainer">
-          <p className="productdescriptionmodal-productcategorylistcontainer-productcategoryheaderindicationcontainer-productcategoryheaderindication">Home</p>
-        </Col>
-      </Row>
-      <Row id="productdescriptionmodal-productdescriptionrowcontainer">
-         <Col xs={2}
-              md={2}
-              lg={2}
-              id="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer">
-            <Row id="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-rowcontainer">
-              <Col xs={12}
-                   md={12}
-                   lg={12}
-                   className="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-rowcontainer-colcontainer">
-                 <img src="../images/market/products/watch.jpg"
-                      className="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-productselectionimage"/>
-              </Col>
-              <Col xs={12}
-                   md={12}
-                   lg={12}
-                   className="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-rowcontainer-colcontainer">
-                 <img src="../images/market/products/watch.jpg"
-                      className="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-productselectionimage"/>
-              </Col>
-              <Col xs={12}
-                   md={12}
-                   lg={12}
-                   className="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-rowcontainer-colcontainer">
-                <img src="../images/market/products/watch.jpg"
-                     className="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-productselectionimage"/>
-              </Col>
-              <Col xs={12}
-                   md={12}
-                   lg={12}
-                   className="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-rowcontainer-colcontainer">
-                <img src="../images/market/products/watch.jpg"
-                     className="productdescriptionmodal-productdescriptionrowcontainer-productimageselectioncontainer-productselectionimage"/>
-              </Col>
-            </Row>
-         </Col>
-         <Col xs={5}
-              md={5}
-              lg={5}
-              id="productdescriptionmodal-productdescriptionrowcontainer-productimagedisplaycontainer">
-            <img src="../images/market/products/watch.jpg"
-                 id="productdescriptionmodal-productdescriptionrowcontainer-productimagedisplay"/>
-         </Col>
-         <Col xs={5}
-              md={5}
-              lg={5}
-              id="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer">
-            <Col id="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-headerindicationscontainer">
-              <h1 className="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-headerindicationscontainer-headerindication">NEON WATCH</h1>
-              <h2 className="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-headerindicationscontainer-headerindication">$160</h2>
-            </Col>
-            <Row id="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-ratingscontainer">
-              <Col xs={6}
-                   md={6}
-                   lg={6}
-                   id="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-ratingscontainer-ratingindicationcontainer">
-                <p className="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-ratingscontainer-headerindication">*****</p>
-              </Col>
-              <Col xs={6}
-                   md={6}
-                   lg={6}
-                   id="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-ratingscontainer-customerreviewheaderindicationcontainer">
-                <p className="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-ratingscontainer-headerindication">(CUSTOMER REVIEW)</p>
-              </Col>
-            </Row>
-            <Col id="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-productdescriptioncontainer">
-              <p className="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-productdescriptioncontainer-productdescriptionheaderindication">Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ut ullamcorper leo, eget euismod orci. Cum sociis natoque penatibus et magnis dis parturient montes nascetur ridiculus mus. Vestibulum ultricies aliquam convallis.</p>
-            </Col>
-            <Row id="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-addtocartrowcontainer">
-              <Col xs={6}
-                   md={6}
-                   lg={6}
-                   className="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-addtocartrowcontainer-colcontainer">
-              </Col>
-              <Col xs={6}
-                   md={6}
-                   lg={6}
-                   className="productdescriptionmodal-productdescriptionrowcontainer-productdescriptioncontainer-addtocartrowcontainer-colcontainer">
-              </Col>
-            </Row>
-         </Col>
-      </Row>
-      <Col id="productdescriptionmodal-productdescriptionnavigationcontainer">
-        <Row id="productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer">
-          <Col xs={3}
-               md={2}
-               lg={2}
-               className="productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer">
-            <button className="productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer-productnavigationbutton productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer-productnavigationdescriptionbutton"
-                    onClick={(evt)=> {
-
-                      const  _productnavigationbutton = evt.target;
-                      const _allproductnavigationbutton = document.querySelectorAll('.productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer-productnavigationbutton');
-
-                      for ( let indx = 0; indx < _allproductnavigationbutton.length; indx++ ) {
-                        _allproductnavigationbutton[indx].style.backgroundColor = "white";
-                        _allproductnavigationbutton[indx].style.color = "black";
-                      }
-
-                      _productnavigationbutton.style.backgroundColor = "black";
-                      _productnavigationbutton.style.color = "white";
-
-                      props.productdescriptionmodalproductdescriptionnavigationmodalviewcb((view)=> view = "Description" );
-
-                    }}>DESCRIPTION</button>
-          </Col>
-          <Col xs={3}
-               md={2}
-               lg={2}
-               className="productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer">
-            <button className="productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer-productnavigationbutton"
-                     onClick={(evt)=> {
-
-                      const  _productnavigationbutton = evt.target;
-                      const _allproductnavigationbutton = document.querySelectorAll('.productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer-productnavigationbutton');
-
-                      for ( let indx = 0; indx < _allproductnavigationbutton.length; indx++ ) {
-                        _allproductnavigationbutton[indx].style.backgroundColor = "white";
-                        _allproductnavigationbutton[indx].style.color = "black";
-                      }
-
-                      _productnavigationbutton.style.backgroundColor = "black";
-                      _productnavigationbutton.style.color = "white";
-
-                      props.productdescriptionmodalproductdescriptionnavigationmodalviewcb((view)=> view = "Additional Information" );
-                    }}>ADDIOTIONAL INFORMATION</button>
-          </Col>
-          <Col xs={3}
-               md={2}
-               lg={2}
-               className="productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer">
-            <button className="productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer-productnavigationbutton"    
-                    onClick={(evt)=> {
-
-                      const  _productnavigationbutton = evt.target;
-                      const _allproductnavigationbutton = document.querySelectorAll('.productdescriptionmodal-productdescriptionnavigationcontainer-productnavigationrowcontainer-colcontainer-productnavigationbutton');
-
-                      for ( let indx = 0; indx < _allproductnavigationbutton.length; indx++ ) {
-                        _allproductnavigationbutton[indx].style.backgroundColor = "white";
-                        _allproductnavigationbutton[indx].style.color = "black";
-                      }
-
-                      _productnavigationbutton.style.backgroundColor = "black";
-                      _productnavigationbutton.style.color = "white";
-
-                      props.productdescriptionmodalproductdescriptionnavigationmodalviewcb((view)=> view = "Reviews" );
-                    }}>REVIEWS (1)</button>
-          </Col>
-        </Row>
-        <Col id="productdescriptionmodal-productdescriptionnavigationcontainer-viewcontainer">
-          <ProductDescriptionModalProductDescriptionNavigationModalView  productdescriptionmodalproductdescriptionnavigationmodalview={props.productdescriptionmodalproductdescriptionnavigationmodalview}/>
-        </Col>
-      </Col>
-     </Col>
-
-    </Col> 
-  </Col>
- )
-}
-
-function ProductDescriptionModalProductDescriptionNavigationModalView(props) {
- 
-  if ( props.productdescriptionmodalproductdescriptionnavigationmodalview === "Description" ) {
-    return (
-      <Col id="productdescriptionmodal-productdescriptionnavigationcontainer-descriptioncontainer">
-        <h4 className="productdescriptionmodal-productdescriptionnavigationcontainer-descriptioncontainer-productdescriptionheaderindication">DESCRIPTION</h4>
-        <p className="productdescriptionmodal-productdescriptionnavigationcontainer-descriptioncontainer-productdescriptionheaderindication">Lorem ipsum dolor sit amet, consectetur adipiscing elit. In ut ullamcorper leo, eget euismod orci. Cum sociis natoque penatibus et magnis dis parturient montes nascetur ridiculus mus. Vestibulum ultricies aliquam convallis. Maecenas ut tellus mi. Proin tincidunt, lectus eu volutpat mattis, ante metus lacinia tellus, vitae condimentum nulla enim bibendum nibh. Praesent turpis risus, interdum nec venenatis id, pretium sit amet purus. Interdum et malesuada fames.</p>
-      </Col>
-    )
-  }
-
-  if ( props.productdescriptionmodalproductdescriptionnavigationmodalview === "Additional Information" ) {
-    return (
-     <Col id="productdescriptionmodal-productdescriptionnavigationcontainer-additionalinformationcontainer">
-      <h4 className="productdescriptionmodal-productdescriptionnavigationcontainer-additionalinformationcontainer-addtionalinformationheaderindication">ADDTIONAL INFORMATION</h4>
-      <p className="productdescriptionmodal-productdescriptionnavigationcontainer-additionalinformationcontainer-addtionalinformationheaderindication">Weight	2 kg</p>
-      <p className="productdescriptionmodal-productdescriptionnavigationcontainer-additionalinformationcontainer-addtionalinformationheaderindication">Dimensions	10 × 10 × 15 cm</p>
-      <p className="productdescriptionmodal-productdescriptionnavigationcontainer-additionalinformationcontainer-addtionalinformationheaderindication">Color Beige, Black</p>
-      <p className="productdescriptionmodal-productdescriptionnavigationcontainer-additionalinformationcontainer-addtionalinformationheaderindication">Material Metal, Wood</p>
-     </Col>
-    )
-  }
-
-  if ( props.productdescriptionmodalproductdescriptionnavigationmodalview === "Reviews" ) {
-    return (
-     <Col id="productdescriptionmodal-productdescriptionnavigationcontainer-reviewscontainer">
-       <Col id="productdescriptionmodal-productdescriptionnavigationcontainer-reviewscontainer-headerindicationcontainer">
-       </Col>
-       <Row id="productdescriptionmodal-productdescriptionnavigationcontainer-reviewscontainer-userdetailscontainer">
-         <Col xs={2}
-              md={2}
-              lg={2}
-              id="productdescriptionmodal-productdescriptionnavigationcontainer-reviewscontainer-userdetailscontainer-profilepicturecontainer">
-         </Col>
-         <Col xs={2}
-              md={2}
-              lg={2}
-              id="productdescriptionmodal-productdescriptionnavigationcontainer-reviewscontainer-userdetailscontainer-userdetailscontainer">
-         </Col>
-       </Row>
-       <Col id="productdescriptionmodal-productdescriptionnavigationcontainer-reviewscontainer-ratingscontainer">
-       </Col>
-     </Col>
-    )
-  }
-
-}
-
-
-function MarketingPage() {
-// Sample data - replace with your actual data
-const categories = [
-{ id: 1, name: "Electronics", description: "Latest gadgets and electronic devices for your tech needs" },
-{ id: 2, name: "Clothing", description: "Trendy and comfortable clothing for all seasons" },
-{ id: 3, name: "Home & Kitchen", description: "Essential items to make your house a home" },
-{ id: 4, name: "Beauty & Personal Care", description: "Premium products for your self-care routine" }
-];
-
-const products = [
-{ 
-id: 1, 
-name: "Wireless Headphones", 
-price: 89.99, 
-category: 1, 
-image: "../images/market/products/watch.jpg",
-description: "High-quality wireless headphones with noise cancellation and 20-hour battery life. Perfect for music lovers and professionals alike."
-},
-{ 
-id: 2, 
-name: "Smart Watch", 
-price: 199.99, 
-category: 1, 
-image: "../images/market/products/watch.jpg",
-description: "Track your fitness, receive notifications, and more with this sleek smartwatch. Water-resistant and long-lasting battery."
-},
-{ 
-id: 3, 
-name: "Cotton T-Shirt", 
-price: 24.99, 
-category: 2, 
-image: "../images/market/products/watch.jpg",
-description: "Soft, comfortable cotton t-shirt available in multiple colors. A wardrobe essential for any season."
-},
-{ 
-id: 4, 
-name: "Denim Jeans", 
-price: 59.99, 
-category: 2, 
-image: "../images/market/products/watch.jpg",
-description: "Classic denim jeans with a modern fit. Durable and stylish for everyday wear."
-},
-{ 
-id: 5, 
-name: "Coffee Maker", 
-price: 79.99, 
-category: 3, 
-image: "../images/market/products/watch.jpg",
-description: "Programmable coffee maker that brews up to 12 cups. Start your day right with the perfect cup of coffee."
-},
-{ 
-id: 6, 
-name: "Moisturizer", 
-price: 34.99, 
-category: 4, 
-image: "../images/market/products/watch.jpg",
-description: "Hydrating moisturizer for all skin types. Keeps your skin soft and supple throughout the day."
-}
-];
-
-// State management
-const [selectedCategory, setSelectedCategory] = useState(null);
-const [cart, setCart] = useState([]);
-const [isCartOpen, setIsCartOpen] = useState(false);
-const [selectedProduct, setSelectedProduct] = useState(null);
-
-// Filter products by selected category
-const filteredProducts = selectedCategory 
-? products.filter(product => product.category === selectedCategory) 
-: products;
-
-// Add product to cart
-const addToCart = (product) => {
-const existingItem = cart.find(item => item.id === product.id);
-
-if (existingItem) {
-setCart(cart.map(item => 
-item.id === product.id 
-? { ...item, quantity: item.quantity + 1 } 
-: item
-));
-} else {
-setCart([...cart, { ...product, quantity: 1 }]);
-}
-};
-
-// Remove from cart
-const removeFromCart = (productId) => {
-setCart(cart.filter(item => item.id !== productId));
-};
-
-// Calculate total items in cart
-const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-// Calculate total price
-const totalPrice = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2);
-
-return (
-<div className="marketing-page">
-{/* Header */}
-<header className="header">
-<div className="logo">
-<h1>Your Brand</h1>
-</div>
-<nav className="nav">
-<ul>
-  <li><a href="#home">Home</a></li>
-  <li><a href="#products">Products</a></li>
-  <li><a href="#about">About</a></li>
-  <li><a href="#contact">Contact</a></li>
-</ul>
-</nav>
-<div className="cart-icon" onClick={() => setIsCartOpen(!isCartOpen)}>
-<div className="cart-button">
-  <span className="material-icons">shopping_cart</span>
-  {totalItems > 0 && <span className="cart-badge">{totalItems}</span>}
-</div>
-</div>
-</header>
-
-{/* Hero Section */}
-<section className="hero">
-<div className="hero-content">
-<h2>Quality Products for Every Need</h2>
-<p>Discover our premium selection of products designed to enhance your lifestyle</p>
-<button className="btn-primary">Shop Now</button>
-</div>
-</section>
-
-{/* Categories Section */}
-<section className="categories-section" id="categories">
-<h2>Browse Categories</h2>
-<div className="categories-container">
-<div 
-  className={`category-card ${selectedCategory === null ? 'active' : ''}`}
-  onClick={() => setSelectedCategory(null)}
->
-  <h3>All Products</h3>
-  <p>View our complete collection</p>
-</div>
-
-{categories.map(category => (
-  <div 
-    key={category.id} 
-    className={`category-card ${selectedCategory === category.id ? 'active' : ''}`}
-    onClick={() => setSelectedCategory(category.id)}
-  >
-    <h3>{category.name}</h3>
-    <p>{category.description}</p>
-  </div>
-))}
-</div>
-</section>
-
-{/* Products Section */}
-<section className="products-section" id="products">
-<h2>Our Products</h2>
-{selectedCategory !== null && (
-<div className="selected-category">
-  <h3>{categories.find(c => c.id === selectedCategory)?.name}</h3>
-  <p>{categories.find(c => c.id === selectedCategory)?.description}</p>
-</div>
-)}
-
-<div className="products-grid">
-{filteredProducts.map(product => (
-  <div className="product-card" key={product.id}>
-    <div className="product-image">
-      <img src={product.image} alt={product.name} />
-    </div>
-    <div className="product-info">
-      <h3>{product.name}</h3>
-      <p className="product-price">${product.price}</p>
-      <p className="product-short-desc">{product.description.substring(0, 70)}...</p>
-      <div className="product-actions">
-        <button 
-          className="btn-view" 
-          onClick={() => setSelectedProduct(product)}
-        >
-          View Details
-        </button>
-        <button 
-          className="btn-add-to-cart"
-          onClick={() => addToCart(product)}
-        >
-          Add to Cart
-        </button>
-      </div>
-    </div>
-  </div>
-))}
-</div>
-</section>
-
-{/* Product Modal */}
-{selectedProduct && (
-<div className="product-modal">
-<div className="modal-content">
-  <span className="close-modal" onClick={() => setSelectedProduct(null)}>&times;</span>
-  <div className="modal-body">
-    <div className="modal-image">
-      <img src={selectedProduct.image} alt={selectedProduct.name} />
-    </div>
-    <div className="modal-details">
-      <h3>{selectedProduct.name}</h3>
-      <p className="modal-price">${selectedProduct.price}</p>
-      <p className="category-tag">
-        {categories.find(c => c.id === selectedProduct.category)?.name}
-      </p>
-      <p className="modal-description">{selectedProduct.description}</p>
-      <button 
-        className="btn-add-to-cart"
-        onClick={() => {
-          addToCart(selectedProduct);
-          setSelectedProduct(null);
-        }}
-      >
-        Add to Cart
-      </button>
-    </div>
-  </div>
-</div>
-</div>
-)}
-
-{/* Cart Sidebar */}
-<div className={`cart-sidebar ${isCartOpen ? 'open' : ''}`}>
-<div className="cart-header">
-<h3>Your Cart</h3>
-<span className="close-cart" onClick={() => setIsCartOpen(false)}>&times;</span>
-</div>
-
-<div className="cart-items">
-{cart.length === 0 ? (
-  <p className="empty-cart">Your cart is empty</p>
-) : (
-  <>
-    {cart.map(item => (
-      <div className="cart-item" key={item.id}>
-        <div className="cart-item-image">
-          <img src={item.image} alt={item.name} />
+      <aside id="cart-sidebar" className="cart-sidebar">
+        <div className="cart-header">
+          <h2>Your Cart</h2>
+          <button onClick={() => document.getElementById('cart-sidebar').classList.toggle('open')} className="close-cart">
+            ×
+          </button>
         </div>
-        <div className="cart-item-details">
-          <h4>{item.name}</h4>
-          <p>${item.price} × {item.quantity}</p>
+
+        {cart.length > 0 ? (
+          <>
+            <div className="cart-items">
+              {cart.map(item => (
+                <div key={item.id} className="cart-item">
+                  <div className="cart-item-image">
+                    <img src={item.images[0]} alt={item.name} />
+                  </div>
+                  <div className="cart-item-details">
+                    <h4>{item.name}</h4>
+                    <p>${item.price.toFixed(2)}</p>
+                  </div>
+                  <div className="cart-item-quantity">
+                    <button onClick={() => updateQuantity(item.id, item.quantity - 1)}>-</button>
+                    <span>{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</button>
+                  </div>
+                  <button onClick={() => removeFromCart(item.id)} className="remove-item">
+                    Remove
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="cart-footer">
+              <div className="cart-total">
+                <h3>Total: ${cartTotal.toFixed(2)}</h3>
+              </div>
+              <button className="checkout-button">
+                <a href={"/checkout"} id="checkout-button-atag">Proceed to Checkout</a>
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="empty-cart">
+            <p>Your cart is empty.</p>
+            <button onClick={() => document.getElementById('cart-sidebar').classList.toggle('open')}>
+              Continue Shopping
+            </button>
+          </div>
+        )}
+      </aside>
+
+      {isModalOpen && selectedProduct && (
+        <div className="product-modal">
+          <div className="modal-content">
+            <button onClick={closeProductModal} className="close-modal">
+              ×
+            </button>
+            <div className="modal-product-details">
+              <div className="modal-product-media">
+                <div className="modal-media-main">
+                  {showVideo ? (
+                    <div className="product-video-container">
+                      <video 
+                        src={selectedProduct.videoUrl} 
+                        controls 
+                        poster={selectedProduct.images[0]}
+                        className="product-video"
+                      >
+                        Your browser does not support the video tag.
+                      </video>
+                    </div>
+                  ) : (
+                    <img 
+                      src={selectedProduct.images[activeImageIndex]} 
+                      alt={`${selectedProduct.name} - view ${activeImageIndex + 1}`} 
+                      className="modal-main-image"
+                    />
+                  )}
+                </div>
+                <div className="modal-media-thumbnails">
+                  {selectedProduct.images.map((image, index) => (
+                    <img 
+                      key={index} 
+                      src={image} 
+                      alt={`Thumbnail ${index + 1}`} 
+                      className={!showVideo && activeImageIndex === index ? 'active' : ''}
+                      onClick={() => changeActiveImage(index)}
+                    />
+                  ))}
+                  <button 
+                    className={`video-thumbnail ${showVideo ? 'active' : ''}`}
+                    onClick={toggleVideo}
+                  >
+                    <div className="video-icon">▶</div>
+                  </button>
+                </div>
+              </div>
+              <div className="modal-product-info">
+                <h2>{selectedProduct.name}</h2>
+                <div className="modal-product-meta">
+                  <p className="modal-product-price">${selectedProduct.price.toFixed(2)}</p>
+                  <div className="modal-product-rating">
+                    <span className="stars">{displayRating(selectedProduct.rating)}</span>
+                    <span className="review-count">{selectedProduct.reviews} reviews</span>
+                  </div>
+                </div>
+                <div className="modal-product-description">
+                  <h3>Description</h3>
+                  <p>{selectedProduct.description}</p>
+                </div>
+                
+                <div className="modal-product-features">
+                  <h3>Key Features</h3>
+                  <ul>
+                    {selectedProduct.features.map((feature, index) => (
+                      <li key={index}>{feature}</li>
+                    ))}
+                  </ul>
+                </div>
+                
+                <div className="modal-product-specs">
+                  <h3>Specifications</h3>
+                  <table>
+                    <tbody>
+                      {selectedProduct.specifications.map((spec, index) => (
+                        <tr key={index}>
+                          <td className="spec-name">{spec.name}</td>
+                          <td className="spec-value">{spec.value}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                <div className="modal-product-warranty">
+                  <h3>Warranty Information</h3>
+                  <p>{selectedProduct.warranty}</p>
+                </div>
+                
+                <div className="modal-product-stock">
+                  <p>
+                    <span className={selectedProduct.stock > 0 ? "in-stock" : "out-of-stock"}>
+                      {selectedProduct.stock > 0 ? "In Stock" : "Out of Stock"}
+                    </span>
+                    {selectedProduct.stock > 0 && `: ${selectedProduct.stock} units`}
+                  </p>
+                </div>
+                
+                <div className="modal-product-actions">
+                  <div className="quantity-selector">
+                    <label>Quantity:</label>
+                    <div className="quantity-controls">
+                      <button className="quantity-btn">-</button>
+                      <input type="number" min="1" max={selectedProduct.stock} defaultValue="1" />
+                      <button className="quantity-btn">+</button>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => {
+                      addToCart(selectedProduct);
+                      closeProductModal();
+                    }} 
+                    className="modal-add-to-cart"
+                    disabled={selectedProduct.stock <= 0}
+                  >
+                    {selectedProduct.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <button 
-          className="remove-item"
-          onClick={() => removeFromCart(item.id)}
-        >
-          &times;
-        </button>
-      </div>
-    ))}
-    
-    <div className="cart-total">
-      <p>Total: <span>${totalPrice}</span></p>
+      )}
     </div>
-    
-    <button className="btn-checkout">Proceed to Checkout</button>
-  </>
-)}
-</div>
-</div>
+  );
 
-{/* Testimonials Section */}
-<section className="testimonials-section">
-<h2>What Our Customers Say</h2>
-<div className="testimonials-container">
-<div className="testimonial">
-  <p>"The quality of products I received was exceptional. Will definitely shop again!"</p>
-  <p className="customer-name">- Sarah J.</p>
-</div>
-<div className="testimonial">
-  <p>"Fast shipping and excellent customer service. Highly recommend!"</p>
-  <p className="customer-name">- Michael T.</p>
-</div>
-<div className="testimonial">
-  <p>"I love the variety of products available. Something for everyone!"</p>
-  <p className="customer-name">- Lisa R.</p>
-</div>
-</div>
-</section>
-
-{/* Footer */}
-<footer className="footer">
-<div className="footer-content">
-<div className="footer-section">
-  <h3>Your Brand</h3>
-  <p>Providing quality products since 2010</p>
-</div>
-<div className="footer-section">
-  <h3>Quick Links</h3>
-  <ul>
-    <li><a href="#home">Home</a></li>
-    <li><a href="#products">Products</a></li>
-    <li><a href="#about">About Us</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ul>
-</div>
-<div className="footer-section">
-  <h3>Contact Us</h3>
-  <p>Email: info@yourbrand.com</p>
-  <p>Phone: (555) 123-4567</p>
-</div>
-</div>
-<div className="footer-bottom">
-<p>&copy; 2025 Your Brand. All rights reserved.</p>
-</div>
-</footer>
-</div>
-);
 };
+
+
+export default Market;

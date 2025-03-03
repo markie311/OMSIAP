@@ -5,8 +5,9 @@ $mainbgcolor: #202020;
 $subbgcolor: #27272b;
 $containersonidlebgcolor: #e2e4e1;
 
+/* Extra small devices (phones, 600px and down) */
 @media only screen and (max-width: 600px) {
-  
+
 #amazingwork {
 position:relative;
 height:90vh;
@@ -53,9 +54,163 @@ family:$sub-font;
 color:white;
 letter-spacing:3vh;
 }
-    
+
 }
 
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) { 
+
+#amazingwork {
+position:relative;
+height:90vh;
+width:100%;
+padding:0px 220px;
+margin-top:5vh;
+}
+
+#amazingwork-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.amazingwork-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+#amazingwork-contentcontainer {
+position:relative;
+background-color:black; 
+height:70%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#amazingwork-contentcontainer-soonheaderindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+letter-spacing:3vh;
+}
+
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) { 
+
+#amazingwork {
+position:relative;
+height:90vh;
+width:100%;
+padding:0px 220px;
+margin-top:5vh;
+}
+
+#amazingwork-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.amazingwork-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+#amazingwork-contentcontainer {
+position:relative;
+background-color:black; 
+height:70%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#amazingwork-contentcontainer-soonheaderindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+letter-spacing:3vh;
+}
+
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) { 
+
+#amazingwork {
+position:relative;
+height:90vh;
+width:100%;
+padding:0px 220px;
+margin-top:5vh;
+}
+
+#amazingwork-headerindicationscontainer {
+position:relative;
+height:30%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-direction:column;
+justify-content:center;
+}
+
+.amazingwork-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+#amazingwork-contentcontainer {
+position:relative;
+background-color:black; 
+height:70%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+#amazingwork-contentcontainer-soonheaderindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+letter-spacing:3vh;
+}
+
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
 @media only screen and (min-width: 1200px) { 
 
 #amazingwork {

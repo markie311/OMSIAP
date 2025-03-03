@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
 
+import { useLocation,
+  useNavigate
+ } from 'react-router-dom';
+
 import '../../styles/checkout/checkout.scss';
 
 
 const CheckoutPage = () => {
+
+  const navigate = useNavigate();
+
     // Sample cart data with product images
     const [cartItems, setCartItems] = useState([
       { 
@@ -200,6 +207,7 @@ const CheckoutPage = () => {
                         <input
                           type="radio"
                           name="shipping"
+                          id="shipping-method-input"
                           value={option.id}
                           checked={selectedShipping === option.id}
                           onChange={() => setSelectedShipping(option.id)}
@@ -316,7 +324,10 @@ const CheckoutPage = () => {
                       <span>${calculateTotal().toFixed(2)}</span>
                     </div>
                     
-                    <button type="submit" className="checkout-button">
+                    <button type="submit" className="checkout-button"
+                            onClick={()=> {
+                              navigate("/placeorder")
+                            }}>
                       Place Order
                     </button>
                   </div>

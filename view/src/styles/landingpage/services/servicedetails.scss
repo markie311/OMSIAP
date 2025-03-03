@@ -5,6 +5,1211 @@ $mainbgcolor: #202020;
 $subbgcolor: #27272b;
 $containersonidlebgcolor: #e2e4e1;
 
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) { 
+
+#servicedetails {
+position:relative;
+border:1vh solid green;
+height:100vh;
+width:100%;
+overflow-y:scroll;
+}
+
+/* width */
+#servicedetails::-webkit-scrollbar {
+width: 20px;
+}
+
+/* Track */
+#servicedetails::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#servicedetails::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#servicedetails::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+
+#servicedetails-headercontainer {
+position:relative;
+border:1vh solid red;
+height:50vh;
+width:100%;
+}
+
+#servicedetails-headercontainer-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#servicedetails-headercontainer-backgroundimagecontainer-servicedetailsbackgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#servicedetails-headercontainer-headerindicationscontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.servicedetails-headercontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+user-select:none;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+margin-top:5vh;
+padding:0px 180px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-requestaqouteforworkheaderindicationcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-requestaqouteforworkheaderindicationcontainer-requestaqouteforworkheaderindication {
+position:relative;
+font: auto {
+family: $sub-font; 
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-nameinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-nameinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-emailaddressinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-phonenumberinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-messageinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:30vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-sendmessagebutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+font: auto {
+family: $sub-font;
+}
+color:white;
+padding:10px 40px;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer-displayimagecontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer-displayimagecontainer-displayimage {
+position:relative;
+height:50vh;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer {
+position:relative;
+border:1vh solid aqua;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-headerindicationscontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+padding:20px 10px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-headerindicationscontainer-headaerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer {
+position:relative;
+border:1vh solid green;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer-contactdetailsheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer-cotactlogo {
+position:relative;
+border:1vh solid red;
+height:80px;
+width:120px;
+}
+
+#servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetcontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+width:100%;
+padding:10px 0px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetcontainer-skillssetheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetbar {
+position:relative;
+border:0.1vh solid white;
+border-radius:20px;
+height:1vh;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetbarindication {
+position:relative;
+background-color:yellow;
+height:100%;
+width:70%;
+}
+
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) { 
+
+#servicedetails {
+position:relative;
+border:1vh solid green;
+height:100vh;
+width:100%;
+overflow-y:scroll;
+}
+
+/* width */
+#servicedetails::-webkit-scrollbar {
+width: 20px;
+}
+
+/* Track */
+#servicedetails::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#servicedetails::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#servicedetails::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+
+#servicedetails-headercontainer {
+position:relative;
+border:1vh solid red;
+height:50vh;
+width:100%;
+}
+
+#servicedetails-headercontainer-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#servicedetails-headercontainer-backgroundimagecontainer-servicedetailsbackgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#servicedetails-headercontainer-headerindicationscontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.servicedetails-headercontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+user-select:none;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+margin-top:5vh;
+padding:0px 180px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-requestaqouteforworkheaderindicationcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-requestaqouteforworkheaderindicationcontainer-requestaqouteforworkheaderindication {
+position:relative;
+font: auto {
+family: $sub-font; 
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-nameinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-nameinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-emailaddressinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-phonenumberinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-messageinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:30vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-sendmessagebutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+font: auto {
+family: $sub-font;
+}
+color:white;
+padding:10px 40px;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer-displayimagecontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer-displayimagecontainer-displayimage {
+position:relative;
+height:50vh;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer {
+position:relative;
+border:1vh solid aqua;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-headerindicationscontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+padding:20px 10px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-headerindicationscontainer-headaerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer {
+position:relative;
+border:1vh solid green;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer-contactdetailsheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer-cotactlogo {
+position:relative;
+border:1vh solid red;
+height:80px;
+width:120px;
+}
+
+#servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetcontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+width:100%;
+padding:10px 0px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetcontainer-skillssetheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetbar {
+position:relative;
+border:0.1vh solid white;
+border-radius:20px;
+height:1vh;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetbarindication {
+position:relative;
+background-color:yellow;
+height:100%;
+width:70%;
+}
+
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) { 
+
+#servicedetails {
+position:relative;
+border:1vh solid green;
+height:100vh;
+width:100%;
+overflow-y:scroll;
+}
+
+/* width */
+#servicedetails::-webkit-scrollbar {
+width: 20px;
+}
+
+/* Track */
+#servicedetails::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#servicedetails::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#servicedetails::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+
+#servicedetails-headercontainer {
+position:relative;
+border:1vh solid red;
+height:50vh;
+width:100%;
+}
+
+#servicedetails-headercontainer-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#servicedetails-headercontainer-backgroundimagecontainer-servicedetailsbackgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#servicedetails-headercontainer-headerindicationscontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.servicedetails-headercontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+user-select:none;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+margin-top:5vh;
+padding:0px 180px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-requestaqouteforworkheaderindicationcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-requestaqouteforworkheaderindicationcontainer-requestaqouteforworkheaderindication {
+position:relative;
+font: auto {
+family: $sub-font; 
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-nameinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-nameinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-emailaddressinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-phonenumberinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-messageinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:30vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-sendmessagebutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+font: auto {
+family: $sub-font;
+}
+color:white;
+padding:10px 40px;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer-displayimagecontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer-displayimagecontainer-displayimage {
+position:relative;
+height:50vh;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer {
+position:relative;
+border:1vh solid aqua;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-headerindicationscontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+padding:20px 10px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-headerindicationscontainer-headaerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer {
+position:relative;
+border:1vh solid green;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer-contactdetailsheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer-cotactlogo {
+position:relative;
+border:1vh solid red;
+height:80px;
+width:120px;
+}
+
+#servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetcontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+width:100%;
+padding:10px 0px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetcontainer-skillssetheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetbar {
+position:relative;
+border:0.1vh solid white;
+border-radius:20px;
+height:1vh;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetbarindication {
+position:relative;
+background-color:yellow;
+height:100%;
+width:70%;
+}
+
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) { 
+
+#servicedetails {
+position:relative;
+border:1vh solid green;
+height:100vh;
+width:100%;
+overflow-y:scroll;
+}
+
+/* width */
+#servicedetails::-webkit-scrollbar {
+width: 20px;
+}
+
+/* Track */
+#servicedetails::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#servicedetails::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#servicedetails::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+
+#servicedetails-headercontainer {
+position:relative;
+border:1vh solid red;
+height:50vh;
+width:100%;
+}
+
+#servicedetails-headercontainer-backgroundimagecontainer {
+position:absolute;
+height:100%;
+width:100%;
+}
+
+#servicedetails-headercontainer-backgroundimagecontainer-servicedetailsbackgroundimage {
+position:relative;
+height:100%;
+width:100%;
+}
+
+#servicedetails-headercontainer-headerindicationscontainer {
+position:absolute;
+height:100%;
+width:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+
+.servicedetails-headercontainer-headerindicationscontainer-headerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+user-select:none;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+margin-top:5vh;
+padding:0px 180px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-requestaqouteforworkheaderindicationcontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-requestaqouteforworkheaderindicationcontainer-requestaqouteforworkheaderindication {
+position:relative;
+font: auto {
+family: $sub-font; 
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-nameinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-nameinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-emailaddressinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-phonenumberinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:5vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-inputfieldcontainer-messageinputfield {
+position:relative;
+background-color:transparent;
+border:0.1vh solid white;
+border-radius:5px;
+height:30vh;
+width:90%;
+padding:5px 10px;
+font: auto {
+family: $sub-font;
+weight:900;
+}
+color:white;
+letter-spacing:0.3vh;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-requestaqouteforworkcontainer-sendmessagebutton {
+position:relative;
+background-color:transparent;
+border:0.1vh solid yellow;
+font: auto {
+family: $sub-font;
+}
+color:white;
+padding:10px 40px;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer-displayimagecontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-displayimagecontainer-displayimagecontainer-displayimage {
+position:relative;
+height:50vh;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer {
+position:relative;
+border:1vh solid aqua;
+height:auto;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-headerindicationscontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+padding:20px 10px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-headerindicationscontainer-headaerindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer {
+position:relative;
+border:1vh solid green;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer-contactdetailsheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-contactdetailscontainer-cotactlogo {
+position:relative;
+border:1vh solid red;
+height:80px;
+width:120px;
+}
+
+#servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer {
+position:relative;
+border:1vh solid red;
+height:auto;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetcontainer {
+position:relative;
+border:1vh solid magenta;
+height:auto;
+width:100%;
+padding:10px 0px;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetcontainer-skillssetheaderindication {
+position:relative;
+font: auto {
+family: $sub-font;
+}
+color:white;
+}
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetbar {
+position:relative;
+border:0.1vh solid white;
+border-radius:20px;
+height:1vh;
+width:100%;
+}
+
+.servicedetails-leftbackgroundimageservicedetailsrowcontainer-servicedetailscontainer-skillssetcontainer-skillssetbarindication {
+position:relative;
+background-color:yellow;
+height:100%;
+width:70%;
+}
+
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
 @media only screen and (min-width: 1200px) { 
 
 #servicedetails {

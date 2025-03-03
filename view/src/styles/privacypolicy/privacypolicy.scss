@@ -7,231 +7,282 @@ $containersonidlebgcolor: #e2e4e1;
 
 @media only screen and (min-width: 1200px) {
 
-/* PrivacyPolicy.css */
-.privacy-policy-container {    
-position:absolute;
-background-color:rgba(255,255,255, 0.6);
-height:100%;
-width:100%;
-margin: 0 auto;
-padding: 20px;
+// styles.css */
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
 font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+background-color: #f5f7fa;
 color: #333;
-line-height: 1.6;
+}
+
+.app-container {
+position:relative;
+background-color:rgba(255,255,255, 0.4);
+height: 100%;
+width:100%;
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 20px;
 z-index:10;
-overflow-y:scroll;
 display:none;
 }
 
-
-/* width */
-.privacy-policy-container::-webkit-scrollbar {
-width: 20px;
+/* Welcome Page Styles */
+.welcome-container {
+width: 100%;
+max-width: 600px;
 }
 
-/* Track */
-.privacy-policy-container::-webkit-scrollbar-track {
-box-shadow: inset 0 0 5px grey; 
-border-radius: 10px;
+.welcome-card {
+background-color: white;
+padding: 30px;
+border-radius: 12px;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-/* Handle */
-.privacy-policy-container::-webkit-scrollbar-thumb {
-background: blue; 
-border-radius: 10px;
-}
-
-/* Handle on hover */
-.privacy-policy-container::-webkit-scrollbar-thumb:hover {
-background: doderblue; 
-}
-
-.privacy-policy-header {
+h1 {
+color: #2c3e50;
+margin-bottom: 20px;
 text-align: center;
-margin-bottom: 30px;
-padding-bottom: 20px;
-border-bottom: 1px solid #eaeaea;
-}
-
-.privacy-policy-header h1 {
-font-size: 32px;
-color: #2c3e50;
-margin-bottom: 10px;
-}
-
-.last-updated {
-font-size: 14px;
-color: #7f8c8d;
-}
-
-.privacy-policy-intro {
-margin-bottom: 30px;
-font-size: 16px;
-}
-
-.privacy-policy-table-of-contents {
-background-color: #f5f7fa;
-padding: 20px;
-border-radius: 8px;
-margin-bottom: 30px;
-}
-
-.privacy-policy-table-of-contents h2 {
-font-size: 22px;
-margin-bottom: 15px;
-color: #2c3e50;
-}
-
-.privacy-policy-table-of-contents ul {
-list-style-type: none;
-padding: 0;
-}
-
-.privacy-policy-table-of-contents li {
-margin-bottom: 10px;
-}
-
-.privacy-policy-table-of-contents a {
-color: #3498db;
-text-decoration: none;
-transition: color 0.3s;
-}
-
-.privacy-policy-table-of-contents a:hover {
-color: #2980b9;
-text-decoration: underline;
-}
-
-.policy-section {
-margin-bottom: 20px;
-border: 1px solid #eaeaea;
-border-radius: 8px;
-overflow: hidden;
-}
-
-.policy-section h2 {
-margin: 0;
-padding: 15px 20px;
-background-color: #f8f9fa;
-color: #2c3e50;
-font-size: 20px;
-cursor: pointer;
-display: flex;
-justify-content: space-between;
-align-items: center;
-transition: background-color 0.3s;
-}
-
-.policy-section h2:hover {
-background-color: #eff2f7;
-}
-
-.toggle-icon {
 font-size: 24px;
-font-weight: bold;
 }
 
-.section-content {
-padding: 0 20px;
-max-height: 0;
-overflow: hidden;
-transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-}
-
-.policy-section.active .section-content {
-max-height: 2000px;
-padding: 20px;
-transition: max-height 0.6s ease-in, padding 0.3s ease-in;
-}
-
-.section-content h3 {
-font-size: 18px;
-color: #34495e;
-margin-top: 0;
-margin-bottom: 15px;
-}
-
-.section-content p {
-margin-bottom: 15px;
-}
-
-.section-content ul {
+p {
+line-height: 1.6;
 margin-bottom: 20px;
-padding-left: 20px;
 }
 
-.section-content li {
+.input-group {
+margin-bottom: 20px;
+position: relative;
+}
+
+label {
+display: block;
 margin-bottom: 8px;
-}
-
-.contact-info {
-background-color: #f8f9fa;
-padding: 15px;
-border-radius: 6px;
-margin-top: 10px;
-}
-
-.privacy-policy-footer {
-margin-top: 30px;
-display: flex;
-justify-content: center;
-gap: 20px;
-}
-
-.accept-button, .customize-button {
-padding: 12px 24px;
-border-radius: 6px;
-font-size: 16px;
-cursor: pointer;
-transition: all 0.3s;
 font-weight: 500;
 }
 
-.accept-button {
+input[type="text"],
+input[type="password"] {
+width: 100%;
+padding: 12px;
+border: 1px solid #ddd;
+border-radius: 6px;
+font-size: 16px;
+transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+border-color: #3498db;
+outline: none;
+}
+
+.error-message {
+color: #e74c3c;
+font-size: 14px;
+margin-top: 5px;
+margin-bottom: 0;
+}
+
+.password-reminder {
+margin-bottom: 20px;
+padding: 12px;
+background-color: #fff8e1;
+border-left: 4px solid #ffc107;
+border-radius: 4px;
+}
+
+.password-reminder p {
+margin-bottom: 0;
+font-size: 14px;
+}
+
+.checkbox-group {
+display: flex;
+align-items: flex-start;
+margin-bottom: 15px;
+}
+
+input[type="checkbox"] {
+margin-right: 10px;
+margin-top: 4px;
+}
+
+.policy-btn {
+background: none;
+border: none;
+color: #3498db;
+text-decoration: underline;
+cursor: pointer;
+font-size: inherit;
+padding: 0;
+}
+
+.submit-btn {
+width: 100%;
+padding: 12px;
 background-color: #3498db;
 color: white;
 border: none;
+border-radius: 6px;
+font-size: 16px;
+cursor: pointer;
+transition: background-color 0.3s;
+margin-top: 10px;
 }
 
-.accept-button:hover {
+.submit-btn:hover {
 background-color: #2980b9;
 }
 
-.customize-button {
+.submit-btn:disabled {
+background-color: #95a5a6;
+cursor: not-allowed;
+}
+
+/* Privacy Policy Styles */
+.privacy-policy {
+margin-top: 20px;
+padding: 20px;
+background-color: #f8f9fa;
+border-radius: 6px;
+border: 1px solid #e9ecef;
+margin-bottom: 20px;
+max-height: 300px;
+overflow-y: auto;
+}
+
+.privacy-policy h2 {
+font-size: 20px;
+margin-bottom: 15px;
+}
+
+.privacy-policy h3 {
+font-size: 16px;
+margin: 15px 0 8px;
+}
+
+.privacy-policy ul {
+padding-left: 20px;
+margin-bottom: 15px;
+}
+
+.privacy-policy li {
+margin-bottom: 5px;
+}
+
+.close-btn {
+padding: 8px 15px;
+background-color: #e9ecef;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+margin-top: 10px;
+}
+
+.close-btn:hover {
+background-color: #dee2e6;
+}
+
+/* Content Page Styles */
+.content-container {
+width: 100%;
+max-width: 800px;
+}
+
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 30px;
+padding-bottom: 15px;
+border-bottom: 1px solid #e9ecef;
+}
+
+.logout-btn {
+padding: 8px 15px;
+background-color: #e74c3c;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.logout-btn:hover {
+background-color: #c0392b;
+}
+
+.main-content {
 background-color: white;
-color: #3498db;
-border: 1px solid #3498db;
+padding: 30px;
+border-radius: 12px;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.customize-button:hover {
-background-color: #f0f8ff;
+.main-content h2 {
+color: #2c3e50;
+margin-bottom: 20px;
 }
 
+.transaction-info {
+margin-top: 30px;
+padding: 15px;
+background-color: #e8f4fd;
+border-radius: 8px;
+border-left: 4px solid #3498db;
+}
+
+.transaction-info h3 {
+color: #2c3e50;
+margin-bottom: 10px;
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
-.privacy-policy-container {
+.welcome-card, .main-content {
+padding: 20px;
+}
+
+h1 {
+font-size: 22px;
+}
+
+.header {
+flex-direction: column;
+align-items: flex-start;
+}
+
+.logout-btn {
+margin-top: 10px;
+}
+}
+
+@media (max-width: 480px) {
+.welcome-card, .main-content {
 padding: 15px;
 }
 
-.privacy-policy-header h1 {
-font-size: 28px;
+.privacy-policy {
+padding: 15px;
 }
 
-.policy-section h2 {
-font-size: 18px;
-padding: 12px 15px;
+h1 {
+font-size: 20px;
 }
 
-.privacy-policy-footer {
-flex-direction: column;
-align-items: center;
-gap: 10px;
-}
-
-.accept-button, .customize-button {
-width: 100%;
-max-width: 300px;
+.password-reminder p {
+font-size: 13px;
 }
 }
-
+    
+    
 
 }

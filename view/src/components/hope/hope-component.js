@@ -38,7 +38,7 @@ function Header() {
  return (
     <Col id="hope-header">
       <Col id="hopeheader-displayimagecontainer">
-        <img src="../images/hope/people.jpg"
+        <img src="../images/hope/happycrowd.jpg"
              id="hopeheader-displayimagecontainer-displayimage"/>
       </Col>
       <Col id="hopeheader-headerindicationscontainer">

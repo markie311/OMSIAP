@@ -31,7 +31,6 @@ line-height: 1.5;
 /* Container */
 .checkout-page {
 position:relative;
-border:1vh solid red;
 height:100%;
 width:100%;
 padding: 32px 16px;
@@ -237,9 +236,12 @@ border-color: var(--primary-color);
 }
 
 .shipping-method input[type="radio"] {
+position:relative;
+width:10%;
 margin-top: 4px;
 margin-right: 12px;
 }
+
 
 .method-details {
 flex: 1;
@@ -286,6 +288,7 @@ border: 1px solid var(--border-color);
 border-radius: 6px;
 cursor: pointer;
 transition: all 0.2s ease;
+width:40%;
 }
 
 .payment-method:hover {
