@@ -5,12 +5,14 @@ import { Spinner } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 
 import generateInt32StringsDataType from '../lib/generateInt32StringDataType.js';
+import { timestamp } from "../lib/timestamps.js"
 
 import '../../styles/registrationpage/registrationpage.scss';
 
 import axiosCreatedInstance from '../lib/axiosutil.js';
 
 const RegistrationPage = (props) => {
+
   const navigate = useNavigate();
 
   const [signinbuttonloadingindication, signinbuttonloadingindicationcb] = useState(false);
@@ -20,7 +22,16 @@ const RegistrationPage = (props) => {
   const [password, setPassword] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState('');
-  
+
+  const [registrationresponsemessage, registrationresponsemessagecb] = useState({
+    status: "",
+    indication: "",
+    bulletpoint1: "",
+    bulletpoint2: "",
+    advice: ""
+  });
+  const [registrationresponsemessagetextcolorindication, registrationresponsemessagetextcolorindicationcb] = useState("green");
+
   // Verification state
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -65,12 +76,15 @@ const RegistrationPage = (props) => {
   const handleSignIn = async (e) => {
     e.preventDefault();
     signinbuttonloadingindicationcb(true);
-    
+
     if (!fullname || !password) {
       setError('Please fill in all fields');
       signinbuttonloadingindicationcb(false);
       return;
     }
+
+    const _parsedfullname = parseFullName(fullname);
+    alert(JSON.stringify(_parsedfullname))
   
     {/*
     // Simulate API call
@@ -95,13 +109,43 @@ const RegistrationPage = (props) => {
         signinbuttonloadingindicationcb(false);
       }
     }, 1000);
-    */}
+     */}
 
-    await axiosCreatedInstance.post("/people/registration", {
-      data: "mac"
+     await axiosCreatedInstance.post("/people/login", {
+       $firstname: _parsedfullname.firstName,
+       $middlename: _parsedfullname.middleName,
+       $lastname: _parsedfullname.lastName,
+       $password: password
      }).then((response)=> {
        console.log(response.data)
-    })
+       const _responsemessage = response.data.message;
+       const _registrant = response.data.registrant;
+       switch(_responsemessage) {
+          case "No user found with the provided name details":
+            setError('No account found with that name');
+            signinbuttonloadingindicationcb(false);
+          break;
+          case "Login successful":
+              alert(_registrant.id)
+              // Save nickname and encrypted password in cookies for 1 year (365 days)
+              const oneYearFromNow = 365 * 24 * 60 * 60;
+              document.cookie = `id=${_registrant.id}; path=/; max-age=${oneYearFromNow}`;
+              // In a real application, you would never store passwords in cookies
+              // This is just for demonstration purposes
+              // Normally you would handle authentication via a secure backend
+              // document.cookie = `auth=true; path=/; max-age=${oneYearFromNow}`;
+              //   props.usercb(_registrant)
+              document.querySelectorAll(".loginpage-responsemessagecontainer")[0].style.display = "block";
+          break;
+          case "Incorrect password":
+            setError('Incorrect password');
+            signinbuttonloadingindicationcb(false);
+          break;
+       }
+
+     //  document.querySelector("#registration-results").style.display = "block";
+       registerbuttonloadingindicationcb(false);
+     })
 
 
   };
@@ -183,13 +227,60 @@ const RegistrationPage = (props) => {
     return newErrors;
   };
 
-  const handleRegistration = (e) => {
+  function parseFullName(fullName) {
+    // Trim whitespace and handle empty input
+    if (!fullName || typeof fullName !== 'string') {
+      return {
+        firstName: '',
+        middleName: '',
+        lastName: ''
+      };
+    }
+    
+    // Trim and split the full name by spaces
+    const nameParts = fullName.trim().split(/\s+/);
+    
+    // Handle different cases based on the number of parts
+    if (nameParts.length === 1) {
+      // Just a first name
+      return {
+        firstName: nameParts[0],
+        middleName: '',
+        lastName: ''
+      };
+    } else if (nameParts.length === 2) {
+      // First and last name only
+      return {
+        firstName: nameParts[0],
+        middleName: '',
+        lastName: nameParts[1]
+      };
+    } else {
+      // First name, middle name(s), and last name
+      const firstName = nameParts[0];
+      const lastName = nameParts[nameParts.length - 1];
+      
+      // Everything between first and last name is considered middle name
+      const middleName = nameParts.slice(1, nameParts.length - 1).join(' ');
+      
+      return {
+        firstName,
+        middleName,
+        lastName
+      };
+    }
+  }
+
+  const handleRegistration = async (e) => {
+
      e.preventDefault();
-     registerbuttonloadingindicationcb(true);
+     registerbuttonloadingindicationcb(false);
 
     const validationErrors = validateForm();
-
+ 
     if (Object.keys(validationErrors).length === 0) {
+
+      {/*
       // Simulate registration processing
       setTimeout(() => {
         // Create a new account entry
@@ -207,10 +298,132 @@ const RegistrationPage = (props) => {
         document.querySelector("#registration-results").style.display = "block";
         registerbuttonloadingindicationcb(false);
       }, 1500);
+      */}
+
+       const _registeringdate = `${timestamp.getDay()}, ${timestamp.getMonth()}, ${timestamp.getDate()},${timestamp.getFullYear()}, ${timestamp.getHour()}:${timestamp.getMinutes()}:${timestamp.getSeconds()},`
+
+       const _registrant =  { 
+        id: `${generateInt32StringsDataType(16)}-A-1`,
+        loginstatus: "logged out",
+        status: {
+          indication: "Trying to register",
+          requests: [
+           { 
+             purpose: "Registration",
+             message: "Attempting for registering for the MFATIP PROGRAM",
+             status: "FIRST REGISTRATION. STATUS REGISTERING",
+             date: _registeringdate
+           }
+         ]
+        },
+        name: {
+          firstname: formData.firstName,
+          middlename: formData.middleName,
+          lastname: formData.lastName,
+          nickname: ""
+        },
+        contact: {
+          phonenumber: formData.phoneNumber,
+          telephonenumber: "",
+          emailaddress: formData.email,
+          address: {
+            street: "",
+            baranggay: "",
+            trademark: "",
+            city: "",
+            province: "",
+            country: ''
+          }
+        },
+        personalinformation: {
+          age: 0,
+          sex: "",
+          bloodtype: "",
+          dob: "",
+          citizenship: "",
+          civil_status: "",
+          government_issued_identification: "" 
+        },
+        passwords: {
+         account: {
+          password: formData.confirmPassword
+         }
+        },
+        credits: {
+          omsiapawasto: {
+            id: `${generateInt32StringsDataType(16)}-A-1`,
+            amount: 0,
+            transactions: {
+              deposits: [],
+              widthdrawals: [],
+              successful_deposits: [],
+              successful_widthdrawals: []
+            }
+          }
+        },
+        order: {
+          name: {
+            firstname: "",
+            middlename: "",
+            lastname: ""
+          },
+          shippingdetails: {
+            street: "",
+            baranggay: "",
+            city: "",
+            province: "",
+            country: "",
+            postal_zipcode: ""
+          },
+          paymentdetails: {
+            merchandise_total: 0,
+            merchandise_total_weight: 0,
+            merchandise_count: 0,
+            total_payment: 0,
+            totalshipment: 0,
+          },
+          products: []
+        }
+       }
+
+       await axiosCreatedInstance.post("/people/registration", {
+         $registrant: _registrant
+        }).then((response)=> {
+          console.log(response.data)
+          const _responsemessage = response.data.message 
+          switch(_responsemessage) {
+             case "Registrant registered":
+              registrationresponsemessagetextcolorindicationcb("green");
+              registrationresponsemessagecb({
+                status: "Successfully REGISTERED",
+                indication: "You may now continue logging in your account and do not forger to submit these documents later",
+                bulletpoint1: "Front and back photo of your birth certificate",
+                bulletpoint2: "Front and back photo of your one valid government ID",
+                advice: "These documents really ensures that there will be no lazy duplicate accounts on OMSIAP"
+              })
+             break;
+             case "Same passwords":
+              registrationresponsemessagetextcolorindicationcb("red");
+              registrationresponsemessagecb({
+                status: "Same password",
+                indication: "Registration failed. The registration will only succeed if you change your password making sure there are no duplicate accounts",
+                bulletpoint1: "Change your password within the registration form to make sure you have no duplicate acccounts here on OMSIAP",
+                bulletpoint2: "Minimun of 8 characters",
+                advice: "Try changing your password first before clicking register button again"
+              })
+             break;
+          }
+
+          document.querySelector("#registration-results").style.display = "block";
+          registerbuttonloadingindicationcb(false);
+        })
+  
+
     } else {
       setErrors(validationErrors);
       registerbuttonloadingindicationcb(false);
     }
+
   };
 
   // Utility function (mocked)
@@ -254,6 +467,12 @@ const RegistrationPage = (props) => {
               placeholder="Enter your password"
               required
             />
+          </div>
+
+          <div className="loginpage-responsemessagecontainer">
+              <p className="loginpage-responsemessagecontainer-responsemessageheaderindication">Succesfully logged in</p>
+              <p className="loginpage-responsemessagecontainer-responsemessageheaderindication">You know process to Home</p>
+              <a href={"/"}>Go to home</a>
           </div>
 
           <div className="forgot-password">
@@ -402,18 +621,18 @@ const RegistrationPage = (props) => {
 
               <div className="document-notice" id="registration-results">
                 <h3 className="registration-results-registrationresultsheaderindication">Registration results:</h3>
-                <h4 className="registration-results-registrationresultsheaderindication">Successful registration</h4>
+                <h4 className="registration-results-registrationresultsheaderindication"
+                    style={{color: registrationresponsemessagetextcolorindication}}>{registrationresponsemessage.status}</h4>
                
                 <p>
-                  You may now login and submit these documents later.
+                {registrationresponsemessage.indication}
                   <ul>
-                    <li>Front and back photos of your birth certificate</li>
-                    <li>Front and back photos of your one of your valid government ID</li>
+                    <li>{registrationresponsemessage.bulletpoint1}</li>
+                    <li>{registrationresponsemessage.bulletpoint2}</li>
                   </ul>
                 </p>
                 <p>
-                  These documents are used to validate your identity and 
-                  prevent duplicate accounts.
+                {registrationresponsemessage.advice}
                 </p>
               </div>
               

@@ -5,7 +5,8 @@ import React, {
 } from 'react';
 
 import { Routes, 
-         Route
+         Route,
+         useNavigate
        } from 'react-router-dom';
 
 import { Container } from 'react-bootstrap';
@@ -25,7 +26,11 @@ import CheckoutPage from './components/checkout/checkout-component.js'
 import PlaceOrder from './components/placeorder/placeorder-component.js'
 import RegistrationPage from './components/registrationpage/registrationpage-component.js';
 
+import axiosCreatedInstance from './components/lib/axiosutil.js';
+
 function OMSIAPCore() {
+
+  const navigate = useNavigate();
 
   const [viewport, viewportcb] = useState('xs');
 
@@ -109,7 +114,12 @@ function OMSIAPCore() {
       dob: "",
       citizenship: "",
       civil_status: "",
-      government_issued_identification: "" 
+      government_issued_identification: ""
+    },
+    passwords: {
+      account: {
+        password: ""
+      }
     },
     credits: {
       omsiapawasto: {
@@ -202,10 +212,7 @@ function OMSIAPCore() {
   const _authcontainer = document.querySelectorAll('.auth-container');
 
    let _documentcookie = document.cookie;
-   setUserIdCookie(_documentcookie);
-   alert(_documentcookie)
    if (_documentcookie !== "") {
-    alert("There is a user");
     handleLoadingIndicatorModal();
     handleUserLoginStatusLoggedIn();
     return
@@ -225,87 +232,31 @@ function OMSIAPCore() {
   authcontainercb("flex");
  }
 
- function handleUserLoginStatusLoggedIn() {
-  usercb(
-    { 
-      id: "qwerty1234qwefdln-A-1",
-      loginstatus: "logged in",
-      status: {
-        indication: "Registered",
-        requests: [
-         { 
-           purpose: "Registration",
-           message: "You registered for the MFATIP PROGRAM",
-           status: "REGISTERED",
-           date: '07-12-2022'
-         }
-       ]
-      },
-      name: {
-        firstname: "Mark Anthony",
-        middlename: "Apura",
-        lastname: "Beloy",
-        nickname: "Macky"
-      },
-      contact: {
-        phonenumber: "123456-6789-0",
-        telephonenumber: "",
-        emailaddress: "emailaddress@gmail.com",
-        address: {
-          street: "",
-          baranggay: "",
-          trademark: "",
-          city: "",
-          province: "",
-          country: ''
-        }
-      },
-      personalinformation: {
-        age: 0,
-        sex: "",
-        bloodtype: "",
-        dob: "",
-        citizenship: "",
-        civil_status: "",
-        government_issued_identification: "" 
-      },
-      credits: {
-        omsiapawasto: {
-          id: "",
-          amount: 10,
-          transactions: {
-            deposit: [],
-            widthdrawal: [],
-            successful_deposits: [],
-            successful_widthdrawals: []
-          }
-        }
-      },
-      order: {
-        name: {
-          firstname: "",
-          middlename: "",
-          lastname: ""
-        },
-        shippingdetails: {
-          street: "",
-          baranggay: "",
-          city: "",
-          province: "",
-          country: "",
-          postal_zipcode: ""
-        },
-        paymentdetails: {
-          merchandise_total: 0,
-          merchandise_total_weight: 0,
-          merchandise_count: 0,
-          total_payment: 0,
-          totalshipment: 0,
-        },
-        merchandises: []
-      }
+ async function handleUserLoginStatusLoggedIn() {
+ 
+  const _usercookie = document.cookie;
+  const _parsedusercookie = _usercookie.substr(3, 20);
+
+  await axiosCreatedInstance.post("/people/getregistrant", {
+    $userid: _parsedusercookie
+  }).then((response)=> {
+    console.log(response.data)
+    const _responsemessage = response.data.message; 
+    const _registrant = response.data.registrant;
+
+    switch(_responsemessage) {
+       case "No registrant found with the given user ID":
+        navigate('/mfatip/loginregister')
+       break;
+       case "Registrant found":
+        _registrant.loginstatus = "logged in"
+        usercb(_registrant);
+       break;
     }
-  )
+   
+  })
+
+ 
  }
 
  function handleUserLoginStatusLoggedOut() {
@@ -350,6 +301,11 @@ function OMSIAPCore() {
         citizenship: "",
         civil_status: "",
         government_issued_identification: "" 
+      },
+      passwords: {
+        account: {
+          password: ""
+        }
       },
       credits: {
         omsiapawasto: {
@@ -475,7 +431,9 @@ function OMSIAPCore() {
 
         <Route path='/mfatip/loginregister'
                element={<RegistrationPage viewport={viewport}
-                                          handleLoadingIndicatorModal={handleLoadingIndicatorModal}/>}>
+                                          handleLoadingIndicatorModal={handleLoadingIndicatorModal}
+                                          user={user}
+                                          usercb={usercb}/>}>
         </Route>
 
      </Routes>

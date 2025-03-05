@@ -3,15 +3,14 @@
   "version": "1.0.0",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "nodemon": "nodemon server.js",
+    "heroku-postbuild": "cd client && nnpm install && npm run build"
   },
   "author": "",
   "license": "ISC",
   "description": "",
-  "scripts": {
-    "start": "node server.js",
-    "nodemon": "nodemon server.js",
-    "heroku-postbuild": "cd client && nnpm install && npm run build"
+  "dependencies": {
+    "bcrypt": "^5.1.1"
   }
 }

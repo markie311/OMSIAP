@@ -23,6 +23,6 @@ optionsSuccessStatus: 200
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
-app.use('people/', peoplesRoute);
+app.use('/people/', peoplesRoute);
 
 app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
