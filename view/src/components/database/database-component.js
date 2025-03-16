@@ -679,6 +679,12 @@ const registrants = [
                                     setShowCreateProduct={setShowCreateProduct}
                                     setShowProductReader={setShowProductReader}
                        />
+
+         <StatisticsCardRegistrantCRUD stats={customStats}
+                                    setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                    setShowCreateProduct={setShowCreateProduct}
+                                    setShowProductReader={setShowProductReader}
+                       />
      </div>
 
      {
@@ -1161,6 +1167,7 @@ const StatisticsCardOperationBasis = ({ stats, setShowDatabaseConfiguration, set
                                     </button>
             </p>
             <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
+            <button className="readproduct-readproductbutton">Search order by transaction ID</button>
             <br/>
             <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
           </div>
@@ -1205,7 +1212,7 @@ const StatisticsCardOperationBasis = ({ stats, setShowDatabaseConfiguration, set
                                           view
                                 </button>
             </p>
-            <p>22 of it was already accepted <button className="pendingorders-viewbutton"
+            <p>22 of it was a successful deposit <button className="pendingorders-viewbutton"
                                           onClick={()=> {
                                             setShowDatabaseConfiguration(true);
                                             setShowPendingOrders(false);
@@ -1224,6 +1231,7 @@ const StatisticsCardOperationBasis = ({ stats, setShowDatabaseConfiguration, set
                                     </button>
             </p>
             <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
+            <button className="readproduct-readproductbutton">Search deposit by transaction ID</button>
             <br/>
             <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
           </div>
@@ -1238,7 +1246,7 @@ const StatisticsCardOperationBasis = ({ stats, setShowDatabaseConfiguration, set
           <div className="card-inner">
             <div className="card-header">TOTAL WITHDRAWALS</div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count}</div>
+              <div className="stat-value">{statsData.pendingWithdrawals.count} total withdrawals</div>
               <div className={`stat-change ${Number(statsData.pendingWithdrawals.change) >= 0 ? 'positive' : 'negative'}`}>
                 {formatPeso(statsData.pendingWithdrawals.change)}
               </div>
@@ -1249,6 +1257,47 @@ const StatisticsCardOperationBasis = ({ stats, setShowDatabaseConfiguration, set
                 <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
               </svg>
             </div>
+            <br/>
+            <p>13 total withdrawals <button className="pendingorders-viewbutton"
+                                              onClick={()=> {
+                                                setShowDatabaseConfiguration(true);
+                                                setShowPendingOrders(false);
+                                                setShowTotalOrders(true);
+                                              }}>
+                                                view
+                                      </button>
+            </p>
+            <p>20 of it was pending withdrawals <button className="pendingorders-viewbutton"                          
+                                         onClick={()=> {
+                                           setShowDatabaseConfiguration(true);
+                                           setShowTotalOrders(false);
+                                           setShowPendingOrders(true);
+                                         }}>
+                                          view
+                                </button>
+            </p>
+            <p>22 of it was a successful withdrawal <button className="pendingorders-viewbutton"
+                                          onClick={()=> {
+                                            setShowDatabaseConfiguration(true);
+                                            setShowPendingOrders(false);
+                                            setShowAcceptedOrders(true);
+                                          }}>
+                                            view
+                                    </button>
+            </p>
+            <p>While 22 withdrawals are rejected <button className="pendingorders-viewbutton"
+                                          onClick={()=> {
+                                            setShowDatabaseConfiguration(true);
+                                            setShowPendingOrders(false);
+                                            setShowAcceptedOrders(true);
+                                          }}>
+                                            view
+                                    </button>
+            </p>
+            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
+            <button className="readproduct-readproductbutton">Search widthdrawal by transaction ID</button>
+            <br/>
+            <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
           </div>
         </div>
 
@@ -1366,31 +1415,42 @@ const StatisticsCardOperationScope = ({ stats, setShowDatabaseConfiguration, set
             </div>
             <br/>
             <button className="readproduct-readproductbutton">View all pending deposits</button>
-          </div>
-        </div>
-
-         {/* REJECTED DEPOSITS */}
-         <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-              setShowPendingDeposits(true);
-             }}>
-          <div className="card-inner">
-            <div className="card-header">REJECTED DEPOSITS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} rejected deposits</div>
-              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingDeposits.change)}
-              </div>
-            </div>
-            <div className="card-icon deposits-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
-            </div>
+            <br />
+            <p>27 total deposits <button className="pendingorders-viewbutton"
+                                              onClick={()=> {
+                                                setShowDatabaseConfiguration(true);
+                                                setShowPendingOrders(false);
+                                              }}>
+                                                view
+                                      </button>
+            </p>
+            <p>20 of it was pending deposits <button className="pendingorders-viewbutton"                          
+                                         onClick={()=> {
+                                           setShowDatabaseConfiguration(true);
+                                           setShowPendingOrders(true);
+                                         }}>
+                                          view
+                                </button>
+            </p>
+            <p>22 of it was a successful deposit <button className="pendingorders-viewbutton"
+                                          onClick={()=> {
+                                            setShowDatabaseConfiguration(true);
+                                          }}>
+                                            view
+                                    </button>
+            </p>
+            <p>While 22 deposits are rejected <button className="pendingorders-viewbutton"
+                                          onClick={()=> {
+                                            setShowDatabaseConfiguration(true);
+                                            setShowPendingOrders(false);
+                                          }}>
+                                            view
+                                    </button>
+            </p>
+            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
+            <button className="readproduct-readproductbutton">View pending deposit by transaction ID</button>
             <br/>
-            <button className="readproduct-readproductbutton">View all rejected deposits</button>
+            <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
           </div>
         </div>
 
@@ -1403,7 +1463,7 @@ const StatisticsCardOperationScope = ({ stats, setShowDatabaseConfiguration, set
           <div className="card-inner">
             <div className="card-header">PENDING WITHDRAWALS</div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count}</div>
+              <div className="stat-value">{statsData.pendingWithdrawals.count} pending withdrawals</div>
               <div className={`stat-change ${Number(statsData.pendingWithdrawals.change) >= 0 ? 'positive' : 'negative'}`}>
                 {formatPeso(statsData.pendingWithdrawals.change)}
               </div>
@@ -1414,6 +1474,42 @@ const StatisticsCardOperationScope = ({ stats, setShowDatabaseConfiguration, set
                 <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
               </svg>
             </div>
+            <br />
+            <p>27 total withdrawals <button className="pendingorders-viewbutton"
+                                              onClick={()=> {
+                                                setShowDatabaseConfiguration(true);
+                                                setShowPendingOrders(false);
+                                              }}>
+                                                view
+                                      </button>
+            </p>
+            <p>20 of it was pending withdrawals <button className="pendingorders-viewbutton"                          
+                                         onClick={()=> {
+                                           setShowDatabaseConfiguration(true);
+                                           setShowPendingOrders(true);
+                                         }}>
+                                          view
+                                </button>
+            </p>
+            <p>22 of it was a successful withdrawal <button className="pendingorders-viewbutton"
+                                          onClick={()=> {
+                                            setShowDatabaseConfiguration(true);
+                                          }}>
+                                            view
+                                    </button>
+            </p>
+            <p>While 22 withdrawals are rejected <button className="pendingorders-viewbutton"
+                                          onClick={()=> {
+                                            setShowDatabaseConfiguration(true);
+                                            setShowPendingOrders(false);
+                                          }}>
+                                            view
+                                    </button>
+            </p>
+            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
+            <button className="readproduct-readproductbutton">View pending withdrawal by transaction ID</button>
+            <br/>
+            <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
           </div>
         </div>
 
@@ -3923,9 +4019,9 @@ const StatisticsCardDailyTasks = ({ stats, setShowDatabaseConfiguration, setShow
               setShowPendingDeposits(true);
              }}>
           <div className="card-inner">
-            <div className="card-header">DEPOSITED</div>
+            <div className="card-header">SUCCESSFUL DEPOSITS</div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count}</div>
+              <div className="stat-value">{statsData.pendingDeposits.count} sucessful deposits</div>
               <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
                 {formatPeso(statsData.pendingDeposits.change)}
               </div>
@@ -3936,6 +4032,69 @@ const StatisticsCardDailyTasks = ({ stats, setShowDatabaseConfiguration, setShow
                 <line x1="2" y1="10" x2="22" y2="10"></line>
               </svg>
             </div>
+            <button className="readproduct-readproductbutton">View all successful deposits</button>
+            <br/>
+            <br/>
+            <p>27 total deposits <button className="pendingorders-viewbutton"
+                                              onClick={()=> {
+                                                setShowDatabaseConfiguration(true);
+                                                setShowPendingOrders(false);
+                                              }}>
+                                                view
+                                      </button>
+            </p>
+            <p>20 pending deposits <button className="pendingorders-viewbutton"                          
+                                         onClick={()=> {
+                                           setShowDatabaseConfiguration(true);
+                                           setShowPendingOrders(true);
+                                         }}>
+                                          view
+                                </button>
+            </p>
+            <p>22 successful deposits <button className="pendingorders-viewbutton"
+                                          onClick={()=> {
+                                            setShowDatabaseConfiguration(true);
+                                          }}>
+                                            view
+                                    </button>
+            </p>
+            <p>While 22 deposits are rejected <button className="pendingorders-viewbutton"
+                                          onClick={()=> {
+                                            setShowDatabaseConfiguration(true);
+                                            setShowPendingOrders(false);
+                                          }}>
+                                            view
+                                    </button>
+            </p>
+            <br/>
+            <br/>
+            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
+            <button className="readproduct-readproductbutton">View successful deposit by transaction ID</button>
+          </div>
+        </div>
+
+          {/* REJECTED DEPOSITS */}
+          <div className="statistics-card"
+             onClick={()=> {
+              setShowDatabaseConfiguration(true);
+              setShowPendingDeposits(true);
+             }}>
+          <div className="card-inner">
+            <div className="card-header">REJECTED DEPOSITS</div>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingDeposits.count} rejected deposits</div>
+              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
+                {formatPeso(statsData.pendingDeposits.change)}
+              </div>
+            </div>
+            <div className="card-icon deposits-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+            </div>
+            <br/>
+            <button className="readproduct-readproductbutton">View all rejected deposits</button>
           </div>
         </div>
 
@@ -4831,6 +4990,144 @@ const DeleteProductReader = ({ product, onClose, onDelete, isOpen }) => {
           100% { transform: rotate(360deg); }
         }
       `}</style>
+    </div>
+  );
+};
+
+const StatisticsCardRegistrantCRUD = ({ stats, setShowDatabaseConfiguration, setShowCreateProduct, setShowProductReader}) => {
+  // Sample stats data if not provided
+  const defaultStats = {
+    pendingOrders: { count: 24, change: 1200 },
+    pendingDeposits: { count: 18, change: 3500 },
+    pendingWithdrawals: { count: 9, change: -850 },
+    pendingRegistrations: { count: 32, change: 6400 }
+  };
+
+  // Use provided stats or default
+  const statsData = stats || defaultStats;
+
+  // Format the change value as a peso currency
+  const formatPeso = (amount) => {
+    // Make sure amount is a number
+    const numAmount = Number(amount);
+    
+    // Check if it's a valid number
+    if (isNaN(numAmount)) {
+      return '₱0';
+    }
+    
+    const sign = numAmount > 0 ? '+' : '';
+    return `${sign}₱${Math.abs(numAmount).toLocaleString()}`;
+  };
+
+  return (
+    <div className="statistics-container">
+      <h1>CRUD Operations ( REGISTRANT )</h1>
+      <div className="statistics-grid">
+
+          {/* PENDING ORDERS */}
+          <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">Create ( registrant )</div>
+            <button className="readproduct-readproductbutton"
+                    onClick={()=> {
+                      setShowDatabaseConfiguration(true);
+                      setShowCreateProduct(true)
+                     }}>Show create registrant form</button>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingOrders.count}</div>
+              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
+                {formatPeso(statsData.pendingOrders.change)}
+              </div>
+            </div>
+            <div className="card-icon orders-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+            </div>
+          </div>
+         </div>
+
+          {/* PENDING PUBLIC CITIZENSHIPS REGISTRATIONS */}
+          <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">Read ( registrant )</div>
+            <p>Product ID:</p>
+            <input type="text"
+                   className="readproduct-productidfield"/>
+            <button className="readproduct-readproductbutton">Read registrant</button>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingOrders.count}</div>
+              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
+                {formatPeso(statsData.pendingOrders.change)}
+              </div>
+            </div>
+            <div className="card-icon orders-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* PENDING ORDERS */}
+        <div className="statistics-card"
+             onClick={()=> {
+              setShowDatabaseConfiguration(true);
+             }}>
+          <div className="card-inner">
+            <div className="card-header">Update ( registrant )</div>
+            <p>Product ID:</p>
+            <input type="text"
+                   className="readproduct-productidfield"/>
+            <button className="readproduct-readproductbutton">Read registrant</button>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingOrders.count}</div>
+              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
+                {formatPeso(statsData.pendingOrders.change)}
+              </div>
+            </div>
+            <div className="card-icon orders-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <path d="M16 10a4 4 0 0 1-8 0"></path>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {/* PENDING DEPOSITS */}
+        <div className="statistics-card"
+             onClick={()=> {
+              setShowDatabaseConfiguration(true);
+             }}>
+          <div className="card-inner">
+            <div className="card-header">Delete ( registrant ) </div>
+            <p>Product ID:</p>
+            <input type="text"
+                   className="readproduct-productidfield"/>
+            <button className="readproduct-readproductbutton">Read registrant</button>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingDeposits.count}</div>
+              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
+                {formatPeso(statsData.pendingDeposits.change)}
+              </div>
+            </div>
+            <div className="card-icon deposits-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+      </div>
     </div>
   );
 };
