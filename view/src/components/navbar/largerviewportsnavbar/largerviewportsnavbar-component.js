@@ -1,140 +1,117 @@
-import React, {
-    useState,
-    useEffect
-  } from 'react';
-
-import { Row, 
-         Col,
-         Dropdown
-       } from 'react-bootstrap';
-
 import '../../../styles/navbar/largerviewportsnavbar/largerviewportsnavbar.scss';
-import { propTypes } from 'react-bootstrap/esm/Image';
 
-export default function LargerViewportsNavbar(props) {
- return(
-   <Row id="largerviewportsnavbar">
-     <Col xs={12}
-          md={12}
-          lg={5}
-          id="largerviewportsnavbar-headerindicationscontainer">
-        <Row  id="largerviewportsnavbar-headerindicationscontainer-rowcontainer">
-          <Col xs={12}
-               md={12}
-               lg={5}
-               id="largerviewportsnavbar-headerindicationscontainer-rowcontainer-omsiaplogocolcontainer">
-          <img src='../images/navbar/navbar/goldenshield.jpg'
-               id='largerviewportsnavbar-headerindicationscontainer-rowcontainer-omsiaplogo'/>
-          </Col>
-          <Col xs={12}
-               md={12}
-               lg={7}
-               id="largerviewportsnavbar-headerindicationscontainer-rowcontainer-headerindicationscontainer">
-             <h1 className='largerviewportsnavbar-headerindicationscontainer-rowcontainer-headerindication'>OMSIAP</h1>
-             <p className="largerviewportsnavbar-headerindicationscontainer-rowcontainer-headerindication">Of Macky'S Ink And Paper</p>
-          </Col>
-        </Row>
-     </Col>
-     <Col xs={12}
-          md={12}
-          lg={7}
-          id="largerviewportsnavbar-dropdownscontainer">
-      <Row id="largerviewportsnavbar-dropdownscontainer-rowcontainer"> 
+import React, { useState } from 'react';
+import { Dropdown, Navbar, Nav, Container } from 'react-bootstrap';
+import { List, X } from 'lucide-react';
 
-       <Col xs={12}
-            md={12}
-            lg={10}
-             className="largerviewportsnavbar-dropdownscontainer-rowcontainer-colcontainer">
-          <Dropdown>
-            <Dropdown.Toggle variant="dark" id="dropdown-basic">
-               MONTHLY FINANCIAL ALLOCATION TO INDIVIDUAL PEOPLE
-            </Dropdown.Toggle>
+const ResponsiveNavbar = (props) => {
+  const [expanded, setExpanded] = useState(false);
 
-            <Dropdown.Menu>
-                <Dropdown.Item href="/monthlyfinanceallocationtoindividualpeople">WHAT IS MFATIP</Dropdown.Item>
-                <Dropdown.Item href="/useraccount">MY MFATIP PROFILE ACCOUNT </Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-        </Col>
-        
-        <Col xs={12}
-             md={12}
-             lg={2}
-             className="largerviewportsnavbar-dropdownscontainer-rowcontainer-colcontainer">
-          <Dropdown>
+  const toggleNavbar = () => {
+    setExpanded(!expanded);
+  };
 
-            <Dropdown.Toggle variant="dark" id="dropdown-basic">
-                MARKET
-            </Dropdown.Toggle>
+  return (
+    <div className="navbar-wrapper">
+      <Navbar expand="lg" variant="dark" expanded={expanded} className="custom-navbar">
+        <Container fluid>
+          {/* Logo and Brand Section */}
+          <div className="navbar-brand-section">
+            <div className="logo-container">
+              <img 
+                src='../images/navbar/navbar/goldenshield.jpg'
+                alt="OMSIAP Logo" 
+                className="navbar-logo"
+              />
+            </div>
+            <div className="brand-text">
+              <h1 className="brand-title">OMSIAP</h1>
+              <p className="brand-subtitle">Of Macky'S Ink And Paper</p>
+              <div className="special-indicator">Premium Business Services</div>
+            </div>
+          </div>
 
-            <Dropdown.Menu>
-              
-            <Dropdown.Item href="market">Market</Dropdown.Item>
-         
-            </Dropdown.Menu>
-          </Dropdown>
+          {/* Mobile Toggle Button */}
+          <Navbar.Toggle 
+            aria-controls="responsive-navbar-nav" 
+            onClick={toggleNavbar}
+            className="custom-toggler"
+          >
+            {expanded ? <X size={24} /> : <List size={24} />}
+          </Navbar.Toggle>
 
-        </Col>
-        
-        <Col xs={12}
-             md={12}
-             lg={2}
-             className="largerviewportsnavbar-dropdownscontainer-rowcontainer-colcontainer">
-          <Dropdown>
-            <Dropdown.Toggle variant="dark" id="dropdown-basic">
-                HOPE
-            </Dropdown.Toggle>
+          {/* Navigation Items */}
+          <Navbar.Collapse id="responsive-navbar-nav">
+            <Nav className="ms-auto navigation-items">
 
-            <Dropdown.Menu>
-                <Dropdown.Item href="/test">(H)onesties (O)n Constitutional (P)romises (E)valuation (H) (O) (P) (E)</Dropdown.Item>
-               
-            </Dropdown.Menu>
-          </Dropdown>
-        </Col>
-   
-        {
-          props.user.loginstatus === "logged in"
-          ? 
-          (
-            <Col xs={12}
-                 md={12}
-                 lg={4}
-                 className="largerviewportsnavbar-dropdownscontainer-rowcontainer-colcontainer">
-             <Dropdown>
-               <Dropdown.Toggle variant="dark" id="dropdown-basic">
-                 Log out
-               </Dropdown.Toggle>
+            <div className="nav-dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle variant="dark" id="dropdown-mfatip" className="custom-dropdown-toggle">
+                    HOME
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="custom-dropdown-menu">
+                    <Dropdown.Item href="/">HOME PAGE 1</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+              <div className="nav-dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle variant="dark" id="dropdown-mfatip" className="custom-dropdown-toggle">
+                    MONTHLY FINANCIAL ALLOCATION TO INDIVIDUAL PEOPLE
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="custom-dropdown-menu">
+                    <Dropdown.Item href="/monthlyfinanceallocationtoindividualpeople">WHAT IS MFATIP</Dropdown.Item>
+                    <Dropdown.Item href="/useraccount">MY MFATIP PROFILE ACCOUNT</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
 
-               <Dropdown.Menu>
-                  <Dropdown.Item href="/mfatip/loginregister">LOG OUT MFATIP PROFILE ACCOUNT</Dropdown.Item>
-                
-               </Dropdown.Menu>
-             </Dropdown>
-           </Col>
-          )
-          :
-          (
-            <Col xs={12}
-                 md={12}
-                 lg={4}
-                 className="largerviewportsnavbar-dropdownscontainer-rowcontainer-colcontainer">
-             <Dropdown>
-               <Dropdown.Toggle variant="dark" id="dropdown-basic">
-                 Lon in / Register
-               </Dropdown.Toggle>
+              <div className="nav-dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle variant="dark" id="dropdown-market" className="custom-dropdown-toggle">
+                    MARKET
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="custom-dropdown-menu">
+                    <Dropdown.Item href="market">Market</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
 
-               <Dropdown.Menu>
-                   <Dropdown.Item href="/mfatip/loginregister">MFATIP LOGIN / MFATIP REGISTER PAGE</Dropdown.Item>
-                  
-               </Dropdown.Menu>
-             </Dropdown>
-           </Col>
-          )
-        }
-        
-       
-      </Row>
-     </Col>
-   </Row>
- )
-}
+              <div className="nav-dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle variant="dark" id="dropdown-hope" className="custom-dropdown-toggle">
+                    HOPE
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="custom-dropdown-menu">
+                    <Dropdown.Item href="/honestiesonconstitutionalpromisesevaluation">(H)onesties (O)n Constitutional (P)romises (E)valuation</Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+
+              <div className="nav-dropdown">
+                <Dropdown>
+                  <Dropdown.Toggle 
+                    variant="dark" 
+                    id="dropdown-account" 
+                    className={`custom-dropdown-toggle ${props.user && props.user.loginstatus === "logged in" ? "logged-in" : "logged-out"}`}
+                  >
+                    {props.user && props.user.loginstatus === "logged in" 
+                      ? "LOG OUT" 
+                      : "LOG IN / REGISTER"}
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="custom-dropdown-menu">
+                    {props.user && props.user.loginstatus === "logged in" 
+                      ? <Dropdown.Item href="/mfatip/loginregister">LOG OUT MFATIP PROFILE ACCOUNT</Dropdown.Item>
+                      : <Dropdown.Item href="/mfatip/loginregister">MFATIP LOGIN / MFATIP REGISTER PAGE</Dropdown.Item>}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+    </div>
+  );
+};
+
+export default ResponsiveNavbar;

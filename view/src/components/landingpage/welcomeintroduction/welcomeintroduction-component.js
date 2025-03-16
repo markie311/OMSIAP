@@ -1,74 +1,118 @@
-import React, {
-    useState,
-    useEffect
-  } from 'react';
-
-import { Row, 
-         Col } from 'react-bootstrap';
-
 import '../../../styles/landingpage/welcomeintroduction/welcomeintroduction.scss';
 
-export default function WelcomeIntroduction() {
- return(
-    <Row id="welcomeintroduction">
-     <Col xs={12}
-          md={6}
-          lg={6}
-          id="welcomeintroduction-headerindicationscontainer">
-        <Col id="welcomeintroduction-headerindicationscontainer-headerindicationscontainer">
-          <h3 className="welcomeintroduction-headerindicationscontainer-headerindicationscontainer-headerindication">BUILDING YOUR PATH TO SUCCESS.</h3>
-          <br/>
-          <h1 className="welcomeintroduction-headerindicationscontainer-headerindicationscontainer-headerindication">Expert Services for Personal Growth and Business Development</h1>
-          <br/>
-          <p className="welcomeintroduction-headerindicationscontainer-headerindicationscontainer-headerindication">One unified approach: We listen to your needs for shelter, education, and advancement.</p>
-          <p className="welcomeintroduction-headerindicationscontainer-headerindicationscontainer-headerindication">At OMSIAP, we evaluate individual potential and help chart the course to success.</p>
-          <p className="welcomeintroduction-headerindicationscontainer-headerindicationscontainer-headerindication">Unlock your potential with OMSIAP's expert services, tailored to enhance your visibility and experience. We specialize in: strategic marketing and pension planning, data-driven analytics and precision metrics, innovative design and content creation and infrastructure development.</p>
-         
-        </Col>
-        <Col id="welcomeintroduction-headerindicationscontainer-displayimagescontainer">
-         <img src="../images/landingpage/welcomeintroduction/goldenshield.jpg"
-            id="welcomeintroduction-headerindicationscontainer-displayimagescontainer-backgroundimage"/>
-        </Col>
-     </Col>
-     <Col xs={12}
-          md={6}
-          lg={6}
-          id="welcomeintroduction-displayimagescontainer">
-       <Row id="welcomeintroduction-displayimagescontainer-rowcontainer">
-         <Col xs={6}
-              md={6}
-              lg={6}
-              className="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer"
-              id="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer1">
-            <img src="../images/landingpage/welcomeintroduction/construction.jpg"
-                 className="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer-backgroundimage"/>
-         </Col>
-         <Col xs={6}
-              md={6}
-              lg={6}
-              className="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer"
-              id="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer2">
-            <img src="../images/landingpage/welcomeintroduction/boss.jpg"
-                 className="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer-backgroundimage"/>
-         </Col>
-         <Col xs={6}
-              md={6}
-              lg={6}
-              className="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer"
-              id="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer3">
-            <img src="../images/landingpage/welcomeintroduction/worker.jpg"
-                 className="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer-backgroundimage"/>
-         </Col>
-         <Col xs={6}
-              md={6}
-              lg={6}
-              className="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer"
-              id="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer4">
-            <img src="../images/landingpage/welcomeintroduction/graph.jpg"
-                 className="welcomeintroduction-displayimagescontainer-rowcontainer-colcontainer-backgroundimage"/>
-         </Col>
-       </Row>
-     </Col>
-    </Row>
- )
-}
+import React, { useEffect, useRef } from 'react';
+
+const WelcomeIntroduction = () => {
+  const imageRefs = useRef([]);
+  
+  useEffect(() => {
+    // Initialize animation on component mount
+    const observers = imageRefs.current.map((img, index) => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              // Add animation with staggered delay
+              setTimeout(() => {
+                entry.target.classList.add('animate');
+              }, index * 150);
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      
+      if (img) observer.observe(img);
+      return observer;
+    });
+    
+    // Cleanup
+    return () => {
+      observers.forEach(observer => {
+        observer.disconnect();
+      });
+    };
+  }, []);
+
+  // Reset refs array
+  imageRefs.current = [];
+  
+  // Add to refs array
+  const addToRefs = (el) => {
+    if (el && !imageRefs.current.includes(el)) {
+      imageRefs.current.push(el);
+    }
+  };
+
+  return (
+    <section className="welcome-introduction">
+      <div className="container">
+        <div className="content-row">
+          <div className="text-column">
+            <div className="text-content">
+              <h3 className="subheading">BUILDING YOUR PATH TO SUCCESS.</h3>
+              <h1 className="main-heading">Expert Services for Personal Growth and Business Development</h1>
+              <div className="description">
+                <p>One Unified Approach: We listen carefully to your needs for shelter, education, and advancement. At OMSIAP, we evaluate individual potential and help chart your course to success.</p>
+                <p>Unlock Your Potential</p>
+                <p>With OMSIAP's expert services and MFATIP program, you can receive monthly financial allocations dedicated to your personal growth.</p>
+                <p>Comprehensive Ecosystem</p>
+                <p>Engage with OMSIAP's marketplace, infrastructure initiatives, and community projects to maximize your financial benefits.</p>
+                <p>Our Specialized Services</p>
+                <ul>
+                  <li>Strategic marketing and pension planning</li>
+                  <li>Data-driven analytics with precision metrics</li>
+                  <li>Innovative design and content creation</li>
+                  <li>Infrastructure development</li>
+                </ul>
+              </div>
+            </div>
+            <div className="shield-image">
+              <img 
+                src="../images/landingpage/welcomeintroduction/goldenshield.jpg" 
+                alt="Gold Shield"
+                ref={addToRefs}
+              />
+            </div>
+          </div>
+          
+          <div className="image-grid-column">
+            <div className="image-grid">
+              <div className="grid-item animation-fade-in">
+                <img 
+                  src="../images/landingpage/welcomeintroduction/construction.jpg" 
+                  alt="Construction"
+                  ref={addToRefs}
+                />
+              </div>
+              <div className="grid-item animation-scale-in">
+                <img 
+                  src="../images/landingpage/welcomeintroduction/boss.jpg" 
+                  alt="Business Professional"
+                  ref={addToRefs}
+                />
+              </div>
+              <div className="grid-item animation-slide-in">
+                <img 
+                  src="../images/landingpage/welcomeintroduction/worker.jpg" 
+                  alt="Worker"
+                  ref={addToRefs}
+                />
+              </div>
+              <div className="grid-item animation-rotate-in">
+                <img 
+                  src="../images/landingpage/welcomeintroduction/graph.jpg" 
+                  alt="Business Graph"
+                  ref={addToRefs}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default WelcomeIntroduction;

@@ -10,6 +10,7 @@ const mongoose = require('mongoose');
 const omsiapdatascheme = require('./models/omsiap/omsiapdatascheme');
 
 const peoplesRoute = require('./routes/people/peoplesRoute.js');
+const productsRoute = require('./routes/products/productsRoute.js');
 
 const PORT = process.env.PORT || 4000 ;
 
@@ -24,5 +25,6 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 app.use('/people/', peoplesRoute);
+app.use('/products/', productsRoute);
 
 app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));

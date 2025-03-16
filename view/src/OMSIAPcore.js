@@ -25,6 +25,10 @@ import UserAccount from './components/useraccount/useraccount-component.js'
 import CheckoutPage from './components/checkout/checkout-component.js'
 import PlaceOrder from './components/placeorder/placeorder-component.js'
 import RegistrationPage from './components/registrationpage/registrationpage-component.js';
+import BusinessPortfolio from './components/businessportfolio/businessportfolio-component.js';
+import InfrasturesPortfolio from './components/infrastructuresportfolio/infrastructureportfolio-component.js';
+import CompanyAwards from './components/landingpage/awardsandachievements/readmoreaboutawardsandachievements-component.js';
+import DatabaseComponent from './components/database/database-component.js';
 
 import axiosCreatedInstance from './components/lib/axiosutil.js';
 
@@ -78,6 +82,7 @@ function OMSIAPCore() {
     id: "qwerty1234qwefdln-A-1",
     loginstatus: "logged in",
     status: {
+      type: "MFATIP",
       indication: "Registered",
       requests: [
        { 
@@ -126,38 +131,135 @@ function OMSIAPCore() {
         id: "",
         amount: 10,
         transactions: {
-          deposits: [],
-          widthdrawals: [],
           successful_deposits: [],
-          successful_widthdrawals: []
+          successful_withdrawals: [],
+          failed_deposits: [],
+          failed_withdrawals: []
         }
       }
     },
-    order: {
-      name: {
-        firstname: "",
-        middlename: "",
-        lastname: ""
-      },
-      shippingdetails: {
-        street: "",
-        baranggay: "",
-        city: "",
-        province: "",
-        country: "",
-        postal_zipcode: ""
-      },
-      paymentdetails: {
-        merchandise_total: 0,
-        merchandise_total_weight: 0,
-        merchandise_count: 0,
-        total_payment: 0,
-        totalshipment: 0,
-      },
-      products: []
-    }
+    transactions: []
     }
   );
+
+  const [transactions, setTransactions] = useState([
+    {
+      id: 'TXN-001',
+      date: '2025-02-25',
+      type: 'Purchase',
+      amount: -1200.50,
+      status: 'Completed',
+      products: [
+        { id: 'PRD-001', name: 'Premium T-Shirt', price: 299.99, quantity: 1, color: 'Black', size: 'L' },
+        { id: 'PRD-002', name: 'Designer Jeans', price: 450.50, quantity: 1, color: 'Blue', size: 'M' },
+        { id: 'PRD-003', name: 'Sports Socks', price: 75.00, quantity: 3, color: 'White', size: 'One Size' }
+      ],
+      orderdetails: {
+        orderedby: {
+          id: "",
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          nickname: ""
+        },
+        name: {
+          id: "",
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          nickname: ""
+        },
+        shipping: {
+          totalweight: 0,
+          fee: 0
+        },
+        amounts: {
+         totaprice: 0,
+         totalcapital: 0,
+         totaltransactiongiveaway: 0,
+         totalomsiapprofit: 0,
+         totalweightinGrams: 0,
+         totalweightinkilos: 0
+        }
+      }
+    },
+    {
+      id: 'TXN-002',
+      date: '2025-02-20',
+      type: 'Deposit',
+      amount: 3000.00,
+      status: 'Completed',
+      products: [],
+      orderdetails: {
+        orderedby: {
+          id: "",
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          nickname: ""
+        },
+        name: {
+          id: "",
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          nickname: ""
+        },
+        shipping: {
+          totalweight: 0,
+          fee: 0
+        },
+        amounts: {
+         totaprice: 0,
+         totalcapital: 0,
+         totaltransactiongiveaway: 0,
+         totalomsiapprofit: 0,
+         totalweightinGrams: 0,
+         totalweightinkilos: 0
+        }
+      }
+    },
+    {
+      id: 'TXN-003',
+      date: '2025-02-15',
+      type: 'Purchase',
+      amount: -750.25,
+      status: 'Completed',
+      products: [
+        { id: 'PRD-004', name: 'Running Shoes', price: 599.99, quantity: 1, color: 'Red/Black', size: '42' },
+        { id: 'PRD-005', name: 'Water Bottle', price: 45.25, quantity: 1, color: 'Blue', size: '750ml' },
+        { id: 'PRD-006', name: 'Fitness Band', price: 105.01, quantity: 1, color: 'Black', size: 'Regular' }
+      ],
+      orderdetails: {
+        orderedby: {
+          id: "",
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          nickname: ""
+        },
+        name: {
+          id: "",
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          nickname: ""
+        },
+        shipping: {
+          totalweight: 0,
+          fee: 0
+        },
+        amounts: {
+         totaprice: 0,
+         totalcapital: 0,
+         totaltransactiongiveaway: 0,
+         totalomsiapprofit: 0,
+         totalweightinGrams: 0,
+         totalweightinkilos: 0
+        }
+      }
+    }
+  ]);
 
   /// end of user data
 
@@ -373,8 +475,10 @@ function OMSIAPCore() {
 
                                      />}>
         </Route>
-        <Route path='/test'
+        <Route path='/honestiesonconstitutionalpromisesevaluation'
                element={<HOPE viewport={viewport}
+                              user={user}
+                              usercb={usercb}
                               citizenshipregistrationtype={citizenshipregistrationtype}
                               citizenshipregistrationtypecb={citizenshipregistrationtypecb}/>}>
         </Route>
@@ -420,11 +524,16 @@ function OMSIAPCore() {
                element={<CheckoutPage viewport={viewport}
                
                                       cart={cart}
-                                      cartcb={cartcb}/>}>
+                                      cartcb={cartcb}
+                                      
+                                      updatecomponent={updatecomponent}/>}>
         </Route>
         <Route path='/placeorder'
                element={<PlaceOrder viewport={viewport}
-                
+
+                                    user={user}
+                                    usercb={usercb}
+                                    
                                     cart={cart}
                                     cartcb={cartcb}/>}>
         </Route>
@@ -435,6 +544,24 @@ function OMSIAPCore() {
                                           user={user}
                                           usercb={usercb}/>}>
         </Route>
+
+        <Route path='/businessesportfolios'
+               element={<BusinessPortfolio/>}>
+        </Route>
+
+        <Route path='/infractructuresportfolio'
+               element={<InfrasturesPortfolio/>}>
+        </Route>
+
+        <Route path='/companyawardsandachievements'
+               element={<CompanyAwards />}>
+        </Route>
+ 
+        <Route path='/database'
+               element={<DatabaseComponent />}>
+
+        </Route>
+        
 
      </Routes>
     </Container>

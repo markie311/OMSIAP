@@ -134,14 +134,6 @@ Router.route("/registration").post( async (req,res)=> {
 
        }
 
- 
-       console.log("Invoked")
-       console.log()
-
-      {/*
-     
-     */}
-
    } catch(err) {
 
       console.log(`Something went wrong on the registration route: ${err}`);

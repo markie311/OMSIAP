@@ -20,13 +20,16 @@ export default function VideoPlayer(props) {
      else {
         return (
           <Col id='videoplayer'>
+            {/*
             <Col id="videoplayer-closebuttoncontainer">
               <p id="videoplayer-closebuttoncontainer-closebuttonheaderindication"
                  onClick={()=> {
                    const _videoplayer = document.querySelector("#videoplayer");
+                   alert("Synced")
                    _videoplayer.style.display = "none";
                  }}>x</p>
             </Col>
+             */}
             <Col id="videoplayer-videocontainer">
               <ReactPlayer url={props.url}
                            height='90%'

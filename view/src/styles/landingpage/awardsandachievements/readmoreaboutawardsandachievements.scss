@@ -1,0 +1,565 @@
+/* Company Awards Component Styling */
+.readmoreaboutawards-section {
+  background-color: #000;
+  color: #fff;
+  padding: 5rem 2rem;
+  overflow: hidden;
+  height:100vh;
+  overflow-y:scroll;
+}
+
+/* width */
+.readmoreaboutawards-section::-webkit-scrollbar {
+width: 20px;
+}
+
+/* Track */
+.readmoreaboutawards-section::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+.readmoreaboutawards-section::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+.readmoreaboutawards-section::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+
+/* Header Styling */
+.awards-header {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.awards-subtitle {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #f0f0f0;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.awards-title {
+  font-size: 2.8rem;
+  font-weight: 700;
+  margin-bottom: 1.5rem;
+}
+
+.awards-description {
+  font-size: 1.1rem;
+  color: #aaa;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Awards Container */
+.awards-container {
+  width: 100%;
+}
+
+.awards-row {
+  margin: 0 -15px;
+}
+
+/* Award Card Styling */
+.award-col {
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+.award-card {
+  background-color: #111;
+  border-radius: 10px;
+  overflow: hidden;
+  height: 100%;
+  padding: 2rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.award-card.animate-card {
+  animation: cardAppear 0.6s forwards;
+}
+
+.award-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+  background-color: #1a1a1a;
+}
+
+.award-card:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 0;
+  background: linear-gradient(to bottom, #fff, rgba(255, 255, 255, 0.5));
+  transition: height 0.3s ease;
+}
+
+.award-card:hover:before {
+  height: 100%;
+}
+
+.award-icon-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Medal Icon Styling */
+.medal-icon {
+  position: relative;
+  width: 100px;
+  height: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: medalSway 3s ease-in-out infinite;
+}
+
+.medal-ribbon {
+  width: 30px;
+  height: 40px;
+  background: linear-gradient(to right, #333, #444, #333);
+  position: relative;
+}
+
+.medal-ribbon:before,
+.medal-ribbon:after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  width: 20px;
+  height: 40px;
+  background: linear-gradient(to right, #333, #444, #333);
+}
+
+.medal-ribbon:before {
+  left: -15px;
+  transform: rotate(15deg);
+}
+
+.medal-ribbon:after {
+  right: -15px;
+  transform: rotate(-15deg);
+}
+
+.medal-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  animation: medalPulse 2s ease-in-out infinite;
+}
+
+.medal-star {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.gold-medal .medal-circle {
+  background: linear-gradient(145deg, #ffd700, #ffcc00);
+  border: 2px solid #e6c200;
+}
+
+.silver-medal .medal-circle {
+  background: linear-gradient(145deg, #e0e0e0, #c0c0c0);
+  border: 2px solid #a9a9a9;
+}
+
+.bronze-medal .medal-circle {
+  background: linear-gradient(145deg, #cd7f32, #b87333);
+  border: 2px solid #a56a30;
+}
+
+.platinum-medal .medal-circle {
+  background: linear-gradient(145deg, #e5e4e2, #d9d9d9);
+  border: 2px solid #bbbaba;
+}
+
+.award-card:hover .medal-circle {
+  animation: medalSpin 1s ease-in-out;
+}
+
+.award-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.award-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.award-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.award-organization {
+  color: #f0f0f0;
+}
+
+.award-year {
+  color: #aaa;
+}
+
+.award-description {
+  color: #bbb;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+  flex: 1;
+}
+
+.award-view-more {
+  text-align: center;
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.award-view-more span {
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.award-view-more span:after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: #fff;
+  transition: width 0.3s ease;
+}
+
+.award-card:hover .award-view-more span:after {
+  width: 100%;
+}
+
+/* Modal Styling */
+.award-modal .modal-content {
+  background-color: #111;
+  color: #fff;
+  border-radius: 10px;
+  border: 1px solid #333;
+  animation: modalAppear 0.3s ease-out;
+}
+
+.modal-animation.fade .modal-dialog {
+  transition: transform 0.3s ease-out;
+  transform: translateY(-50px);
+}
+
+.modal-animation.show .modal-dialog {
+  transform: translateY(0);
+}
+
+.award-modal .modal-header {
+  border-bottom: 1px solid #333;
+  padding: 1.5rem 2rem;
+}
+
+.award-modal .modal-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.award-modal .modal-header .close {
+  color: #fff;
+  opacity: 0.8;
+}
+
+.award-modal .modal-body {
+  padding: 2rem;
+}
+
+.modal-award-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-award-icon {
+  margin-right: 1.5rem;
+}
+
+.modal-award-meta {
+  flex: 1;
+}
+
+.modal-award-organization {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.modal-award-year {
+  font-size: 1rem;
+  color: #aaa;
+}
+
+.modal-award-content {
+  line-height: 1.7;
+}
+
+.modal-award-content h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 1.5rem 0 1rem;
+  color: #f0f0f0;
+}
+
+.modal-award-content p {
+  margin-bottom: 1.5rem;
+  color: #ddd;
+}
+
+.modal-award-achievements {
+  padding-left: 1.5rem;
+}
+
+.modal-award-achievements li {
+  margin-bottom: 0.8rem;
+  position: relative;
+  padding-left: 0.5rem;
+}
+
+.modal-award-achievements li:before {
+  content: "";
+  position: absolute;
+  left: -1rem;
+  top: 0.6rem;
+  width: 6px;
+  height: 6px;
+  background-color: #fff;
+  border-radius: 50%;
+}
+
+.award-modal .modal-footer {
+  border-top: 1px solid #333;
+  padding: 1.5rem 2rem;
+  justify-content: center;
+}
+
+.modal-close-btn {
+  background-color: transparent;
+  color: #fff;
+  border: 2px solid #fff;
+  padding: 0.6rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.modal-close-btn:hover {
+  background-color: #fff;
+  color: #000;
+}
+
+/* Animation Classes */
+.animate-fade-in {
+  animation: fadeIn 1s forwards;
+}
+
+.animate-fade-in-delay {
+  opacity: 0;
+  animation: fadeIn 1s forwards;
+  animation-delay: 0.3s;
+}
+
+.animate-slide-up {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: slideUp 0.8s forwards;
+}
+
+.animate-slide-in {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: slideIn 0.5s forwards;
+}
+
+.animate-slide-in-delay {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: slideIn 0.5s forwards;
+  animation-delay: 0.2s;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes cardAppear {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+  }
+  70% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+}
+
+@keyframes medalSway {
+  0% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(3deg);
+  }
+  75% {
+    transform: rotate(-3deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes medalPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes medalSpin {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 991px) {
+  .awards-title {
+    font-size: 2.4rem;
+  }
+
+  .award-card {
+    padding: 1.5rem;
+  }
+
+  .award-title {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .awards-section {
+    padding: 4rem 1rem;
+  }
+
+  .awards-title {
+    font-size: 2rem;
+  }
+
+  .modal-award-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .modal-award-icon {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}
+

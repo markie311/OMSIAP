@@ -5,8 +5,6 @@ $mainbgcolor: #202020;
 $subbgcolor: #27272b;
 $containersonidlebgcolor: #e2e4e1;
 
-@media only screen and (min-width: 1200px) { 
-
 #mfatip {
 position:relative;
 height:100%;
@@ -287,6 +285,7 @@ margin-left:auto;
 margin-right:auto;
 display:none;
 overflow-y:scroll;
+z-index:100;
 }
 
 /* width */
@@ -880,4 +879,1126 @@ width: 100%;
 }
 }
     
-}
+///////////////////////////////
+
+// MFATIP Component Styles - Dark Theme
+
+// Global styles for the MFATIP container
+#mfatip {
+    background-color: #000;
+    color: #fff;
+    width: 100%;
+    
+    // Landing Page View
+    #mfatip-landingpageview {
+      width: 100%;
+    }
+    
+    // Header Row Container
+    #mfatipheaderrowcontariner {
+      padding: 3rem 1rem;
+      background-color: #000;
+      
+      // Header Indications Container
+      &-headerindicationscontainer {
+        padding: 2rem 1rem;
+        
+        &-headerindication {
+          color: #fff;
+          
+          &:nth-child(1) {
+            color: #4caf50;
+            font-size: 1.2rem;
+          }
+          
+          &:nth-child(3) {
+            color: #4caf50;
+            font-size: 2.5rem;
+            font-weight: 700;
+          }
+        }
+      }
+      
+      // Data Header Indication Container
+      &-dataheaderindicationcontainer {
+        
+        &-rowcontainer {
+          width: 100%;
+          
+          // Data Container
+          &-datacontainer {
+            
+            &-datarowcontainer {
+              width: 100%;
+              
+              &-datacolcontainer {
+                
+                &-positioningcontainer {
+                  padding: 0.5rem;
+                  
+                  &-datacontainer {
+                    background-color: #111;
+                    border: 1px solid #333;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                    border-radius: 5px;
+                    
+                    &-dataheaderindication {
+                      color: #fff;
+                      font-size: 0.9rem;
+                      margin: 0;
+                      font-weight: 600;
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Data Display Image Container
+            &-datadisplayimagecontainer {
+              margin-top: 1rem;
+              overflow: hidden;
+              border-radius: 8px;
+              
+              &-datadisplayimage {
+                width: 100%;
+                height: auto;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+                
+                &:hover {
+                  transform: scale(1.05);
+                }
+              }
+            }
+          }
+          
+          // Owner Background Image Container
+          &-ownerbackgroundimagecontainer {
+            padding: 1rem;
+            
+            &-ownerbackgrounimage {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              border-radius: 8px;
+              transition: transform 0.3s ease;
+              
+              &:hover {
+                transform: scale(1.02);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // HOPE Header
+    #hopeheader {
+      padding: 3rem 1rem;
+      background-color: #000;
+      
+      // Display Images Container
+      &-displayimagescontainer {
+        
+        &-rowcontainer {
+          width: 100%;
+          
+          &-colcontainer {
+            padding: 0.5rem;
+            
+            #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage1,
+            #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage2,
+            #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage3 {
+              width: 100%;
+              border-radius: 8px;
+              margin-bottom: 1rem;
+              transition: transform 0.3s ease;
+              
+              &:hover {
+                transform: scale(1.05);
+              }
+            }
+            
+            #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage3 {
+              height: calc(100% - 1rem);
+              object-fit: cover;
+            }
+          }
+        }
+      }
+      
+      // Header Indications Container
+      &-hopeheader-headerindicationscontainer {
+        padding: 2rem 1rem;
+        
+        &-headerindication {
+          color: #fff;
+          
+          &:nth-child(1) {
+            color: #4caf50;
+            font-size: 1.2rem;
+          }
+          
+          &:nth-child(3) {
+            color: #4caf50;
+            font-size: 2rem;
+            font-weight: 700;
+          }
+        }
+      }
+    }
+    
+    // MFATIP Configuration
+    #mfatipconfiguration {
+      padding: 3rem 1rem;
+      background-color: #000;
+      
+      // Header Indication Container
+      &-headerindicationcontainer {
+        text-align: center;
+        margin-bottom: 2rem;
+        
+        &-headerindication {
+          color: #fff;
+          
+          &:nth-child(1) {
+            color: #4caf50;
+            font-size: 1.2rem;
+          }
+          
+          &:nth-child(2) {
+            color: #4caf50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-top: 1rem;
+          }
+        }
+      }
+      
+      // Configuration Modal Row Container
+      &-configurationmodalrowcontainer {
+        
+        &-colcontainer {
+          background-color: #111;
+          border: 1px solid #333;
+          padding: 2rem;
+          margin-bottom: 2rem;
+          border-radius: 8px;
+          
+          &-headerindication {
+            color: #fff;
+            
+            &:nth-child(1) {
+              color: #4caf50;
+              font-size: 1.8rem;
+              font-weight: 700;
+            }
+            
+            &:nth-child(3) {
+              color: #4caf50;
+              font-size: 1.2rem;
+              margin-bottom: 1rem;
+            }
+            
+            &:nth-child(5) {
+              color: #4caf50;
+              font-size: 2rem;
+              font-weight: 700;
+            }
+          }
+          
+          ul {
+            list-style: none;
+            padding-left: 0;
+            
+            li, p {
+              display: flex;
+              align-items: center;
+              margin-bottom: 0.8rem;
+              color: #fff;
+            }
+            
+            ul {
+              padding-left: 2rem;
+            }
+          }
+          
+          &-checkdisplayimage {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+          }
+          
+          // Setup MFATIP Account Button
+          &-setupmymfatipaccountbutton {
+            width: 100%;
+            padding: 1rem;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            
+            &:hover {
+              background-color: #3d8b40;
+            }
+          }
+        }
+      }
+    }
+    
+    // Setup MFATIP Account
+    #setupmfatipaccount {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      overflow-y: auto;
+      display: none;
+      
+      // Navigation Container
+      &-navigationcontainer {
+        padding: 1rem;
+        background-color: #111;
+        border-bottom: 1px solid #333;
+        
+        &-navigationheaderindicationcontainer {
+          
+          &-headerindication {
+            color: #4caf50;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0;
+            
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+      
+      // Registration Container
+      .registration-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #111;
+        border: 1px solid #333;
+        border-radius: 8px;
+        
+        h2 {
+          color: #4caf50;
+          font-size: 2rem;
+          margin-bottom: 2rem;
+          text-align: center;
+        }
+        
+        .form-section {
+          margin-bottom: 2rem;
+          
+          h3 {
+            color: #4caf50;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #333;
+          }
+          
+          .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -1rem;
+            
+            .form-group {
+              flex: 1;
+              min-width: 250px;
+              padding: 0 1rem;
+              margin-bottom: 1.5rem;
+              
+              label {
+                display: block;
+                color: #fff;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+              }
+              
+              input, select {
+                width: 100%;
+                padding: 0.8rem;
+                background-color: #222;
+                border: 1px solid #444;
+                border-radius: 4px;
+                color: #fff;
+                
+                &:focus {
+                  outline: none;
+                  border-color: #4caf50;
+                }
+              }
+            }
+          }
+          
+          .document-row {
+            margin-bottom: 2rem;
+            
+            .document-group {
+              h4 {
+                color: #4caf50;
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+              }
+              
+              .document-uploads {
+                display: flex;
+                flex-wrap: wrap;
+                margin: 0 -1rem;
+                
+                .upload-item {
+                  flex: 1;
+                  min-width: 250px;
+                  padding: 0 1rem;
+                  margin-bottom: 1.5rem;
+                  
+                  label {
+                    display: block;
+                    cursor: pointer;
+                    
+                    .upload-label {
+                      color: #fff;
+                      margin-bottom: 0.5rem;
+                      font-weight: 600;
+                    }
+                    
+                    .upload-preview {
+                      width: 100%;
+                      height: 200px;
+                      background-color: #222;
+                      border: 2px dashed #444;
+                      border-radius: 8px;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      overflow: hidden;
+                      transition: border-color 0.3s ease;
+                      
+                      &:hover {
+                        border-color: #4caf50;
+                      }
+                      
+                      &.has-image {
+                        border-style: solid;
+                        border-color: #4caf50;
+                      }
+                      
+                      img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: contain;
+                      }
+                      
+                      .upload-placeholder {
+                        color: #777;
+                        font-size: 0.9rem;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 1rem;
+          
+          button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            
+            &.btn-primary {
+              background-color: #4caf50;
+              color: #fff;
+              
+              &:hover {
+                background-color: #3d8b40;
+              }
+            }
+            
+            &.btn-secondary {
+              background-color: #444;
+              color: #fff;
+              
+              &:hover {
+                background-color: #555;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Media Queries
+  @media (max-width: 768px) {
+    #mfatip {
+      #mfatipheaderrowcontariner {
+        &-headerindicationscontainer {
+          &-headerindication {
+            &:nth-child(3) {
+              font-size: 1.8rem;
+            }
+          }
+        }
+      }
+      
+      #hopeheader {
+        &-hopeheader-headerindicationscontainer {
+          &-headerindication {
+            &:nth-child(3) {
+              font-size: 1.5rem;
+            }
+          }
+        }
+      }
+      
+      #setupmfatipaccount {
+        .registration-container {
+          padding: 1.5rem;
+          
+          .form-section {
+            .form-row {
+              .form-group {
+                min-width: 100%;
+              }
+            }
+            
+            .document-row {
+              .document-group {
+                .document-uploads {
+                  .upload-item {
+                    min-width: 100%;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Special Text Indications
+  h1, h2, h3, h4, h5 {
+    color: #4caf50;
+  }
+  
+  strong {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  .special-text {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  //////////////////////////////
+  
+  // MFATIP Component Styles - Dark Theme
+
+// Add this at the top of your file, after the existing imports
+@keyframes countUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  // Global styles for the MFATIP container
+  #mfatip {
+    background-color: #000;
+    color: #fff;
+    width: 100%;
+    
+    // Landing Page View
+    #mfatip-landingpageview {
+      width: 100%;
+    }
+    
+    // Header Row Container
+    #mfatipheaderrowcontariner {
+      padding: 3rem 1rem;
+      background-color: #000;
+      
+      // Header Indications Container
+      &-headerindicationscontainer {
+        padding: 2rem 1rem;
+        
+        &-headerindication {
+          color: #fff;
+          
+          &:nth-child(1) {
+            color: #4caf50;
+            font-size: 1.2rem;
+          }
+          
+          &:nth-child(3) {
+            color: #4caf50;
+            font-size: 2.5rem;
+            font-weight: 700;
+          }
+        }
+      }
+      
+      // Data Header Indication Container
+      &-dataheaderindicationcontainer {
+        
+        &-rowcontainer {
+          width: 100%;
+          
+          // Data Container
+          &-datacontainer {
+            
+            &-datarowcontainer {
+              width: 100%;
+              
+              &-datacolcontainer {
+                
+                &-positioningcontainer {
+                  padding: 0.5rem;
+                  
+                  &-datacontainer {
+                    background-color: #111;
+                    border: 1px solid #333;
+                    padding: 1rem;
+                    margin-bottom: 1rem;
+                    border-radius: 5px;
+                    
+                    &-dataheaderindication {
+                      color: #fff;
+                      font-size: 0.9rem;
+                      margin: 0;
+                      font-weight: 600;
+                      
+                      // Add this new block for the animation
+                      &.animate-count {
+                        animation: countUp 1s ease-out forwards;
+                        opacity: 0;
+  
+                        @for $i from 1 through 4 {
+                          &:nth-child(#{$i}) {
+                            animation-delay: #{$i * 0.2}s;
+                          }
+                        }
+                      }
+  
+                      // Add this for the number that will be animated
+                      .count-number {
+                        display: inline-block;
+                        min-width: 30px;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            // Data Display Image Container
+            &-datadisplayimagecontainer {
+              margin-top: 1rem;
+              overflow: hidden;
+              border-radius: 8px;
+              
+              &-datadisplayimage {
+                width: 100%;
+                height: auto;
+                object-fit: cover;
+                transition: transform 0.3s ease;
+                
+                &:hover {
+                  transform: scale(1.05);
+                }
+              }
+            }
+          }
+          
+          // Owner Background Image Container
+          &-ownerbackgroundimagecontainer {
+            padding: 1rem;
+            
+            &-ownerbackgrounimage {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+              border-radius: 8px;
+              transition: transform 0.3s ease;
+              
+              &:hover {
+                transform: scale(1.02);
+              }
+            }
+          }
+        }
+      }
+    }
+    
+    // HOPE Header
+    #hopeheader {
+      padding: 3rem 1rem;
+      background-color: #000;
+      
+      // Display Images Container
+      &-displayimagescontainer {
+        
+        &-rowcontainer {
+          width: 100%;
+          
+          &-colcontainer {
+            padding: 0.5rem;
+            
+            #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage1,
+            #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage2,
+            #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage3 {
+              width: 100%;
+              border-radius: 8px;
+              margin-bottom: 1rem;
+              transition: transform 0.3s ease;
+              
+              &:hover {
+                transform: scale(1.05);
+              }
+            }
+            
+            #hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage3 {
+              height: calc(100% - 1rem);
+              object-fit: cover;
+            }
+          }
+        }
+      }
+      
+      // Header Indications Container
+      &-hopeheader-headerindicationscontainer {
+        padding: 2rem 1rem;
+        
+        &-headerindication {
+          color: #fff;
+          
+          &:nth-child(1) {
+            color: #4caf50;
+            font-size: 1.2rem;
+          }
+          
+          &:nth-child(3) {
+            color: #4caf50;
+            font-size: 2rem;
+            font-weight: 700;
+          }
+        }
+      }
+    }
+    
+    // MFATIP Configuration
+    #mfatipconfiguration {
+      padding: 3rem 1rem;
+      background-color: #000;
+      
+      // Header Indication Container
+      &-headerindicationcontainer {
+        text-align: center;
+        margin-bottom: 2rem;
+        
+        &-headerindication {
+          color: #fff;
+          
+          &:nth-child(1) {
+            color: #4caf50;
+            font-size: 1.2rem;
+          }
+          
+          &:nth-child(2) {
+            color: #4caf50;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-top: 1rem;
+          }
+        }
+      }
+      
+      // Configuration Modal Row Container
+      &-configurationmodalrowcontainer {
+        
+        &-colcontainer {
+          background-color: #111;
+          border: 1px solid #333;
+          padding: 2rem;
+          margin-bottom: 2rem;
+          border-radius: 8px;
+          
+          &-headerindication {
+            color: #fff;
+            
+            &:nth-child(1) {
+              color: #4caf50;
+              font-size: 1.8rem;
+              font-weight: 700;
+            }
+            
+            &:nth-child(3) {
+              color: #4caf50;
+              font-size: 1.2rem;
+              margin-bottom: 1rem;
+            }
+            
+            &:nth-child(5) {
+              color: #4caf50;
+              font-size: 2rem;
+              font-weight: 700;
+            }
+          }
+          
+          ul {
+            list-style: none;
+            padding-left: 0;
+            
+            li, p {
+              display: flex;
+              align-items: center;
+              margin-bottom: 0.8rem;
+              color: #fff;
+            }
+            
+            ul {
+              padding-left: 2rem;
+            }
+          }
+          
+          &-checkdisplayimage {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+          }
+          
+          // Setup MFATIP Account Button
+          &-setupmymfatipaccountbutton {
+            width: 100%;
+            padding: 1rem;
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            
+            &:hover {
+              background-color: #3d8b40;
+            }
+          }
+        }
+      }
+    }
+    
+    // Setup MFATIP Account
+    #setupmfatipaccount {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 1000;
+      overflow-y: auto;
+      display: none;
+      
+      // Navigation Container
+      &-navigationcontainer {
+        padding: 1rem;
+        background-color: #111;
+        border-bottom: 1px solid #333;
+        
+        &-navigationheaderindicationcontainer {
+          
+          &-headerindication {
+            color: #4caf50;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 0;
+            
+            &:hover {
+              text-decoration: underline;
+            }
+          }
+        }
+      }
+      
+      // Registration Container
+      .registration-container {
+        max-width: 900px;
+        margin: 2rem auto;
+        padding: 2rem;
+        background-color: #111;
+        border: 1px solid #333;
+        border-radius: 8px;
+        
+        h2 {
+          color: #4caf50;
+          font-size: 2rem;
+          margin-bottom: 2rem;
+          text-align: center;
+        }
+        
+        .form-section {
+          margin-bottom: 2rem;
+          
+          h3 {
+            color: #4caf50;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #333;
+          }
+          
+          .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 0 -1rem;
+            
+            .form-group {
+              flex: 1;
+              min-width: 250px;
+              padding: 0 1rem;
+              margin-bottom: 1.5rem;
+              
+              label {
+                display: block;
+                color: #fff;
+                margin-bottom: 0.5rem;
+                font-weight: 600;
+              }
+              
+              input, select {
+                width: 100%;
+                padding: 0.8rem;
+                background-color: #222;
+                border: 1px solid #444;
+                border-radius: 4px;
+                color: #fff;
+                
+                &:focus {
+                  outline: none;
+                  border-color: #4caf50;
+                }
+              }
+            }
+          }
+          
+          .document-row {
+            margin-bottom: 2rem;
+            
+            .document-group {
+              h4 {
+                color: #4caf50;
+                font-size: 1.2rem;
+                margin-bottom: 1rem;
+              }
+              
+              .document-uploads {
+                display: flex;
+                flex-wrap: wrap;
+                margin: 0 -1rem;
+                
+                .upload-item {
+                  flex: 1;
+                  min-width: 250px;
+                  padding: 0 1rem;
+                  margin-bottom: 1.5rem;
+                  
+                  label {
+                    display: block;
+                    cursor: pointer;
+                    
+                    .upload-label {
+                      color: #fff;
+                      margin-bottom: 0.5rem;
+                      font-weight: 600;
+                    }
+                    
+                    .upload-preview {
+                      width: 100%;
+                      height: 200px;
+                      background-color: #222;
+                      border: 2px dashed #444;
+                      border-radius: 8px;
+                      display: flex;
+                      justify-content: center;
+                      align-items: center;
+                      overflow: hidden;
+                      transition: border-color 0.3s ease;
+                      
+                      &:hover {
+                        border-color: #4caf50;
+                      }
+                      
+                      &.has-image {
+                        border-style: solid;
+                        border-color: #4caf50;
+                      }
+                      
+                      img {
+                        width: 100%;
+                        height: 100%;
+                        object-fit: contain;
+                      }
+                      
+                      .upload-placeholder {
+                        color: #777;
+                        font-size: 0.9rem;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        .form-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 1rem;
+          
+          button {
+            padding: 0.8rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            
+            &.btn-primary {
+              background-color: #4caf50;
+              color: #fff;
+              
+              &:hover {
+                background-color: #3d8b40;
+              }
+            }
+            
+            &.btn-secondary {
+              background-color: #444;
+              color: #fff;
+              
+              &:hover {
+                background-color: #555;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Media Queries
+  @media (max-width: 768px) {
+    #mfatip {
+      #mfatipheaderrowcontariner {
+        &-headerindicationscontainer {
+          &-headerindication {
+            &:nth-child(3) {
+              font-size: 1.8rem;
+            }
+          }
+        }
+      }
+      
+      #hopeheader {
+        &-hopeheader-headerindicationscontainer {
+          &-headerindication {
+            &:nth-child(3) {
+              font-size: 1.5rem;
+            }
+          }
+        }
+      }
+      
+      #setupmfatipaccount {
+        .registration-container {
+          padding: 1.5rem;
+          
+          .form-section {
+            .form-row {
+              .form-group {
+                min-width: 100%;
+              }
+            }
+            
+            .document-row {
+              .document-group {
+                .document-uploads {
+                  .upload-item {
+                    min-width: 100%;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Special Text Indications
+  h1, h2, h3, h4, h5 {
+    color: #4caf50;
+  }
+  
+  strong {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  .special-text {
+    color: #4caf50;
+    font-weight: bold;
+  }
+
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication {
+  position:relative;
+  color:black;
+  }
+
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li {
+    position:relative;
+    color:black;
+    display:flex; 
+  }
+
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage {
+  position:relative;
+  top:-1.5vh;
+  }
+  
+  

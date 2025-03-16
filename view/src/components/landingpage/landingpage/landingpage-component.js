@@ -62,8 +62,6 @@ export default function LandingPage(props) {
         <Footer />
       </Col>
 
-      <VideoPlayer url={url}/>
-
       <Awards />
 
       <CitizenshipRegistration  user={props.user}
