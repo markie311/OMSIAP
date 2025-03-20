@@ -77,20 +77,20 @@ warranty: {
 })
 
 const registrantdatascheme = new Schema({
-id: {
-type: 'string'
-},
-loginstatus: {
-type: 'string'
-},
-status: {
- type: {
+ id: {
+  type: 'string'
+ },
+ loginstatus: {
+  type: 'string'
+ },
+ status: {
+  type: {
    type: "string"
  },
  indication: {
   type: 'string'
  },
-requests: [registrantstatusrequests]
+ requests: [registrantstatusrequests]
 },
 name: {
 firstname: {
@@ -158,8 +158,92 @@ civil_status: {
     type: 'string'
 },
 government_issued_identification: {
-  type: 'string'
-} 
+  frontphoto: {
+   name: {
+    type: 'string'
+   },
+   description: {
+    type: 'string'
+   },
+   image: {
+    data: {
+      type: 'buffer'
+    },
+    contenttype: {
+      type: 'string'
+    }
+   },
+   uploaddate: {
+    type: 'string'
+   }
+  },
+  backphoto: {
+    name: {
+      type: 'string'
+     },
+     description: {
+      type: 'string'
+     },
+     image: {
+      data: {
+        type: 'buffer'
+      },
+      contenttype: {
+        type: 'string'
+      }
+     },
+     uploaddate: {
+      type: 'string'
+     }
+  }
+},
+birthcertificate: {
+  frontphoto: {
+    name: {
+     type: 'string'
+    },
+    description: {
+     type: 'string'
+    },
+    image: {
+     data: {
+       type: 'buffer'
+     },
+     contenttype: {
+       type: 'string'
+     }
+    },
+    uploaddate: {
+     type: 'string'
+    }
+   },
+   backphoto: {
+     name: {
+       type: 'string'
+      },
+      description: {
+       type: 'string'
+      },
+      image: {
+       data: {
+         type: 'buffer'
+       },
+       contenttype: {
+         type: 'string'
+       }
+      },
+      uploaddate: {
+       type: 'string'
+      }
+   }
+}
+},
+passwords: {
+  account: {
+    password: {
+      type: 'string'
+    }
+  }
 },
 credits: {
 omsiapawasto: {

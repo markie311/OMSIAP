@@ -30,6 +30,8 @@ import InfrasturesPortfolio from './components/infrastructuresportfolio/infrastr
 import CompanyAwards from './components/landingpage/awardsandachievements/readmoreaboutawardsandachievements-component.js';
 import DatabaseComponent from './components/database/database-component.js';
 
+import ImageUpload from './components/imageupload/imageupload-component.js';
+
 import axiosCreatedInstance from './components/lib/axiosutil.js';
 
 function OMSIAPCore() {
@@ -559,6 +561,11 @@ function OMSIAPCore() {
  
         <Route path='/database'
                element={<DatabaseComponent />}>
+
+        </Route>
+
+        <Route path='/imageupload'
+               element={<ImageUpload />}>
 
         </Route>
         

@@ -4,9 +4,445 @@ const Router = require('express').Router();
 const mongoose = require('mongoose');
 const Decimal128 = mongoose.Types.Decimal128;
 
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
+
 const mongodb = require('../../lib/mongodb/database.js');
 
 const omsiapdatascheme = require('../../models/omsiap/omsiapdatascheme.js');
+const productdatascheme = require('../../models/products/productsdatascheme.js')
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    // Create a path from the server directory to the React app's public folder
+    const uploadDir = path.join(__dirname, '../../../view/public/images/market/products');
+    
+    // Ensure the directory exists
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    
+    cb(null, uploadDir);
+  },
+  filename: function(req, file, cb) {
+    // Get the product name from the request body
+    const productName = req.body.name || 'product';
+    
+    // Clean the product name to make it filename-friendly
+    const cleanProductName = productName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '') // Remove special characters
+      .trim();
+    
+    // Get the file count to determine image number
+    const fileCount = req.fileCount = (req.fileCount || 0) + 1;
+    
+    // Create filename in format: productname-image1.jpg
+    const filename = `${cleanProductName}-image${fileCount}${path.extname(file.originalname)}`;
+    
+    cb(null, filename);
+  }
+});
+
+// File filter to accept only images
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+  
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+// Initialize multer upload
+const upload = multer({ 
+  storage: storage, 
+  fileFilter: fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
+});
+
+
+Router.route("/addproduct").post(upload.array('images', 10), async (req, res) => {
+  try {
+    // Connect to MongoDB
+    await mongoose.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: 'omsiap',
+      autoCreate: false
+    });
+
+    // Check if database info exists
+    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
+    const omsiapdata = await OmsiapData.findById("Code-113-1143");
+    
+    if (!omsiapdata) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+
+    // Parse specifications and features as simple string arrays
+    let specifications = [];
+    let features = [];
+    
+    try {
+      if (req.body.specifications) {
+        specifications = JSON.parse(req.body.specifications);
+        // Convert each string to specification object format required by schema
+        specifications = specifications.map(spec => ({ name: spec }));
+      }
+      
+      if (req.body.features) {
+        features = JSON.parse(req.body.features);
+        // Convert each string to feature object format required by schema
+        features = features.map(feature => ({ name: feature }));
+      }
+    } catch (error) {
+      return res.status(400).json({ 
+        message: "Invalid specifications or features format",
+        error: error.message
+      });
+    }
+
+    // Process uploaded images
+    const imageFiles = req.files || [];
+    
+    // Convert image paths to objects with 'url' property
+    const images = imageFiles.map(file => ({ url: file.path }));
+    
+    // Create product ID
+    const productId = `PROD-${uuidv4().substring(0, 8)}`;
+    
+    // Create product object (but don't save it as a separate document)
+    const newProduct = {
+      id: productId,
+      name: req.body.name,
+      price: parseFloat(req.body.price) || 0,
+      category: req.body.category,
+      description: req.body.description,
+      weightingrams: parseFloat(req.body.weightingrams) || 0,
+      images: images,
+      stock: parseFloat(req.body.stock) || 0,
+      rating: 0,
+      reviews: 0,
+      specifications: specifications,
+      videoUrl: req.body.videoUrl || "",
+      features: features,
+      warranty: req.body.warranty || "",
+      quantity: parseFloat(req.body.quantity) || 1,
+      focuseddata: {
+        price: {
+          price: parseFloat(req.body.price) || 0,
+          capital: parseFloat(req.body.capital) || 0,
+          transactiongiveaway: parseFloat(req.body.transactiongiveaway) || 0,
+          omsiapprofit: parseFloat(req.body.omsiapprofit) || 0
+        }
+      },
+      orderdetails: {
+        quantity: parseFloat(req.body.quantity) || 1,
+        product: {
+          price: parseFloat(req.body.price) || 0,
+          capital: parseFloat(req.body.capital) || 0,
+          transactiongiveaway: parseFloat(req.body.transactiongiveaway) || 0,
+          omsiapprofit: parseFloat(req.body.omsiapprofit) || 0
+        },
+        shipment: {
+          totalkilos: parseFloat(req.body.weightingrams) / 1000 || 0,
+          totalshipmentfee: parseFloat(req.body.shipmentfee) || 0
+        }
+      }
+    };
+    
+    // Update OMSIAP data to include the new product
+    await OmsiapData.updateOne(
+      { _id: "Code-113-1143" },
+      { $push: { products: newProduct } }
+    );
+    
+    // Return success response
+    res.status(201).json({
+      message: "Product added successfully",
+      productId: productId
+    });
+    
+  } catch (error) {
+    console.warn("Error adding product:", error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error.message
+    });
+  }
+});
+
+Router.route("/getproducttobeviewed").post(async(req, res) => {
+
+  try {
+    const id = req.body.id;
+    
+    await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: 'omsiap',
+      autoCreate: false
+    });
+    
+    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
+    
+    // Find the document that contains your products
+    const omsiapdata = await OmsiapData.findById("Code-113-1143");
+  
+    
+    if (!omsiapdata) {
+      return res.status(404).json({ message: "Database not found" });
+    }
+    
+    // Find the product with the matching _id or id
+    let product = null;
+    
+    // Try to find by ObjectId if it's a valid ObjectId
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      product = omsiapdata.products.find(product => 
+        product._id.toString() === id
+      );
+    }
+    
+    // If not found by ObjectId, try to find by the id field
+    if (!product) {
+      product = omsiapdata.products.find(product => product.id === id);
+    }
+    
+    if (product) {
+      return res.status(200).json({ message: "Product found", data: product });
+    } else {
+      return res.status(200).json({ message: "Product not found" });
+    }
+    
+  } catch(err) {
+    console.error("Error fetching product:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+Router.route("/getproducttobeupdated").post(async(req, res) => {
+  try {
+    const id = req.body.id;
+    
+    await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: 'omsiap',
+      autoCreate: false
+    });
+    
+    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
+    
+    // Find the document that contains your products
+    const omsiapdata = await OmsiapData.findById("Code-113-1143");
+        
+    if (!omsiapdata) {
+      return res.status(404).json({ message: "Database not found" });
+    }
+    
+    // Find the product with the matching _id or id
+    let product = null;
+    
+    // Try to find by ObjectId if it's a valid ObjectId
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      product = omsiapdata.products.find(product => 
+        product._id.toString() === id
+      );
+    }
+
+    
+    // If not found by ObjectId, try to find by the id field
+    if (!product) {
+      product = omsiapdata.products.find(product => product.id === id);
+    }
+    
+    if (product) {
+      return res.status(200).json({ message: "Product found", data: product });
+    } else {
+      return res.status(200).json({ message: "Product not found" });
+    }
+    
+  } catch(err) {
+    console.error("Error fetching product:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+Router.route("/updateproduct").put(upload.array('newImages', 10), async (req, res) => {
+  try {
+    // Connect to MongoDB
+    await mongoose.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: 'omsiap',
+      autoCreate: false
+    });
+    
+    // Get the product ID to update
+    const productId = req.body.productId;
+    
+    // Check if database info exists
+    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
+    const omsiapdata = await OmsiapData.findById("Code-113-1143");
+    
+    if (!omsiapdata) {
+      return res.status(404).json({ message: "Data not found" });
+    }
+    
+    // Find the product in the products array
+    const productIndex = omsiapdata.products.findIndex(p => p._id.toString() === productId);
+    
+    if (productIndex === -1) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+    
+    // Parse the data from form
+    const specifications = JSON.parse(req.body.specifications || '[]');
+    const features = JSON.parse(req.body.features || '[]');
+    const imagesToDelete = JSON.parse(req.body.imagesToDelete || '[]');
+    const focuseddata = JSON.parse(req.body.focuseddata || '{}');
+    const orderdetails = JSON.parse(req.body.orderdetails || '{}');
+    
+    // Process new uploaded images
+    const newImageFiles = req.files || [];
+    const newImages = newImageFiles.map(file => {
+      // Extract just the filename from the path and convert to proper format
+      const fullPath = file.path;
+      const filename = fullPath.split('\\').pop().split('/').pop();
+      return { url: `../images/market/products/${filename}` };
+    });
+    
+    // Filter out images to delete
+    let currentImages = omsiapdata.products[productIndex].images.filter(img => {
+      return !imagesToDelete.some(deleteId => {
+        // Check if the deleteId matches the image._id or the image.url
+        return img._id.toString() === deleteId || img.url === deleteId;
+      });
+    });
+    
+    // Combine with new images
+    const updatedImages = [...currentImages, ...newImages];
+    
+    // Update product data
+    omsiapdata.products[productIndex].name = req.body.name;
+    omsiapdata.products[productIndex].price = parseFloat(req.body.price) || 0;
+    omsiapdata.products[productIndex].stock = parseFloat(req.body.stock) || 0;
+    omsiapdata.products[productIndex].category = req.body.category;
+    omsiapdata.products[productIndex].weightingrams = parseFloat(req.body.weightingrams) || 0;
+    omsiapdata.products[productIndex].description = req.body.description;
+    omsiapdata.products[productIndex].warranty = req.body.warranty || "";
+    omsiapdata.products[productIndex].videoUrl = req.body.videoUrl || "";
+    omsiapdata.products[productIndex].images = updatedImages;
+    omsiapdata.products[productIndex].specifications = specifications;
+    omsiapdata.products[productIndex].features = features;
+    omsiapdata.products[productIndex].focuseddata = focuseddata;
+    omsiapdata.products[productIndex].orderdetails = orderdetails;
+    
+    // Save the updated document
+    await omsiapdata.save();
+    
+    // Return success response
+    res.status(200).json({
+      message: "Product updated successfully"
+    });
+    
+  } catch (error) {
+    console.warn("Error updating product:", error);
+    res.status(500).json({
+      message: "Something went wrong",
+      error: error.message
+    });
+  }
+});
+
+Router.route("/getproducttobedeleted").post(async(req, res) => {
+
+  try {
+    const id = req.body.id;
+    
+    await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: 'omsiap',
+      autoCreate: false
+    });
+    
+    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
+    
+    // Find the document that contains your products
+    const omsiapdata = await OmsiapData.findById("Code-113-1143");
+  
+    
+    if (!omsiapdata) {
+      return res.status(404).json({ message: "Database not found" });
+    }
+    
+    // Find the product with the matching _id or id
+    let product = null;
+    
+    // Try to find by ObjectId if it's a valid ObjectId
+    if (mongoose.Types.ObjectId.isValid(id)) {
+      product = omsiapdata.products.find(product => 
+        product._id.toString() === id
+      );
+    }
+    
+    // If not found by ObjectId, try to find by the id field
+    if (!product) {
+      product = omsiapdata.products.find(product => product.id === id);
+    }
+    
+    if (product) {
+      return res.status(200).json({ message: "Product found", data: product });
+    } else {
+      return res.status(200).json({ message: "Product not found" });
+    }
+    
+  } catch(err) {
+    console.error("Error fetching product:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+});
+
+Router.route("/deleteproduct").post(async (req, res) => {
+  try {
+    await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      dbName: 'omsiap',
+      autoCreate: false
+    });
+    
+    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
+    
+    // Get the product ID from the request body
+    const productId = req.body.id;
+    
+    // Find the document that contains your products
+    const omsiapdata = await OmsiapData.findById("Code-113-1143");
+    
+    if (!omsiapdata) {
+      return res.status(404).json({ success: false, message: "OMSIAP data not found" });
+    }
+    
+    // Filter out the product with the matching ID
+    omsiapdata.products = omsiapdata.products.filter(product => product.id !== productId);
+    
+    // Save the updated document
+    await omsiapdata.save();
+    
+    return res.status(200).json({ success: true, message: "Product deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting product:", err);
+    return res.status(500).json({ success: false, message: "Server error", error: err.message });
+  }
+});
 
 // Helper function to create a transaction record
 function createTransactionRecord(orderData) {
@@ -522,5 +958,7 @@ async function processOrder(req, res) {
 
 // Define the router endpoint using the processOrder function
 Router.route("/order").post(processOrder);
+
+
 
 module.exports = Router;

@@ -4,12 +4,53 @@ import "../../styles/database/database.scss"
 
 import { useState, useEffect, useRef } from "react"
 
-import { Row, Col } from "react-bootstrap"
+import { Container, Row, Col, Button, Form, Spinner } from "react-bootstrap"
 
-import { FaEye, FaEdit, FaTimes, FaSearch, FaExclamationTriangle, FaCalendarAlt, FaUserClock, FaIdCard, FaCheck, FaEnvelope, FaTimesCircle, FaExclamationCircle, FaMoneyBillWave, FaClock, FaFileAlt, FaUserCircle, FaPhone, FaTrash, FaInfoCircle } from 'react-icons/fa';
-import { X, Star, Package, ShoppingCart, Tag, Info, FileText, Video, Award, Truck, AlertCircle, Trash } from 'lucide-react';
+import { FaEye, 
+         FaEdit, 
+         FaFileImage, 
+         FaBoxOpen, 
+         FaWeight, 
+         FaCheckCircle, 
+         FaYoutube, 
+         FaClipboardList,
+         FaPlus,
+         FaStar, 
+         FaTimes, 
+         FaSearch, 
+         FaExclamationTriangle, 
+         FaCalendarAlt, 
+         FaLock, 
+         FaEyeSlash, 
+         FaFileUpload, 
+         FaUserClock, 
+         FaIdCard, 
+         FaReceipt, 
+         FaTag, 
+         FaDollarSign, 
+         FaCircle, 
+         FaCreditCard,
+         FaShippingFast,
+         FaBox, 
+         FaCheck, 
+         FaUser, 
+         FaAddressCard, 
+         FaEnvelope, 
+         FaTimesCircle, 
+         FaExclamationCircle, 
+         FaMoneyBillWave, 
+         FaClock, 
+         FaFileAlt, 
+         FaUserCircle,
+         FaPhone, 
+         FaTrash, 
+         FaInfoCircle, 
+         FaTruckMonster} from 'react-icons/fa';
+
+import { X, Star, Package, ShoppingCart, Tag, Info, FileText, Video, Award, Truck, AlertCircle, Trash, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import axiosCreatedInstance from '../lib/axiosutil.js';
 
 // Example data for pending registrations
 const sampleRegistrants = [
@@ -81,11 +122,25 @@ function DatabaseComponent() {
   const [showDatabaseConfiguration, setShowDatabaseConfiguration] = useState(false);
   const [showPendingPublicRegistrationModal, setShowPendingPublicRegistrationModal] = useState(false);
   const [showPendingPrivateRegistrationModal, setShowPendingPrivateRegistrationModal] = useState(false);
-  const [showTotalOrders, setShowTotalOrders] = useState(false);
-  const [showPendingOrders, setShowPendingOrders] = useState(false);
-  const [showAcceptedOrders, setShowAcceptedOrders] = useState(false);
-  const [showPendingDeposits, setShowPendingDeposits] = useState(false);
-  const [showPendingWithdrawals, setShowPendingWithdrawals] = useState(false);
+
+
+  const [showTotalOrders, setShowTotalOrders] = useState(false)
+  const [showPendingOrders, setShowPendingOrders] = useState(false)
+  const [showAcceptedOrders, setShowAcceptedOrders] = useState(false)
+  const [showOrderDetails, setShowOrderDetails] = useState(false)
+
+  const [showTotalDeposits, setShowTotalDeposits] = useState(false)
+  const [showPendingDeposits, setShowPendingDeposits] = useState(false)
+  const [showSuccessfulDeposits, setShowSuccessfulDeposits] = useState(false)
+  const [showRejectedDeposits, setShowRejectedDeposits] = useState(false)
+
+  const [showTotalWithdrawals, setShowTotalWithdrawals] = useState(false)
+  const [showPendingWithdrawals, setShowPendingWithdrawals] = useState(false)
+  const [showSuccessfulWithdrawals, setShowSuccessfulWithdrawals] = useState(false)
+  const [showRejectedWithdrawals, setShowRejectedWithdrawals] = useState(false)
+
+  const [showCreditTransaction, setShowCreditTransaction] = useState(false)
+  
   const [showRegisteredRegistrantWithPendingDocuments, setShowRegisteredRegistrantsWithPendingDocuments] = useState(false);
 
   const [showCreateProduct, setShowCreateProduct] = useState(false);
@@ -93,11 +148,19 @@ function DatabaseComponent() {
   const [showPendingOrderDetails, setShowPendingOrderDetails] = useState(false);
 
   const [showProductReader, setShowProductReader] = useState(false);
+  const [showUpdateProductForm, setShowUpdateProductForm] = useState(false)
+
   const [showDeleteProductReader, setShowDeleteProductReader] = useState(false);
+
+  const [showCreateRegistrantForm, setShowCreateRegistrantForm] = useState(false);
+  const [showRegistrantDetailsDisplay, setShowRegistrantDetailsDisplay] = useState(false);
+  const [showUpdateRegistrantFormDisplay, setShowUpdateRegistrantFormDisplay] = useState(false);
+
+  const [deleteproductfield, deleteproductfieldcb] = useState("")
 
   const [showGcashPaymentLink, setShowGcashPaymentLink] = useState(false);
 
-  const [showModal, setShowModal] = useState(true);
+  const [showModal, setShowModal] = useState(false);
 
 const transactions = [
 {
@@ -411,6 +474,48 @@ const creditstransactions = [
   }
 ];
 
+const credittransactionobject = {
+  id: "TRX-2025032001",
+  date: "2025-03-20T10:30:00Z",
+  type: "Credit",
+  amount: 1250.00,
+  status: "Completed",
+  paymentmethod: "Credit Card",
+  details: {
+    products: [
+      {
+        name: "Premium Widget",
+        quantity: 2,
+        price: 450.00
+      },
+      {
+        name: "Deluxe Gadget",
+        quantity: 1,
+        price: 350.00
+      }
+    ],
+    shippingInfo: {
+      address: "123 Main Street, Apt 4B",
+      city: "Metropolis",
+      state: "NY",
+      zipCode: "10001",
+      country: "United States"
+    },
+    orderSummary: {
+      merchandiseTotal: 1250.00,
+      shippingTotal: 0.00,
+      totalTransactionGiveaway: 0.00,
+      totalOmsiaProfit: 312.50,
+      totalCapital: 937.50,
+      totalItems: 3,
+      totalProducts: 2,
+      totalWeightGrams: 1500,
+      totalWeightKilos: 1.5,
+      total: 1250.00
+    }
+  }
+};
+
 // Example registrants data
 const registrants = [
   {
@@ -594,20 +699,20 @@ const registrants = [
  });
 
 
- const product = {
+ const [product, setproduct] = useState({
   id: "12312312",
   name: "12312312",
   price: 0,
   category: "12312312",
   description: "12312312",
   weightingrams: 1000,
-  images: [],
+  images: ['../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg'],
   stock: 0,
   rating: 0,
   reviews: 0,
-  specifications: [],
+  specifications: ["Specification 1", "Specification 2", "Specification 3"],
   videoUrl: "12312312", 
-  features: [],
+  features: ["Feature 1", "Feature 2", "Feature 3"],
   warranty: "12312312",
   quantity: 0,
   focuseddata: {
@@ -631,8 +736,97 @@ const registrants = [
        totalshipmentfee: 0
      }
   }
- };
+ });
 
+const [registrantdata, setregistrantdata] = useState({
+  id: "12312312",
+  loginstatus: "12312312",
+  status: {
+   type: "12312312",
+  indication: "12312312",
+  requests: []
+ },
+ name: {
+ firstname: "12312312",
+ middlename: "12312312",
+ lastname: "12312312",
+ nickname: "12312312"
+ },
+ contact: {
+ phonenumber: "12312312",
+ telephonenumber: "12312312",
+ emailaddress: "12312312",
+ address: {
+   street: "12312312",
+   baranggay: "12312312",
+   trademark: "12312312",
+   city: "12312312",
+   province: "12312312",
+   country: "12312312"
+ }
+ },
+ personaldata: {
+ age: "12312312",
+ sex: "12312312",
+ bloodtype: "12312312",
+ dob: "12312312",
+ citizenship: "12312312",
+ civil_status: "12312312",
+ government_issued_identification: {
+   frontphoto: {
+    name: "12312312",
+    description: "12312312",
+    image: {
+     data: "12312312",
+     contenttype: "12312312"
+    },
+    uploaddate: "12312312"
+   },
+   backphoto: {
+     name: "12312312",
+      description: "12312312",
+      image: {
+       data: "12312312",
+       contenttype: "12312312"
+      },
+      uploaddate: "12312312"
+   }
+ },
+ birthcertificate: {
+   frontphoto: {
+     name: "12312312",
+     description: "12312312",
+     image: {
+      data: "12312312",
+      contenttype: "12312312"
+     },
+     uploaddate: "12312312"
+    },
+    backphoto: {
+      name: "12312312",
+       description: "12312312",
+       image: {
+        data: "12312312",
+        contenttype: "12312312"
+       },
+       uploaddate: "12312312"
+    }
+ }
+ },
+ credits: {
+ omsiapawasto: {
+   id: "12312312",
+   amount: "12312312",
+   transactions: {
+     deposits: [],
+     widthdrawals: [],
+     successful_deposits: [],
+     successful_widthdrawals: []
+   }
+ }
+ },
+ transactions: []
+})
 
  return (
    <div id="database-container">
@@ -643,53 +837,287 @@ const registrants = [
        <FilterDataByDate data={data}/>
 
        <StatisticsCardOperationBasis stats={customStats}
-                       setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                       setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
-                       setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
-                       setShowTotalOrders={setShowTotalOrders}
-                       setShowPendingOrders={setShowPendingOrders}
-                       setShowAcceptedOrders={setShowAcceptedOrders}
-                       setShowPendingDeposits={setShowPendingDeposits}
-                       setShowPendingWithdrawals={setShowPendingWithdrawals}
-                       setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
+
+       
+                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+
+                                     setShowTotalOrders={setShowTotalOrders}
+                                     setShowPendingOrders={setShowPendingOrders}
+                                     setShowAcceptedOrders={setShowAcceptedOrders}
+                                     setShowOrderDetails={setShowOrderDetails}
+
+                                     setShowTotalDeposits={setShowTotalDeposits}
+                                     setShowPendingDeposits={setShowPendingDeposits}
+                                     setShowSuccessfulDeposits={setShowSuccessfulDeposits}
+                                     setShowRejectedDeposits={setShowRejectedDeposits}
+               
+                                     setShowTotalWithdrawals={setShowTotalWithdrawals}
+                                     setShowPendingWithdrawals={setShowPendingWithdrawals}
+                                     setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
+                                     setShowRejectedWithdrawals={setShowRejectedWithdrawals}
+
+
+                                     setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
+                                     setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
+
+
+
+ 
+
+
+                                     setShowPendingDeposits={setShowPendingDeposits}
+                                     setShowPendingWithdrawals={setShowPendingWithdrawals}
+                                     setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
                        />
 
        <StatisticsCardOperationScope stats={customStats}
-                       setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                       setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
-                       setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
-                       setShowPendingOrders={setShowPendingOrders}
-                       setShowPendingDeposits={setShowPendingDeposits}
-                       setShowPendingWithdrawals={setShowPendingWithdrawals}
-                       setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
-                       />
+
+                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+
+
+                                     setShowTotalOrders={setShowTotalOrders}
+                                     setShowPendingOrders={setShowPendingOrders}
+                                     setShowAcceptedOrders={setShowAcceptedOrders}
+                                     setShowOrderDetails={setShowOrderDetails}
+
+
+                                     setShowTotalDeposits={setShowTotalDeposits}
+                                     setShowPendingDeposits={setShowPendingDeposits}
+                                     setShowSuccessfulDeposits={setShowSuccessfulDeposits}
+                                     setShowRejectedDeposits={setShowRejectedDeposits}
+
+                                     setShowTotalWithdrawals={setShowTotalWithdrawals}
+                                     setShowPendingWithdrawals={setShowPendingWithdrawals}
+                                     setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
+                                     setShowRejectedWithdrawals={setShowRejectedWithdrawals}
+
+                                     setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
+                                     setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
+                                     
+
+                                     setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
+                                    />
 
         <StatisticsCardDailyTasks stats={customStats}
-                       setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                       setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
-                       setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
-                       setShowPendingOrders={setShowPendingOrders}
-                       setShowPendingDeposits={setShowPendingDeposits}
-                       setShowPendingWithdrawals={setShowPendingWithdrawals}
-                       setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
+
+                                  setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+
+                                  setShowTotalOrders={setShowTotalOrders}
+                                  setShowPendingOrders={setShowPendingOrders}
+                                  setShowAcceptedOrders={setShowAcceptedOrders}
+                                  setShowOrderDetails={setShowOrderDetails}
+
+                                  setShowTotalDeposits={setShowTotalDeposits}
+                                  setShowPendingDeposits={setShowPendingDeposits}
+                                  setShowSuccessfulDeposits={setShowSuccessfulDeposits}
+                                  setShowRejectedDeposits={setShowRejectedDeposits}
+
+                                  setShowTotalWithdrawals={setShowTotalWithdrawals}
+                                  setShowPendingWithdrawals={setShowPendingWithdrawals}
+                                  setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
+                                  setShowRejectedWithdrawals={setShowRejectedWithdrawals}
+
+                                  setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
+                                  setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
+                              
+                                  setShowPendingDeposits={setShowPendingDeposits}
+                                  setShowPendingWithdrawals={setShowPendingWithdrawals}
+                                  setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
                        />
 
          <StatisticsCardProductCRUD stats={customStats}
                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                     setShowCreateProduct={setShowCreateProduct}
                                     setShowProductReader={setShowProductReader}
+                                    setShowUpdateProductForm={setShowUpdateProductForm}
+                                    setShowDeleteProductReader={setShowDeleteProductReader}
+                                    setproduct={setproduct}
+
+                                    deleteproductfield={deleteproductfield}
+                                    deleteproductfieldcb={deleteproductfieldcb}
                        />
 
          <StatisticsCardRegistrantCRUD stats={customStats}
-                                    setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                                    setShowCreateProduct={setShowCreateProduct}
-                                    setShowProductReader={setShowProductReader}
+                                       setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                       setShowCreateProduct={setShowCreateProduct}
+                                       setShowProductReader={setShowProductReader}
+                                       setShowCreateRegistrantForm={setShowCreateRegistrantForm}
+                                       setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
+                                       setShowUpdateRegistrantFormDisplay={setShowUpdateRegistrantFormDisplay}
+
+                                       setregistrantdata={setregistrantdata}
                        />
      </div>
 
      {
       showDatabaseConfiguration && (
         <div id="database-configurationcontainer">
+
+           {
+            showTotalOrders && (
+              <TotalOrders transactions={transactions}
+
+                           setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+
+                           setShowTotalOrders={setShowTotalOrders}
+                           setShowPendingOrders={setShowPendingOrders}
+                           setShowOrderDetails={setShowOrderDetails}
+
+                           setShowPendingOrders={setShowPendingOrders}
+                           setShowPendingOrderDetails={setShowPendingOrderDetails}
+
+                             />
+            )
+            }
+
+            {
+            showPendingOrders && (
+              <PendingOrders transactions={transactions}
+
+                             setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+
+                             setShowTotalOrders={setShowTotalOrders}
+                             setShowPendingOrders={setShowPendingOrders}
+                             setShowOrderDetails={setShowOrderDetails}
+
+                             setShowPendingOrderDetails={setShowPendingOrderDetails}
+
+                             />
+            )
+            }
+
+            {
+            showAcceptedOrders && (
+              <AcceptedOrders transactions={transactions}
+                              setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+
+                              setShowTotalOrders={setShowTotalOrders}
+                              setShowAcceptedOrders={setShowAcceptedOrders}
+                              setShowOrderDetails={setShowOrderDetails}
+
+
+
+
+
+                              setShowPendingOrders={setShowPendingOrders}
+
+                              setShowPendingOrderDetails={setShowPendingOrderDetails}
+
+                             />
+            )
+            }
+
+            {
+              showOrderDetails && (
+                <OrderDetailsModal onClose={() => setShowModal(false)} 
+                                   transaction={transactions[0]} 
+                                   setShowOrderDetails={setShowOrderDetails}/>
+              )
+            }
+
+            {
+            showTotalDeposits && (
+              <TotalDeposits transactions={creditstransactions}
+
+                             setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                             setShowTotalDeposits={setShowTotalDeposits}
+
+                             setShowCreditTransaction={setShowCreditTransaction}
+
+                             />
+            )
+            }
+
+            {
+            showPendingDeposits && (
+              <PendingDeposits transactions={creditstransactions}
+
+                               setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                               setShowPendingDeposits={setShowPendingDeposits}
+
+                               setShowCreditTransaction={setShowCreditTransaction}
+
+                             />
+            )
+            }
+
+           {
+            showSuccessfulDeposits && (
+              <SuccessfulDeposits transactions={creditstransactions}
+
+                                  setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                  setShowSuccessfulDeposits={setShowSuccessfulDeposits}
+
+                                  setShowCreditTransaction={setShowCreditTransaction}
+
+                             />
+            )
+           }
+
+           {
+            showRejectedDeposits && (
+              <RejectedDeposits transactions={creditstransactions}
+
+                                setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                setShowRejectedDeposits={setShowRejectedDeposits}
+
+                                setShowCreditTransaction={setShowCreditTransaction}
+
+                             />
+            )
+            }
+
+            {
+              showTotalWithdrawals && (
+                <TotalWithdrawals transactions={creditstransactions}
+
+                                  setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                  setShowTotalWithdrawals={setShowTotalWithdrawals}
+                                  
+                                  setShowCreditTransaction={setShowCreditTransaction}/>
+              )
+            }
+
+            {
+              showPendingWithdrawals && (
+                <PendingWithdrawals transactions={creditstransactions}
+
+                                    setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                    setShowPendingWithdrawals={setShowPendingWithdrawals}
+                                    
+                                    setShowCreditTransaction={setShowCreditTransaction}/>
+              )
+            }
+
+            {
+              showSuccessfulWithdrawals && (
+                <SuccessfulWithdrawals transactions={creditstransactions}
+
+                                       setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                       setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
+                                       
+                                       setShowCreditTransaction={setShowCreditTransaction}/>
+              )
+            }
+
+            {
+              showRejectedWithdrawals && (
+                <RejectedWithdrawals transactions={creditstransactions}
+                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                     setShowRejectedWithdrawals={setShowRejectedWithdrawals}
+                                  
+                                     setShowCreditTransaction={setShowCreditTransaction}/>
+              )
+            }
+
+            {
+              showCreditTransaction && (
+                <CreditTransactionModal transaction={credittransactionobject}
+                                        setShowCreditTransaction={setShowCreditTransaction}/>
+              )
+            }
+
+
            
            {
             showPendingPublicRegistrationModal && (
@@ -702,48 +1130,6 @@ const registrants = [
             showPendingPrivateRegistrationModal && (
               <PendingPrivateRegistrationsModal setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                                 setShowPendingPrivateRegistrationModal={setShowPendingPublicRegistrationModal} />
-            )
-            }
-
-            {
-            showTotalOrders && (
-              <TotalOrders transactions={transactions}
-                           setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                           setShowTotalOrders={setShowTotalOrders}
-                           setShowPendingOrders={setShowPendingOrders}
-                           setShowPendingOrderDetails={setShowPendingOrderDetails}
-                             />
-            )
-            }
-
-            {
-            showPendingOrders && (
-              <PendingOrders transactions={transactions}
-                             setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                             setShowPendingOrders={setShowPendingOrders}
-                             setShowPendingOrderDetails={setShowPendingOrderDetails}
-                             />
-            )
-            }
-
-            {
-            showAcceptedOrders && (
-              <AcceptedOrders transactions={transactions}
-                              setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                              setShowPendingOrders={setShowPendingOrders}
-                              setShowAcceptedOrders={setShowAcceptedOrders}
-                              setShowPendingOrderDetails={setShowPendingOrderDetails}
-                             />
-            )
-            }
-
-            {
-            showPendingDeposits && (
-              <PendingDeposits transactions={creditstransactions}
-                             setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                             setShowPendingDeposits={setShowPendingDeposits}
-
-                             />
             )
             }
  
@@ -764,16 +1150,6 @@ const registrants = [
                              />
             )
             }
-
-            {
-              showPendingOrderDetails && (
-                <OrderDetailsModal transaction={transactions[0]} 
-                                   onClose={() => setShowModal(false)} 
-                                   setShowPendingOrders={setShowPendingOrders}
-                                   setShowPendingOrderDetails={setShowPendingOrderDetails}/>
-              )
-            }
-
             
             {
               showProductReader && (
@@ -785,9 +1161,21 @@ const registrants = [
             }
 
             {
+              showUpdateProductForm && (
+                <UpdateProduct setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                               setShowUpdateProductForm={setShowUpdateProductForm}
+                               productToUpdate={product}
+                 />
+              )
+            }
+
+            {
              showDeleteProductReader && (
               <DeleteProductReader product={product}
-                                   isOpen={true} />
+                                   setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                   setShowUpdateProductForm={setShowUpdateProductForm}
+                                   productToUpdate={product}
+                                   deleteproductfield={deleteproductfield} />
              )
             }
 
@@ -795,6 +1183,33 @@ const registrants = [
               showCreateProduct && (
                 <CreateProduct  setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                 setShowCreateProduct={setShowCreateProduct}/>
+              )
+            }
+
+            {
+              showCreateRegistrantForm && (
+                <RegistrationForm setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                  setShowCreateRegistrantForm={setShowCreateRegistrantForm}/>
+              )
+            }
+
+            {
+              showRegistrantDetailsDisplay && (
+                <ReadRegistrantFormDetails  registrantData={registrantdata}
+                                            setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                            setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
+                                  
+                                            registrantdata={registrantdata}/>
+              )
+            }
+
+            {
+              showUpdateRegistrantFormDisplay && (
+                <UpdateRegistrationForm registrantData={registrantdata}
+                                        setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                        setShowUpdateRegistrantFormDisplay={setShowUpdateRegistrantFormDisplay}
+                                        registrantdata={registrantdata}
+                                        setregistrantdata={setregistrantdata}/>
               )
             }
 
@@ -1090,238 +1505,403 @@ function FilterDataByDate({ data, onFilterChange }) {
   );
 }
 
-const StatisticsCardOperationBasis = ({ stats, setShowDatabaseConfiguration, setShowPendingPublicRegistrationModal, setShowPendingPrivateRegistrationModal,  setShowTotalOrders, setShowPendingOrders, setShowAcceptedOrders, setShowPendingDeposits, setShowPendingWithdrawals, setShowRegisteredRegistrantsWithPendingDocuments }) => {
+
+const StatisticsCardOperationBasis = ({ 
+  stats, 
+  setShowDatabaseConfiguration, 
+
+  setShowTotalOrders, 
+  setShowPendingOrders, 
+  setShowAcceptedOrders, 
+  setShowOrderDetails,
+
+  setShowTotalDeposits,
+  setShowPendingDeposits,
+  setShowSuccessfulDeposits,
+  setShowRejectedDeposits,
+
+  setShowTotalWithdrawals,
+  setShowPendingWithdrawals,
+  setShowSuccessfulWithdrawals,
+  setShowRejectedWithdrawals,
+
+  setShowRegisteredRegistrantsWithPendingDocuments 
+
+
+}) => {
   // Sample stats data if not provided
   const defaultStats = {
-    pendingOrders: { count: 24, change: 1200 },
-    pendingDeposits: { count: 18, change: 3500 },
-    pendingWithdrawals: { count: 9, change: -850 },
-    pendingRegistrations: { count: 32, change: 6400 }
+    pendingOrders: { count: 24 },
+    pendingDeposits: { count: 18 },
+    pendingWithdrawals: { count: 9 },
+    pendingRegistrations: { count: 32 }
   };
 
   // Use provided stats or default
   const statsData = stats || defaultStats;
 
-  // Format the change value as a peso currency
-  const formatPeso = (amount) => {
-    // Make sure amount is a number
-    const numAmount = Number(amount);
-    
-    // Check if it's a valid number
-    if (isNaN(numAmount)) {
-      return '₱0';
-    }
-    
-    const sign = numAmount > 0 ? '+' : '';
-    return `${sign}₱${Math.abs(numAmount).toLocaleString()}`;
-  };
-
   return (
     <div className="statistics-container">
-      <h1>Operation Basis</h1>
+      <h1 className="dashboard-title">Operation Basis</h1>
       <div className="statistics-grid">
 
         {/* TOTAL ORDERS */}
-        <div className="statistics-card">
+        <div className="statistics-card orders-card">
           <div className="card-inner">
-            <div className="card-header">TOTAL ORDERS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count} total orders</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
+            <div className="card-header">
+              <span>TOTAL ORDERS</span>
+              <div className="card-icon orders-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
               </div>
             </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingOrders.count} total orders</div>
             </div>
-            <br/>
-            <p>42 total orders orders <button className="pendingorders-viewbutton"
-                                              onClick={()=> {
-                                                setShowDatabaseConfiguration(true);
-                                                setShowPendingOrders(false);
-                                                setShowTotalOrders(true);
-                                              }}>
-                                                view
-                                      </button>
-            </p>
-            <p>20 of it was pending orders <button className="pendingorders-viewbutton"                          
-                                         onClick={()=> {
-                                           setShowDatabaseConfiguration(true);
-                                           setShowTotalOrders(false);
-                                           setShowPendingOrders(true);
-                                         }}>
-                                          view
-                                </button>
-            </p>
-            <p>22 of it was already accepted <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                            setShowPendingOrders(false);
-                                            setShowAcceptedOrders(true);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
-            <button className="readproduct-readproductbutton">Search order by transaction ID</button>
-            <br/>
-            <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>42 total orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(true);
+                  setShowPendingOrders(false)
+                  setShowOrderDetails(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>20 pending orders</span>
+                <button className="action-button" onClick={() => {
+                   
+                   setShowDatabaseConfiguration(true);
+
+                   setShowTotalOrders(false)
+                   setShowPendingOrders(true)
+                   setShowOrderDetails(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 accepted orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(true);
+
+                  
+                  setShowPendingOrders(false);
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID"/>
+              </div>
+              <button className="search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
           </div>
         </div>
 
         {/* TOTAL DEPOSITS */}
-        <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-              setShowPendingDeposits(true);
-             }}>
+        <div className="statistics-card deposits-card" onClick={() => {
+          setShowDatabaseConfiguration(true);
+          setShowPendingDeposits(true);
+        }}>
           <div className="card-inner">
-            <div className="card-header">TOTAL DEPOSITS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} total deposits</div>
-              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingDeposits.change)}
+            <div className="card-header">
+              <span>TOTAL DEPOSITS</span>
+              <div className="card-icon deposits-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
               </div>
             </div>
-            <div className="card-icon deposits-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingDeposits.count} total deposits</div>
             </div>
-            <br/>
-            <p>27 total deposits <button className="pendingorders-viewbutton"
-                                              onClick={()=> {
-                                                setShowDatabaseConfiguration(true);
-                                                setShowPendingOrders(false);
-                                                setShowTotalOrders(true);
-                                              }}>
-                                                view
-                                      </button>
-            </p>
-            <p>20 of it was pending deposits <button className="pendingorders-viewbutton"                          
-                                         onClick={()=> {
-                                           setShowDatabaseConfiguration(true);
-                                           setShowTotalOrders(false);
-                                           setShowPendingOrders(true);
-                                         }}>
-                                          view
-                                </button>
-            </p>
-            <p>22 of it was a successful deposit <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                            setShowPendingOrders(false);
-                                            setShowAcceptedOrders(true);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>While 22 deposits are rejected <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                            setShowPendingOrders(false);
-                                            setShowAcceptedOrders(true);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
-            <button className="readproduct-readproductbutton">Search deposit by transaction ID</button>
-            <br/>
-            <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>27 total deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation();
+
+                  setShowDatabaseConfiguration(true);
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(true)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+
+
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>20 pending deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation();
+
+                  setShowDatabaseConfiguration(true);
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(true)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 successful deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation();
+
+                  setShowDatabaseConfiguration(true);
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(true)
+                  setShowRejectedDeposits(false)
+
+
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 rejected deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation();
+
+                  setShowDatabaseConfiguration(true);
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(true)
+
+
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
           </div>
         </div>
 
         {/* TOTAL WITHDRAWALS */}
-        <div className="statistics-card"
-              onClick={()=> {
-                setShowDatabaseConfiguration(true);
-                setShowPendingWithdrawals(true);
-               }}>
+        <div className="statistics-card withdrawals-card">
           <div className="card-inner">
-            <div className="card-header">TOTAL WITHDRAWALS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count} total withdrawals</div>
-              <div className={`stat-change ${Number(statsData.pendingWithdrawals.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingWithdrawals.change)}
+            <div className="card-header">
+              <span>TOTAL WITHDRAWALS</span>
+              <div className="card-icon withdrawals-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 10 4 15 9 20"></polyline>
+                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                </svg>
               </div>
             </div>
-            <div className="card-icon withdrawals-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 10 4 15 9 20"></polyline>
-                <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-              </svg>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingWithdrawals.count} total withdrawals</div>
             </div>
-            <br/>
-            <p>13 total withdrawals <button className="pendingorders-viewbutton"
-                                              onClick={()=> {
-                                                setShowDatabaseConfiguration(true);
-                                                setShowPendingOrders(false);
-                                                setShowTotalOrders(true);
-                                              }}>
-                                                view
-                                      </button>
-            </p>
-            <p>20 of it was pending withdrawals <button className="pendingorders-viewbutton"                          
-                                         onClick={()=> {
-                                           setShowDatabaseConfiguration(true);
-                                           setShowTotalOrders(false);
-                                           setShowPendingOrders(true);
-                                         }}>
-                                          view
-                                </button>
-            </p>
-            <p>22 of it was a successful withdrawal <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                            setShowPendingOrders(false);
-                                            setShowAcceptedOrders(true);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>While 22 withdrawals are rejected <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                            setShowPendingOrders(false);
-                                            setShowAcceptedOrders(true);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
-            <button className="readproduct-readproductbutton">Search widthdrawal by transaction ID</button>
-            <br/>
-            <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>13 total withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(true)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>20 pending withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(true)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 successful withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(true)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(true)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 rejected withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                 setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(true)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
           </div>
         </div>
 
-        {/*  REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
-        <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-              setShowRegisteredRegistrantsWithPendingDocuments(true);
-             }}>
+        {/* REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
+        <div className="statistics-card registrants-card" onClick={() => {
+          setShowDatabaseConfiguration(true);
+          setShowRegisteredRegistrantsWithPendingDocuments(true);
+        }}>
           <div className="card-inner">
-            <div className="card-header">REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingRegistrations.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingRegistrations.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingRegistrations.change)}
+            <div className="card-header">
+              <span>REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS</span>
+              <div className="card-icon registrations-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
               </div>
             </div>
-            <div className="card-icon registrations-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                <circle cx="9" cy="7" r="4"></circle>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-              </svg>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingRegistrations.count} registrants</div>
             </div>
           </div>
         </div>
@@ -1329,9 +1909,30 @@ const StatisticsCardOperationBasis = ({ stats, setShowDatabaseConfiguration, set
       </div>
     </div>
   );
+
 };
 
-const StatisticsCardOperationScope = ({ stats, setShowDatabaseConfiguration, setShowPendingPublicRegistrationModal, setShowPendingPrivateRegistrationModal, setShowPendingOrders, setShowPendingDeposits, setShowPendingWithdrawals, setShowRegisteredRegistrantsWithPendingDocuments }) => {
+const StatisticsCardOperationScope = ({ 
+  stats, 
+
+  setShowDatabaseConfiguration, 
+  setShowTotalOrders, 
+  setShowPendingOrders, 
+  setShowAcceptedOrders, 
+  setShowOrderDetails,
+
+  setShowTotalDeposits,
+  setShowPendingDeposits,
+  setShowSuccessfulDeposits,
+  setShowRejectedDeposits,
+
+  setShowTotalWithdrawals,
+  setShowPendingWithdrawals,
+  setShowSuccessfulWithdrawals,
+  setShowRejectedWithdrawals, 
+
+  setShowRegisteredRegistrantsWithPendingDocuments
+}) => {
   // Sample stats data if not provided
   const defaultStats = {
     pendingOrders: { count: 24, change: 1200 },
@@ -1359,157 +1960,982 @@ const StatisticsCardOperationScope = ({ stats, setShowDatabaseConfiguration, set
 
   return (
     <div className="statistics-container">
-      <h1>Operation Scope</h1>
+      <h1 className="dashboard-title">Operation Scope</h1>
       <div className="statistics-grid">
 
         {/* PENDING ORDERS */}
-        <div className="statistics-card">
+        <div className="statistics-card orders-card">
           <div className="card-inner">
-            <div className="card-header">PENDING ORDERS</div>
+            <div className="card-header">
+              <span>PENDING ORDERS</span>
+              <div className="card-icon orders-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </div>
+            </div>
             <div className="card-content">
               <div className="stat-value">{statsData.pendingOrders.count} pending orders</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>20 pending orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(true)
+                  setShowAcceptedOrders(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>42 total orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(true);
+                  setShowPendingOrders(false);
+                  setShowAcceptedOrders(false);
+
+                }}>view</button>
+              </div>
+
+              <div className="detail-item">
+                <span>22 accepted orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false);
+                  setShowAcceptedOrders(true);
+
+                }}>view</button>
               </div>
             </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID"/>
+              </div>
+              <button className="search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
             </div>
-            <br/>
-            <p>20 pending orders <button className="pendingorders-viewbutton"
-                                         onClick={()=> {
-                                          setShowDatabaseConfiguration(true);
-                                          setShowPendingOrders(true);
-                                         }}>view</button></p>
-            <p>42 total orders ( check operation basis )</p>
-            <p>22 accepted orders ( check accepted orders ) </p>
-            <p>20 orders needed to be accepted ( total orders count minus pending orders count )</p>
-            <p>Find by ID: <input className="pendingorders-findbyidfield" type="text"/></p>
-            <button className="readproduct-readproductbutton">Find transaction by transaction ID</button>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
           </div>
         </div>
-
+      
         {/* PENDING DEPOSITS */}
-        <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-              setShowPendingDeposits(true);
-             }}>
+        <div className="statistics-card deposits-card">
           <div className="card-inner">
-            <div className="card-header">PENDING DEPOSITS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} pending deposits</div>
-              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingDeposits.change)}
+            <div className="card-header">
+              <span>PENDING DEPOSITS</span>
+              <div className="card-icon deposits-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
               </div>
             </div>
-            <div className="card-icon deposits-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingDeposits.count} pending deposits</div>
             </div>
-            <br/>
-            <button className="readproduct-readproductbutton">View all pending deposits</button>
-            <br />
-            <p>27 total deposits <button className="pendingorders-viewbutton"
-                                              onClick={()=> {
-                                                setShowDatabaseConfiguration(true);
-                                                setShowPendingOrders(false);
-                                              }}>
-                                                view
-                                      </button>
-            </p>
-            <p>20 of it was pending deposits <button className="pendingorders-viewbutton"                          
-                                         onClick={()=> {
-                                           setShowDatabaseConfiguration(true);
-                                           setShowPendingOrders(true);
-                                         }}>
-                                          view
-                                </button>
-            </p>
-            <p>22 of it was a successful deposit <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>While 22 deposits are rejected <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                            setShowPendingOrders(false);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
-            <button className="readproduct-readproductbutton">View pending deposit by transaction ID</button>
-            <br/>
-            <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
+            <div className="card-details">
+             <div className="detail-item">
+                <span>20 pending deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(true)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>27 total deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                   e.stopPropagation()
+
+                   setShowDatabaseConfiguration(true);
+
+                   setShowTotalOrders(false)
+                   setShowPendingOrders(false)
+                   setShowAcceptedOrders(false)
+
+                   setShowTotalDeposits(true)
+                   setShowPendingDeposits(false)
+                   setShowSuccessfulDeposits(false)
+                   setShowRejectedDeposits(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 successful deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(true)
+                  setShowRejectedDeposits(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 rejected deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
           </div>
         </div>
 
         {/* PENDING WITHDRAWALS */}
-        <div className="statistics-card"
-              onClick={()=> {
-                setShowDatabaseConfiguration(true);
-                setShowPendingWithdrawals(true);
-               }}>
+        <div className="statistics-card withdrawals-card">
           <div className="card-inner">
-            <div className="card-header">PENDING WITHDRAWALS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count} pending withdrawals</div>
-              <div className={`stat-change ${Number(statsData.pendingWithdrawals.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingWithdrawals.change)}
+            <div className="card-header">
+              <span>PENDING WITHDRAWALS</span>
+              <div className="card-icon withdrawals-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 10 4 15 9 20"></polyline>
+                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                </svg>
               </div>
             </div>
-            <div className="card-icon withdrawals-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 10 4 15 9 20"></polyline>
-                <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-              </svg>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingWithdrawals.count} pending withdrawals</div>
             </div>
-            <br />
-            <p>27 total withdrawals <button className="pendingorders-viewbutton"
-                                              onClick={()=> {
-                                                setShowDatabaseConfiguration(true);
-                                                setShowPendingOrders(false);
-                                              }}>
-                                                view
-                                      </button>
-            </p>
-            <p>20 of it was pending withdrawals <button className="pendingorders-viewbutton"                          
-                                         onClick={()=> {
-                                           setShowDatabaseConfiguration(true);
-                                           setShowPendingOrders(true);
-                                         }}>
-                                          view
-                                </button>
-            </p>
-            <p>22 of it was a successful withdrawal <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>While 22 withdrawals are rejected <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                            setShowPendingOrders(false);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
-            <button className="readproduct-readproductbutton">View pending withdrawal by transaction ID</button>
-            <br/>
-            <p>PROCESSING TRANSACTION ID TNX-123asd-123aqwe</p>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>20 pending withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(true)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>13 total withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                   setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(true)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 successful withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(true)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 rejected withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                   setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
+          </div>
+        </div>
+
+        {/* REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
+        <div className="statistics-card registrants-card" onClick={() => {
+          setShowDatabaseConfiguration(true);
+          setShowRegisteredRegistrantsWithPendingDocuments(true);
+        }}>
+          <div className="card-inner">
+            <div className="card-header">
+              <span>REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS</span>
+              <div className="card-icon registrations-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingRegistrations.count} registrants</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+
+};
+
+const StatisticsCardDailyTasks = ({ 
+  stats, 
+
+
+  setShowDatabaseConfiguration,
+  setShowTotalOrders, 
+  setShowPendingOrders, 
+  setShowAcceptedOrders, 
+  setShowOrderDetails, 
+
+  setShowTotalDeposits,
+  setShowPendingDeposits,
+  setShowSuccessfulDeposits,
+  setShowRejectedDeposits,
+
+  setShowTotalWithdrawals,
+  setShowPendingWithdrawals,
+  setShowSuccessfulWithdrawals,
+  setShowRejectedWithdrawals,
+
+
+
+  setShowRegisteredRegistrantsWithPendingDocuments 
+
+}) => {
+  // Sample stats data if not provided
+  const defaultStats = {
+    pendingOrders: { count: 24, change: 1200 },
+    pendingDeposits: { count: 18, change: 3500 },
+    pendingWithdrawals: { count: 9, change: -850 },
+    pendingRegistrations: { count: 32, change: 6400 }
+  };
+
+  // Use provided stats or default
+  const statsData = stats || defaultStats;
+
+  // Format the change value as a peso currency
+  const formatPeso = (amount) => {
+    // Make sure amount is a number
+    const numAmount = Number(amount);
+    
+    // Check if it's a valid number
+    if (isNaN(numAmount)) {
+      return '₱0';
+    }
+    
+    const sign = numAmount > 0 ? '+' : '';
+    return `${sign}₱${Math.abs(numAmount).toLocaleString()}`;
+  };
+
+  return (
+    <div className="statistics-container">
+      <h1 className="dashboard-title">Daily tasks</h1>
+      <div className="statistics-grid">
+
+        {/* ACCEPTED ORDERS */}
+        <div className="statistics-card orders-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>ACCEPTED ORDERS</span>
+              <div className="card-icon orders-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingOrders.count} accepted orders</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>42 total orders</span>
+                <button className="action-button" onClick={() => {
+
+
+                  setShowDatabaseConfiguration(true)
+                  
+                  setShowTotalOrders(true)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+
+
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>20 pending orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(true)
+                  setShowAcceptedOrders(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 accepted orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID"/>
+              </div>
+              <button className="search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SUCCESSFUL DEPOSITS */}
+        <div className="statistics-card deposits-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>TOTAL DEPOSITS</span>
+              <div className="card-icon deposits-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingDeposits.count} successful deposits</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>27 total deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation();
+                  setShowDatabaseConfiguration(true);
+
+                  setShowTotalDeposits(true)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>20 pending deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(true)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 successful deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(true)
+                  setShowRejectedDeposits(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 rejected deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
+          </div>
+        </div>
+
+         {/* REJECTED DEPOSITS */}
+         <div className="statistics-card deposits-card" onClick={() => {
+          setShowDatabaseConfiguration(true);
+          setShowPendingDeposits(true);
+        }}>
+          <div className="card-inner">
+            <div className="card-header">
+              <span>TOTAL DEPOSITS</span>
+              <div className="card-icon deposits-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
+                  <line x1="2" y1="10" x2="22" y2="10"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingDeposits.count} rejected deposits</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>27 total deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalDeposits(true)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>20 pending deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(true)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 successful deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(true)
+                  setShowRejectedDeposits(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 rejected deposits</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SUCCESSFUL WITHDRAWALS */}
+        <div className="statistics-card withdrawals-card" onClick={() => {
+          setShowDatabaseConfiguration(true);
+          setShowPendingWithdrawals(true);
+        }}>
+          <div className="card-inner">
+            <div className="card-header">
+              <span>SUCCESSFUL WITHDRAWALS</span>
+              <div className="card-icon withdrawals-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 10 4 15 9 20"></polyline>
+                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingWithdrawals.count} successful withdrawals</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>13 total withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(true)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>20 pending withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(true)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 successful withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(true)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 rejected withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
+          </div>
+        </div>
+
+        {/* REJECTED WITHDRAWALS */}
+        <div className="statistics-card withdrawals-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>REJECTED WITHDRAWALS</span>
+              <div className="card-icon withdrawals-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="9 10 4 15 9 20"></polyline>
+                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingWithdrawals.count} rejected withdrawals</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>13 total withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(true)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>20 pending withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(true)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 successful withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(true)
+                  setShowRejectedWithdrawals(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>22 rejected withdrawals</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalDeposits(false)
+                  setShowPendingDeposits(false)
+                  setShowSuccessfulDeposits(false)
+                  setShowRejectedDeposits(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
+          </div>
+        </div>
+
+        {/* REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
+        <div className="statistics-card registrants-card" onClick={() => {
+          setShowDatabaseConfiguration(true);
+          setShowRegisteredRegistrantsWithPendingDocuments(true);
+        }}>
+          <div className="card-inner">
+            <div className="card-header">
+              <span>REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS</span>
+              <div className="card-icon registrations-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{statsData.pendingRegistrations.count} registrants</div>
+            </div>
           </div>
         </div>
 
@@ -1517,6 +2943,3746 @@ const StatisticsCardOperationScope = ({ stats, setShowDatabaseConfiguration, set
     </div>
   );
 };
+
+
+
+const StatisticsCardProductCRUD = ({ 
+  setShowDatabaseConfiguration, 
+  setShowCreateProduct, 
+  setShowProductReader,
+  setShowUpdateProductForm,
+  setShowDeleteProductReader,
+  setproduct,
+  deleteproductfield,
+  deleteproductfieldcb
+}) => {
+
+  const [readproductfield, readproductfieldcb] = useState("")
+  const [updateproductfield, updateproductfieldcb] = useState("")
+  const [readproductloadingindication, readproductloadingindicationcb] = useState(false)
+  const [updateproductloadingindication, updateproductloadingindicationcb] = useState(false)
+  const [viewproducttobedeletedloadingindication, viewproducttobedeletedloadingindicationcb] = useState(false)
+
+  return (
+    <div className="statistics-container">
+      <h1 className="main-title">PRODUCT MANAGEMENT</h1>
+      <div className="statistics-grid">
+
+        {/* CREATE PRODUCT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Create Product</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <p className="card-description">Add new products to your inventory</p>
+              <button 
+                className="action-button"
+                onClick={() => {
+                  setShowDatabaseConfiguration(true);
+                  setShowCreateProduct(true);
+                }}
+              >
+                Create Product
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* READ PRODUCT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Read Product</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="read-product-id">Product ID:</label>
+                <input 
+                  type="text"
+                  id="read-product-id" 
+                  className="input-field"
+                  value={readproductfield}
+                  onChange={(evt)=> {
+                    readproductfieldcb(evt.target.value)
+                  }}
+                  placeholder="Enter product ID" 
+                />
+              </div>
+              <p className="readproduct-responsemessage"></p>
+              {
+                readproductloadingindication ? 
+                (
+                  <Spinner animation="border" variant="warning" />
+                )
+                :
+                (
+                  <button 
+                    className="action-button"
+                    onClick={async () => {
+
+                      document.querySelectorAll(".readproduct-responsemessage")[0].innerText = "";
+                      document.querySelectorAll(".readproduct-responsemessage")[0].style.color = "white";
+                      document.querySelectorAll(".readproduct-responsemessage")[0].style.display = "none";
+                      
+                      readproductloadingindicationcb(true);
+                      
+                      try {
+                        const response = await axiosCreatedInstance.post("/products/getproducttobeviewed", {
+                          id: readproductfield
+                        });
+                        
+                        const product = response.data.data;
+                        const message = response.data.message;
+
+                        console.log(product)
+                        
+                        switch(message) {
+                          case "Product found":
+                            setproduct(product);
+                            readproductloadingindicationcb(false);
+                            document.querySelectorAll(".readproduct-responsemessage")[0].innerText = "Product found with the given ID";
+                            document.querySelectorAll(".readproduct-responsemessage")[0].style.color = "green";
+                            document.querySelectorAll(".readproduct-responsemessage")[0].style.display = "block";
+                            setShowDatabaseConfiguration(true);
+                            setShowProductReader(true);
+                            break;
+                            
+                          case "Product not found":
+                            readproductloadingindicationcb(false);
+                            document.querySelectorAll(".readproduct-responsemessage")[0].innerText = "No product found with the given ID";
+                            document.querySelectorAll(".readproduct-responsemessage")[0].style.color = "red";
+                            document.querySelectorAll(".readproduct-responsemessage")[0].style.display = "block";
+                            break;
+                            
+                          default:
+                            readproductloadingindicationcb(false);
+                            document.querySelectorAll(".readproduct-responsemessage")[0].innerText = "Error: " + message;
+                            document.querySelectorAll(".readproduct-responsemessage")[0].style.color = "red";
+                            document.querySelectorAll(".readproduct-responsemessage")[0].style.display = "block";
+                        }
+                      } catch (error) {
+                        readproductloadingindicationcb(false);
+                        document.querySelectorAll(".readproduct-responsemessage")[0].innerText = "Error connecting to server";
+                        document.querySelectorAll(".readproduct-responsemessage")[0].style.color = "red";
+                        document.querySelectorAll(".readproduct-responsemessage")[0].style.display = "block";
+                        console.error("Error:", error);
+                      }
+                    }}
+                  >
+                    View Product
+                </button>
+                )
+              }
+             
+            </div>
+          </div>
+        </div>
+
+        {/* UPDATE PRODUCT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Update Product</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="update-product-id">Product ID:</label>
+                <input 
+                  type="text" 
+                  id="update-product-id"
+                  className="input-field"
+                  value={updateproductfield}
+                  onChange={(evt)=> {
+                    updateproductfieldcb(evt.target.value)
+                  }}
+                  placeholder="Enter product ID" 
+                />
+              </div>
+              <p className="updateproduct-responsemessage">Response message</p>
+              {
+                updateproductloadingindication ? 
+                (
+                    <Spinner animation="border" variant="warning" />
+                )
+                :
+                (
+                <button 
+                   className="action-button"
+                   onClick={async () => {
+                    // Reference the response message element once
+                    const responseMessage = document.querySelectorAll(".updateproduct-responsemessage")[0];
+                    
+                    // Reset the message display
+                    responseMessage.innerText = "";
+                    responseMessage.style.color = "white";
+                    responseMessage.style.display = "none";
+                    
+                    // Show loading indicator
+                    updateproductloadingindicationcb(true);
+                    
+                    try {
+                      // Fetch the product data
+                      const response = await axiosCreatedInstance.post("/products/getproducttobeupdated", {
+                        id: updateproductfield
+                      });
+                      
+                      const { data: product, message } = response.data;
+                      console.log(product);
+                      
+                      // Handle the response based on message
+                      switch(message) {
+                        case "Product found":
+                          setproduct(product);
+                          responseMessage.innerText = "Product found with the given ID";
+                          responseMessage.style.color = "green";
+                          responseMessage.style.display = "block";
+                          setShowDatabaseConfiguration(true);
+                          setShowUpdateProductForm(true);
+                          break;
+                          
+                        case "Product not found":
+                          responseMessage.innerText = "No product found with the given ID";
+                          responseMessage.style.color = "red";
+                          responseMessage.style.display = "block";
+                          break;
+                          
+                        default:
+                          responseMessage.innerText = `Error: ${message}`;
+                          responseMessage.style.color = "red";
+                          responseMessage.style.display = "block";
+                      }
+                    } catch (error) {
+                      // Handle network or server errors
+                      responseMessage.innerText = `Error connecting to server: ${error.message || "Unknown error"}`;
+                      responseMessage.style.color = "red";
+                      responseMessage.style.display = "block";
+                      console.error("Error:", error);
+                    } finally {
+                      // Always hide the loading indicator when done
+                      updateproductloadingindicationcb(false);
+                    }
+                  }}
+                >
+                  Edit Product
+                </button>
+                )
+              }
+           
+            </div>
+          </div>
+        </div>
+
+        {/* DELETE PRODUCT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Delete Product</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="delete-product-id">Product ID:</label>
+                <input 
+                  type="text" 
+                  id="delete-product-id"
+                  className="input-field"
+                  value={deleteproductfield}
+                  onChange={(evt)=> {
+                    deleteproductfieldcb(evt.target.value)
+                  }}
+                  placeholder="Enter product ID" 
+                />
+              </div>
+              <p className="viewproducttobedeleted-responsemessage">Response message</p>
+              {
+                viewproducttobedeletedloadingindication ? 
+                (
+                <Spinner animation="border" variant="warning" />
+                )
+                :
+                (
+                <button 
+                 className="action-button danger"
+                 onClick={ async () => {
+                    
+                   document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.display = "none"
+                   document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].innerText = "Response message"
+                   document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.color = "white"
+ 
+                   viewproducttobedeletedloadingindicationcb(true)
+
+                   try {
+                    const response = await axiosCreatedInstance.post("/products/getproducttobedeleted", {
+                      id: deleteproductfield
+                    });
+                    
+                    const product = response.data.data;
+                    const message = response.data.message;
+
+                    console.log(product)
+                    
+                    switch(message) {
+                      case "Product found":
+                        setproduct(product);
+                        readproductloadingindicationcb(false);
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].innerText = "Product found with the given ID";
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.color = "green";
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.display = "block";
+                        setShowDatabaseConfiguration(true)
+                        setShowDeleteProductReader(true)
+                        break;
+                        
+                      case "Product not found":
+                        viewproducttobedeletedloadingindicationcb(false);
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].innerText = "No product found with the given ID";
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.color = "red";
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.display = "block";
+                        break;
+                        
+                      default:
+                        viewproducttobedeletedloadingindicationcb(false);
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].innerText = "Error: " + message;
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.color = "red";
+                        document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.display = "block";
+                    }
+                  } catch (error) {
+                    viewproducttobedeletedloadingindicationcb(false);
+                    document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].innerText = "Error connecting to server";
+                    document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.color = "red";
+                    document.querySelectorAll(".viewproducttobedeleted-responsemessage")[0].style.display = "block";
+                    console.error("Error:", error);
+                  }
+
+                 }}
+                >
+                 View product
+               </button>
+                )
+              }
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+};
+
+const StatisticsCardRegistrantCRUD = ({ 
+  setShowDatabaseConfiguration, 
+  setShowCreateRegistrantForm, 
+  setShowRegistrantDetailsDisplay,
+  setShowUpdateRegistrantFormDisplay,
+  setregistrantdata
+}) => {
+
+
+  const [readregistrantfieldvalue, readregistrantfieldvaluecb] = useState("");
+  const [updateregistrantfieldvalue, updateregistrantfieldvaluecb] = useState("");
+  const [readregistrantviewregistrantloadingindication, readregistrantviewregistrantloadingindicationcb] = useState(false);
+  const [updateregistrantviewregistrantloadingindication, updateregistrantviewregistrantloadingindicationcb] = useState(false);
+
+  function handleReadRegistrantIDField(evt) {
+    readregistrantfieldvaluecb(evt.target.value)
+  }
+
+  return (
+    <div className="statistics-container">
+      <h1 className="main-title">REGISTRANT MANAGEMENT</h1>
+
+      <div className="statistics-grid">
+
+        {/* CREATE REGISTRANT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Create Registrant</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="8.5" cy="7" r="4"></circle>
+                  <line x1="20" y1="8" x2="20" y2="14"></line>
+                  <line x1="17" y1="11" x2="23" y2="11"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <p className="card-description">Add new registrants to the system</p>
+              <button 
+                className="action-button"
+                onClick={() => {
+                  setShowDatabaseConfiguration(true);
+                  setShowCreateRegistrantForm(true);
+                }}
+              >
+                Create Registrant
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* READ REGISTRANT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Read Registrant</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="read-registrant-id">Registrant ID:</label>
+                <input 
+                  type="text"
+                  id="read-registrant-id" 
+                  className="input-field"
+                  placeholder="Enter registrant ID" 
+                  value={readregistrantfieldvalue}
+                  onChange={handleReadRegistrantIDField}
+                />
+                <p className="readregistrant-responsemessage">Response message</p>
+              </div>
+              {
+                readregistrantviewregistrantloadingindication ? 
+                (
+                 <Spinner animation="border" variant="warning" />
+                )
+                :
+                (
+                  <button 
+                  className="action-button"
+                  onClick={ async () => {
+
+                    document.querySelectorAll(".readregistrant-responsemessage")[0].innerText = ""
+                    document.querySelectorAll(".readregistrant-responsemessage")[0].style.color = "white"
+                    document.querySelectorAll(".readregistrant-responsemessage")[0].style.display = "none"
+                    readregistrantviewregistrantloadingindicationcb(true)
+
+                  await axiosCreatedInstance.post("/people/getregistranttobeviewed", {
+                    id: readregistrantfieldvalue
+                  } ).then((response)=> {
+  
+                    const registrant = response.data.data;
+                    const message = response.data.message;
+
+                    switch(message) {
+                      case "Registrant found":
+                        setregistrantdata(registrant)
+                        readregistrantviewregistrantloadingindicationcb(false)
+                        document.querySelectorAll(".readregistrant-responsemessage")[0].innerText = "Registrant found with the given ID"
+                        document.querySelectorAll(".readregistrant-responsemessage")[0].style.color = "green"
+                        document.querySelectorAll(".readregistrant-responsemessage")[0].style.display = "block"
+                        setShowDatabaseConfiguration(true);
+                        setShowRegistrantDetailsDisplay(true);
+                      break;
+                      case "Registrant not found":
+                        readregistrantviewregistrantloadingindicationcb(false)
+                        document.querySelectorAll(".readregistrant-responsemessage")[0].innerText = "No registrant found with the given ID"
+                        document.querySelectorAll(".readregistrant-responsemessage")[0].style.color = "red"
+                        document.querySelectorAll(".readregistrant-responsemessage")[0].style.display = "block"
+                      break;
+                    }
+
+                   })
+                 }}
+                >
+                  View Registrant
+                 </button>
+                )
+              }
+          
+            </div>
+          </div>
+        </div>
+
+        {/* UPDATE REGISTRANT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Update Registrant</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="update-registrant-id">Registrant ID:</label>
+                <input 
+                  type="text" 
+                  id="update-registrant-id"
+                  value={updateregistrantfieldvalue}
+                  onChange={(evt)=> {
+                    updateregistrantfieldvaluecb(evt.target.value)
+                  }}
+                  className="input-field"
+                  placeholder="Enter registrant ID" 
+                />
+              </div>
+              <p className="updateregistrant-responsemessage"></p>
+              {
+                updateregistrantviewregistrantloadingindication ? 
+                (
+                  <Spinner animation="border" variant="warning" />
+                ) 
+                :
+                (
+                <button 
+                   className="action-button"
+                   onClick={ async () => {
+
+                    document.querySelectorAll(".updateregistrant-responsemessage")[0].innerText = ""
+                    document.querySelectorAll(".updateregistrant-responsemessage")[0].style.color = "white"
+                    document.querySelectorAll(".updateregistrant-responsemessage")[0].style.display = "none"
+                    updateregistrantviewregistrantloadingindicationcb(true)
+
+                    await axiosCreatedInstance.post("/people/getregistranttobeupdated", {
+                      id: updateregistrantfieldvalue
+                    } ).then((response)=> {
+    
+                      const registrant = response.data.data;
+                      const message = response.data.message;
+
+                      switch(message) {
+                        case "Registrant found":
+                          setregistrantdata(registrant)
+                          updateregistrantviewregistrantloadingindicationcb(false)
+                          document.querySelectorAll(".updateregistrant-responsemessage")[0].innerText = "Registrant found with the given ID"
+                          document.querySelectorAll(".updateregistrant-responsemessage")[0].style.color = "green"
+                          document.querySelectorAll(".updateregistrant-responsemessage")[0].style.display = "block"
+                          setShowDatabaseConfiguration(true)
+                          setShowUpdateRegistrantFormDisplay(true)
+                        break;
+                        case "Registrant not found":
+                          updateregistrantviewregistrantloadingindicationcb(false)
+                          document.querySelectorAll(".updateregistrant-responsemessage")[0].innerText = "No registrant found with the given ID"
+                          document.querySelectorAll(".updateregistrant-responsemessage")[0].style.color = "red"
+                          document.querySelectorAll(".updateregistrant-responsemessage")[0].style.display = "block"
+                        break;
+                      }
+
+                     })
+
+                   }}
+                >
+                  Edit Registrant
+                </button>
+                )
+              }
+              
+            </div>
+          </div>
+        </div>
+
+        {/* DELETE REGISTRANT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Delete Registrant</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                  <line x1="5" y1="12" x2="19" y2="12" stroke="red"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="delete-registrant-id">Registrant ID:</label>
+                <input 
+                  type="text" 
+                  id="delete-registrant-id"
+                  className="input-field"
+                  placeholder="Enter registrant ID" 
+                />
+              </div>
+              <button 
+                className="action-button danger"
+                onClick={() => setShowDatabaseConfiguration(true)}
+              >
+                Remove Registrant
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+};
+
+
+
+
+
+const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShowPendingOrders, setShowOrderDetails }) => {
+
+  // Sample transaction data
+  const sampleTransactions = [
+    {
+      id: "ORD-12345",
+      date: "2025-03-12",
+      type: "Online",
+      amount: 278.50,
+      status: "Pending",
+      paymentmethod: "Credit Card",
+      details: {
+        products: [
+          { name: "Organic Coffee", price: 89.50, quantity: 3 },
+          { name: "Herbal Tea", price: 10.00, quantity: 1 }
+        ],
+        shippingInfo: {
+          address: "123 Main Street",
+          city: "Austin",
+          state: "TX",
+          zipCode: "78701",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 278.50,
+          shippingTotal: 15.00,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 48.75,
+          totalCapital: 214.75,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 1250,
+          totalWeightKilos: 1.25,
+          total: 293.50
+        }
+      }
+    },
+    {
+      id: "ORD-54321",
+      date: "2025-03-11",
+      type: "In-Store",
+      amount: 156.75,
+      status: "Pending",
+      paymentmethod: "Cash",
+      details: {
+        products: [
+          { name: "Green Tea", price: 45.25, quantity: 2 },
+          { name: "Black Tea", price: 33.00, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "456 Elm Street",
+          city: "Seattle",
+          state: "WA",
+          zipCode: "98101",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 156.75,
+          shippingTotal: 10.00,
+          totalTransactionGiveaway: 5.00,
+          totalOmsiaProfit: 32.75,
+          totalCapital: 129.00,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 750,
+          totalWeightKilos: 0.75,
+          total: 166.75
+        }
+      }
+    },
+    {
+      id: "ORD-67890",
+      date: "2025-03-10",
+      type: "Online",
+      amount: 455.25,
+      status: "Pending",
+      paymentmethod: "PayPal",
+      details: {
+        products: [
+          { name: "Oolong Tea", price: 120.75, quantity: 3 },
+          { name: "Chai Spices", price: 46.50, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "789 Oak Drive",
+          city: "Portland",
+          state: "OR",
+          zipCode: "97201",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 455.25,
+          shippingTotal: 20.00,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 89.25,
+          totalCapital: 366.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 1850,
+          totalWeightKilos: 1.85,
+          total: 475.25
+        }
+      }
+    },
+    {
+      id: "ORD-98765",
+      date: "2025-03-09",
+      type: "Online",
+      amount: 323.50,
+      status: "Pending",
+      paymentmethod: "Credit Card",
+      details: {
+        products: [
+          { name: "White Tea", price: 78.50, quantity: 2 },
+          { name: "Matcha Powder", price: 55.50, quantity: 3 }
+        ],
+        shippingInfo: {
+          address: "321 Pine Lane",
+          city: "Denver",
+          state: "CO",
+          zipCode: "80201",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 323.50,
+          shippingTotal: 12.50,
+          totalTransactionGiveaway: 10.00,
+          totalOmsiaProfit: 61.00,
+          totalCapital: 265.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 1100,
+          totalWeightKilos: 1.10,
+          total: 336.00
+        }
+      }
+    },
+    {
+      id: "ORD-24680",
+      date: "2025-03-08",
+      type: "In-Store",
+      amount: 189.25,
+      status: "Pending",
+      paymentmethod: "Debit Card",
+      details: {
+        products: [
+          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
+          { name: "Earl Grey", price: 28.75, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "654 Maple Avenue",
+          city: "Chicago",
+          state: "IL",
+          zipCode: "60601",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 189.25,
+          shippingTotal: 8.75,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 40.00,
+          totalCapital: 158.00,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 900,
+          totalWeightKilos: 0.90,
+          total: 198.00
+        }
+      }
+    },
+    {
+      id: "ORD-13579",
+      date: "2025-03-07",
+      type: "Online",
+      amount: 512.75,
+      status: "Pending",
+      paymentmethod: "Bitcoin",
+      details: {
+        products: [
+          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
+          { name: "Tea Accessories", price: 40.75, quantity: 3 }
+        ],
+        shippingInfo: {
+          address: "987 Birch Street",
+          city: "New York",
+          state: "NY",
+          zipCode: "10001",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 512.75,
+          shippingTotal: 25.00,
+          totalTransactionGiveaway: 15.00,
+          totalOmsiaProfit: 98.75,
+          totalCapital: 424.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 2200,
+          totalWeightKilos: 2.20,
+          total: 537.75
+        }
+      }
+    }
+  ];
+
+  const [transactions, setTransactions] = useState(sampleTransactions);
+  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [activeRow, setActiveRow] = useState(null);
+
+  // Filter transactions based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredTransactions(transactions);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = transactions.filter(transaction => 
+      transaction.id.toLowerCase().includes(query) ||
+      transaction.date.toLowerCase().includes(query) ||
+      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
+      transaction.details.shippingInfo.city.toLowerCase().includes(query)
+    );
+    
+    setFilteredTransactions(filtered);
+  }, [searchQuery, transactions]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Show status message with animation
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 3000);
+  };
+
+  // Button action handlers with visual feedback
+  const handleAcceptOrder = (id) => {
+    showStatusMessage(`Order ${id} has been accepted`);
+    // Update the table UI to reflect acceptance
+    setTransactions(prevTransactions => 
+      prevTransactions.map(t => 
+        t.id === id ? {...t, status: 'Processing'} : t
+      )
+    );
+  };
+
+  const handleRejectOrder = (id) => {
+    showStatusMessage(`Order ${id} has been rejected`);
+    // Update the table UI to reflect rejection
+    setTransactions(prevTransactions => 
+      prevTransactions.filter(t => t.id !== id)
+    );
+  };
+
+  const handleMessageOrder = (id) => {
+    showStatusMessage(`Sending message regarding order ${id}`);
+  };
+
+  const handleEditOrder = (id) => {
+    showStatusMessage(`Editing order ${id}`);
+  };
+
+  return (
+    <div className="pending-orders-container">
+
+      <div className="header-section">
+        <h1 className="page-title">Total Orders</h1>
+        <div className="close-button" 
+            onClick={()=>{
+              setShowDatabaseConfiguration(false);
+              setShowPendingOrders(false);
+            }}>
+          <span className="close-icon">✕</span>
+        </div>
+      </div>
+
+      <div className="search-header">
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by ID, Date, Location or Address..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+          {searchQuery && (
+            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
+          )}
+        </div>
+      </div>
+
+      {statusMessage && (
+        <div className="status-message">
+          {statusMessage}
+        </div>
+      )}
+
+      <div className="orders-table-container">
+
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Location</th>
+              <th>Total Kilos</th>
+              <th>Items</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+
+            {filteredTransactions.map((transaction) => (
+              <tr 
+                key={transaction.id} 
+                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
+                onMouseEnter={() => setActiveRow(transaction.id)}
+                onMouseLeave={() => setActiveRow(null)}
+              >
+                <td className="order-id">{transaction.id}s</td>
+                <td>{transaction.date}</td>
+                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
+                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
+                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
+                <td>{transaction.details.orderSummary.totalItems}</td>
+                <td className="action-buttons">
+                  <button 
+                    className="view-btn" 
+                    onClick={() => {
+
+                      setShowOrderDetails(true);
+
+
+                      //setShowPendingOrders(false);
+
+
+                    }}
+                  >
+                    View
+                  </button>
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => handleEditOrder(transaction.id)}
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    className="accept-btn" 
+                    onClick={() => handleAcceptOrder(transaction.id)}
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    className="reject-btn" 
+                    onClick={() => handleRejectOrder(transaction.id)}
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    className="message-btn" 
+                    onClick={() => handleMessageOrder(transaction.id)}
+                  >
+                    Message
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredTransactions.length === 0 && (
+        <div className="no-results">
+          <p>No orders found matching your search</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PendingOrders = ({ 
+  setShowDatabaseConfiguration, 
+  setShowPendingOrders, 
+
+  setShowOrderDetails,
+  
+  setShowPendingOrderDetails }) => {
+  // Sample transaction data
+  const sampleTransactions = [
+    {
+      id: "ORD-12345",
+      date: "2025-03-12",
+      type: "Online",
+      amount: 278.50,
+      status: "Pending",
+      paymentmethod: "Credit Card",
+      details: {
+        products: [
+          { name: "Organic Coffee", price: 89.50, quantity: 3 },
+          { name: "Herbal Tea", price: 10.00, quantity: 1 }
+        ],
+        shippingInfo: {
+          address: "123 Main Street",
+          city: "Austin",
+          state: "TX",
+          zipCode: "78701",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 278.50,
+          shippingTotal: 15.00,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 48.75,
+          totalCapital: 214.75,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 1250,
+          totalWeightKilos: 1.25,
+          total: 293.50
+        }
+      }
+    },
+    {
+      id: "ORD-54321",
+      date: "2025-03-11",
+      type: "In-Store",
+      amount: 156.75,
+      status: "Pending",
+      paymentmethod: "Cash",
+      details: {
+        products: [
+          { name: "Green Tea", price: 45.25, quantity: 2 },
+          { name: "Black Tea", price: 33.00, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "456 Elm Street",
+          city: "Seattle",
+          state: "WA",
+          zipCode: "98101",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 156.75,
+          shippingTotal: 10.00,
+          totalTransactionGiveaway: 5.00,
+          totalOmsiaProfit: 32.75,
+          totalCapital: 129.00,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 750,
+          totalWeightKilos: 0.75,
+          total: 166.75
+        }
+      }
+    },
+    {
+      id: "ORD-67890",
+      date: "2025-03-10",
+      type: "Online",
+      amount: 455.25,
+      status: "Pending",
+      paymentmethod: "PayPal",
+      details: {
+        products: [
+          { name: "Oolong Tea", price: 120.75, quantity: 3 },
+          { name: "Chai Spices", price: 46.50, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "789 Oak Drive",
+          city: "Portland",
+          state: "OR",
+          zipCode: "97201",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 455.25,
+          shippingTotal: 20.00,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 89.25,
+          totalCapital: 366.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 1850,
+          totalWeightKilos: 1.85,
+          total: 475.25
+        }
+      }
+    },
+    {
+      id: "ORD-98765",
+      date: "2025-03-09",
+      type: "Online",
+      amount: 323.50,
+      status: "Pending",
+      paymentmethod: "Credit Card",
+      details: {
+        products: [
+          { name: "White Tea", price: 78.50, quantity: 2 },
+          { name: "Matcha Powder", price: 55.50, quantity: 3 }
+        ],
+        shippingInfo: {
+          address: "321 Pine Lane",
+          city: "Denver",
+          state: "CO",
+          zipCode: "80201",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 323.50,
+          shippingTotal: 12.50,
+          totalTransactionGiveaway: 10.00,
+          totalOmsiaProfit: 61.00,
+          totalCapital: 265.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 1100,
+          totalWeightKilos: 1.10,
+          total: 336.00
+        }
+      }
+    },
+    {
+      id: "ORD-24680",
+      date: "2025-03-08",
+      type: "In-Store",
+      amount: 189.25,
+      status: "Pending",
+      paymentmethod: "Debit Card",
+      details: {
+        products: [
+          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
+          { name: "Earl Grey", price: 28.75, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "654 Maple Avenue",
+          city: "Chicago",
+          state: "IL",
+          zipCode: "60601",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 189.25,
+          shippingTotal: 8.75,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 40.00,
+          totalCapital: 158.00,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 900,
+          totalWeightKilos: 0.90,
+          total: 198.00
+        }
+      }
+    },
+    {
+      id: "ORD-13579",
+      date: "2025-03-07",
+      type: "Online",
+      amount: 512.75,
+      status: "Pending",
+      paymentmethod: "Bitcoin",
+      details: {
+        products: [
+          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
+          { name: "Tea Accessories", price: 40.75, quantity: 3 }
+        ],
+        shippingInfo: {
+          address: "987 Birch Street",
+          city: "New York",
+          state: "NY",
+          zipCode: "10001",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 512.75,
+          shippingTotal: 25.00,
+          totalTransactionGiveaway: 15.00,
+          totalOmsiaProfit: 98.75,
+          totalCapital: 424.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 2200,
+          totalWeightKilos: 2.20,
+          total: 537.75
+        }
+      }
+    }
+  ];
+
+  const [transactions, setTransactions] = useState(sampleTransactions);
+  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [activeRow, setActiveRow] = useState(null);
+
+  // Filter transactions based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredTransactions(transactions);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = transactions.filter(transaction => 
+      transaction.id.toLowerCase().includes(query) ||
+      transaction.date.toLowerCase().includes(query) ||
+      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
+      transaction.details.shippingInfo.city.toLowerCase().includes(query)
+    );
+    
+    setFilteredTransactions(filtered);
+  }, [searchQuery, transactions]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Show status message with animation
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 3000);
+  };
+
+  // Button action handlers with visual feedback
+  const handleAcceptOrder = (id) => {
+    showStatusMessage(`Order ${id} has been accepted`);
+    // Update the table UI to reflect acceptance
+    setTransactions(prevTransactions => 
+      prevTransactions.map(t => 
+        t.id === id ? {...t, status: 'Processing'} : t
+      )
+    );
+  };
+
+  const handleRejectOrder = (id) => {
+    showStatusMessage(`Order ${id} has been rejected`);
+    // Update the table UI to reflect rejection
+    setTransactions(prevTransactions => 
+      prevTransactions.filter(t => t.id !== id)
+    );
+  };
+
+  const handleMessageOrder = (id) => {
+    showStatusMessage(`Sending message regarding order ${id}`);
+  };
+
+  const handleEditOrder = (id) => {
+    showStatusMessage(`Editing order ${id}`);
+  };
+
+  return (
+    <div className="pending-orders-container">
+      <div className="header-section">
+        <h1 className="page-title">Pending Orders</h1>
+        <div className="close-button" 
+            onClick={()=>{
+              setShowDatabaseConfiguration(false);
+              setShowPendingOrders(false);
+            }}>
+          <span className="close-icon">✕</span>
+        </div>
+      </div>
+
+      <div className="search-header">
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by ID, Date, Location or Address..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+          {searchQuery && (
+            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
+          )}
+        </div>
+      </div>
+
+      {statusMessage && (
+        <div className="status-message">
+          {statusMessage}
+        </div>
+      )}
+
+      <div className="orders-table-container">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Location</th>
+              <th>Total Kilos</th>
+              <th>Items</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.map((transaction) => (
+              <tr 
+                key={transaction.id} 
+                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
+                onMouseEnter={() => setActiveRow(transaction.id)}
+                onMouseLeave={() => setActiveRow(null)}
+              >
+                <td className="order-id">{transaction.id}</td>
+                <td>{transaction.date}</td>
+                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
+                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
+                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
+                <td>{transaction.details.orderSummary.totalItems}</td>
+                <td className="action-buttons">
+                  <button 
+                    className="view-btn" 
+                    onClick={() => {
+
+                      setShowOrderDetails(true)
+
+
+
+                      //setShowPendingOrders(false);
+                      //setShowPendingOrderDetails(true);
+
+                    }}
+                  >
+                    View
+                  </button>
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => handleEditOrder(transaction.id)}
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    className="accept-btn" 
+                    onClick={() => handleAcceptOrder(transaction.id)}
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    className="reject-btn" 
+                    onClick={() => handleRejectOrder(transaction.id)}
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    className="message-btn" 
+                    onClick={() => handleMessageOrder(transaction.id)}
+                  >
+                    Message
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredTransactions.length === 0 && (
+        <div className="no-results">
+          <p>No orders found matching your search</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const AcceptedOrders = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowOrderDetails,
+
+  setShowPendingOrders, 
+  setShowPendingOrderDetails 
+
+}) => {
+  // Sample transaction data
+  const sampleTransactions = [
+    {
+      id: "ORD-12345",
+      date: "2025-03-12",
+      type: "Online",
+      amount: 278.50,
+      status: "Pending",
+      paymentmethod: "Credit Card",
+      details: {
+        products: [
+          { name: "Organic Coffee", price: 89.50, quantity: 3 },
+          { name: "Herbal Tea", price: 10.00, quantity: 1 }
+        ],
+        shippingInfo: {
+          address: "123 Main Street",
+          city: "Austin",
+          state: "TX",
+          zipCode: "78701",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 278.50,
+          shippingTotal: 15.00,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 48.75,
+          totalCapital: 214.75,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 1250,
+          totalWeightKilos: 1.25,
+          total: 293.50
+        }
+      }
+    },
+    {
+      id: "ORD-54321",
+      date: "2025-03-11",
+      type: "In-Store",
+      amount: 156.75,
+      status: "Pending",
+      paymentmethod: "Cash",
+      details: {
+        products: [
+          { name: "Green Tea", price: 45.25, quantity: 2 },
+          { name: "Black Tea", price: 33.00, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "456 Elm Street",
+          city: "Seattle",
+          state: "WA",
+          zipCode: "98101",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 156.75,
+          shippingTotal: 10.00,
+          totalTransactionGiveaway: 5.00,
+          totalOmsiaProfit: 32.75,
+          totalCapital: 129.00,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 750,
+          totalWeightKilos: 0.75,
+          total: 166.75
+        }
+      }
+    },
+    {
+      id: "ORD-67890",
+      date: "2025-03-10",
+      type: "Online",
+      amount: 455.25,
+      status: "Pending",
+      paymentmethod: "PayPal",
+      details: {
+        products: [
+          { name: "Oolong Tea", price: 120.75, quantity: 3 },
+          { name: "Chai Spices", price: 46.50, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "789 Oak Drive",
+          city: "Portland",
+          state: "OR",
+          zipCode: "97201",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 455.25,
+          shippingTotal: 20.00,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 89.25,
+          totalCapital: 366.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 1850,
+          totalWeightKilos: 1.85,
+          total: 475.25
+        }
+      }
+    },
+    {
+      id: "ORD-98765",
+      date: "2025-03-09",
+      type: "Online",
+      amount: 323.50,
+      status: "Pending",
+      paymentmethod: "Credit Card",
+      details: {
+        products: [
+          { name: "White Tea", price: 78.50, quantity: 2 },
+          { name: "Matcha Powder", price: 55.50, quantity: 3 }
+        ],
+        shippingInfo: {
+          address: "321 Pine Lane",
+          city: "Denver",
+          state: "CO",
+          zipCode: "80201",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 323.50,
+          shippingTotal: 12.50,
+          totalTransactionGiveaway: 10.00,
+          totalOmsiaProfit: 61.00,
+          totalCapital: 265.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 1100,
+          totalWeightKilos: 1.10,
+          total: 336.00
+        }
+      }
+    },
+    {
+      id: "ORD-24680",
+      date: "2025-03-08",
+      type: "In-Store",
+      amount: 189.25,
+      status: "Pending",
+      paymentmethod: "Debit Card",
+      details: {
+        products: [
+          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
+          { name: "Earl Grey", price: 28.75, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "654 Maple Avenue",
+          city: "Chicago",
+          state: "IL",
+          zipCode: "60601",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 189.25,
+          shippingTotal: 8.75,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 40.00,
+          totalCapital: 158.00,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 900,
+          totalWeightKilos: 0.90,
+          total: 198.00
+        }
+      }
+    },
+    {
+      id: "ORD-13579",
+      date: "2025-03-07",
+      type: "Online",
+      amount: 512.75,
+      status: "Pending",
+      paymentmethod: "Bitcoin",
+      details: {
+        products: [
+          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
+          { name: "Tea Accessories", price: 40.75, quantity: 3 }
+        ],
+        shippingInfo: {
+          address: "987 Birch Street",
+          city: "New York",
+          state: "NY",
+          zipCode: "10001",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 512.75,
+          shippingTotal: 25.00,
+          totalTransactionGiveaway: 15.00,
+          totalOmsiaProfit: 98.75,
+          totalCapital: 424.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 2200,
+          totalWeightKilos: 2.20,
+          total: 537.75
+        }
+      }
+    }
+  ];
+
+  const [transactions, setTransactions] = useState(sampleTransactions);
+  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [activeRow, setActiveRow] = useState(null);
+
+  // Filter transactions based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredTransactions(transactions);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = transactions.filter(transaction => 
+      transaction.id.toLowerCase().includes(query) ||
+      transaction.date.toLowerCase().includes(query) ||
+      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
+      transaction.details.shippingInfo.city.toLowerCase().includes(query)
+    );
+    
+    setFilteredTransactions(filtered);
+  }, [searchQuery, transactions]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Show status message with animation
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 3000);
+  };
+
+  // Button action handlers with visual feedback
+  const handleAcceptOrder = (id) => {
+    showStatusMessage(`Order ${id} has been accepted`);
+    // Update the table UI to reflect acceptance
+    setTransactions(prevTransactions => 
+      prevTransactions.map(t => 
+        t.id === id ? {...t, status: 'Processing'} : t
+      )
+    );
+  };
+
+  const handleRejectOrder = (id) => {
+    showStatusMessage(`Order ${id} has been rejected`);
+    // Update the table UI to reflect rejection
+    setTransactions(prevTransactions => 
+      prevTransactions.filter(t => t.id !== id)
+    );
+  };
+
+  const handleMessageOrder = (id) => {
+    showStatusMessage(`Sending message regarding order ${id}`);
+  };
+
+  const handleEditOrder = (id) => {
+    showStatusMessage(`Editing order ${id}`);
+  };
+
+  return (
+    <div className="pending-orders-container">
+      <div className="header-section">
+        <h1 className="page-title">Accepted Orders</h1>
+        <div className="close-button" 
+            onClick={()=>{
+              setShowDatabaseConfiguration(false);
+              setShowPendingOrders(false);
+            }}>
+          <span className="close-icon">✕</span>
+        </div>
+      </div>
+
+      <div className="search-header">
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by ID, Date, Location or Address..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+          {searchQuery && (
+            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
+          )}
+        </div>
+      </div>
+
+      {statusMessage && (
+        <div className="status-message">
+          {statusMessage}
+        </div>
+      )}
+
+      <div className="orders-table-container">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Location</th>
+              <th>Total Kilos</th>
+              <th>Items</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.map((transaction) => (
+              <tr 
+                key={transaction.id} 
+                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
+                onMouseEnter={() => setActiveRow(transaction.id)}
+                onMouseLeave={() => setActiveRow(null)}
+              >
+                <td className="order-id">{transaction.id}</td>
+                <td>{transaction.date}</td>
+                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
+                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
+                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
+                <td>{transaction.details.orderSummary.totalItems}</td>
+                <td className="action-buttons">
+                  <button 
+                    className="view-btn" 
+                    onClick={() => {
+
+                      setShowOrderDetails(true)
+
+
+                      //setShowPendingOrders(false);
+                      //setShowPendingOrderDetails(true);
+
+                    }}
+                  >
+                    View
+                  </button>
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => handleEditOrder(transaction.id)}
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    className="accept-btn" 
+                    onClick={() => handleAcceptOrder(transaction.id)}
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    className="reject-btn" 
+                    onClick={() => handleRejectOrder(transaction.id)}
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    className="message-btn" 
+                    onClick={() => handleMessageOrder(transaction.id)}
+                  >
+                    Message
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredTransactions.length === 0 && (
+        <div className="no-results">
+          <p>No orders found matching your search</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const OrderDetailsModal = ({ setShowOrderDetails,
+                             transaction   }) => {
+  
+  if (!transaction) return null;
+
+  const {
+    id,
+    date,
+    type,
+    amount,
+    status,
+    paymentmethod,
+    details
+  } = transaction;
+
+  const { products, shippingInfo, orderSummary } = details || {};
+  const { address, city, state, zipCode, country } = shippingInfo || {};
+
+  // Format currency
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value);
+  };
+
+  // Format date
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  {/*
+  // Handle escape key press to close modal
+  useEffect(() => {
+    const handleEscKey = (event) => {
+      if (event.key === 'Escape') {
+        handleClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscKey);
+    return () => {
+      document.removeEventListener('keydown', handleEscKey);
+    };
+  }, []);
+  */}
+
+  // Handle click outside modal to close
+  const handleOverlayClick = (e) => {
+    if (e.target.className === 'modal-overlay') {
+    }
+  };
+
+  // Get status color
+  const getStatusColor = (status) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
+        return 'var(--status-pending)';
+      case 'processing':
+        return 'var(--status-processing)';
+      case 'shipped':
+        return 'var(--status-shipped)';
+      case 'delivered':
+        return 'var(--status-delivered)';
+      case 'cancelled':
+        return 'var(--status-cancelled)';
+      default:
+        return 'var(--status-default)';
+    }
+  };
+
+  return (
+    <div className="modal-overlay" onClick={handleOverlayClick}>
+      <div className="order-details-modal">
+        <button className="close-button" 
+                onClick={()=> {
+                  setShowOrderDetails(false)   
+                }}>
+          <FaTimes />
+        </button>
+        <h2 className="modal-title">Order Details</h2>
+        
+        <div className="order-section">
+          <h3><FaReceipt className="section-icon" /> Transaction Information</h3>
+          <div className="info-grid">
+            <div className="info-item">
+              <span className="info-label">Order ID:</span>
+              <span className="info-value highlight">{id}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label"><FaCalendarAlt className="info-icon" /> Date:</span>
+              <span className="info-value">{formatDate(date)}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label"><FaTag className="info-icon" /> Type:</span>
+              <span className="info-value">{type}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label"><FaDollarSign className="info-icon" /> Amount:</span>
+              <span className="info-value highlight">{formatCurrency(amount)}</span>
+            </div>
+            <div className="info-item">
+              <span className="info-label">Status:</span>
+              <span className="info-value status-badge" style={{ backgroundColor: getStatusColor(status) }}>
+                <FaCircle className="status-icon" />
+                {status}
+              </span>
+            </div>
+            <div className="info-item">
+              <span className="info-label"><FaCreditCard className="info-icon" /> Payment Method:</span>
+              <span className="info-value">{paymentmethod}</span>
+            </div>
+          </div>
+        </div>
+
+        {shippingInfo && (
+          <div className="order-section">
+            <h3><FaShippingFast className="section-icon" /> Shipping Information</h3>
+            <div className="shipping-info">
+              <p className="address-line">{address}</p>
+              <p className="address-line">{city}, {state} {zipCode}</p>
+              <p className="address-line">{country}</p>
+            </div>
+          </div>
+        )}
+
+        {products && products.length > 0 && (
+          <div className="order-section">
+            <h3><FaBox className="section-icon" /> Products</h3>
+            <div className="products-list">
+              {products.map((product, index) => (
+                <div key={index} className="product-item">
+                  <span className="product-name">{product.name}</span>
+                  <span className="product-price">{formatCurrency(product.price)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {orderSummary && (
+          <div className="order-section summary-section">
+            <h3><FaReceipt className="section-icon" /> Order Summary</h3>
+            <div className="summary-grid">
+              <div className="summary-item">
+                <span className="summary-label">Merchandise Total:</span>
+                <span className="summary-value">{formatCurrency(orderSummary.merchandiseTotal)}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Shipping Total:</span>
+                <span className="summary-value">{formatCurrency(orderSummary.shippingTotal)}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Total Items:</span>
+                <span className="summary-value">{orderSummary.totalItems}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Total Products:</span>
+                <span className="summary-value">{orderSummary.totalProducts}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Weight:</span>
+                <span className="summary-value">{orderSummary.totalWeightKilos} kg ({orderSummary.totalWeightGrams} g)</span>
+              </div>
+              <div className="summary-item highlight-row">
+                <span className="summary-label">Total:</span>
+                <span className="summary-value total-value">{formatCurrency(orderSummary.total)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+
+
+
+
+const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, setShowCreditTransaction, transactions, onClose, onView, onEdit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateRow, setAnimateRow] = useState(null);
+
+  useEffect(() => {
+    // Animation effect on mount
+    setIsVisible(true);
+    
+    // Initial filtering of only pending deposit transactions
+    const pendingDeposits = transactions.filter(
+      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    );
+    setFilteredTransactions(pendingDeposits);
+  }, [transactions]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = transactions.filter(transaction => 
+        // Search by transaction ID
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Search by name or contact info (assuming these would be in details)
+        (transaction.details?.shippingInfo?.address && 
+         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Add other search fields as needed based on your data structure
+        (transaction.paymentmethod && 
+         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredTransactions(results);
+    } else {
+      // Reset to show only pending deposits when search is cleared
+      const pendingDeposits = transactions.filter(
+        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    }
+  }, [searchQuery, transactions]);
+
+  const handleAccept = (id) => {
+    setAnimateRow(id);
+    // Additional accept logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleReject = (id) => {
+    setAnimateRow(id);
+    // Additional reject logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleMessage = (id) => {
+    // Message sending logic would go here
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+        <div className="modal-header">
+          <h2>Total Deposits</h2>
+          <button className="close-button" onClick={()=> {
+             setShowDatabaseConfiguration(false)
+             setShowTotalDeposits(false)
+          }}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, email, or phone number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
+        
+        <div className="pending-deposits-container">
+          {filteredTransactions.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No pending deposits found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id} 
+                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                    >
+                      <td className="transaction-id">{transaction.id}</td>
+                      <td className="date-cell">{formatDate(transaction.date)}</td>
+                      <td className="amount">
+                        <div className="amount-wrapper">
+                          <FaMoneyBillWave className="amount-icon" />
+                          <span>₱{transaction.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div className="status-indicator">
+                          <FaClock className="status-icon pulse" />
+                          <span>Pending</span>
+                        </div>
+                      </td>
+                      <td className="payment-method">{transaction.paymentmethod}</td>
+                      <td className="actions">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowCreditTransaction(true)
+                            }}
+                            aria-label="View transaction details"
+                          >
+                            <FaEye />
+                            <span className="button-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(transaction.id)}
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                            <span className="button-text">Edit</span>
+                          </button>
+                          <button 
+                            className="accept-button" 
+                            onClick={() => handleAccept(transaction.id)}
+                            aria-label="Accept transaction"
+                          >
+                            <FaCheckCircle />
+                            <span className="button-text">Accept</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => handleReject(transaction.id)}
+                            aria-label="Reject transaction"
+                          >
+                            <FaTimesCircle />
+                            <span className="button-text">Reject</span>
+                          </button>
+                          <button 
+                            className="message-button" 
+                            onClick={() => handleMessage(transaction.id)}
+                            aria-label="Message about transaction"
+                          >
+                            <FaEnvelope />
+                            <span className="button-text">Message</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits, setShowCreditTransaction, transactions, onClose, onView, onEdit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateRow, setAnimateRow] = useState(null);
+
+  useEffect(() => {
+    // Animation effect on mount
+    setIsVisible(true);
+    
+    // Initial filtering of only pending deposit transactions
+    const pendingDeposits = transactions.filter(
+      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    );
+    setFilteredTransactions(pendingDeposits);
+  }, [transactions]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = transactions.filter(transaction => 
+        // Search by transaction ID
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Search by name or contact info (assuming these would be in details)
+        (transaction.details?.shippingInfo?.address && 
+         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Add other search fields as needed based on your data structure
+        (transaction.paymentmethod && 
+         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredTransactions(results);
+    } else {
+      // Reset to show only pending deposits when search is cleared
+      const pendingDeposits = transactions.filter(
+        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    }
+  }, [searchQuery, transactions]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowPendingDeposits(false);
+    }, 300);
+  };
+
+  const handleAccept = (id) => {
+    setAnimateRow(id);
+    // Additional accept logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleReject = (id) => {
+    setAnimateRow(id);
+    // Additional reject logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleMessage = (id) => {
+    // Message sending logic would go here
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+        <div className="modal-header">
+          <h2>Pending Deposits</h2>
+          <button className="close-button" onClick={()=> {
+            setShowDatabaseConfiguration(false)
+            setShowPendingDeposits(false)
+          }}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, email, or phone number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
+        
+        <div className="pending-deposits-container">
+          {filteredTransactions.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No pending deposits found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id} 
+                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                    >
+                      <td className="transaction-id">{transaction.id}</td>
+                      <td className="date-cell">{formatDate(transaction.date)}</td>
+                      <td className="amount">
+                        <div className="amount-wrapper">
+                          <FaMoneyBillWave className="amount-icon" />
+                          <span>₱{transaction.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div className="status-indicator">
+                          <FaClock className="status-icon pulse" />
+                          <span>Pending</span>
+                        </div>
+                      </td>
+                      <td className="payment-method">{transaction.paymentmethod}</td>
+                      <td className="actions">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowCreditTransaction(true)
+                            }}
+                            aria-label="View transaction details"
+                          >
+                            <FaEye />
+                            <span className="button-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(transaction.id)}
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                            <span className="button-text">Edit</span>
+                          </button>
+                          <button 
+                            className="accept-button" 
+                            onClick={() => handleAccept(transaction.id)}
+                            aria-label="Accept transaction"
+                          >
+                            <FaCheckCircle />
+                            <span className="button-text">Accept</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => handleReject(transaction.id)}
+                            aria-label="Reject transaction"
+                          >
+                            <FaTimesCircle />
+                            <span className="button-text">Reject</span>
+                          </button>
+                          <button 
+                            className="message-button" 
+                            onClick={() => handleMessage(transaction.id)}
+                            aria-label="Message about transaction"
+                          >
+                            <FaEnvelope />
+                            <span className="button-text">Message</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SuccessfulDeposits = ({ setShowDatabaseConfiguration, setShowSuccessfulDeposits, setShowCreditTransaction, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateRow, setAnimateRow] = useState(null);
+
+  useEffect(() => {
+    // Animation effect on mount
+    setIsVisible(true);
+    
+    // Initial filtering of only pending deposit transactions
+    const pendingDeposits = transactions.filter(
+      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    );
+    setFilteredTransactions(pendingDeposits);
+  }, [transactions]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = transactions.filter(transaction => 
+        // Search by transaction ID
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Search by name or contact info (assuming these would be in details)
+        (transaction.details?.shippingInfo?.address && 
+         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Add other search fields as needed based on your data structure
+        (transaction.paymentmethod && 
+         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredTransactions(results);
+    } else {
+      // Reset to show only pending deposits when search is cleared
+      const pendingDeposits = transactions.filter(
+        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    }
+  }, [searchQuery, transactions]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowPendingDeposits(false);
+    }, 300);
+  };
+
+  const handleAccept = (id) => {
+    setAnimateRow(id);
+    // Additional accept logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleReject = (id) => {
+    setAnimateRow(id);
+    // Additional reject logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleMessage = (id) => {
+    // Message sending logic would go here
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+        <div className="modal-header">
+          <h2>Successful Deposits</h2>
+          <button className="close-button" onClick={()=> {
+            setShowDatabaseConfiguration(false)
+            setShowSuccessfulDeposits(false)
+          }}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, email, or phone number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
+        
+        <div className="pending-deposits-container">
+          {filteredTransactions.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No pending deposits found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id} 
+                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                    >
+                      <td className="transaction-id">{transaction.id}</td>
+                      <td className="date-cell">{formatDate(transaction.date)}</td>
+                      <td className="amount">
+                        <div className="amount-wrapper">
+                          <FaMoneyBillWave className="amount-icon" />
+                          <span>₱{transaction.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div className="status-indicator">
+                          <FaClock className="status-icon pulse" />
+                          <span>Pending</span>
+                        </div>
+                      </td>
+                      <td className="payment-method">{transaction.paymentmethod}</td>
+                      <td className="actions">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowCreditTransaction(true)
+                            }}
+                            aria-label="View transaction details"
+                          >
+                            <FaEye />
+                            <span className="button-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(transaction.id)}
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                            <span className="button-text">Edit</span>
+                          </button>
+                          <button 
+                            className="accept-button" 
+                            onClick={() => handleAccept(transaction.id)}
+                            aria-label="Accept transaction"
+                          >
+                            <FaCheckCircle />
+                            <span className="button-text">Accept</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => handleReject(transaction.id)}
+                            aria-label="Reject transaction"
+                          >
+                            <FaTimesCircle />
+                            <span className="button-text">Reject</span>
+                          </button>
+                          <button 
+                            className="message-button" 
+                            onClick={() => handleMessage(transaction.id)}
+                            aria-label="Message about transaction"
+                          >
+                            <FaEnvelope />
+                            <span className="button-text">Message</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RejectedDeposits = ({ setShowDatabaseConfiguration, setShowRejectedDeposits, setShowCreditTransaction, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateRow, setAnimateRow] = useState(null);
+
+  useEffect(() => {
+    // Animation effect on mount
+    setIsVisible(true);
+    
+    // Initial filtering of only pending deposit transactions
+    const pendingDeposits = transactions.filter(
+      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    );
+    setFilteredTransactions(pendingDeposits);
+  }, [transactions]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = transactions.filter(transaction => 
+        // Search by transaction ID
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Search by name or contact info (assuming these would be in details)
+        (transaction.details?.shippingInfo?.address && 
+         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Add other search fields as needed based on your data structure
+        (transaction.paymentmethod && 
+         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredTransactions(results);
+    } else {
+      // Reset to show only pending deposits when search is cleared
+      const pendingDeposits = transactions.filter(
+        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    }
+  }, [searchQuery, transactions]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowPendingDeposits(false);
+    }, 300);
+  };
+
+  const handleAccept = (id) => {
+    setAnimateRow(id);
+    // Additional accept logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleReject = (id) => {
+    setAnimateRow(id);
+    // Additional reject logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleMessage = (id) => {
+    // Message sending logic would go here
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+        <div className="modal-header">
+          <h2>Rejected Deposits</h2>
+          <button className="close-button" onClick={()=> {
+            setShowDatabaseConfiguration(false)
+            setShowRejectedDeposits(false)
+          }}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, email, or phone number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
+        
+        <div className="pending-deposits-container">
+          {filteredTransactions.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No pending deposits found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id} 
+                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                    >
+                      <td className="transaction-id">{transaction.id}</td>
+                      <td className="date-cell">{formatDate(transaction.date)}</td>
+                      <td className="amount">
+                        <div className="amount-wrapper">
+                          <FaMoneyBillWave className="amount-icon" />
+                          <span>₱{transaction.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div className="status-indicator">
+                          <FaClock className="status-icon pulse" />
+                          <span>Pending</span>
+                        </div>
+                      </td>
+                      <td className="payment-method">{transaction.paymentmethod}</td>
+                      <td className="actions">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowCreditTransaction(true)
+                            }}
+                            aria-label="View transaction details"
+                          >
+                            <FaEye />
+                            <span className="button-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(transaction.id)}
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                            <span className="button-text">Edit</span>
+                          </button>
+                          <button 
+                            className="accept-button" 
+                            onClick={() => handleAccept(transaction.id)}
+                            aria-label="Accept transaction"
+                          >
+                            <FaCheckCircle />
+                            <span className="button-text">Accept</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => handleReject(transaction.id)}
+                            aria-label="Reject transaction"
+                          >
+                            <FaTimesCircle />
+                            <span className="button-text">Reject</span>
+                          </button>
+                          <button 
+                            className="message-button" 
+                            onClick={() => handleMessage(transaction.id)}
+                            aria-label="Message about transaction"
+                          >
+                            <FaEnvelope />
+                            <span className="button-text">Message</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+
+const TotalWithdrawals = ({ setShowDatabaseConfiguration, setShowTotalWithdrawals,  setShowCreditTransaction, transactions, onClose, onView, onEdit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateRow, setAnimateRow] = useState(null);
+
+  useEffect(() => {
+    // Animation effect on mount
+    setIsVisible(true);
+    
+    // Initial filtering of only pending deposit transactions
+    const pendingDeposits = transactions.filter(
+      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    );
+    setFilteredTransactions(pendingDeposits);
+  }, [transactions]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = transactions.filter(transaction => 
+        // Search by transaction ID
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Search by name or contact info (assuming these would be in details)
+        (transaction.details?.shippingInfo?.address && 
+         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Add other search fields as needed based on your data structure
+        (transaction.paymentmethod && 
+         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredTransactions(results);
+    } else {
+      // Reset to show only pending deposits when search is cleared
+      const pendingDeposits = transactions.filter(
+        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    }
+  }, [searchQuery, transactions]);
+
+  const handleAccept = (id) => {
+    setAnimateRow(id);
+    // Additional accept logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleReject = (id) => {
+    setAnimateRow(id);
+    // Additional reject logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleMessage = (id) => {
+    // Message sending logic would go here
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+        <div className="modal-header">
+          <h2>Total Withdrawals</h2>
+          <button className="close-button" onClick={()=> {
+             setShowDatabaseConfiguration(false)
+             setShowTotalWithdrawals(false)
+          }}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, email, or phone number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
+        
+        <div className="pending-deposits-container">
+          {filteredTransactions.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No pending deposits found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id} 
+                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                    >
+                      <td className="transaction-id">{transaction.id}</td>
+                      <td className="date-cell">{formatDate(transaction.date)}</td>
+                      <td className="amount">
+                        <div className="amount-wrapper">
+                          <FaMoneyBillWave className="amount-icon" />
+                          <span>₱{transaction.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div className="status-indicator">
+                          <FaClock className="status-icon pulse" />
+                          <span>Pending</span>
+                        </div>
+                      </td>
+                      <td className="payment-method">{transaction.paymentmethod}</td>
+                      <td className="actions">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowCreditTransaction(true)
+                            }}
+                            aria-label="View transaction details"
+                          >
+                            <FaEye />
+                            <span className="button-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(transaction.id)}
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                            <span className="button-text">Edit</span>
+                          </button>
+                          <button 
+                            className="accept-button" 
+                            onClick={() => handleAccept(transaction.id)}
+                            aria-label="Accept transaction"
+                          >
+                            <FaCheckCircle />
+                            <span className="button-text">Accept</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => handleReject(transaction.id)}
+                            aria-label="Reject transaction"
+                          >
+                            <FaTimesCircle />
+                            <span className="button-text">Reject</span>
+                          </button>
+                          <button 
+                            className="message-button" 
+                            onClick={() => handleMessage(transaction.id)}
+                            aria-label="Message about transaction"
+                          >
+                            <FaEnvelope />
+                            <span className="button-text">Message</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const PendingWithdrawals = ({ setShowDatabaseConfiguration, setShowPendingWithdrawals, setShowCreditTransaction, transactions, onClose, onView, onEdit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateRow, setAnimateRow] = useState(null);
+
+  useEffect(() => {
+    // Animation effect on mount
+    setIsVisible(true);
+    
+    // Initial filtering of only pending deposit transactions
+    const pendingDeposits = transactions.filter(
+      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    );
+    setFilteredTransactions(pendingDeposits);
+  }, [transactions]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = transactions.filter(transaction => 
+        // Search by transaction ID
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Search by name or contact info (assuming these would be in details)
+        (transaction.details?.shippingInfo?.address && 
+         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Add other search fields as needed based on your data structure
+        (transaction.paymentmethod && 
+         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredTransactions(results);
+    } else {
+      // Reset to show only pending deposits when search is cleared
+      const pendingDeposits = transactions.filter(
+        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    }
+  }, [searchQuery, transactions]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowPendingWithdrawals(false);
+    }, 300);
+  };
+
+  const handleAccept = (id) => {
+    setAnimateRow(id);
+    // Additional accept logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleReject = (id) => {
+    setAnimateRow(id);
+    // Additional reject logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleMessage = (id) => {
+    // Message sending logic would go here
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+        <div className="modal-header">
+          <h2>Pending Withdrawals</h2>
+          <button className="close-button" onClick={()=> {
+            setShowDatabaseConfiguration(false)
+            setShowPendingWithdrawals(false)
+          }}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, email, or phone number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
+        
+        <div className="pending-deposits-container">
+          {filteredTransactions.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No pending deposits found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id} 
+                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                    >
+                      <td className="transaction-id">{transaction.id}</td>
+                      <td className="date-cell">{formatDate(transaction.date)}</td>
+                      <td className="amount">
+                        <div className="amount-wrapper">
+                          <FaMoneyBillWave className="amount-icon" />
+                          <span>₱{transaction.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div className="status-indicator">
+                          <FaClock className="status-icon pulse" />
+                          <span>Pending</span>
+                        </div>
+                      </td>
+                      <td className="payment-method">{transaction.paymentmethod}</td>
+                      <td className="actions">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowCreditTransaction(true)
+                            }}
+                            aria-label="View transaction details"
+                          >
+                            <FaEye />
+                            <span className="button-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(transaction.id)}
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                            <span className="button-text">Edit</span>
+                          </button>
+                          <button 
+                            className="accept-button" 
+                            onClick={() => handleAccept(transaction.id)}
+                            aria-label="Accept transaction"
+                          >
+                            <FaCheckCircle />
+                            <span className="button-text">Accept</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => handleReject(transaction.id)}
+                            aria-label="Reject transaction"
+                          >
+                            <FaTimesCircle />
+                            <span className="button-text">Reject</span>
+                          </button>
+                          <button 
+                            className="message-button" 
+                            onClick={() => handleMessage(transaction.id)}
+                            aria-label="Message about transaction"
+                          >
+                            <FaEnvelope />
+                            <span className="button-text">Message</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SuccessfulWithdrawals = ({ setShowDatabaseConfiguration, setShowSuccessfulWithdrawals, setShowCreditTransaction, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateRow, setAnimateRow] = useState(null);
+
+  useEffect(() => {
+    // Animation effect on mount
+    setIsVisible(true);
+    
+    // Initial filtering of only pending deposit transactions
+    const pendingDeposits = transactions.filter(
+      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    );
+    setFilteredTransactions(pendingDeposits);
+  }, [transactions]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = transactions.filter(transaction => 
+        // Search by transaction ID
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Search by name or contact info (assuming these would be in details)
+        (transaction.details?.shippingInfo?.address && 
+         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Add other search fields as needed based on your data structure
+        (transaction.paymentmethod && 
+         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredTransactions(results);
+    } else {
+      // Reset to show only pending deposits when search is cleared
+      const pendingDeposits = transactions.filter(
+        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    }
+  }, [searchQuery, transactions]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowPendingDeposits(false);
+    }, 300);
+  };
+
+  const handleAccept = (id) => {
+    setAnimateRow(id);
+    // Additional accept logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleReject = (id) => {
+    setAnimateRow(id);
+    // Additional reject logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleMessage = (id) => {
+    // Message sending logic would go here
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+        <div className="modal-header">
+          <h2>Successful Withdrawals</h2>
+          <button className="close-button" onClick={()=> {
+            setShowDatabaseConfiguration(false)
+            setShowSuccessfulWithdrawals(false)
+          }}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, email, or phone number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
+        
+        <div className="pending-deposits-container">
+          {filteredTransactions.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No pending deposits found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id} 
+                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                    >
+                      <td className="transaction-id">{transaction.id}</td>
+                      <td className="date-cell">{formatDate(transaction.date)}</td>
+                      <td className="amount">
+                        <div className="amount-wrapper">
+                          <FaMoneyBillWave className="amount-icon" />
+                          <span>₱{transaction.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div className="status-indicator">
+                          <FaClock className="status-icon pulse" />
+                          <span>Pending</span>
+                        </div>
+                      </td>
+                      <td className="payment-method">{transaction.paymentmethod}</td>
+                      <td className="actions">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowCreditTransaction(true)
+                            }}
+                            aria-label="View transaction details"
+                          >
+                            <FaEye />
+                            <span className="button-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(transaction.id)}
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                            <span className="button-text">Edit</span>
+                          </button>
+                          <button 
+                            className="accept-button" 
+                            onClick={() => handleAccept(transaction.id)}
+                            aria-label="Accept transaction"
+                          >
+                            <FaCheckCircle />
+                            <span className="button-text">Accept</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => handleReject(transaction.id)}
+                            aria-label="Reject transaction"
+                          >
+                            <FaTimesCircle />
+                            <span className="button-text">Reject</span>
+                          </button>
+                          <button 
+                            className="message-button" 
+                            onClick={() => handleMessage(transaction.id)}
+                            aria-label="Message about transaction"
+                          >
+                            <FaEnvelope />
+                            <span className="button-text">Message</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const RejectedWithdrawals = ({ setShowDatabaseConfiguration, setShowRejectedWithdrawals, setShowCreditTransaction, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [animateRow, setAnimateRow] = useState(null);
+
+  useEffect(() => {
+    // Animation effect on mount
+    setIsVisible(true);
+    
+    // Initial filtering of only pending deposit transactions
+    const pendingDeposits = transactions.filter(
+      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    );
+    setFilteredTransactions(pendingDeposits);
+  }, [transactions]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = transactions.filter(transaction => 
+        // Search by transaction ID
+        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        // Search by name or contact info (assuming these would be in details)
+        (transaction.details?.shippingInfo?.address && 
+         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Add other search fields as needed based on your data structure
+        (transaction.paymentmethod && 
+         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredTransactions(results);
+    } else {
+      // Reset to show only pending deposits when search is cleared
+      const pendingDeposits = transactions.filter(
+        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    }
+  }, [searchQuery, transactions]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowPendingDeposits(false);
+    }, 300);
+  };
+
+  const handleAccept = (id) => {
+    setAnimateRow(id);
+    // Additional accept logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleReject = (id) => {
+    setAnimateRow(id);
+    // Additional reject logic would go here
+    setTimeout(() => {
+      setAnimateRow(null);
+      // Here you'd update the transaction status
+    }, 800);
+  };
+
+  const handleMessage = (id) => {
+    // Message sending logic would go here
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+        <div className="modal-header">
+          <h2>Rejected Withdrawals</h2>
+          <button className="close-button" onClick={()=> {
+            setShowDatabaseConfiguration(false)
+            setShowRejectedWithdrawals(false)
+          }}>
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, email, or phone number..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+            />
+          </div>
+        </div>
+        
+        <div className="pending-deposits-container">
+          {filteredTransactions.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No pending deposits found</p>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="transactions-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Payment Method</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredTransactions.map((transaction) => (
+                    <tr 
+                      key={transaction.id} 
+                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                    >
+                      <td className="transaction-id">{transaction.id}</td>
+                      <td className="date-cell">{formatDate(transaction.date)}</td>
+                      <td className="amount">
+                        <div className="amount-wrapper">
+                          <FaMoneyBillWave className="amount-icon" />
+                          <span>₱{transaction.amount.toFixed(2)}</span>
+                        </div>
+                      </td>
+                      <td className="status">
+                        <div className="status-indicator">
+                          <FaClock className="status-icon pulse" />
+                          <span>Pending</span>
+                        </div>
+                      </td>
+                      <td className="payment-method">{transaction.paymentmethod}</td>
+                      <td className="actions">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowCreditTransaction(true)
+                            }}
+                            aria-label="View transaction details"
+                          >
+                            <FaEye />
+                            <span className="button-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(transaction.id)}
+                            aria-label="Edit transaction"
+                          >
+                            <FaEdit />
+                            <span className="button-text">Edit</span>
+                          </button>
+                          <button 
+                            className="accept-button" 
+                            onClick={() => handleAccept(transaction.id)}
+                            aria-label="Accept transaction"
+                          >
+                            <FaCheckCircle />
+                            <span className="button-text">Accept</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => handleReject(transaction.id)}
+                            aria-label="Reject transaction"
+                          >
+                            <FaTimesCircle />
+                            <span className="button-text">Reject</span>
+                          </button>
+                          <button 
+                            className="message-button" 
+                            onClick={() => handleMessage(transaction.id)}
+                            aria-label="Message about transaction"
+                          >
+                            <FaEnvelope />
+                            <span className="button-text">Message</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+const CreditTransactionModal = ({ transaction, setShowCreditTransaction }) => {
+  // Destructure the transaction data for easier access
+  const {
+    id,
+    date,
+    type,
+    amount,
+    status,
+    paymentmethod,
+    details
+  } = transaction;
+
+  // Format date for better readability
+  const formattedDate = new Date(date).toLocaleString();
+
+  // Format currency
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-container">
+        <div className="modal-header">
+          <h2>Transaction Details</h2>
+          <button className="close-button" onClick={()=> {
+            setShowCreditTransaction(false)
+          }}>×</button>
+        </div>
+        
+        <div className="modal-content">
+          <div className="transaction-main-info">
+            <div className="transaction-id">
+              <span className="label">Transaction ID:</span>
+              <span className="value">{id}</span>
+            </div>
+            
+            <div className="transaction-date">
+              <span className="label">Date:</span>
+              <span className="value">{formattedDate}</span>
+            </div>
+            
+            <div className="transaction-type">
+              <span className="label">Type:</span>
+              <span className="value highlight-type">{type}</span>
+            </div>
+            
+            <div className="transaction-amount">
+              <span className="label">Amount:</span>
+              <span className="value highlight-amount">{formatCurrency(amount)}</span>
+            </div>
+            
+            <div className="transaction-status">
+              <span className="label">Status:</span>
+              <span className={`value highlight-status status-${status.toLowerCase()}`}>{status}</span>
+            </div>
+            
+            <div className="transaction-payment">
+              <span className="label">Payment Method:</span>
+              <span className="value highlight-payment">{paymentmethod}</span>
+            </div>
+          </div>
+          
+          {details && (
+            <>
+              <div className="transaction-section">
+                <h3>Order Summary</h3>
+                <div className="summary-grid">
+                  <div className="summary-item">
+                    <span className="label">Merchandise Total:</span>
+                    <span className="value">{formatCurrency(details.orderSummary.merchandiseTotal)}</span>
+                  </div>
+                  
+                  <div className="summary-item">
+                    <span className="label">Shipping Total:</span>
+                    <span className="value">{formatCurrency(details.orderSummary.shippingTotal)}</span>
+                  </div>
+                  
+                  <div className="summary-item">
+                    <span className="label">Transaction Giveaway:</span>
+                    <span className="value">{formatCurrency(details.orderSummary.totalTransactionGiveaway)}</span>
+                  </div>
+                  
+                  <div className="summary-item">
+                    <span className="label">Omsia Profit:</span>
+                    <span className="value highlight-profit">{formatCurrency(details.orderSummary.totalOmsiaProfit)}</span>
+                  </div>
+                  
+                  <div className="summary-item">
+                    <span className="label">Total Capital:</span>
+                    <span className="value">{formatCurrency(details.orderSummary.totalCapital)}</span>
+                  </div>
+                  
+                  <div className="summary-item">
+                    <span className="label">Total Items:</span>
+                    <span className="value">{details.orderSummary.totalItems}</span>
+                  </div>
+                  
+                  <div className="summary-item">
+                    <span className="label">Total Products:</span>
+                    <span className="value">{details.orderSummary.totalProducts}</span>
+                  </div>
+                  
+                  <div className="summary-item">
+                    <span className="label">Weight:</span>
+                    <span className="value">{details.orderSummary.totalWeightKilos} kg ({details.orderSummary.totalWeightGrams} g)</span>
+                  </div>
+                  
+                  <div className="summary-item total">
+                    <span className="label">Total:</span>
+                    <span className="value highlight-total">{formatCurrency(details.orderSummary.total)}</span>
+                  </div>
+                </div>
+              </div>
+              
+              {details.shippingInfo && (
+                <div className="transaction-section">
+                  <h3>Shipping Information</h3>
+                  <div className="shipping-info">
+                    <p>{details.shippingInfo.address}</p>
+                    <p>{details.shippingInfo.city}, {details.shippingInfo.state} {details.shippingInfo.zipCode}</p>
+                    <p>{details.shippingInfo.country}</p>
+                  </div>
+                </div>
+              )}
+              
+              {details.products?.length > 0 && (
+                <div className="transaction-section">
+                  <h3>Products</h3>
+                  <div className="products-list">
+                    {details.products.map((product, index) => (
+                      <div key={index} className="product-item">
+                        <div className="product-name">{product.name}</div>
+                        <div className="product-info">
+                          <span>Qty: {product.quantity}</span>
+                          <span>Price: {formatCurrency(product.price)}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
 
 const PendingPublicRegistrationsModal = ({ onClose, setShowDatabaseConfiguration, setShowPendingPublicRegistrationModal, onViewDetails, onEdit }) => {
   // This would typically come from props, but we're using sample data here
@@ -1992,1432 +7158,6 @@ const PendingPrivateRegistrationsModal = ({ onClose, setShowDatabaseConfiguratio
   );
 };
 
-const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShowPendingOrders, setShowPendingOrderDetails }) => {
-  // Sample transaction data
-  const sampleTransactions = [
-    {
-      id: "ORD-12345",
-      date: "2025-03-12",
-      type: "Online",
-      amount: 278.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "Organic Coffee", price: 89.50, quantity: 3 },
-          { name: "Herbal Tea", price: 10.00, quantity: 1 }
-        ],
-        shippingInfo: {
-          address: "123 Main Street",
-          city: "Austin",
-          state: "TX",
-          zipCode: "78701",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 278.50,
-          shippingTotal: 15.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 48.75,
-          totalCapital: 214.75,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 1250,
-          totalWeightKilos: 1.25,
-          total: 293.50
-        }
-      }
-    },
-    {
-      id: "ORD-54321",
-      date: "2025-03-11",
-      type: "In-Store",
-      amount: 156.75,
-      status: "Pending",
-      paymentmethod: "Cash",
-      details: {
-        products: [
-          { name: "Green Tea", price: 45.25, quantity: 2 },
-          { name: "Black Tea", price: 33.00, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "456 Elm Street",
-          city: "Seattle",
-          state: "WA",
-          zipCode: "98101",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 156.75,
-          shippingTotal: 10.00,
-          totalTransactionGiveaway: 5.00,
-          totalOmsiaProfit: 32.75,
-          totalCapital: 129.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 750,
-          totalWeightKilos: 0.75,
-          total: 166.75
-        }
-      }
-    },
-    {
-      id: "ORD-67890",
-      date: "2025-03-10",
-      type: "Online",
-      amount: 455.25,
-      status: "Pending",
-      paymentmethod: "PayPal",
-      details: {
-        products: [
-          { name: "Oolong Tea", price: 120.75, quantity: 3 },
-          { name: "Chai Spices", price: 46.50, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "789 Oak Drive",
-          city: "Portland",
-          state: "OR",
-          zipCode: "97201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 455.25,
-          shippingTotal: 20.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 89.25,
-          totalCapital: 366.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1850,
-          totalWeightKilos: 1.85,
-          total: 475.25
-        }
-      }
-    },
-    {
-      id: "ORD-98765",
-      date: "2025-03-09",
-      type: "Online",
-      amount: 323.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "White Tea", price: 78.50, quantity: 2 },
-          { name: "Matcha Powder", price: 55.50, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "321 Pine Lane",
-          city: "Denver",
-          state: "CO",
-          zipCode: "80201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 323.50,
-          shippingTotal: 12.50,
-          totalTransactionGiveaway: 10.00,
-          totalOmsiaProfit: 61.00,
-          totalCapital: 265.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1100,
-          totalWeightKilos: 1.10,
-          total: 336.00
-        }
-      }
-    },
-    {
-      id: "ORD-24680",
-      date: "2025-03-08",
-      type: "In-Store",
-      amount: 189.25,
-      status: "Pending",
-      paymentmethod: "Debit Card",
-      details: {
-        products: [
-          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
-          { name: "Earl Grey", price: 28.75, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "654 Maple Avenue",
-          city: "Chicago",
-          state: "IL",
-          zipCode: "60601",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 189.25,
-          shippingTotal: 8.75,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 40.00,
-          totalCapital: 158.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 900,
-          totalWeightKilos: 0.90,
-          total: 198.00
-        }
-      }
-    },
-    {
-      id: "ORD-13579",
-      date: "2025-03-07",
-      type: "Online",
-      amount: 512.75,
-      status: "Pending",
-      paymentmethod: "Bitcoin",
-      details: {
-        products: [
-          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
-          { name: "Tea Accessories", price: 40.75, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "987 Birch Street",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 512.75,
-          shippingTotal: 25.00,
-          totalTransactionGiveaway: 15.00,
-          totalOmsiaProfit: 98.75,
-          totalCapital: 424.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 2200,
-          totalWeightKilos: 2.20,
-          total: 537.75
-        }
-      }
-    }
-  ];
-
-  const [transactions, setTransactions] = useState(sampleTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
-  const [activeRow, setActiveRow] = useState(null);
-
-  // Filter transactions based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredTransactions(transactions);
-      return;
-    }
-
-    const query = searchQuery.toLowerCase();
-    const filtered = transactions.filter(transaction => 
-      transaction.id.toLowerCase().includes(query) ||
-      transaction.date.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.city.toLowerCase().includes(query)
-    );
-    
-    setFilteredTransactions(filtered);
-  }, [searchQuery, transactions]);
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  // Show status message with animation
-  const showStatusMessage = (message) => {
-    setStatusMessage(message);
-    setTimeout(() => {
-      setStatusMessage('');
-    }, 3000);
-  };
-
-  // Button action handlers with visual feedback
-  const handleAcceptOrder = (id) => {
-    showStatusMessage(`Order ${id} has been accepted`);
-    // Update the table UI to reflect acceptance
-    setTransactions(prevTransactions => 
-      prevTransactions.map(t => 
-        t.id === id ? {...t, status: 'Processing'} : t
-      )
-    );
-  };
-
-  const handleRejectOrder = (id) => {
-    showStatusMessage(`Order ${id} has been rejected`);
-    // Update the table UI to reflect rejection
-    setTransactions(prevTransactions => 
-      prevTransactions.filter(t => t.id !== id)
-    );
-  };
-
-  const handleMessageOrder = (id) => {
-    showStatusMessage(`Sending message regarding order ${id}`);
-  };
-
-  const handleEditOrder = (id) => {
-    showStatusMessage(`Editing order ${id}`);
-  };
-
-  return (
-    <div className="pending-orders-container">
-      <div className="header-section">
-        <h1 className="page-title">Total Orders</h1>
-        <div className="close-button" 
-            onClick={()=>{
-              setShowDatabaseConfiguration(false);
-              setShowPendingOrders(false);
-            }}>
-          <span className="close-icon">✕</span>
-        </div>
-      </div>
-
-      <div className="search-header">
-        <div className="search-bar">
-          <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Search by ID, Date, Location or Address..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
-          {searchQuery && (
-            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
-          )}
-        </div>
-      </div>
-
-      {statusMessage && (
-        <div className="status-message">
-          {statusMessage}
-        </div>
-      )}
-
-      <div className="orders-table-container">
-        <table className="orders-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Location</th>
-              <th>Total Kilos</th>
-              <th>Items</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions.map((transaction) => (
-              <tr 
-                key={transaction.id} 
-                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
-                onMouseEnter={() => setActiveRow(transaction.id)}
-                onMouseLeave={() => setActiveRow(null)}
-              >
-                <td className="order-id">{transaction.id}</td>
-                <td>{transaction.date}</td>
-                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
-                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
-                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
-                <td>{transaction.details.orderSummary.totalItems}</td>
-                <td className="action-buttons">
-                  <button 
-                    className="view-btn" 
-                    onClick={() => {
-                      setShowPendingOrders(false);
-                      setShowPendingOrderDetails(true);
-                    }}
-                  >
-                    View
-                  </button>
-                  <button 
-                    className="edit-btn" 
-                    onClick={() => handleEditOrder(transaction.id)}
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    className="accept-btn" 
-                    onClick={() => handleAcceptOrder(transaction.id)}
-                  >
-                    Accept
-                  </button>
-                  <button 
-                    className="reject-btn" 
-                    onClick={() => handleRejectOrder(transaction.id)}
-                  >
-                    Reject
-                  </button>
-                  <button 
-                    className="message-btn" 
-                    onClick={() => handleMessageOrder(transaction.id)}
-                  >
-                    Message
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {filteredTransactions.length === 0 && (
-        <div className="no-results">
-          <p>No orders found matching your search</p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const PendingOrders = ({ setShowDatabaseConfiguration, setShowPendingOrders, setShowPendingOrderDetails }) => {
-  // Sample transaction data
-  const sampleTransactions = [
-    {
-      id: "ORD-12345",
-      date: "2025-03-12",
-      type: "Online",
-      amount: 278.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "Organic Coffee", price: 89.50, quantity: 3 },
-          { name: "Herbal Tea", price: 10.00, quantity: 1 }
-        ],
-        shippingInfo: {
-          address: "123 Main Street",
-          city: "Austin",
-          state: "TX",
-          zipCode: "78701",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 278.50,
-          shippingTotal: 15.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 48.75,
-          totalCapital: 214.75,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 1250,
-          totalWeightKilos: 1.25,
-          total: 293.50
-        }
-      }
-    },
-    {
-      id: "ORD-54321",
-      date: "2025-03-11",
-      type: "In-Store",
-      amount: 156.75,
-      status: "Pending",
-      paymentmethod: "Cash",
-      details: {
-        products: [
-          { name: "Green Tea", price: 45.25, quantity: 2 },
-          { name: "Black Tea", price: 33.00, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "456 Elm Street",
-          city: "Seattle",
-          state: "WA",
-          zipCode: "98101",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 156.75,
-          shippingTotal: 10.00,
-          totalTransactionGiveaway: 5.00,
-          totalOmsiaProfit: 32.75,
-          totalCapital: 129.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 750,
-          totalWeightKilos: 0.75,
-          total: 166.75
-        }
-      }
-    },
-    {
-      id: "ORD-67890",
-      date: "2025-03-10",
-      type: "Online",
-      amount: 455.25,
-      status: "Pending",
-      paymentmethod: "PayPal",
-      details: {
-        products: [
-          { name: "Oolong Tea", price: 120.75, quantity: 3 },
-          { name: "Chai Spices", price: 46.50, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "789 Oak Drive",
-          city: "Portland",
-          state: "OR",
-          zipCode: "97201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 455.25,
-          shippingTotal: 20.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 89.25,
-          totalCapital: 366.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1850,
-          totalWeightKilos: 1.85,
-          total: 475.25
-        }
-      }
-    },
-    {
-      id: "ORD-98765",
-      date: "2025-03-09",
-      type: "Online",
-      amount: 323.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "White Tea", price: 78.50, quantity: 2 },
-          { name: "Matcha Powder", price: 55.50, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "321 Pine Lane",
-          city: "Denver",
-          state: "CO",
-          zipCode: "80201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 323.50,
-          shippingTotal: 12.50,
-          totalTransactionGiveaway: 10.00,
-          totalOmsiaProfit: 61.00,
-          totalCapital: 265.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1100,
-          totalWeightKilos: 1.10,
-          total: 336.00
-        }
-      }
-    },
-    {
-      id: "ORD-24680",
-      date: "2025-03-08",
-      type: "In-Store",
-      amount: 189.25,
-      status: "Pending",
-      paymentmethod: "Debit Card",
-      details: {
-        products: [
-          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
-          { name: "Earl Grey", price: 28.75, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "654 Maple Avenue",
-          city: "Chicago",
-          state: "IL",
-          zipCode: "60601",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 189.25,
-          shippingTotal: 8.75,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 40.00,
-          totalCapital: 158.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 900,
-          totalWeightKilos: 0.90,
-          total: 198.00
-        }
-      }
-    },
-    {
-      id: "ORD-13579",
-      date: "2025-03-07",
-      type: "Online",
-      amount: 512.75,
-      status: "Pending",
-      paymentmethod: "Bitcoin",
-      details: {
-        products: [
-          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
-          { name: "Tea Accessories", price: 40.75, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "987 Birch Street",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 512.75,
-          shippingTotal: 25.00,
-          totalTransactionGiveaway: 15.00,
-          totalOmsiaProfit: 98.75,
-          totalCapital: 424.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 2200,
-          totalWeightKilos: 2.20,
-          total: 537.75
-        }
-      }
-    }
-  ];
-
-  const [transactions, setTransactions] = useState(sampleTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
-  const [activeRow, setActiveRow] = useState(null);
-
-  // Filter transactions based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredTransactions(transactions);
-      return;
-    }
-
-    const query = searchQuery.toLowerCase();
-    const filtered = transactions.filter(transaction => 
-      transaction.id.toLowerCase().includes(query) ||
-      transaction.date.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.city.toLowerCase().includes(query)
-    );
-    
-    setFilteredTransactions(filtered);
-  }, [searchQuery, transactions]);
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  // Show status message with animation
-  const showStatusMessage = (message) => {
-    setStatusMessage(message);
-    setTimeout(() => {
-      setStatusMessage('');
-    }, 3000);
-  };
-
-  // Button action handlers with visual feedback
-  const handleAcceptOrder = (id) => {
-    showStatusMessage(`Order ${id} has been accepted`);
-    // Update the table UI to reflect acceptance
-    setTransactions(prevTransactions => 
-      prevTransactions.map(t => 
-        t.id === id ? {...t, status: 'Processing'} : t
-      )
-    );
-  };
-
-  const handleRejectOrder = (id) => {
-    showStatusMessage(`Order ${id} has been rejected`);
-    // Update the table UI to reflect rejection
-    setTransactions(prevTransactions => 
-      prevTransactions.filter(t => t.id !== id)
-    );
-  };
-
-  const handleMessageOrder = (id) => {
-    showStatusMessage(`Sending message regarding order ${id}`);
-  };
-
-  const handleEditOrder = (id) => {
-    showStatusMessage(`Editing order ${id}`);
-  };
-
-  return (
-    <div className="pending-orders-container">
-      <div className="header-section">
-        <h1 className="page-title">Pending Orders</h1>
-        <div className="close-button" 
-            onClick={()=>{
-              setShowDatabaseConfiguration(false);
-              setShowPendingOrders(false);
-            }}>
-          <span className="close-icon">✕</span>
-        </div>
-      </div>
-
-      <div className="search-header">
-        <div className="search-bar">
-          <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Search by ID, Date, Location or Address..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
-          {searchQuery && (
-            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
-          )}
-        </div>
-      </div>
-
-      {statusMessage && (
-        <div className="status-message">
-          {statusMessage}
-        </div>
-      )}
-
-      <div className="orders-table-container">
-        <table className="orders-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Location</th>
-              <th>Total Kilos</th>
-              <th>Items</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions.map((transaction) => (
-              <tr 
-                key={transaction.id} 
-                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
-                onMouseEnter={() => setActiveRow(transaction.id)}
-                onMouseLeave={() => setActiveRow(null)}
-              >
-                <td className="order-id">{transaction.id}</td>
-                <td>{transaction.date}</td>
-                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
-                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
-                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
-                <td>{transaction.details.orderSummary.totalItems}</td>
-                <td className="action-buttons">
-                  <button 
-                    className="view-btn" 
-                    onClick={() => {
-                      setShowPendingOrders(false);
-                      setShowPendingOrderDetails(true);
-                    }}
-                  >
-                    View
-                  </button>
-                  <button 
-                    className="edit-btn" 
-                    onClick={() => handleEditOrder(transaction.id)}
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    className="accept-btn" 
-                    onClick={() => handleAcceptOrder(transaction.id)}
-                  >
-                    Accept
-                  </button>
-                  <button 
-                    className="reject-btn" 
-                    onClick={() => handleRejectOrder(transaction.id)}
-                  >
-                    Reject
-                  </button>
-                  <button 
-                    className="message-btn" 
-                    onClick={() => handleMessageOrder(transaction.id)}
-                  >
-                    Message
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {filteredTransactions.length === 0 && (
-        <div className="no-results">
-          <p>No orders found matching your search</p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const AcceptedOrders = ({ setShowDatabaseConfiguration, setShowPendingOrders, setShowPendingOrderDetails }) => {
-  // Sample transaction data
-  const sampleTransactions = [
-    {
-      id: "ORD-12345",
-      date: "2025-03-12",
-      type: "Online",
-      amount: 278.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "Organic Coffee", price: 89.50, quantity: 3 },
-          { name: "Herbal Tea", price: 10.00, quantity: 1 }
-        ],
-        shippingInfo: {
-          address: "123 Main Street",
-          city: "Austin",
-          state: "TX",
-          zipCode: "78701",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 278.50,
-          shippingTotal: 15.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 48.75,
-          totalCapital: 214.75,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 1250,
-          totalWeightKilos: 1.25,
-          total: 293.50
-        }
-      }
-    },
-    {
-      id: "ORD-54321",
-      date: "2025-03-11",
-      type: "In-Store",
-      amount: 156.75,
-      status: "Pending",
-      paymentmethod: "Cash",
-      details: {
-        products: [
-          { name: "Green Tea", price: 45.25, quantity: 2 },
-          { name: "Black Tea", price: 33.00, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "456 Elm Street",
-          city: "Seattle",
-          state: "WA",
-          zipCode: "98101",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 156.75,
-          shippingTotal: 10.00,
-          totalTransactionGiveaway: 5.00,
-          totalOmsiaProfit: 32.75,
-          totalCapital: 129.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 750,
-          totalWeightKilos: 0.75,
-          total: 166.75
-        }
-      }
-    },
-    {
-      id: "ORD-67890",
-      date: "2025-03-10",
-      type: "Online",
-      amount: 455.25,
-      status: "Pending",
-      paymentmethod: "PayPal",
-      details: {
-        products: [
-          { name: "Oolong Tea", price: 120.75, quantity: 3 },
-          { name: "Chai Spices", price: 46.50, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "789 Oak Drive",
-          city: "Portland",
-          state: "OR",
-          zipCode: "97201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 455.25,
-          shippingTotal: 20.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 89.25,
-          totalCapital: 366.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1850,
-          totalWeightKilos: 1.85,
-          total: 475.25
-        }
-      }
-    },
-    {
-      id: "ORD-98765",
-      date: "2025-03-09",
-      type: "Online",
-      amount: 323.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "White Tea", price: 78.50, quantity: 2 },
-          { name: "Matcha Powder", price: 55.50, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "321 Pine Lane",
-          city: "Denver",
-          state: "CO",
-          zipCode: "80201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 323.50,
-          shippingTotal: 12.50,
-          totalTransactionGiveaway: 10.00,
-          totalOmsiaProfit: 61.00,
-          totalCapital: 265.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1100,
-          totalWeightKilos: 1.10,
-          total: 336.00
-        }
-      }
-    },
-    {
-      id: "ORD-24680",
-      date: "2025-03-08",
-      type: "In-Store",
-      amount: 189.25,
-      status: "Pending",
-      paymentmethod: "Debit Card",
-      details: {
-        products: [
-          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
-          { name: "Earl Grey", price: 28.75, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "654 Maple Avenue",
-          city: "Chicago",
-          state: "IL",
-          zipCode: "60601",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 189.25,
-          shippingTotal: 8.75,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 40.00,
-          totalCapital: 158.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 900,
-          totalWeightKilos: 0.90,
-          total: 198.00
-        }
-      }
-    },
-    {
-      id: "ORD-13579",
-      date: "2025-03-07",
-      type: "Online",
-      amount: 512.75,
-      status: "Pending",
-      paymentmethod: "Bitcoin",
-      details: {
-        products: [
-          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
-          { name: "Tea Accessories", price: 40.75, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "987 Birch Street",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 512.75,
-          shippingTotal: 25.00,
-          totalTransactionGiveaway: 15.00,
-          totalOmsiaProfit: 98.75,
-          totalCapital: 424.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 2200,
-          totalWeightKilos: 2.20,
-          total: 537.75
-        }
-      }
-    }
-  ];
-
-  const [transactions, setTransactions] = useState(sampleTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
-  const [activeRow, setActiveRow] = useState(null);
-
-  // Filter transactions based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredTransactions(transactions);
-      return;
-    }
-
-    const query = searchQuery.toLowerCase();
-    const filtered = transactions.filter(transaction => 
-      transaction.id.toLowerCase().includes(query) ||
-      transaction.date.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.city.toLowerCase().includes(query)
-    );
-    
-    setFilteredTransactions(filtered);
-  }, [searchQuery, transactions]);
-
-  // Handle search input change
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  // Show status message with animation
-  const showStatusMessage = (message) => {
-    setStatusMessage(message);
-    setTimeout(() => {
-      setStatusMessage('');
-    }, 3000);
-  };
-
-  // Button action handlers with visual feedback
-  const handleAcceptOrder = (id) => {
-    showStatusMessage(`Order ${id} has been accepted`);
-    // Update the table UI to reflect acceptance
-    setTransactions(prevTransactions => 
-      prevTransactions.map(t => 
-        t.id === id ? {...t, status: 'Processing'} : t
-      )
-    );
-  };
-
-  const handleRejectOrder = (id) => {
-    showStatusMessage(`Order ${id} has been rejected`);
-    // Update the table UI to reflect rejection
-    setTransactions(prevTransactions => 
-      prevTransactions.filter(t => t.id !== id)
-    );
-  };
-
-  const handleMessageOrder = (id) => {
-    showStatusMessage(`Sending message regarding order ${id}`);
-  };
-
-  const handleEditOrder = (id) => {
-    showStatusMessage(`Editing order ${id}`);
-  };
-
-  return (
-    <div className="pending-orders-container">
-      <div className="header-section">
-        <h1 className="page-title">Accepted Orders</h1>
-        <div className="close-button" 
-            onClick={()=>{
-              setShowDatabaseConfiguration(false);
-              setShowPendingOrders(false);
-            }}>
-          <span className="close-icon">✕</span>
-        </div>
-      </div>
-
-      <div className="search-header">
-        <div className="search-bar">
-          <span className="search-icon">🔍</span>
-          <input
-            type="text"
-            placeholder="Search by ID, Date, Location or Address..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="search-input"
-          />
-          {searchQuery && (
-            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
-          )}
-        </div>
-      </div>
-
-      {statusMessage && (
-        <div className="status-message">
-          {statusMessage}
-        </div>
-      )}
-
-      <div className="orders-table-container">
-        <table className="orders-table">
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Date</th>
-              <th>Amount</th>
-              <th>Location</th>
-              <th>Total Kilos</th>
-              <th>Items</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions.map((transaction) => (
-              <tr 
-                key={transaction.id} 
-                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
-                onMouseEnter={() => setActiveRow(transaction.id)}
-                onMouseLeave={() => setActiveRow(null)}
-              >
-                <td className="order-id">{transaction.id}</td>
-                <td>{transaction.date}</td>
-                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
-                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
-                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
-                <td>{transaction.details.orderSummary.totalItems}</td>
-                <td className="action-buttons">
-                  <button 
-                    className="view-btn" 
-                    onClick={() => {
-                      setShowPendingOrders(false);
-                      setShowPendingOrderDetails(true);
-                    }}
-                  >
-                    View
-                  </button>
-                  <button 
-                    className="edit-btn" 
-                    onClick={() => handleEditOrder(transaction.id)}
-                  >
-                    Edit
-                  </button>
-                  <button 
-                    className="accept-btn" 
-                    onClick={() => handleAcceptOrder(transaction.id)}
-                  >
-                    Accept
-                  </button>
-                  <button 
-                    className="reject-btn" 
-                    onClick={() => handleRejectOrder(transaction.id)}
-                  >
-                    Reject
-                  </button>
-                  <button 
-                    className="message-btn" 
-                    onClick={() => handleMessageOrder(transaction.id)}
-                  >
-                    Message
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {filteredTransactions.length === 0 && (
-        <div className="no-results">
-          <p>No orders found matching your search</p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    // Animation effect on mount
-    setIsVisible(true);
-    
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
-    );
-    setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
-
-  useEffect(() => {
-    if (searchQuery) {
-      const results = transactions.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-      setFilteredTransactions(results);
-    } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
-      );
-      setFilteredTransactions(pendingDeposits);
-    }
-  }, [searchQuery, transactions]);
-
-  const handleClose = () => {
-   // setIsVisible(false);
-    // Delay actual closing to allow for animation
-   // setTimeout(() => {
-   //   onClose();
-   // }, 300);
-
-    setShowDatabaseConfiguration(false);
-    setShowPendingDeposits(false);
-
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  return (
-    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
-      <div className={`pending-deposits-modal ${isVisible ? 'visible' : ''}`}>
-        <div className="modal-header">
-          <h2>Pending Deposits</h2>
-          <button className="close-button" onClick={handleClose}>
-            <FaTimes />
-          </button>
-        </div>
-        
-        <div className="search-section">
-          <div className="search-input-container">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by ID, name, email, or phone number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-          </div>
-        </div>
-        
-        <div className="pending-deposits-container">
-          {filteredTransactions.length === 0 ? (
-            <div className="no-results">
-              <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
-            </div>
-          ) : (
-            <table className="transactions-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Payment Method</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTransactions.map((transaction) => (
-                  <tr key={transaction.id} className="transaction-row">
-                    <td className="transaction-id">{transaction.id}</td>
-                    <td>{formatDate(transaction.date)}</td>
-                    <td className="amount">
-                      <FaMoneyBillWave className="amount-icon" />
-                      ${transaction.amount.toFixed(2)}
-                    </td>
-                    <td className="status">
-                      <div className="status-indicator">
-                        <FaClock className="status-icon pulse" />
-                        <span>Pending</span>
-                      </div>
-                    </td>
-                    <td>{transaction.paymentmethod}</td>
-                    <td className="actions">
-                      <button 
-                        className="view-button" 
-                        onClick={() => onView(transaction.id)}
-                        aria-label="View transaction details"
-                      >
-                        <FaEye /> View
-                      </button>
-                      <button 
-                        className="edit-button" 
-                        onClick={() => onEdit(transaction.id)}
-                        aria-label="Edit transaction"
-                      >
-                        <FaEdit /> Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const PendingWithdrawals = ({ setShowDatabaseConfiguration, setShowPendingWithdrawals, transactions, onClose, onView, onEdit }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    // Animation effect on mount
-    setIsVisible(true);
-    
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
-    );
-    setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
-
-  useEffect(() => {
-    if (searchQuery) {
-      const results = transactions.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
-      setFilteredTransactions(results);
-    } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
-      );
-      setFilteredTransactions(pendingDeposits);
-    }
-  }, [searchQuery, transactions]);
-
-  const handleClose = () => {
-   // setIsVisible(false);
-    // Delay actual closing to allow for animation
-   // setTimeout(() => {
-   //   onClose();
-   // }, 300);
-
-    setShowDatabaseConfiguration(false);
-    setShowPendingWithdrawals(false);
-
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  return (
-    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
-      <div className={`pending-deposits-modal ${isVisible ? 'visible' : ''}`}>
-        <div className="modal-header">
-          <h2>Pending Withdrawals</h2>
-          <button className="close-button" onClick={handleClose}>
-            <FaTimes />
-          </button>
-        </div>
-        
-        <div className="search-section">
-          <div className="search-input-container">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by ID, name, email, or phone number..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-          </div>
-        </div>
-        
-        <div className="pending-deposits-container">
-          {filteredTransactions.length === 0 ? (
-            <div className="no-results">
-              <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
-            </div>
-          ) : (
-            <table className="transactions-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Date</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Payment Method</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredTransactions.map((transaction) => (
-                  <tr key={transaction.id} className="transaction-row">
-                    <td className="transaction-id">{transaction.id}</td>
-                    <td>{formatDate(transaction.date)}</td>
-                    <td className="amount">
-                      <FaMoneyBillWave className="amount-icon" />
-                      ${transaction.amount.toFixed(2)}
-                    </td>
-                    <td className="status">
-                      <div className="status-indicator">
-                        <FaClock className="status-icon pulse" />
-                        <span>Pending</span>
-                      </div>
-                    </td>
-                    <td>{transaction.paymentmethod}</td>
-                    <td className="actions">
-                      <button 
-                        className="view-button" 
-                        onClick={() => onView(transaction.id)}
-                        aria-label="View transaction details"
-                      >
-                        <FaEye /> View
-                      </button>
-                      <button 
-                        className="edit-button" 
-                        onClick={() => onEdit(transaction.id)}
-                        aria-label="Edit transaction"
-                      >
-                        <FaEdit /> Edit
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const MfatipPendingRegistrants = ({ setShowDatabaseConfiguration, setShowRegisteredRegistrantsWithPendingDocuments, registrants, onClose, onView, onEdit, onDelete }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -3700,137 +7440,7 @@ const MfatipPendingRegistrants = ({ setShowDatabaseConfiguration, setShowRegiste
   );
 };
 
-const OrderDetailsModal = ({ transaction, onClose,setShowPendingOrders, setShowPendingOrderDetails }) => {
-  if (!transaction) return null;
 
-  const {
-    id,
-    date,
-    type,
-    amount,
-    status,
-    paymentmethod,
-    details
-  } = transaction;
-
-  const { products, shippingInfo, orderSummary } = details || {};
-  const { address, city, state, zipCode, country } = shippingInfo || {};
-
-  // Format currency
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(value);
-  };
-
-  // Format date
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  return (
-    <div className="modal-overlay">
-      <div className="order-details-modal">
-        <button className="close-button" onClick={()=> {
-           setShowPendingOrderDetails(false)
-           setShowPendingOrders(true)
-        }}>×</button>
-        <h2 className="modal-title">Order Details</h2>
-        
-        <div className="order-section">
-          <h3>Transaction Information</h3>
-          <div className="info-grid">
-            <div className="info-item">
-              <span className="info-label">Order ID:</span>
-              <span className="info-value highlight">{id}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Date:</span>
-              <span className="info-value">{formatDate(date)}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Type:</span>
-              <span className="info-value">{type}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Amount:</span>
-              <span className="info-value highlight">{formatCurrency(amount)}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Status:</span>
-              <span className={`info-value status-${status.toLowerCase()}`}>{status}</span>
-            </div>
-            <div className="info-item">
-              <span className="info-label">Payment Method:</span>
-              <span className="info-value">{paymentmethod}</span>
-            </div>
-          </div>
-        </div>
-
-        {shippingInfo && (
-          <div className="order-section">
-            <h3>Shipping Information</h3>
-            <p className="address-line">{address}</p>
-            <p className="address-line">{city}, {state} {zipCode}</p>
-            <p className="address-line">{country}</p>
-          </div>
-        )}
-
-        {products && products.length > 0 && (
-          <div className="order-section">
-            <h3>Products</h3>
-            <div className="products-list">
-              {products.map((product, index) => (
-                <div key={index} className="product-item">
-                  {/* Assuming product has name and price properties */}
-                  <span className="product-name">{product.name}</span>
-                  <span className="product-price">{formatCurrency(product.price)}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {orderSummary && (
-          <div className="order-section">
-            <h3>Order Summary</h3>
-            <div className="summary-grid">
-              <div className="summary-item">
-                <span className="summary-label">Merchandise Total:</span>
-                <span className="summary-value">{formatCurrency(orderSummary.merchandiseTotal)}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Shipping Total:</span>
-                <span className="summary-value">{formatCurrency(orderSummary.shippingTotal)}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Total Items:</span>
-                <span className="summary-value">{orderSummary.totalItems}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Total Products:</span>
-                <span className="summary-value">{orderSummary.totalProducts}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Weight:</span>
-                <span className="summary-value">{orderSummary.totalWeightKilos} kg ({orderSummary.totalWeightGrams} g)</span>
-              </div>
-              <div className="summary-item highlight-row">
-                <span className="summary-label">Total:</span>
-                <span className="summary-value total-value">{formatCurrency(orderSummary.total)}</span>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
 
 const GCashPaymentLink = () => {
   const [amount, setAmount] = useState('');
@@ -3956,316 +7566,616 @@ const GCashPaymentLink = () => {
   );
 };
 
-const StatisticsCardDailyTasks = ({ stats, setShowDatabaseConfiguration, setShowPendingPublicRegistrationModal, setShowPendingPrivateRegistrationModal, setShowPendingOrders, setShowPendingDeposits, setShowPendingWithdrawals, setShowRegisteredRegistrantsWithPendingDocuments }) => {
-  // Sample stats data if not provided
-  const defaultStats = {
-    pendingOrders: { count: 24, change: 1200 },
-    pendingDeposits: { count: 18, change: 3500 },
-    pendingWithdrawals: { count: 9, change: -850 },
-    pendingRegistrations: { count: 32, change: 6400 }
+const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) => {
+  const [images, setImages] = useState([]);
+  const [specifications, setSpecifications] = useState([]);
+  const [features, setFeatures] = useState([]);
+  const [productData, setProductData] = useState({
+    name: '',
+    price: '',
+    stock: '',
+    category: '',
+    weightingrams: '',
+    description: '',
+    warranty: '',
+    videoUrl: '',
+    capital: '',
+    transactiongiveaway: '',
+    omsiapprofit: ''
+  });
+
+  const [createproductloadingindication, createproductloadingindicationcb] = useState(false);
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProductData({ ...productData, [name]: value });
   };
 
-  // Use provided stats or default
-  const statsData = stats || defaultStats;
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const newImages = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    setImages([...images, ...newImages]);
+  };
 
-  // Format the change value as a peso currency
-  const formatPeso = (amount) => {
-    // Make sure amount is a number
-    const numAmount = Number(amount);
-    
-    // Check if it's a valid number
-    if (isNaN(numAmount)) {
-      return '₱0';
+  // Remove image
+  const removeImage = (index) => {
+    const updatedImages = [...images];
+    URL.revokeObjectURL(updatedImages[index].preview);
+    updatedImages.splice(index, 1);
+    setImages(updatedImages);
+  };
+
+  // Add specification
+  const addSpecification = (e) => {
+    e.preventDefault();
+    const specField = document.getElementById('specification-input');
+    if (specField.value.trim()) {
+      setSpecifications([...specifications, specField.value]);
+      specField.value = '';
     }
+  };
+
+  // Remove specification
+  const removeSpecification = (index) => {
+    const updatedSpecs = [...specifications];
+    updatedSpecs.splice(index, 1);
+    setSpecifications(updatedSpecs);
+  };
+
+  // Add feature
+  const addFeature = (e) => {
+    e.preventDefault();
+    const featureField = document.getElementById('feature-input');
+    if (featureField.value.trim()) {
+      setFeatures([...features, featureField.value]);
+      featureField.value = '';
+    }
+  };
+
+  // Remove feature
+  const removeFeature = (index) => {
+    const updatedFeatures = [...features];
+    updatedFeatures.splice(index, 1);
+    setFeatures(updatedFeatures);
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    // Prevent default form submission
+    e.preventDefault();
     
-    const sign = numAmount > 0 ? '+' : '';
-    return `${sign}₱${Math.abs(numAmount).toLocaleString()}`;
+    const responseMessage = document.querySelectorAll(".createproduct-responsemessage")[0];
+    responseMessage.style.color = "white";
+    responseMessage.innerText = "";
+    responseMessage.style.display = "none";
+    
+    createproductloadingindicationcb(true);
+    
+    // Create FormData to handle file uploads
+    const formData = new FormData();
+    
+    // Add product data
+    Object.keys(productData).forEach(key => {
+      formData.append(key, productData[key]);
+    });
+    
+    // Add images - for multer
+    images.forEach((image) => {
+      formData.append('images', image.file);
+    });
+    
+    // Add specifications and features as simple string arrays
+    formData.append('specifications', JSON.stringify(specifications));
+    formData.append('features', JSON.stringify(features));
+    
+    try {
+      // Send the data to the backend
+      const response = await axiosCreatedInstance.post("/products/addproduct", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data' // Important for multer
+        }
+      });
+      
+      // Process the response
+      const { message, productId } = response.data;
+      
+      // Update response message state
+      if (message === "Product added successfully") {
+        responseMessage.style.color = "green";
+        responseMessage.innerText = `Product added successfully! Product ID: ${productId}`;
+      } else {
+        responseMessage.style.color = "red";
+        responseMessage.innerText = message || "Unknown error occurred";
+      }
+      
+      responseMessage.style.display = "block";
+      createproductloadingindicationcb(false);
+      
+      // Return false to prevent any potential form submission
+      return false;
+    } catch (error) {
+      // Handle network or other errors
+      createproductloadingindicationcb(false);
+      
+      let errorText = "An unexpected error occurred";
+      
+      if (error.response) {
+        // The server responded with an error status
+        errorText = `Error: ${error.response.data.message || "Server error"}`;
+      } else if (error.request) {
+        // The request was made but no response was received
+        errorText = "Network error: Please check your connection and try again";
+      } else {
+        // Something else happened
+        errorText = `Error: ${error.message}`;
+      }
+      
+      responseMessage.style.color = "red";
+      responseMessage.innerText = errorText;
+      responseMessage.style.display = "block";
+      
+      // Return false to prevent any potential form submission
+      return false;
+    }
+  };
+  
+  // Helper function to reset the form
+  const resetForm = () => {
+    // Reset all form fields
+    setProductData({
+      name: "",
+      price: 0,
+      category: "",
+      description: "",
+      weightingrams: 0,
+      stock: 0,
+      videoUrl: "",
+      warranty: "",
+      quantity: 0,
+      capital: 0,
+      transactiongiveaway: 0,
+      omsiapprofit: 0
+    });
+    
+    // Reset images, specifications and features
+    setImages([]);
+    setSpecifications([]);
+    setFeatures([]);
   };
 
   return (
-    <div className="statistics-container">
-      <h1>Daily Operation</h1>
-      <div className="statistics-grid">
+    <div className="create-product-container">
+      <Container fluid className="create-product-view">
+        <Row className="header-row">
+          <Col xs={12} className="d-flex justify-content-between align-items-center">
+            <h1 className="create-product-title">Create New Product</h1>
+            <Button 
+              variant="none" 
+              className="close-button"
+              onClick={() => {
+                setShowDatabaseConfiguration(false);
+                setShowCreateProduct(false);
+              }}
+            >
+              <FaTimes />
+            </Button>
+          </Col>
+        </Row>
 
-       {/* ACCEPTED ORDERS */}
-        <div className="statistics-card">
-          <div className="card-inner">
-            <div className="card-header">ACCEPTED ORDERS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count} accepted orders</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
+        <Form className="product-form">
+          <Row>
+            {/* Product Name */}
+            <Col xs={12} className="mb-4">
+              <Form.Group>
+                <Form.Label className="form-label">
+                  <FaTag className="form-icon" /> Product Name
+                </Form.Label>
+                <Form.Control 
+                  type="text" 
+                  name="name" 
+                  value={productData.name}
+                  onChange={handleInputChange}
+                  className="form-control-dark"
+                  required
+                />
+              </Form.Group>
+            </Col>
+            
+            {/* Image Upload Section */}
+            <Col xs={12} md={6} className="mb-4">
+              <div className="image-upload-section">
+                <h2 className="section-title">Product Images</h2>
+                
+                <div className="image-upload-container">
+                  <label htmlFor="product-images" className="image-upload-label">
+                    <FaFileImage className="upload-icon" />
+                    <span>Select Images</span>
+                  </label>
+                  <input 
+                    id="product-images" 
+                    type="file" 
+                    multiple 
+                    accept="image/*" 
+                    onChange={handleImageUpload} 
+                    className="hidden-input"
+                  />
+                </div>
+                
+                <div className="images-preview-container">
+                  {images.length > 0 ? (
+                    <Row className="image-grid">
+                      {images.map((img, index) => (
+                        <Col xs={6} sm={4} md={4} key={index} className="image-preview-col">
+                          <div className="image-preview-wrapper">
+                            <img src={img.preview} alt={`Product preview ${index}`} className="image-preview" />
+                            <Button 
+                              variant="danger" 
+                              size="sm" 
+                              className="remove-image-btn"
+                              onClick={() => removeImage(index)}
+                            >
+                              <FaTrash />
+                            </Button>
+                          </div>
+                        </Col>
+                      ))}
+                    </Row>
+                  ) : (
+                    <div className="no-images-placeholder">
+                      <p>No images selected</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </div>
-            <button className="readproduct-readproductbutton"
-                     onClick={()=> {
-                      setShowDatabaseConfiguration(true);
-                      setShowPendingOrders(true);
-                     }}>View all accepted orders</button>
-          </div>
-        </div>
-
-         {/* DEPOSITED */}
-         <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-              setShowPendingDeposits(true);
-             }}>
-          <div className="card-inner">
-            <div className="card-header">SUCCESSFUL DEPOSITS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} sucessful deposits</div>
-              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingDeposits.change)}
+            </Col>
+            
+            {/* Product Details Section */}
+            <Col xs={12} md={6} className="mb-4">
+              <div className="product-details-section">
+                <h2 className="section-title">Product Details</h2>
+                
+                <Row>
+                  <Col xs={12} sm={6} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaMoneyBillWave className="form-icon" /> Price
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        name="price" 
+                        value={productData.price}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col xs={12} sm={6} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaBoxOpen className="form-icon" /> Stock
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        name="stock" 
+                        value={productData.stock}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col xs={12} sm={6} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaTag className="form-icon" /> Category
+                      </Form.Label>
+                      <Form.Control 
+                        type="text" 
+                        name="category" 
+                        value={productData.category}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col xs={12} sm={6} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaWeight className="form-icon" /> Weight (g)
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        name="weightingrams" 
+                        value={productData.weightingrams}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                
+                <Row>
+                  <Col xs={12} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaInfoCircle className="form-icon" /> Description
+                      </Form.Label>
+                      <Form.Control 
+                        as="textarea" 
+                        rows={4}
+                        name="description" 
+                        value={productData.description}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+                
+                <Row>
+                  <Col xs={12} sm={6} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaInfoCircle className="form-icon" /> Warranty
+                      </Form.Label>
+                      <Form.Control 
+                        type="text" 
+                        name="warranty" 
+                        value={productData.warranty}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                      />
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col xs={12} sm={6} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaYoutube className="form-icon" /> Video URL
+                      </Form.Label>
+                      <Form.Control 
+                        type="text" 
+                        name="videoUrl" 
+                        value={productData.videoUrl}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
               </div>
-            </div>
-            <div className="card-icon deposits-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
-            </div>
-            <button className="readproduct-readproductbutton">View all successful deposits</button>
-            <br/>
-            <br/>
-            <p>27 total deposits <button className="pendingorders-viewbutton"
-                                              onClick={()=> {
-                                                setShowDatabaseConfiguration(true);
-                                                setShowPendingOrders(false);
-                                              }}>
-                                                view
-                                      </button>
-            </p>
-            <p>20 pending deposits <button className="pendingorders-viewbutton"                          
-                                         onClick={()=> {
-                                           setShowDatabaseConfiguration(true);
-                                           setShowPendingOrders(true);
-                                         }}>
-                                          view
-                                </button>
-            </p>
-            <p>22 successful deposits <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <p>While 22 deposits are rejected <button className="pendingorders-viewbutton"
-                                          onClick={()=> {
-                                            setShowDatabaseConfiguration(true);
-                                            setShowPendingOrders(false);
-                                          }}>
-                                            view
-                                    </button>
-            </p>
-            <br/>
-            <br/>
-            <p>Processing transaction id: <input className="pendingorders-findbyidfield" type="text"/></p>
-            <button className="readproduct-readproductbutton">View successful deposit by transaction ID</button>
-          </div>
-        </div>
-
-          {/* REJECTED DEPOSITS */}
-          <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-              setShowPendingDeposits(true);
-             }}>
-          <div className="card-inner">
-            <div className="card-header">REJECTED DEPOSITS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} rejected deposits</div>
-              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingDeposits.change)}
+            </Col>
+            
+            {/* Specifications Section */}
+            <Col xs={12} className="mb-4">
+              <div className="specifications-section">
+                <h2 className="section-title">
+                  <FaClipboardList className="section-icon" /> Specifications
+                </h2>
+                
+                <div className="add-item-container">
+                  <Form.Control 
+                    type="text" 
+                    id="specification-input"
+                    className="form-control-dark"
+                    placeholder="Enter specification"
+                  />
+                  <Button 
+                    variant="outline-light" 
+                    className="add-button"
+                    onClick={addSpecification}
+                  >
+                    <FaPlus /> Add
+                  </Button>
+                </div>
+                
+                {specifications.length > 0 && (
+                  <div className="items-list">
+                    {specifications.map((spec, index) => (
+                      <div key={index} className="item-pill">
+                        <span>{spec}</span>
+                        <Button 
+                          variant="none" 
+                          size="sm" 
+                          className="remove-item-btn"
+                          onClick={() => removeSpecification(index)}
+                        >
+                          <FaTimes />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="card-icon deposits-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
-            </div>
-            <br/>
-            <button className="readproduct-readproductbutton">View all rejected deposits</button>
-          </div>
-        </div>
-
-          {/* WITHDRAWNS */}
-          <div className="statistics-card"
-              onClick={()=> {
-                setShowDatabaseConfiguration(true);
-                setShowPendingWithdrawals(true);
-               }}>
-          <div className="card-inner">
-            <div className="card-header">WITHDRAWS</div>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingWithdrawals.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingWithdrawals.change)}
+            </Col>
+            
+            {/* Features Section */}
+            <Col xs={12} className="mb-4">
+              <div className="features-section">
+                <h2 className="section-title">
+                  <FaStar className="section-icon" /> Features
+                </h2>
+                
+                <div className="add-item-container">
+                  <Form.Control 
+                    type="text" 
+                    id="feature-input"
+                    className="form-control-dark"
+                    placeholder="Enter feature"
+                  />
+                  <Button 
+                    variant="outline-light" 
+                    className="add-button"
+                    onClick={addFeature}
+                  >
+                    <FaPlus /> Add
+                  </Button>
+                </div>
+                
+                {features.length > 0 && (
+                  <div className="items-list">
+                    {features.map((feature, index) => (
+                      <div key={index} className="item-pill">
+                        <span>{feature}</span>
+                        <Button 
+                          variant="none" 
+                          size="sm" 
+                          className="remove-item-btn"
+                          onClick={() => removeFeature(index)}
+                        >
+                          <FaTimes />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-            <div className="card-icon withdrawals-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="9 10 4 15 9 20"></polyline>
-                <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-              </svg>
-            </div>
-          </div>
-        </div>
+            </Col>
+            
+            {/* Pricing Details */}
+            <Col xs={12} className="mb-4">
+              <div className="pricing-details-section">
+                <h2 className="section-title">Pricing Details</h2>
+                
+                <Row>
+                  <Col xs={12} sm={6} md={3} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaMoneyBillWave className="form-icon" /> Price
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        name="price" 
+                        value={productData.price}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col xs={12} sm={6} md={3} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaMoneyBillWave className="form-icon" /> Capital
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        name="capital" 
+                        value={productData.capital}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                      />
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col xs={12} sm={6} md={3} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaMoneyBillWave className="form-icon" /> Transaction Fee
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        name="transactiongiveaway" 
+                        value={productData.transactiongiveaway}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                      />
+                    </Form.Group>
+                  </Col>
+                  
+                  <Col xs={12} sm={6} md={3} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaMoneyBillWave className="form-icon" /> Profit
+                      </Form.Label>
+                      <Form.Control 
+                        type="number" 
+                        name="omsiapprofit" 
+                        value={productData.omsiapprofit}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </div>
+            </Col>
+             
+            <p className="createproduct-responsemessage">Product added successfully</p>
 
-      </div>
+            {/* Submit Button */}
+            <Col xs={12}
+                 md={1}
+                 lg={1} 
+                 className="text-center mb-4">
+              {
+                createproductloadingindication ? 
+                (
+                  <Spinner animation="border" variant="warning" />
+                )
+                :
+                (
+                 <Button type="button" 
+                         className="submit-button" 
+                         size="lg"
+                         onClick={handleSubmit}>
+                   Create Product
+                 </Button>
+                )
+              }
+            </Col>
+
+            <Col xs={12}
+                 md={3}
+                 lg={3} 
+                 className="text-center mb-4">
+                 <Button className="submit-button" size="lg"
+                         onClick={resetForm}>
+                   Reset 
+                 </Button>
+            </Col>
+          </Row>
+        </Form>
+
+      </Container>
     </div>
   );
 };
 
-const StatisticsCardProductCRUD = ({ stats, setShowDatabaseConfiguration, setShowCreateProduct, setShowProductReader}) => {
-  // Sample stats data if not provided
-  const defaultStats = {
-    pendingOrders: { count: 24, change: 1200 },
-    pendingDeposits: { count: 18, change: 3500 },
-    pendingWithdrawals: { count: 9, change: -850 },
-    pendingRegistrations: { count: 32, change: 6400 }
-  };
-
-  // Use provided stats or default
-  const statsData = stats || defaultStats;
-
-  // Format the change value as a peso currency
-  const formatPeso = (amount) => {
-    // Make sure amount is a number
-    const numAmount = Number(amount);
-    
-    // Check if it's a valid number
-    if (isNaN(numAmount)) {
-      return '₱0';
-    }
-    
-    const sign = numAmount > 0 ? '+' : '';
-    return `${sign}₱${Math.abs(numAmount).toLocaleString()}`;
-  };
-
-  return (
-    <div className="statistics-container">
-      <h1>CRUD Operations ( PRODUCT )</h1>
-      <div className="statistics-grid">
-
-          {/* PENDING ORDERS */}
-          <div className="statistics-card">
-          <div className="card-inner">
-            <div className="card-header">Create ( product )</div>
-            <button className="readproduct-readproductbutton"
-                    onClick={()=> {
-                      setShowDatabaseConfiguration(true);
-                      setShowCreateProduct(true)
-                     }}>Show create product form</button>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
-              </div>
-            </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </div>
-          </div>
-         </div>
-
-          {/* PENDING PUBLIC CITIZENSHIPS REGISTRATIONS */}
-          <div className="statistics-card">
-          <div className="card-inner">
-            <div className="card-header">Read ( product )</div>
-            <p>Product ID:</p>
-            <input type="text"
-                   className="readproduct-productidfield"/>
-            <button className="readproduct-readproductbutton">Read product</button>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
-              </div>
-            </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* PENDING ORDERS */}
-        <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-             }}>
-          <div className="card-inner">
-            <div className="card-header">Update ( product )</div>
-            <p>Product ID:</p>
-            <input type="text"
-                   className="readproduct-productidfield"/>
-            <button className="readproduct-readproductbutton">Read product</button>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
-              </div>
-            </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-        {/* PENDING DEPOSITS */}
-        <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-             }}>
-          <div className="card-inner">
-            <div className="card-header">Delete ( product ) </div>
-            <p>Product ID:</p>
-            <input type="text"
-                   className="readproduct-productidfield"/>
-            <button className="readproduct-readproductbutton">Read product</button>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingDeposits.change)}
-              </div>
-            </div>
-            <div className="card-icon deposits-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
-
-const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingOrders}) => {
+const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingOrders }) => {
   const [isVisible, setIsVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFullScreenVisible, setIsFullScreenVisible] = useState(false);
+  
+  // Convert file system paths to web paths
+  const convertImagePath = (path) => {
+    // Check if the path is a file system path
+    if (path && path.includes('\\')) {
+      // Extract just the filename
+      const filename = path.split('\\').pop();
+      // Create a web-friendly path
+      return `../images/market/products/${filename}`;
+    }
+    // Already a web path or another format
+    return path;
+  };
+  
+  // Get image URLs from the product data and convert them
+  const productImages = product.images && product.images.length > 0 
+    ? product.images.map(img => convertImagePath(img.url)) 
+    : [`../images/market/products/${product.name}-image1.jpg`]; // Fallback
   
   useEffect(() => {
     // Animation delay for entrance
@@ -4275,15 +8185,11 @@ const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingO
   }, []);
 
   const handleClose = () => {
-
-   // setIsVisible(false);
-   // setTimeout(() => {
-   //   onClose();
-   // }, 300); // Wait for exit animation
-
-   setShowProductReader(false);
-   setShowPendingOrders(true);
-
+    setIsVisible(false);
+    setTimeout(() => {
+      setShowProductReader(false);
+      setShowPendingOrders(true);
+    }, 300); // Wait for exit animation
   };
 
   const formatCurrency = (value) => {
@@ -4291,6 +8197,38 @@ const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingO
       style: 'currency',
       currency: 'USD'
     }).format(value);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === productImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === 0 ? productImages.length - 1 : prevIndex - 1
+    );
+  };
+
+  const openFullScreen = () => {
+    setIsFullScreenVisible(true);
+  };
+
+  const closeFullScreen = () => {
+    setIsFullScreenVisible(false);
+  };
+
+  const renderThumbnails = () => {
+    return productImages.map((image, index) => (
+      <div 
+        key={index} 
+        className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
+        onClick={() => setCurrentImageIndex(index)}
+      >
+        <img src={image} alt={`${product.name} - View ${index + 1}`} />
+      </div>
+    ));
   };
 
   return (
@@ -4311,20 +8249,45 @@ const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingO
         
         <div className="product-grid">
           <div className="product-images">
-            {product.images && product.images.length > 0 ? (
-              <div className="main-image">
-                <img src={product.images[0].url} alt={product.name} />
-              </div>
-            ) : (
-              <div className="placeholder-image">No Image Available</div>
-            )}
-            
-            <div className="thumbnail-container">
-              {product.images && product.images.slice(1).map((image, index) => (
-                <div key={index} className="thumbnail">
-                  <img src={image.url} alt={`${product.name} - View ${index + 2}`} />
+            <div className="carousel-container">
+              {productImages.length > 0 && (
+                <div className="main-image" onClick={openFullScreen}>
+                  <img src={productImages[currentImageIndex]} alt={product.name} />
+                  <div className="fullscreen-hint">
+                    <Maximize2 size={20} />
+                    <span>Click for fullscreen</span>
+                  </div>
                 </div>
-              ))}
+              )}
+              
+              {productImages.length > 1 && (
+                <>
+                  <button className="carousel-button prev" onClick={prevImage}>
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button className="carousel-button next" onClick={nextImage}>
+                    <ChevronRight size={24} />
+                  </button>
+                </>
+              )}
+              
+              {productImages.length > 1 && (
+                <div className="thumbnail-container">
+                  {renderThumbnails()}
+                </div>
+              )}
+              
+              {productImages.length > 1 && (
+                <div className="carousel-indicators">
+                  {productImages.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`indicator ${currentImageIndex === index ? 'active' : ''}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    ></div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           
@@ -4362,6 +8325,20 @@ const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingO
               <p>{product.description}</p>
             </div>
             
+            {product.specifications && product.specifications.length > 0 && (
+              <div className="specs-container">
+                <h2>Specifications</h2>
+                <div className="specs-grid">
+                  {product.specifications.map((spec, index) => (
+                    <div key={index} className="spec-item">
+                      <span className="spec-name">Specification {index + 1}:</span>
+                      <span className="spec-value">{spec.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {product.features && product.features.length > 0 && (
               <div className="features-container">
                 <h2>Features</h2>
@@ -4369,24 +8346,10 @@ const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingO
                   {product.features.map((feature, index) => (
                     <li key={index} className="feature-item">
                       <Award className="icon" />
-                      <span>{feature.name}: {feature.value}</span>
+                      <span className="feature-value">{feature.name}</span>
                     </li>
                   ))}
                 </ul>
-              </div>
-            )}
-            
-            {product.specifications && product.specifications.length > 0 && (
-              <div className="specs-container">
-                <h2>Specifications</h2>
-                <div className="specs-grid">
-                  {product.specifications.map((spec, index) => (
-                    <div key={index} className="spec-item">
-                      <span className="spec-name">{spec.name}:</span>
-                      <span className="spec-value">{spec.value}</span>
-                    </div>
-                  ))}
-                </div>
               </div>
             )}
             
@@ -4394,22 +8357,6 @@ const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingO
               <div className="warranty-container">
                 <FileText className="icon" />
                 <span className="label">Warranty:</span>
-                <span className="warranty">{product.warranty}</span>
-              </div>
-            )}
-
-            {product.warranty && (
-              <div className="warranty-container">
-                <FileText className="icon" />
-                <span className="label">Specifications:</span>
-                <span className="warranty">{product.warranty}</span>
-              </div>
-            )}
-
-             {product.warranty && (
-              <div className="warranty-container">
-                <FileText className="icon" />
-                <span className="label">Features:</span>
                 <span className="warranty">{product.warranty}</span>
               </div>
             )}
@@ -4424,7 +8371,1106 @@ const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingO
               </div>
             )}
           </div>
+        </div>
+        
+        {product.focuseddata && (
+          <div className="focused-data">
+            <h2>Pricing Details</h2>
+            <div className="focused-grid">
+              <div className="focused-item">
+                <span className="focused-label">Price:</span>
+                <span className="focused-value highlight">{formatCurrency(product.focuseddata.price.price)}</span>
+              </div>
+              <div className="focused-item">
+                <span className="focused-label">Capital:</span>
+                <span className="focused-value">{formatCurrency(product.focuseddata.price.capital)}</span>
+              </div>
+              <div className="focused-item">
+                <span className="focused-label">Transaction:</span>
+                <span className="focused-value">{formatCurrency(product.focuseddata.price.transactiongiveaway)}</span>
+              </div>
+              <div className="focused-item">
+                <span className="focused-label">Profit:</span>
+                <span className="focused-value highlight">{formatCurrency(product.focuseddata.price.omsiapprofit)}</span>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      
+      {/* Fullscreen Image Modal */}
+      {isFullScreenVisible && (
+        <div className="fullscreen-modal">
+          <button className="fullscreen-close" onClick={closeFullScreen}>
+            <X size={32} />
+          </button>
+          
+          <div className="fullscreen-image-container">
+            <img src={productImages[currentImageIndex]} alt={product.name} />
+          </div>
+          
+          <div className="fullscreen-controls">
+            <button className="fullscreen-button prev" onClick={prevImage}>
+              <ChevronLeft size={32} />
+            </button>
+            <div className="fullscreen-indicators">
+              {productImages.map((_, index) => (
+                <div
+                  key={index}
+                  className={`fullscreen-indicator ${currentImageIndex === index ? 'active' : ''}`}
+                  onClick={() => setCurrentImageIndex(index)}
+                ></div>
+              ))}
+            </div>
+            <button className="fullscreen-button next" onClick={nextImage}>
+              <ChevronRight size={32} />
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
+const UpdateProduct = ({ setShowDatabaseConfiguration, setShowUpdateProductForm, productToUpdate }) => {
+
+  const [images, setImages] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
+  const [imagesToDelete, setImagesToDelete] = useState([]);
+  const [specifications, setSpecifications] = useState([]);
+  const [features, setFeatures] = useState([]);
+
+  const [productData, setProductData] = useState({
+    name: '',
+    price: '',
+    stock: '',
+    category: '',
+    weightingrams: '',
+    description: '',
+    warranty: '',
+    videoUrl: '',
+    capital: '',
+    transactiongiveaway: '',
+    omsiapprofit: ''
+  });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Function to convert backend image paths to frontend-friendly paths
+  const convertImagePath = (path) => {
+    if (!path) return '';
+    
+    // If path already starts with "../images" or "http", use it as is
+    if (path.startsWith("../images") || path.startsWith("http")) {
+      return path;
+    }
+    
+    // Extract the filename from backend path
+    const pathParts = path.split('\\');
+    const filename = pathParts[pathParts.length - 1];
+    
+    // For paths like "C:\Users\Mark Anthony\Desktop\OMSIAP\view\public\images\market\products\mizta-image1.jpg"
+    // Convert to "../images/market/products/mizta-image1.jpg"
+    if (path.includes("\\images\\market\\products\\")) {
+      return `../images/market/products/${filename}`;
+    }
+    
+    // Check if the path includes "/images/market/products/"
+    if (path.includes("/images/market/products/")) {
+      const parts = path.split("/images/market/products/");
+      return `../images/market/products/${parts[parts.length - 1]}`;
+    }
+    
+    // Fallback: construct path based on filename
+    return `../images/market/products/${filename}`;
+  };
+
+  // Effect to load product data when productToUpdate changes
+  useEffect(() => {
+    if (productToUpdate && productToUpdate._id) {
+      // Set product data
+      setProductData({
+        name: productToUpdate.name || '',
+        price: productToUpdate.price || '',
+        stock: productToUpdate.stock || '',
+        category: productToUpdate.category || '',
+        weightingrams: productToUpdate.weightingrams || '',
+        description: productToUpdate.description || '',
+        warranty: productToUpdate.warranty || '',
+        videoUrl: productToUpdate.videoUrl || '',
+        capital: productToUpdate.focuseddata?.price?.capital || productToUpdate.capital || '',
+        transactiongiveaway: productToUpdate.focuseddata?.price?.transactiongiveaway || productToUpdate.transactiongiveaway || '',
+        omsiapprofit: productToUpdate.focuseddata?.price?.omsiapprofit || productToUpdate.omsiapprofit || ''
+      });
+
+      // Set specifications and features
+      setSpecifications(
+        productToUpdate.specifications?.map(spec => 
+          typeof spec === 'string' ? { name: spec } : spec
+        ) || []
+      );
+      
+      setFeatures(
+        productToUpdate.features?.map(feature => 
+          typeof feature === 'string' ? { name: feature } : feature
+        ) || []
+      );
+
+      // Set existing images
+      if (productToUpdate.images && productToUpdate.images.length > 0) {
+        const formattedImages = productToUpdate.images.map((img, index) => {
+          const imgUrl = typeof img === 'string' ? img : img.url;
+          return {
+            id: img._id || `existing-${index}`,
+            url: convertImagePath(imgUrl),
+            originalUrl: imgUrl // Store original URL for backend reference
+          };
+        });
+        setExistingImages(formattedImages);
+      } else {
+        setExistingImages([]);
+      }
+
+      setDataLoaded(true);
+    }
+  }, [productToUpdate]);
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setProductData({ ...productData, [name]: value });
+  };
+
+  // Handle image upload
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const newImages = files.map(file => ({
+      file,
+      preview: URL.createObjectURL(file)
+    }));
+    setImages([...images, ...newImages]);
+  };
+
+  // Remove new image
+  const removeNewImage = (index) => {
+    const updatedImages = [...images];
+    URL.revokeObjectURL(updatedImages[index].preview);
+    updatedImages.splice(index, 1);
+    setImages(updatedImages);
+  };
+
+  // Remove existing image
+  const removeExistingImage = (index) => {
+    const imageToRemove = existingImages[index];
+    setImagesToDelete([...imagesToDelete, imageToRemove.id]);
+    
+    const updatedExistingImages = [...existingImages];
+    updatedExistingImages.splice(index, 1);
+    setExistingImages(updatedExistingImages);
+  };
+
+  // Add specification
+  const addSpecification = (e) => {
+    e.preventDefault();
+    const specField = document.getElementById('specification-input');
+    if (specField.value.trim()) {
+      setSpecifications([...specifications, { name: specField.value.trim() }]);
+      specField.value = '';
+    }
+  };
+
+  // Remove specification
+  const removeSpecification = (index) => {
+    const updatedSpecs = [...specifications];
+    updatedSpecs.splice(index, 1);
+    setSpecifications(updatedSpecs);
+  };
+
+  // Add feature
+  const addFeature = (e) => {
+    e.preventDefault();
+    const featureField = document.getElementById('feature-input');
+    if (featureField.value.trim()) {
+      setFeatures([...features, { name: featureField.value.trim() }]);
+      featureField.value = '';
+    }
+  };
+
+  // Remove feature
+  const removeFeature = (index) => {
+    const updatedFeatures = [...features];
+    updatedFeatures.splice(index, 1);
+    setFeatures(updatedFeatures);
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e) => {
+    // Prevent default form submission
+    e.preventDefault();
+    
+    if (!productToUpdate || !productToUpdate._id) {
+      alert("No product selected for update");
+      return false;
+    }
+    
+    const responseMessage = document.querySelectorAll(".updateproduct-responsemessage")[0];
+    responseMessage.style.color = "white";
+    responseMessage.innerText = "";
+    responseMessage.style.display = "none";
+    
+    setIsLoading(true);
+    
+    // Create FormData to handle file uploads
+    const formData = new FormData();
+    
+    // Add product ID
+    formData.append('productId', productToUpdate._id);
+    
+    // Add product data
+    Object.keys(productData).forEach(key => {
+      formData.append(key, productData[key]);
+    });
+    
+    // Add new images
+    images.forEach((image) => {
+      formData.append('newImages', image.file);
+    });
+    
+    // Add images to delete - send only the IDs or relative paths
+    if (imagesToDelete.length > 0) {
+      // Create an array of image IDs or relative paths to delete
+      const imagesToDeleteData = imagesToDelete.map(imageId => {
+        // Find the original image data if available
+        const originalImage = existingImages.find(img => img.id === imageId);
+        
+        if (originalImage) {
+          // If the URL is an absolute path, extract just the relative part
+          const url = originalImage.originalUrl || originalImage.url || imageId;
+          if (url.includes("images/market/products/")) {
+            return "../" + url.split("images/market/products/").pop();
+          }
+          return url;
+        }
+        return imageId;
+      });
+      
+      formData.append('imagesToDelete', JSON.stringify(imagesToDeleteData));
+    }
+    
+    // Handle specifications and features
+    const formattedSpecifications = specifications.map(spec => {
+      return typeof spec === 'string' ? { name: spec } : 
+             typeof spec === 'object' && spec.name ? spec : { name: spec.toString() };
+    });
+    
+    const formattedFeatures = features.map(feature => {
+      return typeof feature === 'string' ? { name: feature } : 
+             typeof feature === 'object' && feature.name ? feature : { name: feature.toString() };
+    });
+    
+    // Add specifications and features in the correct format
+    formData.append('specifications', JSON.stringify(formattedSpecifications));
+    formData.append('features', JSON.stringify(formattedFeatures));
+    
+    // Add focuseddata and orderdetails
+    const focusedData = {
+      price: {
+        price: parseFloat(productData.price) || 0,
+        capital: parseFloat(productData.capital) || 0,
+        transactiongiveaway: parseFloat(productData.transactiongiveaway) || 0,
+        omsiapprofit: parseFloat(productData.omsiapprofit) || 0
+      }
+    };
+    
+    const orderDetails = {
+      quantity: 1, // Default value, adjust if you have a quantity field
+      product: {
+        price: parseFloat(productData.price) || 0,
+        capital: parseFloat(productData.capital) || 0,
+        transactiongiveaway: parseFloat(productData.transactiongiveaway) || 0,
+        omsiapprofit: parseFloat(productData.omsiapprofit) || 0
+      },
+      shipment: {
+        totalkilos: parseFloat(productData.weightingrams) / 1000 || 0,
+        totalshipmentfee: 0 // Add a shipmentfee field if needed
+      }
+    };
+    
+    formData.append('focuseddata', JSON.stringify(focusedData));
+    formData.append('orderdetails', JSON.stringify(orderDetails));
+    
+    try {
+      // Send the data to the backend
+      const response = await axiosCreatedInstance.put("/products/updateproduct", formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      
+      // Process the response
+      const { message } = response.data;
+      
+      // Update response message state
+      if (message === "Product updated successfully") {
+        responseMessage.style.color = "green";
+        responseMessage.innerText = "Product updated successfully!";
+        
+        // Optionally refresh the product data or redirect
+        // refreshProductData(); // You would need to implement this function
+      } else {
+        responseMessage.style.color = "red";
+        responseMessage.innerText = message || "Unknown error occurred";
+      }
+      
+      responseMessage.style.display = "block";
+      setIsLoading(false);
+      
+      // Return false to prevent any potential form submission
+      return false;
+    } catch (error) {
+      // Error handling
+      setIsLoading(false);
+      
+      let errorText = "An unexpected error occurred";
+      
+      if (error.response) {
+        errorText = `Error: ${error.response.data.message || "Server error"}`;
+      } else if (error.request) {
+        errorText = "Network error: Please check your connection and try again";
+      } else {
+        errorText = `Error: ${error.message}`;
+      }
+      
+      responseMessage.style.color = "red";
+      responseMessage.innerText = errorText;
+      responseMessage.style.display = "block";
+      
+      return false;
+    }
+  };
+
+  return (
+    <div className="update-product-container">
+      <Container fluid className="update-product-view" style={{ backgroundColor: '#121212', color: 'white' }}>
+        <Row className="header-row">
+          <Col xs={12} className="d-flex justify-content-between align-items-center">
+            <h1 className="update-product-title">Update Product</h1>
+            <Button 
+              variant="none" 
+              className="close-button"
+              style={{ color: 'white' }}
+              onClick={() => {
+                setShowDatabaseConfiguration(false);
+                setShowUpdateProductForm(false);
+              }}
+            >
+              <FaTimes />
+            </Button>
+          </Col>
+        </Row>
+
+        {!dataLoaded ? (
+          <div className="text-center py-5">
+            <h3>Please search for a product to update</h3>
+          </div>
+        ) : (
+          <Form className="product-form">
+            <Row>
+              {/* Product Name */}
+              <Col xs={12} className="mb-4">
+                <Form.Group>
+                  <Form.Label className="form-label">
+                    <FaTag className="form-icon" /> Product Name
+                  </Form.Label>
+                  <Form.Control 
+                    type="text" 
+                    name="name" 
+                    value={productData.name}
+                    onChange={handleInputChange}
+                    className="form-control-dark"
+                    style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                    required
+                  />
+                </Form.Group>
+              </Col>
+              
+              {/* Image Upload Section */}
+              <Col xs={12} md={6} className="mb-4">
+                <div className="image-upload-section" style={{ backgroundColor: '#1a1a1a', padding: '15px', borderRadius: '5px' }}>
+                  <h2 className="section-title">Product Images</h2>
+                  
+                  {/* Existing Images */}
+                  {existingImages.length > 0 && (
+                    <div className="mb-3">
+                      <h5>Current Images</h5>
+                      <Row className="image-grid">
+                        {existingImages.map((img, index) => (
+                          <Col xs={6} sm={4} md={4} key={`existing-${index}`} className="image-preview-col mb-3">
+                            <div className="image-preview-wrapper" style={{ position: 'relative' }}>
+                              <img 
+                                src={img.url} 
+                                alt={`Product image ${index}`} 
+                                className="image-preview" 
+                                style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }}
+                              />
+                              <Button 
+                                variant="danger" 
+                                size="sm" 
+                                className="remove-image-btn"
+                                style={{ position: 'absolute', top: '5px', right: '5px' }}
+                                onClick={() => removeExistingImage(index)}
+                              >
+                                <FaTrash />
+                              </Button>
+                            </div>
+                          </Col>
+                        ))}
+                      </Row>
+                    </div>
+                  )}
+                  
+                  {/* Upload New Images */}
+                  <div className="image-upload-container">
+                    <label 
+                      htmlFor="product-images" 
+                      className="image-upload-label"
+                      style={{ 
+                        display: 'flex', 
+                        flexDirection: 'column', 
+                        alignItems: 'center', 
+                        padding: '20px', 
+                        border: '2px dashed #555', 
+                        borderRadius: '5px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <FaFileImage className="upload-icon" style={{ fontSize: '2rem', marginBottom: '10px' }} />
+                      <span>Add New Images</span>
+                    </label>
+                    <input 
+                      id="product-images" 
+                      type="file" 
+                      multiple 
+                      accept="image/*" 
+                      onChange={handleImageUpload} 
+                      style={{ display: 'none' }}
+                    />
+                  </div>
+                  
+                  {/* New Images Preview */}
+                  {images.length > 0 && (
+                    <div className="mt-3">
+                      <h5>New Images to Upload</h5>
+                      <Row className="image-grid">
+                        {images.map((img, index) => (
+                          <Col xs={6} sm={4} md={4} key={`new-${index}`} className="image-preview-col mb-3">
+                            <div className="image-preview-wrapper" style={{ position: 'relative' }}>
+                              <img 
+                                src={img.preview} 
+                                alt={`New product image ${index}`} 
+                                className="image-preview" 
+                                style={{ width: '100%', height: '120px', objectFit: 'cover', borderRadius: '4px' }}
+                              />
+                              <Button 
+                                variant="danger" 
+                                size="sm" 
+                                className="remove-image-btn"
+                                style={{ position: 'absolute', top: '5px', right: '5px' }}
+                                onClick={() => removeNewImage(index)}
+                              >
+                                <FaTrash />
+                              </Button>
+                            </div>
+                          </Col>
+                        ))}
+                      </Row>
+                    </div>
+                  )}
+                </div>
+              </Col>
+              
+              {/* Product Details Section */}
+              <Col xs={12} md={6} className="mb-4">
+                <div className="product-details-section" style={{ backgroundColor: '#1a1a1a', padding: '15px', borderRadius: '5px' }}>
+                  <h2 className="section-title">Product Details</h2>
+                  
+                  <Row>
+                    <Col xs={12} sm={6} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaMoneyBillWave className="form-icon" /> Price
+                        </Form.Label>
+                        <Form.Control 
+                          type="number" 
+                          name="price" 
+                          value={productData.price}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col xs={12} sm={6} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaBoxOpen className="form-icon" /> Stock
+                        </Form.Label>
+                        <Form.Control 
+                          type="number" 
+                          name="stock" 
+                          value={productData.stock}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col xs={12} sm={6} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaTag className="form-icon" /> Category
+                        </Form.Label>
+                        <Form.Control 
+                          type="text" 
+                          name="category" 
+                          value={productData.category}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col xs={12} sm={6} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaWeight className="form-icon" /> Weight (g)
+                        </Form.Label>
+                        <Form.Control 
+                          type="number" 
+                          name="weightingrams" 
+                          value={productData.weightingrams}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  
+                  <Row>
+                    <Col xs={12} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaInfoCircle className="form-icon" /> Description
+                        </Form.Label>
+                        <Form.Control 
+                          as="textarea" 
+                          rows={4}
+                          name="description" 
+                          value={productData.description}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                  
+                  <Row>
+                    <Col xs={12} sm={6} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaInfoCircle className="form-icon" /> Warranty
+                        </Form.Label>
+                        <Form.Control 
+                          type="text" 
+                          name="warranty" 
+                          value={productData.warranty}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                        />
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col xs={12} sm={6} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaYoutube className="form-icon" /> Video URL
+                        </Form.Label>
+                        <Form.Control 
+                          type="text" 
+                          name="videoUrl" 
+                          value={productData.videoUrl}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </div>
+              </Col>
+              
+              {/* Specifications Section */}
+              <Col xs={12} className="mb-4">
+                <div className="specifications-section" style={{ backgroundColor: '#1a1a1a', padding: '15px', borderRadius: '5px' }}>
+                  <h2 className="section-title">
+                    <FaClipboardList className="section-icon" /> Specifications
+                  </h2>
+                  
+                  <div className="add-item-container" style={{ display: 'flex', marginBottom: '15px' }}>
+                    <Form.Control 
+                      type="text" 
+                      id="specification-input"
+                      style={{ backgroundColor: '#333', color: 'white', borderColor: '#555', marginRight: '10px' }}
+                      placeholder="Enter specification"
+                    />
+                    <Button 
+                      variant="outline-light" 
+                      className="add-button"
+                      onClick={addSpecification}
+                    >
+                      <FaPlus /> Add
+                    </Button>
+                  </div>
+                  
+                  {specifications.length > 0 && (
+                    <div className="items-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                      {specifications.map((spec, index) => (
+                        <div 
+                          key={index} 
+                          className="item-pill"
+                          style={{ 
+                            backgroundColor: '#333', 
+                            color: 'white', 
+                            padding: '5px 10px', 
+                            borderRadius: '15px',
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <span>{spec.name}</span>
+                          <Button 
+                            variant="none" 
+                            size="sm" 
+                            style={{ color: 'white', marginLeft: '5px', padding: '0' }}
+                            onClick={() => removeSpecification(index)}
+                          >
+                            <FaTimes />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Col>
+              
+              {/* Features Section */}
+              <Col xs={12} className="mb-4">
+                <div className="features-section" style={{ backgroundColor: '#1a1a1a', padding: '15px', borderRadius: '5px' }}>
+                  <h2 className="section-title">
+                    <FaStar className="section-icon" /> Features
+                  </h2>
+                  
+                  <div className="add-item-container" style={{ display: 'flex', marginBottom: '15px' }}>
+                    <Form.Control 
+                      type="text" 
+                      id="feature-input"
+                      style={{ backgroundColor: '#333', color: 'white', borderColor: '#555', marginRight: '10px' }}
+                      placeholder="Enter feature"
+                    />
+                    <Button 
+                      variant="outline-light" 
+                      className="add-button"
+                      onClick={addFeature}
+                    >
+                      <FaPlus /> Add
+                    </Button>
+                  </div>
+                  
+                  {features.length > 0 && (
+                    <div className="items-list" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
+                      {features.map((feature, index) => (
+                        <div 
+                          key={index} 
+                          className="item-pill"
+                          style={{ 
+                            backgroundColor: '#333', 
+                            color: 'white', 
+                            padding: '5px 10px', 
+                            borderRadius: '15px',
+                            display: 'flex',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <span>{feature.name}</span>
+                          <Button 
+                            variant="none" 
+                            size="sm" 
+                            style={{ color: 'white', marginLeft: '5px', padding: '0' }}
+                            onClick={() => removeFeature(index)}
+                          >
+                            <FaTimes />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </Col>
+              
+              {/* Pricing Details */}
+              <Col xs={12} className="mb-4">
+                <div className="pricing-details-section" style={{ backgroundColor: '#1a1a1a', padding: '15px', borderRadius: '5px' }}>
+                  <h2 className="section-title">Pricing Details</h2>
+                  
+                  <Row>
+                    <Col xs={12} sm={6} md={3} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaMoneyBillWave className="form-icon" /> Price
+                        </Form.Label>
+                        <Form.Control 
+                          type="number" 
+                          name="price" 
+                          value={productData.price}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                          required
+                        />
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col xs={12} sm={6} md={3} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaMoneyBillWave className="form-icon" /> Capital
+                        </Form.Label>
+                        <Form.Control 
+                          type="number" 
+                          name="capital" 
+                          value={productData.capital}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                        />
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col xs={12} sm={6} md={3} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaMoneyBillWave className="form-icon" /> Transaction Fee
+                        </Form.Label>
+                        <Form.Control 
+                          type="number" 
+                          name="transactiongiveaway" 
+                          value={productData.transactiongiveaway}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                        />
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col xs={12} sm={6} md={3} className="mb-3">
+                      <Form.Group>
+                        <Form.Label className="form-label">
+                          <FaMoneyBillWave className="form-icon" /> Profit
+                        </Form.Label>
+                        <Form.Control 
+                          type="number" 
+                          name="omsiapprofit" 
+                          value={productData.omsiapprofit}
+                          onChange={handleInputChange}
+                          className="form-control-dark"
+                          style={{ backgroundColor: '#333', color: 'white', borderColor: '#555' }}
+                        />
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </div>
+              </Col>
+              
+              <p className="updateproduct-responsemessage" style={{ display: 'none', padding: '10px', margin: '10px 0', borderRadius: '5px' }}>
+                Update status will appear here
+              </p>
+
+              {/* Submit Button */}
+              <Col xs={12} md={6} lg={4} className="d-flex gap-3 mb-4">
+                {isLoading ? (
+                  <Spinner animation="border" variant="warning" />
+                ) : (
+                  <>
+                    <Button 
+                      type="button" 
+                      className="submit-button" 
+                      size="lg"
+                      style={{ 
+                        backgroundColor: '#4caf50', 
+                        borderColor: '#4caf50',
+                        flex: '1'
+                      }}
+                      onClick={handleSubmit}
+                    >
+                      Update Product
+                    </Button>
+                    
+                    <Button 
+                      type="button"
+                      className="cancel-button" 
+                      size="lg"
+                      style={{ 
+                        backgroundColor: '#f44336', 
+                        borderColor: '#f44336',
+                        flex: '1'
+                      }}
+                      onClick={() => {
+                        setShowDatabaseConfiguration(false);
+                        setShowUpdateProductForm(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                )}
+              </Col>
+            </Row>
+          </Form>
+        )}
+      </Container>
+    </div>
+  );
+};
+
+const DeleteProductReader = ({ product, onClose, setShowProductReader, setShowPendingOrders, deleteproductfield }) => {
+  const [isVisible, setIsVisible] = useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isFullScreenVisible, setIsFullScreenVisible] = useState(false);
+  
+  // Convert file system paths to web paths
+  const convertImagePath = (path) => {
+    // Check if the path is a file system path
+    if (path && path.includes('\\')) {
+      // Extract just the filename
+      const filename = path.split('\\').pop();
+      // Create a web-friendly path
+      return `../images/market/products/${filename}`;
+    }
+    // Already a web path or another format
+    return path;
+  };
+  
+  // Get image URLs from the product data and convert them
+  const productImages = product.images && product.images.length > 0 
+    ? product.images.map(img => convertImagePath(img.url)) 
+    : [`../images/market/products/${product.name}-image1.jpg`]; // Fallback
+  
+  useEffect(() => {
+    // Animation delay for entrance
+    setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+  }, []);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    setTimeout(() => {
+      setShowProductReader(false);
+      setShowPendingOrders(true);
+    }, 300); // Wait for exit animation
+  };
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD'
+    }).format(value);
+  };
+
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === productImages.length - 1 ? 0 : prevIndex + 1
+    );
+  };
+
+  const prevImage = () => {
+    setCurrentImageIndex((prevIndex) => 
+      prevIndex === 0 ? productImages.length - 1 : prevIndex - 1
+    );
+  };
+
+  const openFullScreen = () => {
+    setIsFullScreenVisible(true);
+  };
+
+  const closeFullScreen = () => {
+    setIsFullScreenVisible(false);
+  };
+
+  const renderThumbnails = () => {
+    return productImages.map((image, index) => (
+      <div 
+        key={index} 
+        className={`thumbnail ${currentImageIndex === index ? 'active' : ''}`}
+        onClick={() => setCurrentImageIndex(index)}
+      >
+        <img src={image} alt={`${product.name} - View ${index + 1}`} />
+      </div>
+    ));
+  };
+
+  return (
+    <div className={`product-viewer-overlay ${isVisible ? 'visible' : ''}`}>
+      <div className="product-viewer-container">
+        <button className="close-button" onClick={handleClose}>
+          <X size={24} />
+        </button>
+        
+        <div className="product-header">
+          <h1 className="product-name">{product.name}</h1>
+          <div className="product-rating">
+            <Star className="icon" />
+            <span className="highlight">{product.rating}</span>
+            <span className="reviews">({product.reviews} reviews)</span>
+          </div>
+        </div>
+        
+        <div className="product-grid">
+          <div className="product-images">
+            <div className="carousel-container">
+              {productImages.length > 0 && (
+                <div className="main-image" onClick={openFullScreen}>
+                  <img src={productImages[currentImageIndex]} alt={product.name} />
+                  <div className="fullscreen-hint">
+                    <Maximize2 size={20} />
+                    <span>Click for fullscreen</span>
+                  </div>
+                </div>
+              )}
+              
+              {productImages.length > 1 && (
+                <>
+                  <button className="carousel-button prev" onClick={prevImage}>
+                    <ChevronLeft size={24} />
+                  </button>
+                  <button className="carousel-button next" onClick={nextImage}>
+                    <ChevronRight size={24} />
+                  </button>
+                </>
+              )}
+              
+              {productImages.length > 1 && (
+                <div className="thumbnail-container">
+                  {renderThumbnails()}
+                </div>
+              )}
+              
+              {productImages.length > 1 && (
+                <div className="carousel-indicators">
+                  {productImages.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`indicator ${currentImageIndex === index ? 'active' : ''}`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    ></div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="product-info">
+            <div className="info-section">
+              <div className="price-container">
+                <Tag className="icon" />
+                <span className="label">Price:</span>
+                <span className="price highlight">{formatCurrency(product.price)}</span>
+              </div>
+              
+              <div className="stock-container">
+                <Package className="icon" />
+                <span className="label">In Stock:</span>
+                <span className={`stock ${product.stock > 10 ? 'in-stock' : 'low-stock'}`}>
+                  {product.stock > 0 ? product.stock : 'Out of Stock'}
+                </span>
+              </div>
+              
+              <div className="category-container">
+                <Info className="icon" />
+                <span className="label">Category:</span>
+                <span className="category">{product.category}</span>
+              </div>
+              
+              <div className="weight-container">
+                <Truck className="icon" />
+                <span className="label">Weight:</span>
+                <span className="weight">{product.weightingrams}g</span>
+              </div>
+            </div>
+            
+            <div className="description-container">
+              <h2>Description</h2>
+              <p>{product.description}</p>
+            </div>
+            
+            {product.specifications && product.specifications.length > 0 && (
+              <div className="specs-container">
+                <h2>Specifications</h2>
+                <div className="specs-grid">
+                  {product.specifications.map((spec, index) => (
+                    <div key={index} className="spec-item">
+                      <span className="spec-name">Specification {index + 1}:</span>
+                      <span className="spec-value">{spec.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {product.features && product.features.length > 0 && (
+              <div className="features-container">
+                <h2>Features</h2>
+                <ul className="features-list">
+                  {product.features.map((feature, index) => (
+                    <li key={index} className="feature-item">
+                      <Award className="icon" />
+                      <span className="feature-value">{feature.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {product.warranty && (
+              <div className="warranty-container">
+                <FileText className="icon" />
+                <span className="label">Warranty:</span>
+                <span className="warranty">{product.warranty}</span>
+              </div>
+            )}
+            
+            {product.videoUrl && (
+              <div className="video-container">
+                <Video className="icon" />
+                <span className="video-label">Product Video</span>
+                <a href={product.videoUrl} target="_blank" rel="noopener noreferrer" className="video-link">
+                  Watch Video
+                </a>
+              </div>
+            )}
+
+          </div>
         </div>
         
         {product.focuseddata && (
@@ -4451,685 +9497,2068 @@ const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingO
           </div>
         )}
         
-        {/*
-        {product.orderdetails && (
-          <div className="order-details">
-            <h2>Order Details</h2>
-            <div className="order-grid">
-              <div className="order-section">
-                <h3>Quantity</h3>
-                <div className="order-item">
-                  <span className="quantity-value highlight">{product.orderdetails.quantity}</span>
-                </div>
-              </div>
-              
-              <div className="order-section">
-                <h3>Product</h3>
-                <div className="order-item">
-                  <span className="order-label">Price:</span>
-                  <span className="order-value">{formatCurrency(product.orderdetails.product.price)}</span>
-                </div>
-                <div className="order-item">
-                  <span className="order-label">Capital:</span>
-                  <span className="order-value">{formatCurrency(product.orderdetails.product.capital)}</span>
-                </div>
-                <div className="order-item">
-                  <span className="order-label">Transaction:</span>
-                  <span className="order-value">{formatCurrency(product.orderdetails.product.transactiongiveaway)}</span>
-                </div>
-                <div className="order-item">
-                  <span className="order-label">Profit:</span>
-                  <span className="order-value highlight">{formatCurrency(product.orderdetails.product.omsiapprofit)}</span>
-                </div>
-              </div>
-              
-              <div className="order-section">
-                <h3>Shipment</h3>
-                <div className="order-item">
-                  <span className="order-label">Total Weight:</span>
-                  <span className="order-value">{product.orderdetails.shipment.totalkilos}kg</span>
-                </div>
-                <div className="order-item">
-                  <span className="order-label">Shipping Fee:</span>
-                  <span className="order-value highlight">{formatCurrency(product.orderdetails.shipment.totalshipmentfee)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        */}
-
-        {/*
-        <div className="action-buttons">
-          <button className="add-to-cart-button">
-            <ShoppingCart className="icon" />
-            Add to Cart
-          </button>
-        </div>
-        */}
+         <div style={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                padding:"30px 10px"
+               }}>
+            <p className="deletingproductresponsemessage">Response message</p>
+           <button style={{
+                     position: "relative",
+                     backgroundColor: "red",
+                     color: "white"
+                   }}
+                   onClick={async () => {
+                    try {
+                      const response = await axiosCreatedInstance.post("/products/deleteproduct", {
+                        id: deleteproductfield
+                      });
+                      
+                      // Get your message display element
+                      const messageElement = document.querySelectorAll(".deletingproductresponsemessage")[0]; // Replace with your actual element ID
+                      
+                      // Update the message element with success response
+                      if (messageElement) {
+                        messageElement.textContent = response.data.message || "Product deleted successfully";
+                        messageElement.className = "success-message"; // Add appropriate CSS class for success styling
+                        
+                        // Optionally auto-hide the message after a few seconds
+                        setTimeout(() => {
+                          messageElement.textContent = "";
+                          messageElement.className = "";
+                        }, 5000);
+                      }
+                      
+                      // Additional success handling (e.g., refresh product list)
+                      // You might want to add code here to refresh your product list or navigate elsewhere
+                      
+                    } catch (error) {
+                      // Get your message display element
+                      const messageElement = document.getElementById("responseMessage"); // Replace with your actual element ID
+                      
+                      // Update the message element with error response
+                      if (messageElement) {
+                        messageElement.textContent = error.response?.data?.message || "Error deleting product";
+                        messageElement.className = "error-message"; // Add appropriate CSS class for error styling
+                        
+                        // Optionally auto-hide the message after a few seconds
+                        setTimeout(() => {
+                          messageElement.textContent = "";
+                          messageElement.className = "";
+                        }, 5000);
+                      }
+                      
+                      console.error("Error deleting product:", error);
+                    }
+                  }}>
+                    delete
+           </button>
+         </div>
 
       </div>
+      
+      {/* Fullscreen Image Modal */}
+      {isFullScreenVisible && (
+        <div className="fullscreen-modal">
+          <button className="fullscreen-close" onClick={closeFullScreen}>
+            <X size={32} />
+          </button>
+          
+          <div className="fullscreen-image-container">
+            <img src={productImages[currentImageIndex]} alt={product.name} />
+          </div>
+          
+          <div className="fullscreen-controls">
+            <button className="fullscreen-button prev" onClick={prevImage}>
+              <ChevronLeft size={32} />
+            </button>
+            <div className="fullscreen-indicators">
+              {productImages.map((_, index) => (
+                <div
+                  key={index}
+                  className={`fullscreen-indicator ${currentImageIndex === index ? 'active' : ''}`}
+                  onClick={() => setCurrentImageIndex(index)}
+                ></div>
+              ))}
+            </div>
+            <button className="fullscreen-button next" onClick={nextImage}>
+              <ChevronRight size={32} />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-const CreateProduct = ({setShowDatabaseConfiguration, setShowCreateProduct}) => {
 
- const [showCreateProductConfiguration, setShowCreateProductConfiguration] = useState(false);
+const RegistrationForm = ({ onClose, setShowDatabaseConfiguration, setShowCreateRegistrantForm }) => {
 
- return (
-  <div id="database-createproductcontainer">
+  const [formData, setFormData] = useState({
+    firstname: '',
+    middlename: '',
+    lastname: '',
+    nickname: '',
+    phonenumber: '',
+    telephonenumber: '',
+    emailaddress: '',
+    street: '',
+    baranggay: '',
+    trademark: '',
+    city: '',
+    province: '',
+    country: '',
+    age: '',
+    sex: '',
+    bloodtype: '',
+    dob: '',
+    citizenship: '',
+    civil_status: '',
+    government_id: '',
+    password: '',
+    confirmPassword: '',
+    birthcertificate_front: null,
+    birthcertificate_back: null,
+    governmentid_front: null,
+    governmentid_back: null
+  });
 
-    <div id="database-createproductcontainer-viewcontainer">
+  const [createnewregistrantloadingindication, createnewregistrantloadingindicationcb] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
 
-      <div id="database-createproductcontainer-viewcontainer-closebuttoncontainer">
-        <button id="database-createproductcontainer-viewcontainer-closebuttoncontainer-closebutton"
-                onClick={()=> {
-                  setShowDatabaseConfiguration(false)
-                  setShowCreateProduct(false)
-                }}>
-          <FaTimes />
-        </button>
-      </div>
+  // Preview states for uploaded images
+  const [previews, setPreviews] = useState({
+    birthcertificate_front: null,
+    birthcertificate_back: null,
+    governmentid_front: null,
+    governmentid_back: null
+  });
 
-      <div id="database-createproductcontainer-viewcontainer-headerindicationcontainer">
-        <h1 id="database-createproductcontainer-viewcontainer-headerindicationcontainer-headerindication">Create Product</h1>
-      </div>
-
-      <Col className="database-createproductcontainer-viewcontainer-formcontainer">
-        <form className="database-createproductcontainer-viewcontainer-formcontainer-form">
-           <Row className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer">
-            <Col xs={6}
-                 md={6}
-                 lg={6}
-                 className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-imageslayoutcontainer">
-              <div className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-imagescontainer">
-                  <label htmlFor="productimage" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-imagescontainer-label"><FaFileAlt size={30}/> Select image</label>
-                  <input style={{display:"none"}} id="productimage" type="file"/>
-                 <button className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-imagescontainer-addimagebutton">add image tp product images</button>
-              </div>
-            </Col>
-            <Col xs={6}
-                 md={6}
-                 lg={6}
-                 className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer">
-              <Row className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer">
-                <Col xs={12}
-                     md={6}
-                     lg={6}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                   <p className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldindication"><FaMoneyBillWave size={30}/> <span className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldspanindication">Price: </span><input type="number" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldfieldindication"/></p>
-                </Col>
-                <Col xs={12}
-                     md={6}
-                     lg={6}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                   <p className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldindication"><FaExclamationTriangle size={30}/> <span className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldspanindication">In stock: </span><input type="number" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldfieldindication"/></p>
-                </Col>
-                <Col xs={12}
-                     md={6}
-                     lg={6}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                   <p className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldindication"><FaEnvelope size={30}/> <span className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldspanindication">Category: </span><input type="text" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldfieldindication"/></p>
-                </Col>
-                <Col xs={12}
-                     md={6}
-                     lg={6}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                   <p className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldindication"><FaInfoCircle size={30}/> <span className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldspanindication">Weight in grams: </span><input type="number" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldfieldindication"/></p>
-                </Col>
-              </Row>
-              <Row className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer">
-                <Col xs={12}
-                     md={12}
-                     lg={12}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-descpriptionfieldheaderindicationcontainer">
-                  <h1 className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-descpriptionfieldheaderindicationcontainer-descriptioheaderindication">Description</h1>
-                </Col>
-                <Col xs={12}
-                     md={12}
-                     lg={12}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                  <textarea className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-descpriptionfieldheaderindicationcontainer-descriptionfield"/>
-                </Col>
-              </Row>
-              <Row className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer">
-                <Col xs={12}
-                     md={6}
-                     lg={6}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                   <p className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldindication"><FaInfoCircle size={30}/> <span className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldspanindication">Warranty: </span><input type="text" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldfieldindication"/></p>
-                </Col>
-              </Row>
-              <Row className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer">
-                <Col xs={12}
-                     md={6}
-                     lg={6}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                   <p className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldindication"><FaEye size={30}/> <span className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldspanindication">Product video: </span><input type="text" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldfieldindication"/></p>
-                </Col>
-              </Row>
-              <Row className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer">
-                <Col xs={12}
-                     md={12}
-                     lg={12}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                   <p className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldindication"><FaEye size={30}/> <span className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldspanindication">Specifications: </span><input type="text" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldfieldindication"/><button className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-addspecificationbutton">add specification</button></p>
-                </Col>
-              </Row>
-              <Row className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer">
-                <Col xs={12}
-                     md={12}
-                     lg={12}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer">
-                   <p className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldindication"><FaEye size={30}/> <span className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldspanindication">Features: </span><input type="text" className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-productfieldfieldindication"/><button className="database-createproductcontainer-viewcontainer-formcontainer-form-imagesandproductdetailsgridcontainer-productdetailslayoutcontainer-productdetailsgridcontainer-pricefieldcontainer-addfeaturebutton">add feature</button></p>
-                </Col>
-              </Row>
-            </Col>
-            <Col xs={12}
-                 md={12}
-                 lg={12}
-                 className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer">
-              <Row className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer">
-                <Col xs={12}
-                     md={3}
-                     lg={3}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer">
-                  <p className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer-fieldindication">Price: <input type="number" className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer-field"/></p>
-                </Col>
-                <Col xs={12}
-                     md={3}
-                     lg={3}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer">
-                  <p className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer-fieldindication">Capital: <input type="number" className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer-field"/></p>
-                </Col>
-                <Col xs={12}
-                     md={3}
-                     lg={3}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer">
-                  <p className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer-fieldindication">Transaction give away: <input type="number" className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer-field"/></p>
-                </Col>
-                <Col xs={12}
-                     md={3}
-                     lg={3}
-                     className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer">
-                  <p className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer-fieldindication">Profit: <input type="number" className="database-createproductcontainer-viewcontainer-formcontainer-form-pricingdetailslayoutcontainer-gridcontainer-colcontainer-field"/></p>
-                </Col>
-              </Row>
-            </Col>
-            <Col xs={12}
-                 md={12}
-                 lg={12}
-                 className="database-createproductcontainer-viewcontainer-formcontainer-form-submitbuttoncontainer">
-              <button className="database-createproductcontainer-viewcontainer-formcontainer-form-submitbuttoncontainer-createproductbutton">Create Product</button>
-            </Col>
-           </Row>
-        </form>
-      </Col>
-
-    </div>
-
-    {
-      showCreateProductConfiguration && (
-       <div id="database-createproductcontainer-configurationcontainer">
-       </div>
-      )
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+    
+    // Clear password error when either password field changes
+    if (name === 'password' || name === 'confirmPassword') {
+      setPasswordError('');
     }
+  };
 
-  </div>
- )
-}
-
-const DeleteProductReader = ({ product, onClose, onDelete, isOpen }) => {
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-
-  // Reset state when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setIsConfirming(false);
-      setIsDeleting(false);
+  const handleFileChange = (e) => {
+    const { name, files } = e.target;
+    if (files && files[0]) {
+      // Update form data with the file
+      setFormData(prevState => ({
+        ...prevState,
+        [name]: files[0]
+      }));
+      
+      // Generate preview for the uploaded image
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setPreviews(prevPreviews => ({
+          ...prevPreviews,
+          [name]: event.target.result
+        }));
+      };
+      reader.readAsDataURL(files[0]);
     }
-  }, [isOpen]);
+  };
 
-  const handleDelete = async () => {
-    if (!isConfirming) {
-      setIsConfirming(true);
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const validatePasswords = () => {
+    if (formData.password !== formData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return false;
+    }
+    
+    if (formData.password.length < 8) {
+      setPasswordError('Password must be at least 8 characters long');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+
+    e.preventDefault();
+    
+    // Validate passwords before proceeding
+    if (!validatePasswords()) {
       return;
     }
     
+    createnewregistrantloadingindicationcb(true);
+
+    console.log('Form submitted:', formData);
+
+    // Here you would typically send the data to your backend
+    // and handle the registration process using FormData to handle file uploads
+    const formDataToSubmit = new FormData();
+    
+    // Append all form fields to FormData except confirmPassword (not needed on server)
+    Object.keys(formData).forEach(key => {
+      if (key !== 'confirmPassword') {
+        formDataToSubmit.append(key, formData[key]);
+      }
+    });
+    
+    // Now you can use formDataToSubmit with fetch or axios
     try {
-      setIsDeleting(true);
-      // Replace this with your actual delete API call
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulating API delay
-      onDelete(product.id);
-      onClose();
+      await axiosCreatedInstance.post("/people/addregistrant", formDataToSubmit).then((response)=> {
+        const responsemessage = response.data.message
+        switch(responsemessage) {
+          case "Registrant added successfully":
+            createnewregistrantloadingindicationcb(false);
+            document.querySelectorAll('.createregistrant-responsemessagecontainer')[0].innerText = "Registrant successfully created";
+            document.querySelectorAll('.createregistrant-responsemessagecontainer')[0].style.display = "block";
+            document.querySelectorAll('.createregistrant-responsemessagecontainer')[0].style.color = "green";
+          break;
+          case "A user with the same name and password already exists. Please use a different password.":
+            createnewregistrantloadingindicationcb(false);
+            document.querySelectorAll('.createregistrant-responsemessagecontainer')[0].innerText = "Registrant had a duplicate name in the system. Try a different password";
+            document.querySelectorAll('.createregistrant-responsemessagecontainer')[0].style.display = "block";
+            document.querySelectorAll('.createregistrant-responsemessagecontainer')[0].style.color = "red";
+          break;
+        }
+        // Handle success
+       
+      })
+    
     } catch (error) {
-      console.error("Failed to delete product:", error);
+      // Handle error
+      console.error("Registration failed:", error);
+      alert("Registration failed. Please try again.");
     } finally {
-      setIsDeleting(false);
+      createnewregistrantloadingindicationcb(false);
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="delete-product-overlay" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      width: '100vw',
-      height: '100vh',
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000
-    }}>
-      <div className="delete-product-modal" style={{
-        width: '100%',
-        height: '100%',
-        maxWidth: '1200px',
-        maxHeight: '90vh',
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        <button className="close-button" onClick={onClose} style={{
-          position: 'absolute',
-          right: '16px',
-          top: '16px',
-          background: 'none',
-          border: 'none',
-          cursor: 'pointer',
-          zIndex: 10
-        }}>
-          <X size={24} />
-        </button>
-
-        <div className="modal-content" style={{
-          padding: '24px',
-          height: '100%',
-          width: '100%',
-          overflow: 'auto',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          <div className="icon-container" style={{
-            display: 'flex',
-            justifyContent: 'center',
-            marginBottom: '24px'
+    <div className="registration-form-container">
+      <div className="registration-form-content">
+        <div className="form-header">
+          <h2>MFATIP Registration</h2>
+          <button className="close-button" onClick={()=>{ 
+            setShowDatabaseConfiguration(false)
+            setShowCreateRegistrantForm(false)
           }}>
-            {isConfirming ? (
-              <AlertCircle size={64} className="warning-icon" style={{ color: '#ff4d4f' }} />
-            ) : (
-              <Trash size={64} className="trash-icon" style={{ color: '#ff4d4f' }} />
-            )}
+            <FaTimes />
+          </button>
+        </div>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-section">
+            <h3>Personal Information</h3>
+            <div className="form-group">
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <input
+                  type="text"
+                  name="firstname"
+                  value={formData.firstname}
+                  onChange={handleChange}
+                  placeholder="First Name"
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <input
+                  type="text"
+                  name="middlename"
+                  value={formData.middlename}
+                  onChange={handleChange}
+                  placeholder="Middle Name"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <input
+                  type="text"
+                  name="lastname"
+                  value={formData.lastname}
+                  onChange={handleChange}
+                  placeholder="Last Name"
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <input
+                  type="text"
+                  name="nickname"
+                  value={formData.nickname}
+                  onChange={handleChange}
+                  placeholder="Nickname"
+                />
+              </div>
+            </div>
           </div>
 
-          <h2 className="modal-title" style={{
-            textAlign: 'center',
-            fontSize: '24px',
-            marginBottom: '16px'
-          }}>
-            {isConfirming ? "Are you sure?" : "Delete Product"}
-          </h2>
-
-          <p className="product-info" style={{
-            textAlign: 'center',
-            fontSize: '16px',
-            marginBottom: '24px'
-          }}>
-            {isConfirming ? (
-              "This action cannot be undone. This will permanently delete the product."
-            ) : (
-              <>You're about to delete <strong>{product.name}</strong></>
-            )}
-          </p>
-
-          {!isConfirming && (
-            <div className="product-details" style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '24px',
-              width: '100%',
-              flex: 1,
-              overflowY: 'auto'
-            }}>
-              <div className="product-basic-info" style={{
-                backgroundColor: '#f7f7f7',
-                padding: '16px',
-                borderRadius: '8px'
-              }}>
-                <h3 style={{ marginBottom: '12px' }}>Basic Information</h3>
-                <p><strong>ID:</strong> {product.id}</p>
-                <p><strong>Name:</strong> {product.name}</p>
-                <p><strong>Category:</strong> {product.category}</p>
-                <p><strong>Price:</strong> ${product.price}</p>
-                <p><strong>Stock:</strong> {product.stock} units</p>
-                <p><strong>Weight:</strong> {product.weightingrams} grams</p>
-                <p><strong>Rating:</strong> {product.rating} ({product.reviews} reviews)</p>
-                <p><strong>Warranty:</strong> {product.warranty || "None"}</p>
+          <div className="form-section">
+            <h3>Contact Information</h3>
+            <div className="form-group">
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaPhone />
+                </div>
+                <input
+                  type="tel"
+                  name="phonenumber"
+                  value={formData.phonenumber}
+                  onChange={handleChange}
+                  placeholder="Phone Number"
+                  required
+                />
               </div>
-              
-              <div className="product-description" style={{
-                backgroundColor: '#f7f7f7',
-                padding: '16px',
-                borderRadius: '8px'
-              }}>
-                <h3 style={{ marginBottom: '12px' }}>Description</h3>
-                <p>{product.description}</p>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaPhone />
+                </div>
+                <input
+                  type="tel"
+                  name="telephonenumber"
+                  value={formData.telephonenumber}
+                  onChange={handleChange}
+                  placeholder="Telephone Number"
+                />
               </div>
-              
-              {product.features && product.features.length > 0 && (
-                <div className="product-features" style={{
-                  backgroundColor: '#f7f7f7',
-                  padding: '16px',
-                  borderRadius: '8px'
-                }}>
-                  <h3 style={{ marginBottom: '12px' }}>Features</h3>
-                  <ul style={{ listStylePosition: 'inside', paddingLeft: '0' }}>
-                    {product.features.map((feature, index) => (
-                      <li key={index}><strong>{feature.title}:</strong> {feature.description}</li>
-                    ))}
-                  </ul>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaEnvelope />
                 </div>
-              )}
-              
-              {product.specifications && product.specifications.length > 0 && (
-                <div className="product-specifications" style={{
-                  backgroundColor: '#f7f7f7',
-                  padding: '16px',
-                  borderRadius: '8px'
-                }}>
-                  <h3 style={{ marginBottom: '12px' }}>Specifications</h3>
-                  <ul style={{ listStylePosition: 'inside', paddingLeft: '0' }}>
-                    {product.specifications.map((spec, index) => (
-                      <li key={index}><strong>{spec.name}:</strong> {spec.value}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-              
-              {product.videoUrl && (
-                <div className="product-video" style={{
-                  backgroundColor: '#f7f7f7',
-                  padding: '16px',
-                  borderRadius: '8px'
-                }}>
-                  <h3 style={{ marginBottom: '12px' }}>Product Video</h3>
-                  <p><a href={product.videoUrl} target="_blank" rel="noopener noreferrer">View Video</a></p>
-                </div>
-              )}
-              
-              {product.focuseddata && (
-                <div className="product-focused-data" style={{
-                  backgroundColor: '#f7f7f7',
-                  padding: '16px',
-                  borderRadius: '8px'
-                }}>
-                  <h3 style={{ marginBottom: '12px' }}>Financial Details</h3>
-                  <p><strong>Base Price:</strong> ${product.focuseddata.price?.price || 0}</p>
-                  <p><strong>Capital:</strong> ${product.focuseddata.price?.capital || 0}</p>
-                  <p><strong>Transaction Giveaway:</strong> ${product.focuseddata.price?.transactiongiveaway || 0}</p>
-                  <p><strong>Profit:</strong> ${product.focuseddata.price?.omsiapprofit || 0}</p>
-                </div>
-              )}
+                <input
+                  type="email"
+                  name="emailaddress"
+                  value={formData.emailaddress}
+                  onChange={handleChange}
+                  placeholder="Email Address"
+                  required
+                />
+              </div>
             </div>
-          )}
+          </div>
 
-          {!isConfirming && product.images && product.images.length > 0 && (
-            <div className="product-images" style={{
-              width: '100%',
-              marginTop: '24px'
-            }}>
-              <h3 style={{ marginBottom: '12px' }}>Product Images</h3>
-              <div className="image-gallery" style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-                gap: '16px',
-                width: '100%'
-              }}>
-                {product.images.map((image, index) => (
-                  <div key={index} className="image-container" style={{
-                    border: '1px solid #eaeaea',
-                    borderRadius: '8px',
-                    overflow: 'hidden'
-                  }}>
-                    <img 
-                      src={image.url} 
-                      alt={`${product.name} - Image ${index + 1}`} 
-                      className="product-image"
-                      style={{
-                        width: '100%',
-                        height: '200px',
-                        objectFit: 'cover'
-                      }}
+          <div className="form-section">
+            <h3>Secure Account</h3>
+            <div className="form-group">
+              <div className="input-group password-group">
+                <div className="input-icon">
+                  <FaLock />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Password"
+                  required
+                  minLength="8"
+                />
+                <button 
+                  type="button" 
+                  className="password-toggle" 
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              
+              <div className="input-group password-group">
+                <div className="input-icon">
+                  <FaLock />
+                </div>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="Confirm Password"
+                  required
+                  minLength="8"
+                />
+                <button 
+                  type="button" 
+                  className="password-toggle" 
+                  onClick={togglePasswordVisibility}
+                >
+                  {showPassword ? <FaEyeSlash /> : <FaEye />}
+                </button>
+              </div>
+              
+              {passwordError && (
+                <div className="error-message">
+                  {passwordError}
+                </div>
+              )}
+              
+              <div className="password-requirements">
+                <small>Password must be at least 8 characters long</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Address</h3>
+            <div className="form-group">
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="street"
+                  value={formData.street}
+                  onChange={handleChange}
+                  placeholder="Street"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="baranggay"
+                  value={formData.baranggay}
+                  onChange={handleChange}
+                  placeholder="Barangay"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="trademark"
+                  value={formData.trademark}
+                  onChange={handleChange}
+                  placeholder="Landmark"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  placeholder="City"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="province"
+                  value={formData.province}
+                  onChange={handleChange}
+                  placeholder="Province"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  placeholder="Country"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Additional Information</h3>
+            <div className="form-group">
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaCalendarAlt />
+                </div>
+                <input
+                  type="number"
+                  name="age"
+                  value={formData.age}
+                  onChange={handleChange}
+                  placeholder="Age"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <select
+                  name="sex"
+                  value={formData.sex}
+                  onChange={handleChange}
+                >
+                  <option value="">Select Sex</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              {/*
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaIdCard />
+                </div>
+                <input
+                  type="text"
+                  name="bloodtype"
+                  value={formData.bloodtype}
+                  onChange={handleChange}
+                  placeholder="Blood Type"
+                />
+              </div>
+              */}
+
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaCalendarAlt />
+                </div>
+                <input
+                  type="date"
+                  name="dob"
+                  value={formData.dob}
+                  onChange={handleChange}
+                  placeholder="Date of Birth"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaIdCard />
+                </div>
+                <input
+                  type="text"
+                  name="citizenship"
+                  value={formData.citizenship}
+                  onChange={handleChange}
+                  placeholder="Citizenship"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaIdCard />
+                </div>
+                <select
+                  name="civil_status"
+                  value={formData.civil_status}
+                  onChange={handleChange}
+                >
+                  <option value="">Civil Status</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                  <option value="divorced">Divorced</option>
+                  <option value="widowed">Widowed</option>
+                </select>
+              </div>
+             
+             {/*
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaIdCard />
+                </div>
+                <input
+                  type="text"
+                  name="government_id"
+                  value={formData.government_id}
+                  onChange={handleChange}
+                  placeholder="Government ID"
+                />
+              </div>
+             */}
+
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Document Uploads</h3>
+            <div className="form-group document-uploads">
+              <div className="upload-group">
+                <h4>Birth Certificate</h4>
+                <div className="file-upload-container">
+                  <div className="file-upload">
+                    <label htmlFor="birthcertificate_front" className="upload-label">
+                      <div className="input-icon">
+                        <FaFileUpload />
+                      </div>
+                      <span>Front Side</span>
+                    </label>
+                    <input
+                      type="file"
+                      id="birthcertificate_front"
+                      name="birthcertificate_front"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="file-input"
                     />
-                    {image.caption && (
-                      <p className="image-caption" style={{
-                        padding: '8px',
-                        margin: '0',
-                        backgroundColor: '#f7f7f7',
-                        fontSize: '14px'
-                      }}>
-                        {image.caption}
-                      </p>
+                  </div>
+                  {previews.birthcertificate_front && (
+                    <div className="image-preview">
+                      <img src={previews.birthcertificate_front} alt="Birth Certificate Front" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="file-upload-container">
+                  <div className="file-upload">
+                    <label htmlFor="birthcertificate_back" className="upload-label">
+                      <div className="input-icon">
+                        <FaFileUpload />
+                      </div>
+                      <span>Back Side</span>
+                    </label>
+                    <input
+                      type="file"
+                      id="birthcertificate_back"
+                      name="birthcertificate_back"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="file-input"
+                    />
+                  </div>
+                  {previews.birthcertificate_back && (
+                    <div className="image-preview">
+                      <img src={previews.birthcertificate_back} alt="Birth Certificate Back" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="upload-group">
+                <h4>Government ID</h4>
+                <div className="file-upload-container">
+                  <div className="file-upload">
+                    <label htmlFor="governmentid_front" className="upload-label">
+                      <div className="input-icon">
+                        <FaFileUpload />
+                      </div>
+                      <span>Front Side</span>
+                    </label>
+                    <input
+                      type="file"
+                      id="governmentid_front"
+                      name="governmentid_front"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="file-input"
+                    />
+                  </div>
+                  {previews.governmentid_front && (
+                    <div className="image-preview">
+                      <img src={previews.governmentid_front} alt="Government ID Front" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="file-upload-container">
+                  <div className="file-upload">
+                    <label htmlFor="governmentid_back" className="upload-label">
+                      <div className="input-icon">
+                        <FaFileUpload />
+                      </div>
+                      <span>Back Side</span>
+                    </label>
+                    <input
+                      type="file"
+                      id="governmentid_back"
+                      name="governmentid_back"
+                      accept="image/*"
+                      onChange={handleFileChange}
+                      className="file-input"
+                    />
+                  </div>
+                  {previews.governmentid_back && (
+                    <div className="image-preview">
+                      <img src={previews.governmentid_back} alt="Government ID Back" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        
+          <div>
+            <p className="createregistrant-responsemessagecontainer">Registrant added successfully</p>
+          </div>
+
+          <div className="form-actions">
+            {
+              createnewregistrantloadingindication ? 
+              (
+                <Spinner animation="border" variant="warning" />
+              )
+              :
+              (
+                <button type="submit" className="submit-button">Register</button>
+              )
+            }
+            <button type="reset" className="reset-button">Reset</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const ReadRegistrantFormDetails = ({ setShowDatabaseConfiguration, setShowRegistrantDetailsDisplay, registrantdata, registrantData, onClose }) => {
+
+  // Display sections with their respective data
+  const [documentImage, setDocumentImage] = useState(null);
+  const [showreadregistrantdocumentfullscreenview, setShowReadRegistrantDocumentFullScreenView] = useState(false)
+
+  // Function to handle image click and set the document image
+  const handleDocumentClick = (imageSource) => {
+    setDocumentImage(imageSource);
+    setShowReadRegistrantDocumentFullScreenView(true);
+  };
+
+  return (
+    <div className="read-form-container">
+
+      <div className="read-form-content">
+        <div className="form-header">
+          <h2>MFATIP Registrant Details</h2>
+          <button className="close-button" onClick={()=> {
+            setShowDatabaseConfiguration(false);
+            setShowRegistrantDetailsDisplay(false);
+          }}>
+            ×
+          </button>
+        </div>
+        
+        <div className="form-details">
+          <div className="form-section">
+            <h3>Personal Information</h3>
+            <div className="details-group">
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaUser />
+                </div>
+                <div className="detail-content">
+                  <label>First Name</label>
+                  <p>{registrantData.name.firstname || 'N/A' }</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaUser />
+                </div>
+                <div className="detail-content">
+                  <label>Middle Name</label>
+                  <p>{registrantData.name.middlename || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaUser />
+                </div>
+                <div className="detail-content">
+                  <label>Last Name</label>
+                  <p>{registrantData.name.lastname || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaUser />
+                </div>
+                <div className="detail-content">
+                  <label>Nickname</label>
+                  <p>{registrantData.name.nickname || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Contact Information</h3>
+            <div className="details-group">
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaPhone />
+                </div>
+                <div className="detail-content">
+                  <label>Phone Number</label>
+                  <p>{registrantData.contact.phonenumber || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaPhone />
+                </div>
+                <div className="detail-content">
+                  <label>Telephone Number</label>
+                  <p>{registrantData.contact.telephonenumber || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaEnvelope />
+                </div>
+                <div className="detail-content">
+                  <label>Email Address</label>
+                  <p>{registrantData.contact.emailaddress || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Address</h3>
+            <div className="details-group">
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaAddressCard />
+                </div>
+                <div className="detail-content">
+                  <label>Street</label>
+                  <p>{registrantData.street || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaAddressCard />
+                </div>
+                <div className="detail-content">
+                  <label>Barangay</label>
+                  <p>{registrantData.contact.address.baranggay || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaAddressCard />
+                </div>
+                <div className="detail-content">
+                  <label>Landmark</label>
+                  <p>{registrantData.contact.address.trademark || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaAddressCard />
+                </div>
+                <div className="detail-content">
+                  <label>City</label>
+                  <p>{registrantData.contact.address.city || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaAddressCard />
+                </div>
+                <div className="detail-content">
+                  <label>Province</label>
+                  <p>{registrantData.contact.address.province || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaAddressCard />
+                </div>
+                <div className="detail-content">
+                  <label>Country</label>
+                  <p>{registrantData.contact.address.country || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Additional Information</h3>
+            <div className="details-group">
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaCalendarAlt />
+                </div>
+                <div className="detail-content">
+                  <label>Age</label>
+                  <p>{registrantData.personaldata.age || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaUser />
+                </div>
+                <div className="detail-content">
+                  <label>Sex</label>
+                  <p>{registrantData.personaldata.sex ? registrantData.personaldata.sex.charAt(0).toUpperCase() + registrantData.personaldata.sex.slice(1) : 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaIdCard />
+                </div>
+                <div className="detail-content">
+                  <label>Blood Type</label>
+                  <p>{registrantData.personaldata.bloodtype || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaCalendarAlt />
+                </div>
+                <div className="detail-content">
+                  <label>Date of Birth</label>
+                  <p>{registrantData.personaldata.dob || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaIdCard />
+                </div>
+                <div className="detail-content">
+                  <label>Citizenship</label>
+                  <p>{registrantData.personaldata.citizenship || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaIdCard />
+                </div>
+                <div className="detail-content">
+                  <label>Civil Status</label>
+                  <p>{registrantData.personaldata.civil_status ? registrantData.personaldata.civil_status.charAt(0).toUpperCase() + registrantData.personaldata.civil_status.slice(1) : 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaIdCard />
+                </div>
+                <div className="detail-content">
+                  <label>Government ID</label>
+                  <p>{registrantData.personaldata.government_id || 'N/A'}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Document Uploads</h3>
+            <div className="details-group document-displays">
+              <div className="document-group">
+                <h4>Birth Certificate</h4>
+                <div className="document-display">
+
+                <div className="document-item">
+                  <label>Front Side</label>
+                  {registrantData.governmentid_front ? (
+                    <div className="document-image">
+                      <img src={registrantData.birthcertificate_front} 
+                           alt="Government ID Front" 
+                           onClick={()=> {
+                            handleDocumentClick(registrantData.birthcertificate_front)
+                           }}/>
+                    </div>
+                  ) : (
+                    <p className="document-placeholder">No image uploaded</p>
+                  )}
+                </div>
+                  
+                  <div className="document-item">
+                    <label>Back Side</label>
+                    {registrantData.birthcertificate_back ? (
+                      <div className="document-image">
+                        <img src={registrantData.birthcertificate_back} 
+                             alt="Birth Certificate Back"
+                             onClick={()=> {
+                              handleDocumentClick(registrantData.birthcertificate_back)
+                             }} />
+                      </div>
+                    ) : (
+                      <p className="document-placeholder">No image uploaded</p>
                     )}
                   </div>
-                ))}
+                </div>
+              </div>
+              
+              <div className="document-group">
+                <h4>Government ID</h4>
+                <div className="document-display">
+                  <div className="document-item">
+                    <label>Front Side</label>
+                    {registrantData.governmentid_back ? (
+                      <div className="document-image">
+                        <img src={registrantData.governmentid_front}
+                             alt="Government ID Front" 
+                             onClick={()=> {
+                              handleDocumentClick(registrantData.governmentid_front)
+                             }}/>
+                      </div>
+                    ) : (
+                      <p className="document-placeholder">No image uploaded</p>
+                    )}
+                  </div>
+                  
+                  <div className="document-item">
+                    <label>Back Side</label>
+                    {registrantData.governmentid_back ? (
+                      <div className="document-image">
+                        <img src={registrantData.governmentid_back}
+                             alt="Government ID Back" 
+                             onClick={()=> {
+                              handleDocumentClick(registrantData.governmentid_back)
+                             }}/>
+                      </div>
+                    ) : (
+                      <p className="document-placeholder">No image uploaded</p>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
-          )}
-
-          <div className="button-group" style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '16px',
-            marginTop: '32px',
-            padding: '16px',
-            borderTop: '1px solid #eaeaea'
-          }}>
-            <button
-              className="cancel-button"
-              onClick={onClose}
-              disabled={isDeleting}
-              style={{
-                padding: '10px 24px',
-                border: '1px solid #d9d9d9',
-                borderRadius: '4px',
-                backgroundColor: 'white',
-                cursor: isDeleting ? 'not-allowed' : 'pointer'
-              }}
-            >
-              Cancel
-            </button>
-            
-            <button
-              className={`delete-button ${isConfirming ? 'confirm' : ''}`}
-              onClick={handleDelete}
-              disabled={isDeleting}
-              style={{
-                padding: '10px 24px',
-                border: 'none',
-                borderRadius: '4px',
-                backgroundColor: isConfirming ? '#ff4d4f' : '#ff7875',
-                color: 'white',
-                cursor: isDeleting ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              {isDeleting ? (
-                <div className="loading-spinner" style={{
-                  width: '20px',
-                  height: '20px',
-                  border: '3px solid rgba(255,255,255,0.3)',
-                  borderRadius: '50%',
-                  borderTop: '3px solid white',
-                  animation: 'spin 1s linear infinite'
-                }} />
-              ) : isConfirming ? (
-                "Confirm Delete"
-              ) : (
-                "Delete Product"
-              )}
-            </button>
           </div>
+
         </div>
+
       </div>
-      
-      <style jsx>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
+ 
+      {
+        showreadregistrantdocumentfullscreenview && (
+          <div className="readregistrant-documentfullcontainerview">
+            <div className="readregistrant-documentfullcontainerview-closebuttoncontainer">
+              <p className="readregistrant-documentfullcontainerview-closebuttoncontainer-closebuttonheaderindication"
+                 onClick={()=> {
+                  setShowReadRegistrantDocumentFullScreenView(false)
+                 }}>X</p>
+            </div>
+            <div className="readregistrant-documentfullcontainerview-imagedocumentfullscreenviewcontainer">
+              <img src={documentImage}
+                    className="readregistrant-documentfullcontainerview-imagedocumentfullscreenviewcontainer-imagedocument"/>
+            </div>
+          </div>
+        )
+      }
+    
+
     </div>
   );
 };
 
-const StatisticsCardRegistrantCRUD = ({ stats, setShowDatabaseConfiguration, setShowCreateProduct, setShowProductReader}) => {
-  // Sample stats data if not provided
-  const defaultStats = {
-    pendingOrders: { count: 24, change: 1200 },
-    pendingDeposits: { count: 18, change: 3500 },
-    pendingWithdrawals: { count: 9, change: -850 },
-    pendingRegistrations: { count: 32, change: 6400 }
-  };
+const UpdateRegistrationForm = ({ 
+  onClose, 
+  setShowDatabaseConfiguration, 
+  setShowCreateRegistrantForm,
+  setShowUpdateRegistrantFormDisplay,
+  registrantData,
+  setregistrantdata 
+}) => {
 
-  // Use provided stats or default
-  const statsData = stats || defaultStats;
-
-  // Format the change value as a peso currency
-  const formatPeso = (amount) => {
-    // Make sure amount is a number
-    const numAmount = Number(amount);
+  const [updateregistrantloadingindication, setUpdateRegistrantLoadingIndication] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [passwordError, setPasswordError] = useState('');
+  
+  // Create a global change handler for nested fields
+  const handleNestedChange = (e) => {
+    const { name, value } = e.target;
     
-    // Check if it's a valid number
-    if (isNaN(numAmount)) {
-      return '₱0';
+    // Parse the name to handle nested properties (e.g. "name.firstname")
+    if (name.includes('.')) {
+      const [parent, child] = name.split('.');
+      setregistrantdata(prevData => ({
+        ...prevData,
+        [parent]: {
+          ...prevData[parent],
+          [child]: value
+        }
+      }));
+    } else if (name.includes(':')) {
+      // Handle even deeper nesting like "contact:address.street"
+      const [grandparent, rest] = name.split(':');
+      const [parent, child] = rest.split('.');
+      setregistrantdata(prevData => ({
+        ...prevData,
+        [grandparent]: {
+          ...prevData[grandparent],
+          [parent]: {
+            ...prevData[grandparent][parent],
+            [child]: value
+          }
+        }
+      }));
+    } else {
+      // Handle top-level fields
+      setregistrantdata(prevData => ({
+        ...prevData,
+        [name]: value
+      }));
     }
     
-    const sign = numAmount > 0 ? '+' : '';
-    return `${sign}₱${Math.abs(numAmount).toLocaleString()}`;
+    // Clear password error when either password field changes
+    if (name === 'password' || name === 'confirmPassword') {
+      setPasswordError('');
+    }
   };
 
+  const handleDocumentFileChange = (e) => {
+    const { name, files } = e.target;
+  
+    if (files && files[0]) {
+      const file = files[0];
+      const reader = new FileReader();
+      
+      reader.onload = (event) => {
+        setregistrantdata(prevData => ({
+          ...prevData,
+          [name]: event.target.result
+        }));
+      };
+      
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const validatePasswords = () => {
+    if (registrantData.password !== registrantData.confirmPassword) {
+      setPasswordError('Passwords do not match');
+      return false;
+    }
+    
+    if (registrantData.password && registrantData.password.length < 8) {
+      setPasswordError('Password must be at least 8 characters long');
+      return false;
+    }
+    
+    return true;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    // Validate passwords before proceeding (if password fields are enabled)
+    if (registrantData.password && !validatePasswords()) {
+      return;
+    }
+    
+    setUpdateRegistrantLoadingIndication(true);
+    
+    // Create FormData to handle both text fields and files
+    const formDataToSubmit = new FormData();
+    
+    // Add all top-level fields that aren't objects
+    Object.keys(registrantData).forEach(key => {
+      if (typeof registrantData[key] !== 'object' || registrantData[key] instanceof File) {
+        formDataToSubmit.append(key, registrantData[key]);
+      }
+    });
+    
+    // Add nested fields as JSON strings
+    if (registrantData.name) {
+      formDataToSubmit.append('name', JSON.stringify(registrantData.name));
+    }
+    
+    if (registrantData.contact) {
+      formDataToSubmit.append('contact', JSON.stringify(registrantData.contact));
+    }
+    
+    if (registrantData.personaldata) {
+      formDataToSubmit.append('personaldata', JSON.stringify(registrantData.personaldata));
+    }
+    
+    // Handle status field if it's an object
+    if (registrantData.status && typeof registrantData.status === 'object') {
+      formDataToSubmit.append('status', JSON.stringify(registrantData.status));
+    }
+    
+    // Handle document uploads - process both File objects and data URLs
+    const documentFields = [
+      'birthcertificate_front', 
+      'birthcertificate_back', 
+      'governmentid_front', 
+      'governmentid_back'
+    ];
+    
+    documentFields.forEach(docField => {
+      if (registrantData[docField] instanceof File) {
+        // It's a File object from a fresh upload
+        formDataToSubmit.append(docField, registrantData[docField]);
+      } else if (typeof registrantData[docField] === 'string' && registrantData[docField].startsWith('data:')) {
+        // It's a data URL from the preview, append with a special field name
+        formDataToSubmit.append(`${docField}_dataurl`, registrantData[docField]);
+      }
+      // If neither condition is met, we don't send this field (it means no change)
+    });
+    
+    const updateRegistrantMessage = (message, type = 'error') => {
+      const messageElement = document.querySelector('.updateregistrant-responsemessagecontainer');
+      if (messageElement) {
+        messageElement.innerText = message;
+        messageElement.style.display = "block";
+        
+        switch(type) {
+          case 'success':
+            messageElement.style.color = "green";
+            break;
+          case 'warning':
+            messageElement.style.color = "orange";
+            break;
+          case 'error':
+          default:
+            messageElement.style.color = "red";
+        }
+      }
+    };
+  
+    try {
+      const response = await axiosCreatedInstance.post("/people/updateregistrant", formDataToSubmit);
+      
+      // Handle successful response
+      if (response.data && response.data.registrant) {
+        // Update local state with the returned data to reflect changes immediately
+        setregistrantdata(prevData => {
+          // Create a new object that merges the previous data with the updated data
+          const updatedData = { ...prevData };
+          
+          // Update top-level fields
+          if (response.data.registrant.name) {
+            updatedData.name = response.data.registrant.name;
+          }
+          
+          if (response.data.registrant.contact) {
+            updatedData.contact = response.data.registrant.contact;
+          }
+          
+          if (response.data.registrant.personaldata) {
+            // Create personaldata if it doesn't exist
+            if (!updatedData.personaldata) {
+              updatedData.personaldata = {};
+            }
+            
+            // Merge personal data excluding image objects to avoid duplication
+            const { government_issued_identification, birthcertificate, ...otherPersonalData } = response.data.registrant.personaldata;
+            
+            // Update other personal data fields
+            updatedData.personaldata = {
+              ...updatedData.personaldata,
+              ...otherPersonalData
+            };
+            
+            // If government ID data was returned, update it
+            if (government_issued_identification) {
+              updatedData.personaldata.government_issued_identification = {
+                ...(updatedData.personaldata.government_issued_identification || {}),
+                ...government_issued_identification
+              };
+            }
+            
+            // If birth certificate data was returned, update it
+            if (birthcertificate) {
+              updatedData.personaldata.birthcertificate = {
+                ...(updatedData.personaldata.birthcertificate || {}),
+                ...birthcertificate
+              };
+            }
+          }
+          
+          if (response.data.registrant.status) {
+            updatedData.status = response.data.registrant.status;
+          }
+          
+          if (response.data.registrant.loginstatus) {
+            updatedData.loginstatus = response.data.registrant.loginstatus;
+          }
+          
+          return updatedData;
+        });
+        
+        // Clear any document fields from memory once successfully uploaded
+        const clearedRegistrantData = { ...registrantData };
+        documentFields.forEach(field => {
+          if (response.data.updatedImages && response.data.updatedImages.includes(field)) {
+            delete clearedRegistrantData[field];
+          }
+        });
+        setregistrantdata(clearedRegistrantData);
+        
+        // Force image refresh for updated images
+        if (response.data.updatedImages && response.data.updatedImages.length > 0) {
+        //  forceRefreshImages(response.data.registrant.id, response.data.updatedImages);
+        }
+        
+        // Show success message
+        updateRegistrantMessage("Registrant successfully updated", "success");
+        
+      } else {
+        // Handle success response without registrant data
+        updateRegistrantMessage(response.data.message || "Update successful, but no data returned", "success");
+      }
+    } catch (error) {
+      console.error("Update failed:", error);
+      
+      // Handle different types of errors
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        const errorMessage = error.response.data?.message || "Server error occurred";
+        const errorCode = error.response.status;
+        
+        switch(errorCode) {
+          case 400:
+            updateRegistrantMessage(`Invalid data: ${errorMessage}`);
+            break;
+          case 401:
+            updateRegistrantMessage("Authentication required. Please log in again.");
+            break;
+          case 403:
+            updateRegistrantMessage("You don't have permission to update this registrant.");
+            break;
+          case 404:
+            updateRegistrantMessage("Registrant not found. It may have been deleted.");
+            break;
+          case 409:
+            updateRegistrantMessage("A user with the same name and password already exists. Please use a different password.");
+            break;
+          default:
+            updateRegistrantMessage(`Server error (${errorCode}): ${errorMessage}`);
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        updateRegistrantMessage("No response from server. Please check your internet connection.");
+      } else {
+        // Something happened in setting up the request
+        updateRegistrantMessage(`Request failed: ${error.message}`);
+      }
+    } finally {
+      setUpdateRegistrantLoadingIndication(false);
+    }
+  };
+
+
   return (
-    <div className="statistics-container">
-      <h1>CRUD Operations ( REGISTRANT )</h1>
-      <div className="statistics-grid">
-
-          {/* PENDING ORDERS */}
-          <div className="statistics-card">
-          <div className="card-inner">
-            <div className="card-header">Create ( registrant )</div>
-            <button className="readproduct-readproductbutton"
-                    onClick={()=> {
-                      setShowDatabaseConfiguration(true);
-                      setShowCreateProduct(true)
-                     }}>Show create registrant form</button>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
-              </div>
-            </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </div>
-          </div>
-         </div>
-
-          {/* PENDING PUBLIC CITIZENSHIPS REGISTRATIONS */}
-          <div className="statistics-card">
-          <div className="card-inner">
-            <div className="card-header">Read ( registrant )</div>
-            <p>Product ID:</p>
-            <input type="text"
-                   className="readproduct-productidfield"/>
-            <button className="readproduct-readproductbutton">Read registrant</button>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
-              </div>
-            </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </div>
-          </div>
+    <div className="registration-form-container">
+      <div className="registration-form-content">
+        <div className="form-header">
+          <h2>MFATIP Registration</h2>
+          <button className="close-button" onClick={()=>{ 
+            setShowDatabaseConfiguration(false)
+            setShowUpdateRegistrantFormDisplay(false)
+          }}>
+            <FaTimes />
+          </button>
         </div>
-
-        {/* PENDING ORDERS */}
-        <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-             }}>
-          <div className="card-inner">
-            <div className="card-header">Update ( registrant )</div>
-            <p>Product ID:</p>
-            <input type="text"
-                   className="readproduct-productidfield"/>
-            <button className="readproduct-readproductbutton">Read registrant</button>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingOrders.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingOrders.change)}
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-section">
+            <h3>Personal Information</h3>
+            <div className="form-group">
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <input
+                  type="text"
+                  name="name.firstname"
+                  value={registrantData.name?.firstname || ''}
+                  onChange={handleNestedChange}
+                  placeholder="First Name"
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <input
+                  type="text"
+                  name="name.middlename"
+                  value={registrantData.name?.middlename || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Middle Name"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <input
+                  type="text"
+                  name="name.lastname"
+                  value={registrantData.name?.lastname || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Last Name"
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <input
+                  type="text"
+                  name="name.nickname"
+                  value={registrantData.name?.nickname || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Nickname"
+                />
               </div>
             </div>
-            <div className="card-icon orders-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <path d="M16 10a4 4 0 0 1-8 0"></path>
-              </svg>
-            </div>
           </div>
-        </div>
 
-        {/* PENDING DEPOSITS */}
-        <div className="statistics-card"
-             onClick={()=> {
-              setShowDatabaseConfiguration(true);
-             }}>
-          <div className="card-inner">
-            <div className="card-header">Delete ( registrant ) </div>
-            <p>Product ID:</p>
-            <input type="text"
-                   className="readproduct-productidfield"/>
-            <button className="readproduct-readproductbutton">Read registrant</button>
-            <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count}</div>
-              <div className={`stat-change ${Number(statsData.pendingDeposits.change) >= 0 ? 'positive' : 'negative'}`}>
-                {formatPeso(statsData.pendingDeposits.change)}
+          <div className="form-section">
+            <h3>Contact Information</h3>
+            <div className="form-group">
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaPhone />
+                </div>
+                <input
+                  type="tel"
+                  name="contact.phonenumber"
+                  value={registrantData.contact?.phonenumber || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Phone Number"
+                  required
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaPhone />
+                </div>
+                <input
+                  type="tel"
+                  name="contact.telephonenumber"
+                  value={registrantData.contact?.telephonenumber || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Telephone Number"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaEnvelope />
+                </div>
+                <input
+                  type="email"
+                  name="contact.emailaddress"
+                  value={registrantData.contact?.emailaddress || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Email Address"
+                  required
+                />
               </div>
             </div>
-            <div className="card-icon deposits-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                <line x1="2" y1="10" x2="22" y2="10"></line>
-              </svg>
+          </div>
+
+          <div className="form-section">
+            <h3>Address</h3>
+            <div className="form-group">
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="contact:address.street"
+                  value={registrantData.contact?.address?.street || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Street"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="contact:address.baranggay"
+                  value={registrantData.contact?.address?.baranggay || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Barangay"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="contact:address.trademark"
+                  value={registrantData.contact?.address?.trademark || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Landmark"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="contact:address.city"
+                  value={registrantData.contact?.address?.city || ''}
+                  onChange={handleNestedChange}
+                  placeholder="City"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="contact:address.province"
+                  value={registrantData.contact?.address?.province || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Province"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaAddressCard />
+                </div>
+                <input
+                  type="text"
+                  name="contact:address.country"
+                  value={registrantData.contact?.address?.country || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Country"
+                />
+              </div>
             </div>
           </div>
-        </div>
+
+          <div className="form-section">
+            <h3>Additional Information</h3>
+            <div className="form-group">
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaCalendarAlt />
+                </div>
+                <input
+                  type="number"
+                  name="personaldata.age"
+                  value={registrantData.personaldata?.age || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Age"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaUser />
+                </div>
+                <select
+                  name="personaldata.sex"
+                  value={registrantData.personaldata?.sex || ''}
+                  onChange={handleNestedChange}
+                >
+                  <option value="">Select Sex</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaCalendarAlt />
+                </div>
+                <input
+                  type="date"
+                  name="personaldata.dob"
+                  value={registrantData.personaldata?.dob || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Date of Birth"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaIdCard />
+                </div>
+                <input
+                  type="text"
+                  name="personaldata.citizenship"
+                  value={registrantData.personaldata?.citizenship || ''}
+                  onChange={handleNestedChange}
+                  placeholder="Citizenship"
+                />
+              </div>
+              <div className="input-group">
+                <div className="input-icon">
+                  <FaIdCard />
+                </div>
+                <select
+                  name="personaldata.civil_status"
+                  value={registrantData.personaldata?.civil_status || ''}
+                  onChange={handleNestedChange}
+                >
+                  <option value="">Civil Status</option>
+                  <option value="single">Single</option>
+                  <option value="married">Married</option>
+                  <option value="divorced">Divorced</option>
+                  <option value="widowed">Widowed</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="form-section">
+            <h3>Document Uploads</h3>
+            <div className="form-group document-uploads">
+              <div className="upload-group">
+                <h4>Birth Certificate</h4>
+                <div className="file-upload-container">
+                  <div className="file-upload">
+                    <label htmlFor="birthcertificate_front" className="upload-label">
+                      <div className="input-icon">
+                        <FaFileUpload />
+                      </div>
+                      <span style={{color:"white"}}>Front Side</span>
+                    </label>
+                    <input
+                      type="file"
+                      id="birthcertificate_front"
+                      name="birthcertificate_front"
+                      accept="image/*"
+                      onChange={handleDocumentFileChange}
+                      className="file-input"
+                    />
+                  </div>
+                  {registrantData.birthcertificate_front && (
+                    <div className="image-preview">
+                      <img src={registrantData.birthcertificate_front} alt="Birth Certificate Front" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="file-upload-container">
+                  <div className="file-upload">
+                    <label htmlFor="birthcertificate_back" className="upload-label">
+                      <div className="input-icon">
+                        <FaFileUpload />
+                      </div>
+                      <span style={{color:"white"}}>Back Side</span>
+                    </label>
+                    <input
+                      type="file"
+                      id="birthcertificate_back"
+                      name="birthcertificate_back"
+                      accept="image/*"
+                      onChange={handleDocumentFileChange}
+                      className="file-input"
+                    />
+                  </div>
+                  {registrantData.birthcertificate_back && (
+                    <div className="image-preview">
+                      <img src={registrantData.birthcertificate_back} alt="Birth Certificate Back" />
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="upload-group">
+                <h4>Government ID</h4>
+                <div className="file-upload-container">
+                  <div className="file-upload">
+                    <label htmlFor="governmentid_front" className="upload-label">
+                      <div className="input-icon">
+                        <FaFileUpload />
+                      </div>
+                      <span style={{color:"white"}}>Front Side</span>
+                    </label>
+                    <input
+                      type="file"
+                      id="governmentid_front"
+                      name="governmentid_front"
+                      accept="image/*"
+                      onChange={handleDocumentFileChange}
+                      className="file-input"
+                    />
+                  </div>
+                  {registrantData.governmentid_front && (
+                    <div className="image-preview">
+                      <img src={registrantData.governmentid_front} alt="Government ID Front" />
+                    </div>
+                  )}
+                </div>
+                
+                <div className="file-upload-container">
+                  <div className="file-upload">
+                    <label htmlFor="governmentid_back" className="upload-label">
+                      <div className="input-icon">
+                        <FaFileUpload />
+                      </div>
+                      <span style={{color:"white"}}>Back Side</span>
+                    </label>
+                    <input
+                      type="file"
+                      id="governmentid_back"
+                      name="governmentid_back"
+                      accept="image/*"
+                      onChange={handleDocumentFileChange}
+                      className="file-input"
+                    />
+                  </div>
+                  {registrantData.governmentid_back && (
+                    <div className="image-preview">
+                      <img src={registrantData.governmentid_back} alt="Government ID Back" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        
+          <div>
+            <p className="updateregistrant-responsemessagecontainer" style={{display: "none"}}>Registrant added successfully</p>
+          </div>
+
+          <div className="form-actions">
+            {
+              updateregistrantloadingindication ? 
+              (
+                <Spinner animation="border" variant="warning" />
+              )
+              :
+              (
+                <button type="submit" className="submit-button">Update registrant</button>
+              )
+            }
+            <button type="reset" className="reset-button">Reset</button>
+          </div>
+        </form>
 
       </div>
     </div>
   );
 };
+
+
+
+const RegistrantDetailsDisplay = ( {setShowDatabaseConfiguration, setShowRegistrantDetailsDisplay } ) => {
+  const [user, setUser] = useState({
+    id: "qwerty1234qwefdln-A-1",
+    loginstatus: "logged in",
+    status: {
+      type: "MFATIP",
+      indication: "Registered",
+      requests: [
+        {
+          purpose: "Registration",
+          message: "You registered for the MFATIP PROGRAM",
+          status: "FIRST REGISTRATION. STATUS REGISTERED",
+          date: '07-12-2022'
+        }
+      ]
+    },
+    name: {
+      firstname: "Mark Anthony",
+      middlename: "Apura",
+      lastname: "Beloy",
+      nickname: "Macky"
+    },
+    contact: {
+      phonenumber: "123456-6789-0",
+      telephonenumber: "",
+      emailaddress: "emailaddress@gmail.com",
+      address: {
+        street: "",
+        baranggay: "",
+        trademark: "",
+        city: "",
+        province: "",
+        country: ''
+      }
+    },
+    personalinformation: {
+      age: 0,
+      sex: "",
+      bloodtype: "",
+      dob: "",
+      citizenship: "",
+      civil_status: "",
+      government_issued_identification: ""
+    },
+    passwords: {
+      account: {
+        password: ""
+      }
+    },
+    credits: {
+      omsiapawasto: {
+        id: "",
+        amount: 10,
+        transactions: {
+          successful_deposits: [],
+          successful_withdrawals: [],
+          failed_deposits: [],
+          failed_withdrawals: []
+        }
+      }
+    },
+    transactions: []
+  });
+
+  // Section rendering functions
+  const renderUserInfo = () => (
+    <div className="user-section">
+      <h2>User Information</h2>
+      <div className="info-row">
+        <span className="label">User ID:</span>
+        <span className="value">{user.id}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Login Status:</span>
+        <span className="value">{user.loginstatus}</span>
+      </div>
+    </div>
+  );
+
+  const renderStatusInfo = () => (
+    <div className="user-section">
+      <h2>Status Information</h2>
+      <div className="info-row">
+        <span className="label">Type:</span>
+        <span className="value">{user.status.type}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Indication:</span>
+        <span className="value">{user.status.indication}</span>
+      </div>
+
+      <h3>Requests</h3>
+      {user.status.requests.map((request, index) => (
+        <div key={index} className="request-item">
+          <div className="info-row">
+            <span className="label">Purpose:</span>
+            <span className="value">{request.purpose}</span>
+          </div>
+          <div className="info-row">
+            <span className="label">Message:</span>
+            <span className="value">{request.message}</span>
+          </div>
+          <div className="info-row">
+            <span className="label">Status:</span>
+            <span className="value">{request.status}</span>
+          </div>
+          <div className="info-row">
+            <span className="label">Date:</span>
+            <span className="value">{request.date}</span>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  const renderPersonalInfo = () => (
+    <div className="user-section">
+      <h2>Personal Information</h2>
+      <div className="info-row">
+        <span className="label">Name:</span>
+        <span className="value">
+          {user.name.firstname} {user.name.middlename} {user.name.lastname} ({user.name.nickname})
+        </span>
+      </div>
+      <div className="info-row">
+        <span className="label">Age:</span>
+        <span className="value">{user.personalinformation.age || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Sex:</span>
+        <span className="value">{user.personalinformation.sex || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Blood Type:</span>
+        <span className="value">{user.personalinformation.bloodtype || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Date of Birth:</span>
+        <span className="value">{user.personalinformation.dob || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Citizenship:</span>
+        <span className="value">{user.personalinformation.citizenship || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Civil Status:</span>
+        <span className="value">{user.personalinformation.civil_status || "Not specified"}</span>
+      </div>
+    </div>
+  );
+
+  const renderContactInfo = () => (
+    <div className="user-section">
+      <h2>Contact Information</h2>
+      <div className="info-row">
+        <span className="label">Phone Number:</span>
+        <span className="value">{user.contact.phonenumber || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Telephone:</span>
+        <span className="value">{user.contact.telephonenumber || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Email:</span>
+        <span className="value">{user.contact.emailaddress || "Not specified"}</span>
+      </div>
+      
+      <h3>Address</h3>
+      <div className="info-row">
+        <span className="label">Street:</span>
+        <span className="value">{user.contact.address.street || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Barangay:</span>
+        <span className="value">{user.contact.address.baranggay || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Trademark:</span>
+        <span className="value">{user.contact.address.trademark || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">City:</span>
+        <span className="value">{user.contact.address.city || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Province:</span>
+        <span className="value">{user.contact.address.province || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Country:</span>
+        <span className="value">{user.contact.address.country || "Not specified"}</span>
+      </div>
+    </div>
+  );
+
+  const renderCreditsInfo = () => (
+    <div className="user-section">
+      <h2>Credits Information</h2>
+      <div className="info-row">
+        <span className="label">OMSIAPAWASTO ID:</span>
+        <span className="value">{user.credits.omsiapawasto.id || "Not specified"}</span>
+      </div>
+      <div className="info-row">
+        <span className="label">Amount:</span>
+        <span className="value">{user.credits.omsiapawasto.amount}</span>
+      </div>
+      
+      <h3>Transactions</h3>
+      <div className="transactions-container">
+        <div className="transaction-section">
+          <h4>Successful Deposits</h4>
+          {user.credits.omsiapawasto.transactions.successful_deposits.length > 0 ? (
+            user.credits.omsiapawasto.transactions.successful_deposits.map((tx, idx) => (
+              <div key={idx} className="transaction-item">
+                {JSON.stringify(tx)}
+              </div>
+            ))
+          ) : (
+            <div className="empty-state">No successful deposits</div>
+          )}
+        </div>
+        
+        <div className="transaction-section">
+          <h4>Successful Withdrawals</h4>
+          {user.credits.omsiapawasto.transactions.successful_withdrawals.length > 0 ? (
+            user.credits.omsiapawasto.transactions.successful_withdrawals.map((tx, idx) => (
+              <div key={idx} className="transaction-item">
+                {JSON.stringify(tx)}
+              </div>
+            ))
+          ) : (
+            <div className="empty-state">No successful withdrawals</div>
+          )}
+        </div>
+        
+        <div className="transaction-section">
+          <h4>Failed Deposits</h4>
+          {user.credits.omsiapawasto.transactions.failed_deposits.length > 0 ? (
+            user.credits.omsiapawasto.transactions.failed_deposits.map((tx, idx) => (
+              <div key={idx} className="transaction-item">
+                {JSON.stringify(tx)}
+              </div>
+            ))
+          ) : (
+            <div className="empty-state">No failed deposits</div>
+          )}
+        </div>
+        
+        <div className="transaction-section">
+          <h4>Failed Withdrawals</h4>
+          {user.credits.omsiapawasto.transactions.failed_withdrawals.length > 0 ? (
+            user.credits.omsiapawasto.transactions.failed_withdrawals.map((tx, idx) => (
+              <div key={idx} className="transaction-item">
+                {JSON.stringify(tx)}
+              </div>
+            ))
+          ) : (
+            <div className="empty-state">No failed withdrawals</div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="user-display">
+      <div>
+        <p onClick={()=> {
+          setShowDatabaseConfiguration(false)
+          setShowRegistrantDetailsDisplay(false)
+        }}>x</p>
+      </div>
+      <header>
+        <h1>User Profile</h1>
+      </header>
+      
+      <main>
+        {renderUserInfo()}
+        {renderStatusInfo()}
+        {renderPersonalInfo()}
+        {renderContactInfo()}
+        {renderCreditsInfo()}
+      </main>
+      
+      <footer>
+        <p>© MFATIP System</p>
+      </footer>
+    </div>
+  );
+};
+
 
 export default DatabaseComponent;
