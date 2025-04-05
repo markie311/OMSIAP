@@ -192,6 +192,7 @@ const PlaceOrder = (props) => {
 
   // Handle order submission
   const handleSubmit = async (e) => {
+    
     e.preventDefault();
     
     if (paymentDetails.omsiapawastoBalance < orderSummary.total) {

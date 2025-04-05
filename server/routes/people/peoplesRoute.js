@@ -3,9 +3,10 @@ const Router = require('express').Router();
 
 const mongoose = require('mongoose');
 
-const mongodb = require('../../lib/mongodb/database.js');
+const mongodb = require('../../lib/mongodb/database.js')
 
-const omsiapdatascheme = require('../../models/omsiap/omsiapdatascheme.js');
+const omsiapdatascheme = require('../../models/omsiap/omsiapdatascheme.js')
+const registrantdatascheme = require('../../models/people/registrantdatascheme.js')
 
 const timestamps = require('../../lib/timestamps/timestamps');
 
@@ -43,278 +44,376 @@ const uploadFields = upload.fields([
 ]);
 
 
-Router.route("/registration").post( async (req,res)=> {
+Router.route("/registration").post(async (req, res) => {
 
-   try {
-
-      await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
-         useNewUrlParser: true,
-         useUnifiedTopology: true,
-         dbName: 'omsiap',
-         autoCreate: false
-       })
-     
-      const OmsiapData =  mongoose.model('datas', omsiapdatascheme);
-      const omsiapdata = await OmsiapData.findById("Code-113-1143");
-
-      // Check for matches among existing users
-      const normalizedNewRegistrant = {
-         firstName: req.body.$registrant.name.firstname.toLowerCase().trim(),
-         middleName: req.body.$registrant.name.middlename ? req.body.$registrant.name.middlename.toLowerCase().trim() : '',
-         lastName: req.body.$registrant.name.lastname.toLowerCase().trim(),
-         password: req.body.$registrant.passwords.account.password
-      };
-
-      console.log(normalizedNewRegistrant)
-
-      // Check for matches among existing users
-      const nameMatches = omsiapdata.people.filter(user => {
-
-         const existingFirstName = user.name.firstname.toLowerCase().trim();
-         const existingMiddleName = user.name.middlename ? user.name.middlename.toLowerCase().trim() : '';
-         const existingLastName = user.name.lastname.toLowerCase().trim();
-   
-         // Check if full name matches (first + middle + last)
-         return existingFirstName === normalizedNewRegistrant.firstName &&
-                existingLastName === normalizedNewRegistrant.lastName &&
-                existingMiddleName === normalizedNewRegistrant.middleName;
-
-      });
-
-      console.log(nameMatches.length);
-
-      if (nameMatches.length === 0) {
-
-         const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password,13);
-      
-         const _registeringdate = `${timestamps.getDay()}, ${timestamps.getMonth()}, ${timestamps.getDate()},${timestamps.getFullYear()}, ${timestamps.getHour()}:${timestamps.getMinutes()}:${timestamps.getSeconds()},`
-          
-         req.body.$registrant.status.requests.push({
-            purpose: "Registration",
-            message: "Attempting for registering for the MFATIP PROGRAM",
-            status: "FIRST REGISTRATION. STATUS REGISTERED",
-            date: _registeringdate
-         })
-   
-         req.body.$registrant.passwords.account.password = _hashedpassword;
-    
-         omsiapdata.people.push(req.body.$registrant);
-         
-         omsiapdata.save()
-           .then(()=> {
-            console.log(`Registrant registered 
-             ${JSON.stringify(req.body.$registrant)}`)
-   
-            res.status(200).send({
-             registrant: req.body.$registrant,
-             message: "Registrant registered"
-            });
-
-         })
-
-       } else {
-         
-         let passwordMatchFound = false;
-
-         for (const user of nameMatches) {
-            // Using bcrypt's compare function to compare plaintext password with hashed password
-            const passwordMatches = await bcrypt.compare(normalizedNewRegistrant.password, user.passwords.account.password);
-            if (passwordMatches) {
-              passwordMatchFound = true;
-              break;
-            }
-         }
-
-         if (passwordMatchFound) {
-
-            res.status(200).send({
-               registrant: req.body.$registrant,
-               message: "Same passwords"
-             });
-
-          } else {
-
-            const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password,13);
-      
-            const _registeringdate = `${timestamps.getDay()}, ${timestamps.getMonth()}, ${timestamps.getDate()},${timestamps.getFullYear()}, ${timestamps.getHour()}:${timestamps.getMinutes()}:${timestamps.getSeconds()},`
-             
-            req.body.$registrant.status.requests.push({
-               purpose: "Registration",
-               message: "Attempting for registering for the MFATIP PROGRAM",
-               status: "FIRST REGISTRATION. STATUS REGISTERED",
-               date: _registeringdate
-            })
-      
-            req.body.$registrant.passwords.account.password = _hashedpassword;
-       
-            omsiapdata.people.push(req.body.$registrant);
-            
-            omsiapdata.save()
-              .then(()=> {
-
-                console.log(`Registrant registered 
-                 ${JSON.stringify(req.body.$registrant)}`)
-      
-                res.status(200).send({
-                 registrant: req.body.$registrant,
-                 message: "Registrant registered"
-               });
-
-              })
-
-          }
-
-       }
-
-   } catch(err) {
-
-      console.log(`Something went wrong on the registration route: ${err}`);
-
-      res.status(200).send({ 
-         message: `New practicing account type FGH authentication account registration failed: ${err}`
-       });
-
-   }
-
- 
-
-})
-
-Router.route("/login").post( async (req, res)=> {
   try {
-   
-   console.log(req.body.$firstname);
-   console.log(req.body.$middlename);
-   console.log(req.body.$lastname);
-   console.log(req.body.$password);
+    
+    // Create model for the Registrants collection
+    const Registrants = mongoose.model('Registrants', registrantdatascheme);
+    
+    // Generate next sequential ID based on existing registrants
+    const generateNextRegistrantId = async () => {
+      // Count all registrants
+      const registrantCount = await Registrants.countDocuments();
+      
+      // Check if registrant count has reached the limit of 1000
+      if (registrantCount >= 1000) {
+        return null;
+      }
+      
+      // Pad the number to 4 digits
+      const paddedCount = registrantCount.toString().padStart(4, '0');
+      return `1000-${paddedCount}-A-1`;
+    };
 
-   await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      dbName: 'omsiap',
-      autoCreate: false
-    })
-  
-   const OmsiapData =  mongoose.model('datas', omsiapdatascheme);
-   const omsiapdata = await OmsiapData.findById("Code-113-1143");
+    // Normalize new registrant data for comparison
+    const normalizedNewRegistrant = {
+      firstName: req.body.$registrant.name.firstname.toLowerCase().trim(),
+      middleName: req.body.$registrant.name.middlename ? req.body.$registrant.name.middlename.toLowerCase().trim() : '',
+      lastName: req.body.$registrant.name.lastname.toLowerCase().trim(),
+      password: req.body.$registrant.passwords.account.password
+    };
 
-   // Normalize case for comparison
-   const normalizedLoginDetails = {
-    firstName: req.body.$firstname?.toLowerCase().trim() || '',
-    middleName: req.body.$middlename?.toLowerCase().trim() || '',
-    lastName: req.body.$lastname?.toLowerCase().trim() || '',
-    password: req.body.$password || ''
-  };
-
-  const matchingUsers =  omsiapdata.people.filter(user => {
-
-    const dbFirstName = user.name.firstname.toLowerCase().trim();
-    const dbMiddleName = user.name.middlename ? user.name.middlename.toLowerCase().trim() : '';
-    const dbLastName = user.name.lastname.toLowerCase().trim();
-   
-    return dbFirstName === normalizedLoginDetails.firstName &&
-           dbLastName === normalizedLoginDetails.lastName &&
-           dbMiddleName === normalizedLoginDetails.middleName;
-  });
-
-  console.log(matchingUsers.length)
-   // If no matching users found
-   if (matchingUsers.length === 0) {
-
-    console.log("No user found with the provided name details")
-
-    res.status(200).send({
-      message: "No user found with the provided name details"
+    // Check for matches among existing users - from the Registrants collection
+    const nameMatches = await Registrants.find({
+      'name.firstname': new RegExp(`^${normalizedNewRegistrant.firstName}$`, 'i'),
+      'name.lastname': new RegExp(`^${normalizedNewRegistrant.lastName}$`, 'i'),
+      'name.middlename': normalizedNewRegistrant.middleName ? 
+        new RegExp(`^${normalizedNewRegistrant.middleName}$`, 'i') : 
+        { $in: [null, "", normalizedNewRegistrant.middleName] }
     });
 
+    // New registrant (no name matches)
+    if (nameMatches.length === 0) {
 
-  } else {
-
-   for (const user of matchingUsers) {
-      // Using bcrypt to compare the provided password with the stored hash
-      const passwordMatches = await bcrypt.compare(normalizedLoginDetails.password, user.passwords.account.password);
+      // Generate ID and check user limit
+      const registrantId = await generateNextRegistrantId();
       
-      if (passwordMatches) {
-        // Create a user object without the password for return
-        const { password, ...safeUserData } = user;
-        
-        console.log("Login successful")
-
-        res.status(200).send({
-         registrant: safeUserData,
-         message: "Login successful"
+      // Check if user limit is reached
+      if (registrantId === null) {
+        return res.status(200).send({
+          message: "OMSIAP_USER_LIMIT_REACHED",
+          details: {
+            status: "Registration Temporarily Paused",
+            reason: "First 1000 Users Milestone Reached"
+          }
         });
-
-      } else {
-         console.log("Incorrect password")
-
-         // If we reach here, no users matched with correct password
-         res.status(200).send({
-           message: "Incorrect password"
-          });
       }
 
-   } 
-   
+      const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password, 13);
+      const _registeringdate = timestamps.getFormattedDate();
+      
+      // Set the ID and pending documents status
+      req.body.$registrant.id = registrantId;
+      req.body.$registrant.registrationstatusesandlogs.indication = "pending documents";
+      
+      // Fixed: Create registration detail with proper structure according to schema
+      req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
+        date: _registeringdate,
+        type: "Registration",
+        indication: "First Registration",
+        messages: [
+          { message: "Attempting for registering for the MFATIP PROGRAM" },
+          { message: "STATUS REGISTERED" }
+        ]
+      });
 
-     
+      req.body.$registrant.passwords.account.password = _hashedpassword;
+      
+      // Create a new document in the Registrants collection
+      const newRegistrant = new Registrants(req.body.$registrant);
+      await newRegistrant.save();
+      
+      console.log(`Registrant registered: ${req.body.$registrant.name.firstname}, ${req.body.$registrant.name.middlename}, ${req.body.$registrant.name.lastname}. ID: ${req.body.$registrant.id}`);
 
-   
+      res.status(200).send({
+        message: "Registrant registered"
+      });
+    } 
+    // Existing user name found - handle password scenario
+    else {
 
+      let passwordMatchFound = false;
+
+      for (const user of nameMatches) {
+        const passwordMatches = await bcrypt.compare(normalizedNewRegistrant.password, user.passwords.account.password);
+        if (passwordMatches) {
+          passwordMatchFound = true;
+          break;
+        }
+      }
+
+      // Existing user with same password
+      if (passwordMatchFound) {
+        res.status(200).send({
+          message: "Same passwords"
+        });
+      } 
+
+      // Name matches but different password - register as new
+      else {
+
+        // Generate ID and check user limit
+        const registrantId = await generateNextRegistrantId();
+        
+        // Check if user limit is reached
+        if (registrantId === null) {
+          return res.status(200).send({
+            message: "OMSIAP_USER_LIMIT_REACHED",
+            details: {
+              status: "Registration Temporarily Paused",
+              reason: "First 1000 Users Milestone Reached"
+            }
+          });
+        }
+
+        const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password, 13);
+        const _registeringdate = timestamps.getFormattedDate();
+        
+        // Set the ID and pending documents status
+        req.body.$registrant.id = registrantId;
+        req.body.$registrant.registrationstatusesandlogs.indication = "pending documents";
+        
+        // Fixed: Create registration detail with proper structure according to schema
+        req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
+          date: _registeringdate,
+          type: "Registration",
+          indication: "First Registration",
+          messages: [
+            { message: "Attempting for registering for the MFATIP PROGRAM" },
+            { message: "STATUS REGISTERED" }
+          ]
+        });
+
+        req.body.$registrant.passwords.account.password = _hashedpassword;
+        
+        // Create a new document in the Registrants collection
+        const newRegistrant = new Registrants(req.body.$registrant);
+        await newRegistrant.save();
+        
+        console.log(`Registrant registered: ${req.body.$registrant.name.firstname}, ${req.body.$registrant.name.middlename}, ${req.body.$registrant.name.lastname}. ID: ${req.body.$registrant.id}`);
+
+        res.status(200).send({
+          message: "Registrant registered"
+        });
+      }
+    }
+  } catch (err) {
+    console.error(`Registration error: ${err}`);
+
+    // Specific error handling
+    if (err.message === "Maximum registrant limit reached") {
+      return res.status(400).send({
+        message: "Registration limit reached. Cannot add more registrants.",
+        error: true
+      });
+    }
+
+    // Generic server error handling
+    res.status(500).send({ 
+      message: `Registration failed: ${err.message}`,
+      error: true
+    });
   }
+});
 
-  } catch(err) {
-
-  }
-})
-
-Router.route('/getregistrant').post( async (req, res) => {
-
+Router.route("/login").post(async (req, res) => {
   try {
+    // Use the registrant schema
+    const Registrant = mongoose.model('registrants', registrantdatascheme);
+    
+    // Log the incoming request data for debugging
+    console.log("Login request received:", {
+      firstName: req.body.$firstname,
+      middleName: req.body.$middlename,
+      lastName: req.body.$lastname
+    });
+    
+    // Normalize case for comparison (strict trimming of whitespace)
+    const normalizedLoginDetails = {
+      firstName: req.body.$firstname?.trim() || '',
+      middleName: req.body.$middlename?.trim() || '',
+      lastName: req.body.$lastname?.trim() || '',
+      password: req.body.$password || ''
+    };
+    
+    {/*
+    // First, try to find ALL users to check what's in the database
+    // This is for debugging only - remove in production
+    const allUsers = await Registrant.find({}, 'name');
+    console.log("Available users in DB:", allUsers.map(u => ({ 
+      _id: u._id, 
+      name: u.name 
+    })));
+    */}
 
-   await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      dbName: 'omsiap',
-      autoCreate: false
-    })
-  
-   const OmsiapData =  mongoose.model('datas', omsiapdatascheme);
-   const omsiapdata = await OmsiapData.findById("Code-113-1143");
-
-   console.log("Invoked")
-   console.log(omsiapdata.people.length)
-   console.log(req.body.$userid)
-
-   const _user = omsiapdata.people.find(user => user.id === req.body.$userid);
-
-   if ( _user === undefined ) {
-
-      console.log("No registrant found with the given user ID")
-
-      res.status(200).send({
-         message: "No registrant found with the given user ID"
+    // First, try a more permissive search - just by firstName and lastName
+    const initialQuery = await Registrant.find({
+      'name.firstname': normalizedLoginDetails.firstName,
+      'name.lastname': normalizedLoginDetails.lastName
+    });
+    
+    console.log(`Found ${initialQuery.length} users with matching first and last name`);
+    
+    if (initialQuery.length > 0) {
+      console.log("Initial matches:", initialQuery.map(u => ({
+        _id: u._id,
+        name: u.name
+      })));
+    }
+    
+    // Now try the exact match including middle name
+    const exactQuery = await Registrant.find({
+      'name.firstname': normalizedLoginDetails.firstName,
+      'name.middlename': normalizedLoginDetails.middleName,
+      'name.lastname': normalizedLoginDetails.lastName
+    });
+    
+    console.log(`Found ${exactQuery.length} users with exact name match including middle name`);
+    
+    // If we still don't have matches, try a more flexible approach
+    let matchingUsers = exactQuery;
+    
+    if (matchingUsers.length === 0) {
+      // Try a more flexible search with case-insensitive plain text match
+      matchingUsers = await Registrant.find({
+        'name.firstname': { $regex: normalizedLoginDetails.firstName, $options: 'i' },
+        'name.lastname': { $regex: normalizedLoginDetails.lastName, $options: 'i' }
       });
-
-   } else {
-
-      console.log("Registrant found");
-
-      res.status(200).send({
-         registrant: _user,
-         message: "Registrant found"
+      
+      // Filter middle name manually for more control
+      if (normalizedLoginDetails.middleName) {
+        matchingUsers = matchingUsers.filter(user => {
+          const dbMiddleName = user.name.middlename ? user.name.middlename.trim() : '';
+          // Very permissive matching - just check if the strings are the same when lowercased
+          return dbMiddleName.toLowerCase() === normalizedLoginDetails.middleName.toLowerCase();
+        });
+      }
+      
+      console.log(`Found ${matchingUsers.length} users with flexible name matching`);
+    }
+    
+    // If no matching users found
+    if (matchingUsers.length === 0) {
+      return res.status(200).json({
+        message: "No user found with the provided name details"
       });
-
-   }
-
-   console.log(_user)
-
-
-  } catch(err) {
-
+    }
+    
+    // Check passwords
+    for (const user of matchingUsers) {
+      // Make sure the passwords.account.password path exists
+      if (user.passwords && user.passwords.account && user.passwords.account.password) {
+        const passwordMatches = await bcrypt.compare(
+          normalizedLoginDetails.password, 
+          user.passwords.account.password
+        );
+        
+        if (passwordMatches) {
+          // Return the actual MongoDB _id of the user
+          return res.status(200).json({
+            registrant: {
+              ...user._doc,
+              objectId: user._id // Explicitly send the MongoDB ObjectId
+            },
+            message: "Login successful"
+          });
+        }
+      }
+    }
+    
+    // If no password matches
+    return res.status(200).json({
+      message: "Incorrect password"
+    });
+  } catch (err) {
+    console.error('Login route error:', err);
+    
+    // More specific error handling
+    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError') {
+      return res.status(503).json({
+        message: "Database connection error. Please try again later."
+      });
+    } else if (err.name === 'ValidationError') {
+      return res.status(400).json({
+        message: "Invalid input data",
+        error: err.message
+      });
+    } else {
+      // Send a generic error response
+      return res.status(500).json({
+        message: "Internal server error",
+        error: err.message
+      });
+    }
   }
+});
 
-})
+Router.route('/getregistrant').post(async (req, res) => {
+  try {
+    // Validate input
+    if (!req.body.$userid) {
+      return res.status(400).json({
+        message: "USER_ID_REQUIRED",
+        description: "User ID is required for registration lookup"
+      });
+    }
+    
+    // Use the registrant model directly
+    const Registrant = mongoose.model('registrants', registrantdatascheme);
+    
+    // Find registrant by ObjectId
+    const registrant = await Registrant.findById(req.body.$userid);
+    
+    if (!registrant) {
+      return res.status(404).json({
+        message: "NO_REGISTRANT_FOUND",
+        description: "No registrant found with the given user ID"
+      });
+    }
+
+    // Create a copy of the registrant object to modify
+    const foundRegistrant = {...registrant.toObject()};
+    
+    // Remove password before sending
+    if (foundRegistrant.passwords && foundRegistrant.passwords.account) {
+      delete foundRegistrant.passwords.account.password;
+    }
+    
+    // Update login status
+    registrant.registrationstatusesandlogs.deviceloginstatus = "logged in";
+    await registrant.save();
+    
+    // Additional checks if needed
+    if (foundRegistrant.registrationstatusesandlogs.indication === 'inactive') {
+      return res.status(403).json({
+        message: "USER_INACTIVE",
+        description: "This user account is currently inactive"
+      });
+    }
+    
+    // Successful response
+    res.status(200).json({
+      message: "REGISTRANT_FOUND",
+      registrant: foundRegistrant
+    });
+  } catch (err) {
+    // Handle specific errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        message: "INVALID_USER_ID",
+        description: "The provided user ID format is invalid"
+      });
+    }
+    
+    // Catch any unexpected errors
+    console.error('Route Error:', err);
+    res.status(500).json({
+      message: "SERVER_ERROR",
+      description: "An unexpected server error occurred"
+    });
+  }
+});
 
 Router.route("/addregistrant").post(uploadFields, async (req, res) => {
 

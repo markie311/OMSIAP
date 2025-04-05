@@ -2,56 +2,162 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const productimagedatascheme = new Schema({
-  url: { type: String } // Changed from 'type: string' to a proper field definition
+  url: { type: "string" }
 });
 
-const productspecificationdatascheme = new Schema({
-  name: { type: String } // Changed from 'type: string' to a proper field definition
+const productvideodatascheme = new Schema({
+  url: { type: "string" }
 });
 
 const productfeaturesdatascheme = new Schema({
-  name: { type: String } // Changed from 'type: string' to a proper field definition
+  data: { type: "string" }
 });
 
-// Main product schema remains mostly the same
-const productdatascheme = new Schema({
-  id: { type: String },
-  name: { type: String },
-  price: { type: Number, default: 0 },
-  category: { type: String },
-  description: { type: String },
-  weightingrams: { type: Number, default: 0 },
-  images: [productimagedatascheme],
-  stock: { type: Number, default: 0 },
-  rating: { type: Number, default: 0 },
-  reviews: { type: Number, default: 0 },
-  specifications: [productspecificationdatascheme],
-  videoUrl: { type: String },
-  features: [productfeaturesdatascheme],
-  warranty: { type: String },
-  quantity: { type: Number },
-  focuseddata: {
-    price: {
-      price: { type: Number, default: 0 },
-      capital: { type: Number, default: 0 },
-      transactiongiveaway: { type: Number, default: 0 },
-      omsiapprofit: { type: Number, default: 0 }
+const productspecificationdatascheme = new Schema({
+  authentications: {
+    producttype: {
+     type: 'string'
+    },
+    id: {
+     type: 'string'
     }
   },
-  orderdetails: {
-    quantity: { type: Number, default: 0 },
-    product: {
-      price: { type: Number, default: 0 },
-      capital: { type: Number, default: 0 },
-      transactiongiveaway: { type: Number, default: 0 },
-      omsiapprofit: { type: Number, default: 0 }
+  details: {
+   productname: {
+     type: 'string'
+   },
+   category: {
+     type: 'string'
+   },
+   description: {
+     type: 'string'
+   },
+   features: [productfeaturesdatascheme],
+   weightingrams: {
+     type: 'number',
+     default: 0
+   },
+   warranty: {
+     type: 'string'
+   },
+   for: {
+    age: {
+      type: 'string'
     },
-    shipment: {
-      totalkilos: { type: Number, default: 0 },
-      totalshipmentfee: { type: Number, default: 0 }
+    part: {
+      type: 'string'
+    },
+    gender: {
+      type: 'string'
+    },
+    reminder: {
+      type: 'string'
     }
+   },
+   price: {
+     amount: {
+       type: 'number',
+       default: 0
+     },
+     capital: {
+       type: 'number',
+       default: 0
+     },
+     transactiongiveaway: {
+       type: 'number',
+       default: 0
+     },
+     profit: {
+       type: 'number',
+       default: 0
+     }
+   },
+   specifications: []
+  },
+  images: [productimagedatascheme],
+  videos: [productvideodatascheme],
+  customerfeedback: {
+   rating: {
+     type: 'number',
+     default: 0
+   },
+   reviews: {
+     type: 'number',
+     default: 0,
+   }
+  },
+  system: {
+   stocks: []
   }
 });
 
-module.exports = productdatascheme;
+const productdatascheme = new Schema({
+ authentications: {
+   producttype: {
+    type: 'string'
+   },
+   id: {
+    type: 'string'
+   }
+ },
+ details: {
+  productname: {
+    type: 'string'
+  },
+  category: {
+    type: 'string'
+  },
+  description: {
+    type: 'string'
+  },
+  features: [productfeaturesdatascheme],
+  weightingrams: {
+    type: 'number',
+    default: 0
+  },
+  warranty: {
+    type: 'string'
+  },
+  price: {
+    amount: {
+      type: 'number',
+      default: 0
+    },
+    capital: {
+      type: 'number',
+      default: 0
+    },
+    transactiongiveaway: {
+      type: 'number',
+      default: 0
+    },
+    profit: {
+      type: 'number',
+      default: 0
+    }
+  },
+  specifications: [productspecificationdatascheme]
+ },
+ images: [productimagedatascheme],
+ videos: [productvideodatascheme],
+ customerfeedback: {
+  rating: {
+    type: 'number',
+    default: 0
+  },
+  reviews: {
+    type: 'number',
+    default: 0,
+  }
+ },
+ system: {
+  purchases: {
+    total: [],
+    pending: [],
+    accepted: [],
+    rejected: []
+  }
+ }
+})
 
+module.exports = productdatascheme;

@@ -1,98 +1,45 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const transactiondatascheme = require('../transactions/transactiondatascheme.js');
+const producttransactiondatascheme = require('../transactions/merchandisetransactiondatascheme.js')
+const currencyexchangetransactiondatascheme = require('../transactions/currencyexchangetransactiondatascheme.js')
 
-const registrantstatusrequests = new Schema({
-purpose: {
-  type: 'string'
-},
-message: {
-  type: 'string'
-},
-status: {
-  type: 'string'
-},
-date: {
-  type: 'string'
-}
+const registrantstatusrequestsmessagesscheme = new Schema({
+  message: {
+    type: 'string'
+  }
 })
 
-const transactionrequestsstatusdatascheme = new Schema({
-type: {
-type: 'string'
-},
-status: {
-type: 'string'
-},
-date: {
-type: 'string'
-},
-message: {
-type: 'string'
-},
-indication: {
-type: 'string'
-}
-})  
-
-const productdatascheme = new Schema({
-id: {
-  type: 'string'
-},
-name: {
-  type: 'string'
-},
-price: {
-  type: 'number',
-  default: 0
-},
-category: {
-  type: 'string'
-},
-description: {
-  type: 'string'
-},
-images: [],
-stock: {
-  type: 'number',
-  default: 0
-},
-rating: {
-  type: 'number',
-  default: 0
-},
-reviews: {
-  type: 'number',
-  default: 0
-},
-specifications: [],
-videoUrl: {
-  type: 'string'
-}, // Placeholder for video URL
-features: [],
-warranty: {
-  type: 'string'
-}
+const registrantstatusrequestsscheme = new Schema({
+  date: {
+    type: 'string'
+  },
+  type: {
+    type: 'string'
+  },
+  indication: {
+    type: 'string'
+  },
+  messages: [registrantstatusrequestsmessagesscheme]
 })
 
 const registrantdatascheme = new Schema({
  id: {
   type: 'string'
  },
- loginstatus: {
-  type: 'string'
- },
- status: {
+ registrationstatusesandlogs: {
   type: {
    type: "string"
+  },
+  indication: {
+   type: 'string'
+  },
+  deviceloginstatus: {
+    type: 'string'
+  },
+  registrationlog: [registrantstatusrequestsscheme]
  },
- indication: {
-  type: 'string'
- },
- requests: [registrantstatusrequests]
-},
-name: {
+ name: {
 firstname: {
   type: 'string'
 },
@@ -105,8 +52,8 @@ lastname: {
 nickname: {
   type: 'string'
 }
-},
-contact: {
+ },
+ contact: {
 phonenumber: {
   type: 'string'
 },
@@ -136,28 +83,36 @@ address: {
   type: 'string'
   }
 }
-},
-personaldata: {
-age: {
-  type: 'number',
-  default: 0
-},
-sex: {
+ },
+ personaldata: {
+  age: {
+  type: 'string',
+ },
+ sex: {
   type: 'string'
-},
-bloodtype: {
+ },
+ bloodtype: {
   type: 'string'
-},
-dob: {
+ },
+ height: {
   type: 'string'
-},
-citizenship: {
+ },
+ weight: {
+ type: 'string'
+ },
+ deviceprofilepicture: {
   type: 'string'
-},
-civil_status: {
+ },
+ dob: {
+  type: 'string'
+ },
+ citizenship: {
+  type: 'string'
+ },
+ civil_status: {
     type: 'string'
-},
-government_issued_identification: {
+ },
+ government_issued_identification: {
   frontphoto: {
    name: {
     type: 'string'
@@ -166,12 +121,7 @@ government_issued_identification: {
     type: 'string'
    },
    image: {
-    data: {
-      type: 'buffer'
-    },
-    contenttype: {
-      type: 'string'
-    }
+    type: 'string'
    },
    uploaddate: {
     type: 'string'
@@ -185,19 +135,14 @@ government_issued_identification: {
       type: 'string'
      },
      image: {
-      data: {
-        type: 'buffer'
-      },
-      contenttype: {
-        type: 'string'
-      }
+      type: 'string'
      },
      uploaddate: {
       type: 'string'
      }
   }
-},
-birthcertificate: {
+ },
+ birthcertificate: {
   frontphoto: {
     name: {
      type: 'string'
@@ -206,12 +151,7 @@ birthcertificate: {
      type: 'string'
     },
     image: {
-     data: {
-       type: 'buffer'
-     },
-     contenttype: {
-       type: 'string'
-     }
+      type: 'string'
     },
     uploaddate: {
      type: 'string'
@@ -225,44 +165,55 @@ birthcertificate: {
        type: 'string'
       },
       image: {
-       data: {
-         type: 'buffer'
-       },
-       contenttype: {
-         type: 'string'
-       }
+        type: 'string'
       },
       uploaddate: {
        type: 'string'
       }
    }
-}
-},
-passwords: {
+ }
+ },
+ passwords: {
   account: {
     password: {
       type: 'string'
     }
   }
-},
-credits: {
-omsiapawasto: {
-  id: {
-    type: 'string'
-  },
-  amount: {
-   type: 'number',
-   default: 0
-  },
-  transactions: {
-    deposits: [transactiondatascheme],
-    widthdrawals: [transactiondatascheme],
-    successful_deposits: [transactiondatascheme],
-    successful_widthdrawals: [transactiondatascheme]
+ },
+ credits: {
+  omsiapawasto: {
+   id: {
+     type: 'string'
+   },
+   amount: {
+    type: 'number',
+    default: 0
+   },
+   transactions: {
+    currencyexchange: {
+      total: [currencyexchangetransactiondatascheme],
+      pending: [currencyexchangetransactiondatascheme],
+      successful: [currencyexchangetransactiondatascheme],
+      rejected: [currencyexchangetransactiondatascheme]
+    },
+    widthdrawals: {
+      total: [],
+      pending: [],
+      successful: [],
+      rejected: []
+    },
+    omsiapawastransfer: []
   }
 }
-},
-transactions: [transactiondatascheme]
+ },
+ transactions: {
+   merchandise: {
+     total: [],
+     pending: [],
+     accepted: [],
+     rejected: []
+   },
+}
 });
 
 module.exports = registrantdatascheme;

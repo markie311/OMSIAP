@@ -21,7 +21,10 @@ import { FaEye,
          FaExclamationTriangle, 
          FaCalendarAlt, 
          FaLock, 
+         FaEllipsisH,
          FaEyeSlash, 
+         FaArrowLeft,
+         FaArrowRight,
          FaFileUpload, 
          FaUserClock, 
          FaIdCard, 
@@ -112,12 +115,12 @@ function DatabaseComponent() {
     };
 
      // Example custom stats data
-  const customStats = {
-    pendingOrders: { count: 42, change: '+8%' },
-    pendingDeposits: { count: 27, change: '+15%' },
-    pendingWithdrawals: { count: 13, change: '-7%' },
-    pendingRegistrations: { count: 56, change: '+32%' }
-  };
+     const customStats = {
+      pendingOrders: { count: 24 },
+      pendingDeposits: { count: 18 },
+      pendingWithdrawals: { count: 9 },
+      pendingRegistrations: { count: 32 }
+    };
 
   const [showDatabaseConfiguration, setShowDatabaseConfiguration] = useState(false);
   const [showPendingPublicRegistrationModal, setShowPendingPublicRegistrationModal] = useState(false);
@@ -127,12 +130,13 @@ function DatabaseComponent() {
   const [showTotalOrders, setShowTotalOrders] = useState(false)
   const [showPendingOrders, setShowPendingOrders] = useState(false)
   const [showAcceptedOrders, setShowAcceptedOrders] = useState(false)
+  const [showRejectedOrders, setShowRejectedOrders] = useState(false)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
 
-  const [showTotalDeposits, setShowTotalDeposits] = useState(false)
-  const [showPendingDeposits, setShowPendingDeposits] = useState(false)
-  const [showSuccessfulDeposits, setShowSuccessfulDeposits] = useState(false)
-  const [showRejectedDeposits, setShowRejectedDeposits] = useState(false)
+  const [showTotalCurrencyExchange, setShowTotalCurrencyExchange] = useState(false)
+  const [showPendingCurrencyExchange, setShowPendingCurrencyExchange] = useState(false)
+  const [showSuccessfulCurrencyExchange, setShowSuccessfulCurrencyExchange] = useState(false)
+  const [showRejectedCurrencyExchange, setShowRejectedCurrencyExchange] = useState(false)
 
   const [showTotalWithdrawals, setShowTotalWithdrawals] = useState(false)
   const [showPendingWithdrawals, setShowPendingWithdrawals] = useState(false)
@@ -141,692 +145,1035 @@ function DatabaseComponent() {
 
   const [showCreditTransaction, setShowCreditTransaction] = useState(false)
   
-  const [showRegisteredRegistrantWithPendingDocuments, setShowRegisteredRegistrantsWithPendingDocuments] = useState(false);
+  const [showRegisteredRegistrantsWithVerifiedDocuments, setShowRegisteredRegistrantsWithVerifiedDocuments] = useState(false)
+  const [showRegisteredRegistrantsWithPendingDocuments, setShowRegisteredRegistrantsWithPendingDocuments] = useState(false)
+  const [showRegisteredRegistrantsWithRejectedDocuments, setShowRegisteredRegistrantsWithRejectedDocuments] = useState(false)
 
-  const [showCreateProduct, setShowCreateProduct] = useState(false);
+  const [acceptorderloadingindication, acceptorderloadingindicationcb] = useState(false)
 
-  const [showPendingOrderDetails, setShowPendingOrderDetails] = useState(false);
+  const [showCreateProduct, setShowCreateProduct] = useState(false)
 
-  const [showProductReader, setShowProductReader] = useState(false);
+  const [showPendingOrderDetails, setShowPendingOrderDetails] = useState(false)
+
+  const [showProductReader, setShowProductReader] = useState(false)
   const [showUpdateProductForm, setShowUpdateProductForm] = useState(false)
 
-  const [showDeleteProductReader, setShowDeleteProductReader] = useState(false);
+  const [showDeleteProductReader, setShowDeleteProductReader] = useState(false)
 
-  const [showCreateRegistrantForm, setShowCreateRegistrantForm] = useState(false);
-  const [showRegistrantDetailsDisplay, setShowRegistrantDetailsDisplay] = useState(false);
-  const [showUpdateRegistrantFormDisplay, setShowUpdateRegistrantFormDisplay] = useState(false);
+  const [showCreateRegistrantForm, setShowCreateRegistrantForm] = useState(false)
+  const [showRegistrantDetailsDisplay, setShowRegistrantDetailsDisplay] = useState(false)
+  const [showUpdateRegistrantFormDisplay, setShowUpdateRegistrantFormDisplay] = useState(false)
 
   const [deleteproductfield, deleteproductfieldcb] = useState("")
-
-  const [showGcashPaymentLink, setShowGcashPaymentLink] = useState(false);
-
-  const [showModal, setShowModal] = useState(false);
-
-const transactions = [
-{
-id: "!23asdasd1231232",
-date: "!23asdasd1231232",
-type: "!23asdasd1231232",
-amount: 0,
-status: "pending",
-paymentmethod: "!23asdasd1231232",
-details: {
-products: [],
-shippingInfo: {
-address: "!23asdasd1231232",
-city: "!23asdasd1231232",
-state: "!23asdasd1231232",
-zipCode: "!23asdasd1231232",
-country: "!23asdasd1231232"
-},
-orderSummary: {
-merchandiseTotal: 0,
-shippingTotal: 0,
-totalTransactionGiveaway: 0,
-totalOmsiaProfit: 0,
-totalCapital: 0,
-totalItems: 0,
-totalProducts: 0,
-totalWeightGrams: 0,
-totalWeightKilos: 0,
-total: 0
-}
-}
-},
-{
-id: "!23asdasd1231232",
-date: "!23asdasd1231232",
-type: "!23asdasd1231232",
-amount: 0,
-status: "pending",
-paymentmethod: "!23asdasd1231232",
-details: {
-products: [],
-shippingInfo: {
-address: "!23asdasd1231232",
-city: "!23asdasd1231232",
-state: "!23asdasd1231232",
-zipCode: "!23asdasd1231232",
-country: "!23asdasd1231232"
-},
-orderSummary: {
-merchandiseTotal: 0,
-shippingTotal: 0,
-totalTransactionGiveaway: 0,
-totalOmsiaProfit: 0,
-totalCapital: 0,
-totalItems: 0,
-totalProducts: 0,
-totalWeightGrams: 0,
-totalWeightKilos: 0,
-total: 0
-}
-}
-},
-{
-id: "!23asdasd1231232",
-date: "!23asdasd1231232",
-type: "!23asdasd1231232",
-amount: 0,
-status: "pending",
-paymentmethod: "!23asdasd1231232",
-details: {
-products: [],
-shippingInfo: {
-address: "!23asdasd1231232",
-city: "!23asdasd1231232",
-state: "!23asdasd1231232",
-zipCode: "!23asdasd1231232",
-country: "!23asdasd1231232"
-},
-orderSummary: {
-merchandiseTotal: 0,
-shippingTotal: 0,
-totalTransactionGiveaway: 0,
-totalOmsiaProfit: 0,
-totalCapital: 0,
-totalItems: 0,
-totalProducts: 0,
-totalWeightGrams: 0,
-totalWeightKilos: 0,
-total: 0
-}
-}
-},
-{
-id: "!23asdasd1231232",
-date: "!23asdasd1231232",
-type: "!23asdasd1231232",
-amount: 0,
-status: "pending",
-paymentmethod: "!23asdasd1231232",
-details: {
-products: [],
-shippingInfo: {
-address: "!23asdasd1231232",
-city: "!23asdasd1231232",
-state: "!23asdasd1231232",
-zipCode: "!23asdasd1231232",
-country: "!23asdasd1231232"
-},
-orderSummary: {
-merchandiseTotal: 0,
-shippingTotal: 0,
-totalTransactionGiveaway: 0,
-totalOmsiaProfit: 0,
-totalCapital: 0,
-totalItems: 0,
-totalProducts: 0,
-totalWeightGrams: 0,
-totalWeightKilos: 0,
-total: 0
-}
-}
-},
-{
-id: "!23asdasd1231232",
-date: "!23asdasd1231232",
-type: "!23asdasd1231232",
-amount: 0,
-status: "pending",
-paymentmethod: "!23asdasd1231232",
-details: {
-products: [],
-shippingInfo: {
-address: "!23asdasd1231232",
-city: "!23asdasd1231232",
-state: "!23asdasd1231232",
-zipCode: "!23asdasd1231232",
-country: "!23asdasd1231232"
-},
-orderSummary: {
-merchandiseTotal: 0,
-shippingTotal: 0,
-totalTransactionGiveaway: 0,
-totalOmsiaProfit: 0,
-totalCapital: 0,
-totalItems: 0,
-totalProducts: 0,
-totalWeightGrams: 0,
-totalWeightKilos: 0,
-total: 0
-}
-}
-},
-{
-id: "!23asdasd1231232",
-date: "!23asdasd1231232",
-type: "!23asdasd1231232",
-amount: 0,
-status: "pending",
-paymentmethod: "!23asdasd1231232",
-details: {
-products: [],
-shippingInfo: {
-address: "!23asdasd1231232",
-city: "!23asdasd1231232",
-state: "!23asdasd1231232",
-zipCode: "!23asdasd1231232",
-country: "!23asdasd1231232"
-},
-orderSummary: {
-merchandiseTotal: 0,
-shippingTotal: 0,
-totalTransactionGiveaway: 0,
-totalOmsiaProfit: 0,
-totalCapital: 0,
-totalItems: 0,
-totalProducts: 0,
-totalWeightGrams: 0,
-totalWeightKilos: 0,
-total: 0
-}
-}
-},
-{
-id: "!23asdasd1231232",
-date: "!23asdasd1231232",
-type: "!23asdasd1231232",
-amount: 0,
-status: "pending",
-paymentmethod: "!23asdasd1231232",
-details: {
-products: [],
-shippingInfo: {
-address: "!23asdasd1231232",
-city: "!23asdasd1231232",
-state: "!23asdasd1231232",
-zipCode: "!23asdasd1231232",
-country: "!23asdasd1231232"
-},
-orderSummary: {
-merchandiseTotal: 0,
-shippingTotal: 0,
-totalTransactionGiveaway: 0,
-totalOmsiaProfit: 0,
-totalCapital: 0,
-totalItems: 0,
-totalProducts: 0,
-totalWeightGrams: 0,
-totalWeightKilos: 0,
-total: 0
-}
-}
-},
-{
-id: "!23asdasd1231232",
-date: "!23asdasd1231232",
-type: "!23asdasd1231232",
-amount: 0,
-status: "pending",
-paymentmethod: "!23asdasd1231232",
-details: {
-products: [],
-shippingInfo: {
-address: "!23asdasd1231232",
-city: "!23asdasd1231232",
-state: "!23asdasd1231232",
-zipCode: "!23asdasd1231232",
-country: "!23asdasd1231232"
-},
-orderSummary: {
-merchandiseTotal: 0,
-shippingTotal: 0,
-totalTransactionGiveaway: 0,
-totalOmsiaProfit: 0,
-totalCapital: 0,
-totalItems: 0,
-totalProducts: 0,
-totalWeightGrams: 0,
-totalWeightKilos: 0,
-total: 0
-}
-}
-},
-];
-
-const creditstransactions = [
-  {
-    id: "TRX12345678",
-    date: "2025-03-10T15:30:00",
-    type: "deposit",
-    amount: 1250.00,
-    status: "pending",
-    paymentmethod: "Bank Transfer",
-    details: {
-      shippingInfo: {
-        address: "123 Main St",
-        city: "San Francisco",
-        state: "CA",
-        zipCode: "94105",
-        country: "USA"
-      },
-      orderSummary: {
-        total: 1250.00,
-        merchandiseTotal: 1200.00,
-        shippingTotal: 50.00
-      }
-    }
-  },
-  {
-    id: "TRX87654321",
-    date: "2025-03-11T10:15:00",
-    type: "deposit",
-    amount: 875.50,
-    status: "pending",
-    paymentmethod: "Credit Card",
-    details: {
-      shippingInfo: {
-        address: "456 Oak Ave",
-        city: "Chicago",
-        state: "IL",
-        zipCode: "60606",
-        country: "USA"
-      },
-      orderSummary: {
-        total: 875.50,
-        merchandiseTotal: 825.50,
-        shippingTotal: 50.00
-      }
-    }
-  },
-  {
-    id: "TRX99887766",
-    date: "2025-03-12T09:45:00",
-    type: "deposit",
-    amount: 3500.00,
-    status: "pending",
-    paymentmethod: "Wire Transfer",
-    details: {
-      shippingInfo: {
-        address: "789 Pine Blvd",
-        city: "New York",
-        state: "NY",
-        zipCode: "10001",
-        country: "USA"
-      },
-      orderSummary: {
-        total: 3500.00,
-        merchandiseTotal: 3400.00,
-        shippingTotal: 100.00
-      }
-    }
-  }
-];
-
-const credittransactionobject = {
-  id: "TRX-2025032001",
-  date: "2025-03-20T10:30:00Z",
-  type: "Credit",
-  amount: 1250.00,
-  status: "Completed",
-  paymentmethod: "Credit Card",
-  details: {
-    products: [
+   
+  const [omsiapdata, omsiapdatacb] = useState({
+     _id: "Code-113-1143",
+     people: [
       {
-        name: "Premium Widget",
-        quantity: 2,
-        price: 450.00
+        id: "MFATIP-1111-1111",
+        loginstatus: "active",
+        status: {
+          type: "complete",
+          indication: "Documents verified",
+          requests: [
+            {
+              purpose: "Initial registration",
+              message: "Submitted application",
+              status: "approved",
+              date: "2025-02-15T09:30:00"
+            },
+            {
+              purpose: "Document submission",
+              message: "Government ID pending",
+              status: "pending",
+              date: "2025-02-15T14:45:00"
+            }
+          ]
+        },
+        name: {
+          firstname: "Juan",
+          middlename: "Dela",
+          lastname: "Cruz",
+          nickname: "JDC"
+        },
+        contact: {
+          phonenumber: "+63 912 345 6789",
+          telephonenumber: "02-8123-4567",
+          emailaddress: "juan.delacruz@email.com",
+          address: {
+            street: "123 Rizal Street",
+            baranggay: "San Antonio",
+            trademark: "Near City Hall",
+            city: "Makati",
+            province: "Metro Manila",
+            country: "Philippines"
+          }
+        },
+        personaldata: {
+          age: 35,
+          sex: "Male",
+          bloodtype: "O+",
+          dob: "1990-05-15",
+          citizenship: "Filipino",
+          civil_status: "Married",
+          government_issued_identification: "Driver's License"
+        },
+        transactions: [
+          {
+            id: "TRX-2025-0001",
+            date: "2025-02-15T09:30:00",
+            type: "registration",
+            amount: 500,
+            status: "completed",
+            paymentmethod: "GCash"
+          }
+        ]
       },
       {
-        name: "Deluxe Gadget",
-        quantity: 1,
-        price: 350.00
+        id: "MFATIP-2222-2222",
+        loginstatus: "active",
+        status: {
+          type: "incomplete",
+          indication: "pending documents",
+          requests: [
+            {
+              purpose: "Initial registration",
+              message: "Submitted application",
+              status: "approved",
+              date: "2025-02-20T10:15:00"
+            }
+          ]
+        },
+        name: {
+          firstname: "Maria",
+          middlename: "Santos",
+          lastname: "Reyes",
+          nickname: "May"
+        },
+        contact: {
+          phonenumber: "+63 923 456 7890",
+          telephonenumber: "",
+          emailaddress: "maria.reyes@email.com",
+          address: {
+            street: "456 Bonifacio Avenue",
+            baranggay: "Poblacion",
+            trademark: "Beside Central Park",
+            city: "Quezon City",
+            province: "Metro Manila",
+            country: "Philippines"
+          }
+        },
+        personaldata: {
+          age: 28,
+          sex: "Female",
+          bloodtype: "A+",
+          dob: "1997-08-23",
+          citizenship: "Filipino",
+          civil_status: "Single",
+          government_issued_identification: "National ID"
+        },
+        transactions: [
+          {
+            id: "TRX-2025-0002",
+            date: "2025-02-20T10:15:00",
+            type: "registration",
+            amount: 500,
+            status: "completed",
+            paymentmethod: "Credit Card"
+          }
+        ]
+      },
+      {
+        id: "MFATIP-3333-3333",
+        loginstatus: "active",
+        status: {
+          type: "incomplete",
+          indication: "rejected documents",
+          requests: [
+            {
+              purpose: "Initial registration",
+              message: "Submitted application",
+              status: "approved",
+              date: "2025-02-20T10:15:00"
+            }
+          ]
+        },
+        name: {
+          firstname: "Maria",
+          middlename: "Santos",
+          lastname: "Reyes",
+          nickname: "May"
+        },
+        contact: {
+          phonenumber: "+63 923 456 7890",
+          telephonenumber: "",
+          emailaddress: "maria.reyes@email.com",
+          address: {
+            street: "456 Bonifacio Avenue",
+            baranggay: "Poblacion",
+            trademark: "Beside Central Park",
+            city: "Quezon City",
+            province: "Metro Manila",
+            country: "Philippines"
+          }
+        },
+        personaldata: {
+          age: 28,
+          sex: "Female",
+          bloodtype: "A+",
+          dob: "1997-08-23",
+          citizenship: "Filipino",
+          civil_status: "Single",
+          government_issued_identification: "National ID"
+        },
+        transactions: [
+          {
+            id: "TRX-2025-0002",
+            date: "2025-02-20T10:15:00",
+            type: "registration",
+            amount: 500,
+            status: "completed",
+            paymentmethod: "Credit Card"
+          }
+        ]
       }
-    ],
+     ],
+     products: [],
+     transactions: {
+       orders: {
+        total: [
+        ],
+        pending: [
+        ],
+        accepted: [
+        ],
+        rejected: [
+        ]
+       },
+       deposits: {
+        total: [
+        ],
+        pending: [
+        ],
+        successful: [
+        ],
+        rejected: [
+        ]
+       },
+       withdrawals: {
+        total: [
+        ],
+        pending: [ 
+        ],
+        successful: [
+        ],
+        rejected: [
+        ]
+       }
+     },
+     pendingfunds: 0
+  })
+
+  const [totalorders, totalorderscb] = useState([])
+  const [pendingorders, pendingorderscb] = useState([])
+  const [acceptedorders, acceptedorderscb] = useState([])
+  const [rejectedorders, rejectedorderscb] = useState([])
+
+  const [totalcurrencyexchange, totalcurrencyexchangecb] = useState([])
+  const [pendingcurrencyexchange, pendingcurrencyexchangecb] = useState([])
+  const [successfulcurrencyexchange, successfulcurrencyexchangecb] = useState([])
+  const [rejectedcurrencyexchange, rejectedcurrencyexchangecb] = useState([])
+
+  const [totalwithdrawals, totalwithdrawalscb] = useState([])
+  const [pendingwithdrawals, pendingwithdrawalscb] = useState([])
+  const [successfulwithdrawals, successfulwithdrawalscb] = useState([])
+  const [rejectedwithdrawals, rejectedwithdrawalscb] = useState([])
+ 
+  const [verifiedmfatipregistrants, verifiedmfatipregistrantscb] = useState([])
+  const [pendingmfatipregistrants, pendingmfatipregistrantscb] = useState([])
+  const [mfatipregistrantsrejecteddocuments, mfatipregistrantsrejecteddocumentscb] = useState([])
+  
+  const [orderDetailsObject, setOrderDetailsObject] = useState(
+   {
+    id: "ID",
+    date: "Date",
+    type: "Type",
+    amount: 0,
+    status: "Status",
+    paymentmethod: "Payment method",
+    details: {
+    products: [],
     shippingInfo: {
-      address: "123 Main Street, Apt 4B",
-      city: "Metropolis",
-      state: "NY",
-      zipCode: "10001",
-      country: "United States"
+      street: "street",
+      trademark: "trademark",
+      baranggay: "baranggay",
+      city: "city",
+      province: "province",
+      zipcode: "zipcode",
+      country: "country"
     },
     orderSummary: {
-      merchandiseTotal: 1250.00,
-      shippingTotal: 0.00,
-      totalTransactionGiveaway: 0.00,
-      totalOmsiaProfit: 312.50,
-      totalCapital: 937.50,
-      totalItems: 3,
-      totalProducts: 2,
-      totalWeightGrams: 1500,
-      totalWeightKilos: 1.5,
-      total: 1250.00
+    merchandiseTotal: 0,
+    shippingTotal: 0,
+    totalTransactionGiveaway: 0,
+    totalOmsiaProfit: 0,
+    totalCapital: 0,
+    totalItems: 0,
+    totalProducts: 0,
+    totalWeightGrams: 0,
+    totalWeightKilos: 0,
+    total: 0
     }
-  }
-};
+    }
+   }
+  )
 
-// Example registrants data
-const registrants = [
+  useEffect(() => {
+
+    fetchOmsiapData();
+
+  }, [
+    totalorderscb, pendingorderscb, acceptedorderscb, rejectedorderscb,
+    totalcurrencyexchangecb, pendingcurrencyexchangecb, successfulcurrencyexchangecb, rejectedcurrencyexchangecb,
+    totalwithdrawalscb, pendingwithdrawalscb, successfulwithdrawalscb, rejectedwithdrawalscb,
+    verifiedmfatipregistrantscb, pendingmfatipregistrantscb, mfatipregistrantsrejecteddocumentscb
+  ]);
+
+  const fetchOmsiapData = async () => {
+    
+    try {
+      const response = await axiosCreatedInstance.get("/omsiap/getomsiapdata");
+      const omsiapdata = response.data;
+
+      // Process transactions data
+      if (omsiapdata && omsiapdata.transactions) {
+        const { orders, currencyexchange, withdrawals } = omsiapdata.transactions;
+
+        // Update orders data
+        if (orders) {
+          totalorderscb(orders.total || []);
+          pendingorderscb(orders.pending || []);
+          acceptedorderscb(orders.accepted || []);
+          rejectedorderscb(orders.rejected || []);
+        }
+
+        // Update deposits data
+        if (currencyexchange) {
+          totalcurrencyexchangecb(currencyexchange.total || []);
+          pendingcurrencyexchangecb(currencyexchange.pending || []);
+          successfulcurrencyexchangecb(currencyexchange.successful || []);
+          rejectedcurrencyexchangecb(currencyexchange.rejected || []);
+        }
+
+        // Update withdrawals data
+        if (withdrawals) {
+          totalwithdrawalscb(withdrawals.total || []);
+          pendingwithdrawalscb(withdrawals.pending || []);
+          successfulwithdrawalscb(withdrawals.successful || []);
+          rejectedwithdrawalscb(withdrawals.rejected || []);
+        }
+      }
+
+      // Process MFATIP registrants data
+      if (omsiapdata && omsiapdata.people) {
+        const verified = [];
+        const pending = [];
+        const rejected = [];
+
+        omsiapdata.people.forEach(person => {
+          if (person.status.type === "complete") {
+            verified.push(person);
+          } else if (
+            person.status.type === "incomplete" && 
+            person.status.indication === "pending documents"
+          ) {
+            pending.push(person);
+          } else if (
+            person.status.type === "incomplete" && 
+            person.status.indication === "rejected documents"
+          ) {
+            rejected.push(person);
+          }
+        });
+
+        verifiedmfatipregistrantscb(verified);
+        pendingmfatipregistrantscb(pending);
+        mfatipregistrantsrejecteddocumentscb(rejected);
+      }
+    } catch (err) {
+      console.error('Error fetching OMSIAP data:', err);
+    }
+  };
+
+  const transactions = [
   {
-    id: "MFATIP-2025-0001",
-    loginstatus: "active",
-    status: {
-      type: "incomplete",
-      indication: "pending documents",
-      requests: [
+  id: "!23asdasd1231232",
+  date: "!23asdasd1231232",
+  type: "!23asdasd1231232",
+  amount: 0,
+  status: "pending",
+  paymentmethod: "!23asdasd1231232",
+  details: {
+  products: [],
+  shippingInfo: {
+  address: "Street",
+  city: "City",
+  state: "State",
+  zipCode: "Zip code",
+  country: "Country"
+  },
+  orderSummary: {
+  merchandiseTotal: 0,
+  shippingTotal: 0,
+  totalTransactionGiveaway: 0,
+  totalOmsiaProfit: 0,
+  totalCapital: 0,
+  totalItems: 0,
+  totalProducts: 0,
+  totalWeightGrams: 0,
+  totalWeightKilos: 0,
+  total: 0
+  }
+  }
+  },
+  {
+  id: "!23asdasd1231232",
+  date: "!23asdasd1231232",
+  type: "!23asdasd1231232",
+  amount: 0,
+  status: "pending",
+  paymentmethod: "!23asdasd1231232",
+  details: {
+  products: [],
+  shippingInfo: {
+  address: "!23asdasd1231232",
+  city: "!23asdasd1231232",
+  state: "!23asdasd1231232",
+  zipCode: "!23asdasd1231232",
+  country: "!23asdasd1231232"
+  },
+  orderSummary: {
+  merchandiseTotal: 0,
+  shippingTotal: 0,
+  totalTransactionGiveaway: 0,
+  totalOmsiaProfit: 0,
+  totalCapital: 0,
+  totalItems: 0,
+  totalProducts: 0,
+  totalWeightGrams: 0,
+  totalWeightKilos: 0,
+  total: 0
+  }
+  }
+  },
+  {
+  id: "!23asdasd1231232",
+  date: "!23asdasd1231232",
+  type: "!23asdasd1231232",
+  amount: 0,
+  status: "pending",
+  paymentmethod: "!23asdasd1231232",
+  details: {
+  products: [],
+  shippingInfo: {
+  address: "!23asdasd1231232",
+  city: "!23asdasd1231232",
+  state: "!23asdasd1231232",
+  zipCode: "!23asdasd1231232",
+  country: "!23asdasd1231232"
+  },
+  orderSummary: {
+  merchandiseTotal: 0,
+  shippingTotal: 0,
+  totalTransactionGiveaway: 0,
+  totalOmsiaProfit: 0,
+  totalCapital: 0,
+  totalItems: 0,
+  totalProducts: 0,
+  totalWeightGrams: 0,
+  totalWeightKilos: 0,
+  total: 0
+  }
+  }
+  },
+  {
+  id: "!23asdasd1231232",
+  date: "!23asdasd1231232",
+  type: "!23asdasd1231232",
+  amount: 0,
+  status: "pending",
+  paymentmethod: "!23asdasd1231232",
+  details: {
+  products: [],
+  shippingInfo: {
+  address: "!23asdasd1231232",
+  city: "!23asdasd1231232",
+  state: "!23asdasd1231232",
+  zipCode: "!23asdasd1231232",
+  country: "!23asdasd1231232"
+  },
+  orderSummary: {
+  merchandiseTotal: 0,
+  shippingTotal: 0,
+  totalTransactionGiveaway: 0,
+  totalOmsiaProfit: 0,
+  totalCapital: 0,
+  totalItems: 0,
+  totalProducts: 0,
+  totalWeightGrams: 0,
+  totalWeightKilos: 0,
+  total: 0
+  }
+  }
+  },
+  {
+  id: "!23asdasd1231232",
+  date: "!23asdasd1231232",
+  type: "!23asdasd1231232",
+  amount: 0,
+  status: "pending",
+  paymentmethod: "!23asdasd1231232",
+  details: {
+  products: [],
+  shippingInfo: {
+  address: "!23asdasd1231232",
+  city: "!23asdasd1231232",
+  state: "!23asdasd1231232",
+  zipCode: "!23asdasd1231232",
+  country: "!23asdasd1231232"
+  },
+  orderSummary: {
+  merchandiseTotal: 0,
+  shippingTotal: 0,
+  totalTransactionGiveaway: 0,
+  totalOmsiaProfit: 0,
+  totalCapital: 0,
+  totalItems: 0,
+  totalProducts: 0,
+  totalWeightGrams: 0,
+  totalWeightKilos: 0,
+  total: 0
+  }
+  }
+  },
+  {
+  id: "!23asdasd1231232",
+  date: "!23asdasd1231232",
+  type: "!23asdasd1231232",
+  amount: 0,
+  status: "pending",
+  paymentmethod: "!23asdasd1231232",
+  details: {
+  products: [],
+  shippingInfo: {
+  address: "!23asdasd1231232",
+  city: "!23asdasd1231232",
+  state: "!23asdasd1231232",
+  zipCode: "!23asdasd1231232",
+  country: "!23asdasd1231232"
+  },
+  orderSummary: {
+  merchandiseTotal: 0,
+  shippingTotal: 0,
+  totalTransactionGiveaway: 0,
+  totalOmsiaProfit: 0,
+  totalCapital: 0,
+  totalItems: 0,
+  totalProducts: 0,
+  totalWeightGrams: 0,
+  totalWeightKilos: 0,
+  total: 0
+  }
+  }
+  },
+  {
+  id: "!23asdasd1231232",
+  date: "!23asdasd1231232",
+  type: "!23asdasd1231232",
+  amount: 0,
+  status: "pending",
+  paymentmethod: "!23asdasd1231232",
+  details: {
+  products: [],
+  shippingInfo: {
+  address: "!23asdasd1231232",
+  city: "!23asdasd1231232",
+  state: "!23asdasd1231232",
+  zipCode: "!23asdasd1231232",
+  country: "!23asdasd1231232"
+  },
+  orderSummary: {
+  merchandiseTotal: 0,
+  shippingTotal: 0,
+  totalTransactionGiveaway: 0,
+  totalOmsiaProfit: 0,
+  totalCapital: 0,
+  totalItems: 0,
+  totalProducts: 0,
+  totalWeightGrams: 0,
+  totalWeightKilos: 0,
+  total: 0
+  }
+  }
+  },
+  {
+  id: "!23asdasd1231232",
+  date: "!23asdasd1231232",
+  type: "!23asdasd1231232",
+  amount: 0,
+  status: "pending",
+  paymentmethod: "!23asdasd1231232",
+  details: {
+  products: [],
+  shippingInfo: {
+  address: "!23asdasd1231232",
+  city: "!23asdasd1231232",
+  state: "!23asdasd1231232",
+  zipCode: "!23asdasd1231232",
+  country: "!23asdasd1231232"
+  },
+  orderSummary: {
+  merchandiseTotal: 0,
+  shippingTotal: 0,
+  totalTransactionGiveaway: 0,
+  totalOmsiaProfit: 0,
+  totalCapital: 0,
+  totalItems: 0,
+  totalProducts: 0,
+  totalWeightGrams: 0,
+  totalWeightKilos: 0,
+  total: 0
+  }
+  }
+  },
+  ];
+
+  const creditstransactions = [
+    {
+      id: "TRX12345678",
+      date: "2025-03-10T15:30:00",
+      type: "deposit",
+      amount: 1250.00,
+      status: "pending",
+      paymentmethod: "Bank Transfer",
+      details: {
+        shippingInfo: {
+          address: "123 Main St",
+          city: "San Francisco",
+          state: "CA",
+          zipCode: "94105",
+          country: "USA"
+        },
+        orderSummary: {
+          total: 1250.00,
+          merchandiseTotal: 1200.00,
+          shippingTotal: 50.00
+        }
+      }
+    },
+    {
+      id: "TRX87654321",
+      date: "2025-03-11T10:15:00",
+      type: "deposit",
+      amount: 875.50,
+      status: "pending",
+      paymentmethod: "Credit Card",
+      details: {
+        shippingInfo: {
+          address: "456 Oak Ave",
+          city: "Chicago",
+          state: "IL",
+          zipCode: "60606",
+          country: "USA"
+        },
+        orderSummary: {
+          total: 875.50,
+          merchandiseTotal: 825.50,
+          shippingTotal: 50.00
+        }
+      }
+    },
+    {
+      id: "TRX99887766",
+      date: "2025-03-12T09:45:00",
+      type: "deposit",
+      amount: 3500.00,
+      status: "pending",
+      paymentmethod: "Wire Transfer",
+      details: {
+        shippingInfo: {
+          address: "789 Pine Blvd",
+          city: "New York",
+          state: "NY",
+          zipCode: "10001",
+          country: "USA"
+        },
+        orderSummary: {
+          total: 3500.00,
+          merchandiseTotal: 3400.00,
+          shippingTotal: 100.00
+        }
+      }
+    }
+  ];
+
+  const [credittransactionobject, credittransactionobjectcb] = useState({
+    id: "ID",
+    date: "2025-03-20T10:30:00Z",
+    type: "Credit",
+    amount: 1250.00,
+    status: "Completed",
+    paymentmethod: "Credit Card",
+    details: {
+      products: [
         {
-          purpose: "Initial registration",
-          message: "Submitted application",
-          status: "approved",
-          date: "2025-02-15T09:30:00"
+          name: "Premium Widget",
+          quantity: 2,
+          price: 450.00
         },
         {
-          purpose: "Document submission",
-          message: "Government ID pending",
-          status: "pending",
-          date: "2025-02-15T14:45:00"
+          name: "Deluxe Gadget",
+          quantity: 1,
+          price: 350.00
+        }
+      ],
+      shippingInfo: {
+        address: "123 Main Street, Apt 4B",
+        city: "Metropolis",
+        state: "NY",
+        zipCode: "10001",
+        country: "United States"
+      },
+      orderSummary: {
+        merchandiseTotal: 1250.00,
+        shippingTotal: 0.00,
+        totalTransactionGiveaway: 0.00,
+        totalOmsiaProfit: 312.50,
+        totalCapital: 937.50,
+        totalItems: 3,
+        totalProducts: 2,
+        totalWeightGrams: 1500,
+        totalWeightKilos: 1.5,
+        total: 1250.00
+      },
+      reference: {
+        referencenumber: 1231232,
+        transactionimage: null
+      }
+    }
+  });
+
+  // Example registrants data
+  const registrants = [
+    {
+      id: "MFATIP-2025-0001",
+      loginstatus: "active",
+      status: {
+        type: "incomplete",
+        indication: "pending documents",
+        requests: [
+          {
+            purpose: "Initial registration",
+            message: "Submitted application",
+            status: "approved",
+            date: "2025-02-15T09:30:00"
+          },
+          {
+            purpose: "Document submission",
+            message: "Government ID pending",
+            status: "pending",
+            date: "2025-02-15T14:45:00"
+          }
+        ]
+      },
+      name: {
+        firstname: "Juan",
+        middlename: "Dela",
+        lastname: "Cruz",
+        nickname: "JDC"
+      },
+      contact: {
+        phonenumber: "+63 912 345 6789",
+        telephonenumber: "02-8123-4567",
+        emailaddress: "juan.delacruz@email.com",
+        address: {
+          street: "123 Rizal Street",
+          baranggay: "San Antonio",
+          trademark: "Near City Hall",
+          city: "Makati",
+          province: "Metro Manila",
+          country: "Philippines"
+        }
+      },
+      personaldata: {
+        age: 35,
+        sex: "Male",
+        bloodtype: "O+",
+        dob: "1990-05-15",
+        citizenship: "Filipino",
+        civil_status: "Married",
+        government_issued_identification: "Driver's License"
+      },
+      transactions: [
+        {
+          id: "TRX-2025-0001",
+          date: "2025-02-15T09:30:00",
+          type: "registration",
+          amount: 500,
+          status: "completed",
+          paymentmethod: "GCash"
         }
       ]
     },
-    name: {
-      firstname: "Juan",
-      middlename: "Dela",
-      lastname: "Cruz",
-      nickname: "JDC"
-    },
-    contact: {
-      phonenumber: "+63 912 345 6789",
-      telephonenumber: "02-8123-4567",
-      emailaddress: "juan.delacruz@email.com",
-      address: {
-        street: "123 Rizal Street",
-        baranggay: "San Antonio",
-        trademark: "Near City Hall",
-        city: "Makati",
-        province: "Metro Manila",
-        country: "Philippines"
-      }
-    },
-    personaldata: {
-      age: 35,
-      sex: "Male",
-      bloodtype: "O+",
-      dob: "1990-05-15",
-      citizenship: "Filipino",
-      civil_status: "Married",
-      government_issued_identification: "Driver's License"
-    },
-    transactions: [
-      {
-        id: "TRX-2025-0001",
-        date: "2025-02-15T09:30:00",
-        type: "registration",
-        amount: 500,
-        status: "completed",
-        paymentmethod: "GCash"
-      }
-    ]
-  },
-  {
-    id: "MFATIP-2025-0002",
-    loginstatus: "active",
+    {
+      id: "MFATIP-2025-0002",
+      loginstatus: "active",
+      status: {
+        type: "incomplete",
+        indication: "pending documents",
+        requests: [
+          {
+            purpose: "Initial registration",
+            message: "Submitted application",
+            status: "approved",
+            date: "2025-02-20T10:15:00"
+          }
+        ]
+      },
+      name: {
+        firstname: "Maria",
+        middlename: "Santos",
+        lastname: "Reyes",
+        nickname: "May"
+      },
+      contact: {
+        phonenumber: "+63 923 456 7890",
+        telephonenumber: "",
+        emailaddress: "maria.reyes@email.com",
+        address: {
+          street: "456 Bonifacio Avenue",
+          baranggay: "Poblacion",
+          trademark: "Beside Central Park",
+          city: "Quezon City",
+          province: "Metro Manila",
+          country: "Philippines"
+        }
+      },
+      personaldata: {
+        age: 28,
+        sex: "Female",
+        bloodtype: "A+",
+        dob: "1997-08-23",
+        citizenship: "Filipino",
+        civil_status: "Single",
+        government_issued_identification: "National ID"
+      },
+      transactions: [
+        {
+          id: "TRX-2025-0002",
+          date: "2025-02-20T10:15:00",
+          type: "registration",
+          amount: 500,
+          status: "completed",
+          paymentmethod: "Credit Card"
+        }
+      ]
+    }
+  ]
+
+  // Sample user data
+  const [user] = useState({
+    id: "qwerty1234qwefdln-A-1",
+    loginstatus: "logged in",
     status: {
-      type: "incomplete",
-      indication: "pending documents",
+      type: "MFATIP",
+      indication: "Registered",
       requests: [
         {
-          purpose: "Initial registration",
-          message: "Submitted application",
-          status: "approved",
-          date: "2025-02-20T10:15:00"
+          purpose: "Registration",
+          message: "You registered for the MFATIP PROGRAM",
+          status: "FIRST REGISTRATION. STATUS REGISTERED",
+          date: '07-12-2022'
         }
       ]
     },
     name: {
-      firstname: "Maria",
-      middlename: "Santos",
-      lastname: "Reyes",
-      nickname: "May"
+      firstname: "Mark Anthony",
+      middlename: "Apura",
+      lastname: "Beloy",
+      nickname: "Macky"
     },
     contact: {
-      phonenumber: "+63 923 456 7890",
+      phonenumber: "123456-6789-0",
       telephonenumber: "",
-      emailaddress: "maria.reyes@email.com",
+      emailaddress: "emailaddress@gmail.com",
       address: {
-        street: "456 Bonifacio Avenue",
-        baranggay: "Poblacion",
-        trademark: "Beside Central Park",
-        city: "Quezon City",
-        province: "Metro Manila",
-        country: "Philippines"
+        street: "",
+        baranggay: "",
+        trademark: "",
+        city: "",
+        province: "",
+        country: ''
       }
     },
-    personaldata: {
-      age: 28,
-      sex: "Female",
-      bloodtype: "A+",
-      dob: "1997-08-23",
-      citizenship: "Filipino",
-      civil_status: "Single",
-      government_issued_identification: "National ID"
+    personalinformation: {
+      age: 0,
+      sex: "",
+      bloodtype: "",
+      dob: "",
+      citizenship: "",
+      civil_status: "",
+      government_issued_identification: ""
     },
-    transactions: [
-      {
-        id: "TRX-2025-0002",
-        date: "2025-02-20T10:15:00",
-        type: "registration",
-        amount: 500,
-        status: "completed",
-        paymentmethod: "Credit Card"
+    passwords: {
+      account: {
+        password: ""
       }
-    ]
-  }
- ]
-
- // Sample user data
- const [user] = useState({
-   id: "qwerty1234qwefdln-A-1",
-   loginstatus: "logged in",
-   status: {
-     type: "MFATIP",
-     indication: "Registered",
-     requests: [
-       {
-         purpose: "Registration",
-         message: "You registered for the MFATIP PROGRAM",
-         status: "FIRST REGISTRATION. STATUS REGISTERED",
-         date: '07-12-2022'
-       }
-     ]
-   },
-   name: {
-     firstname: "Mark Anthony",
-     middlename: "Apura",
-     lastname: "Beloy",
-     nickname: "Macky"
-   },
-   contact: {
-     phonenumber: "123456-6789-0",
-     telephonenumber: "",
-     emailaddress: "emailaddress@gmail.com",
-     address: {
-       street: "",
-       baranggay: "",
-       trademark: "",
-       city: "",
-       province: "",
-       country: ''
-     }
-   },
-   personalinformation: {
-     age: 0,
-     sex: "",
-     bloodtype: "",
-     dob: "",
-     citizenship: "",
-     civil_status: "",
-     government_issued_identification: ""
-   },
-   passwords: {
-     account: {
-       password: ""
-     }
-   },
-   credits: {
-     omsiapawasto: {
-       id: "",
-       amount: 10,
-       transactions: {
-         successful_deposits: [],
-         successful_withdrawals: [],
-         failed_deposits: [],
-         failed_withdrawals: []
-       }
-     }
-   },
-   transactions: []
- });
+    },
+    credits: {
+      omsiapawasto: {
+        id: "",
+        amount: 10,
+        transactions: {
+          successful_deposits: [],
+          successful_withdrawals: [],
+          failed_deposits: [],
+          failed_withdrawals: []
+        }
+      }
+    },
+    transactions: []
+  });
 
 
- const [product, setproduct] = useState({
-  id: "12312312",
-  name: "12312312",
-  price: 0,
-  category: "12312312",
-  description: "12312312",
-  weightingrams: 1000,
-  images: ['../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg'],
-  stock: 0,
-  rating: 0,
-  reviews: 0,
-  specifications: ["Specification 1", "Specification 2", "Specification 3"],
-  videoUrl: "12312312", 
-  features: ["Feature 1", "Feature 2", "Feature 3"],
-  warranty: "12312312",
-  quantity: 0,
-  focuseddata: {
-     price: {
-         price: 0,
-         capital: 0,
-         transactiongiveaway: 0,
-         omsiapprofit: 0
-     }
-  },
-  orderdetails: { 
-     quantity: 0,
-     product: {
-       price: 0,
-       capital: 0,
-       transactiongiveaway: 0,
-       omsiapprofit: 0,
-     },
-     shipment: {
-       totalkilos: 0,
-       totalshipmentfee: 0
-     }
-  }
- });
-
-const [registrantdata, setregistrantdata] = useState({
-  id: "12312312",
-  loginstatus: "12312312",
-  status: {
-   type: "12312312",
-  indication: "12312312",
-  requests: []
- },
- name: {
- firstname: "12312312",
- middlename: "12312312",
- lastname: "12312312",
- nickname: "12312312"
- },
- contact: {
- phonenumber: "12312312",
- telephonenumber: "12312312",
- emailaddress: "12312312",
- address: {
-   street: "12312312",
-   baranggay: "12312312",
-   trademark: "12312312",
-   city: "12312312",
-   province: "12312312",
-   country: "12312312"
- }
- },
- personaldata: {
- age: "12312312",
- sex: "12312312",
- bloodtype: "12312312",
- dob: "12312312",
- citizenship: "12312312",
- civil_status: "12312312",
- government_issued_identification: {
-   frontphoto: {
+  const [product, setproduct] = useState({
+    id: "12312312",
     name: "12312312",
+    price: 0,
+    category: "12312312",
     description: "12312312",
-    image: {
-     data: "12312312",
-     contenttype: "12312312"
+    weightingrams: 1000,
+    images: ['../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg', '../images/market/products/lighter.jpg'],
+    stock: 0,
+    rating: 0,
+    reviews: 0,
+    specifications: ["Specification 1", "Specification 2", "Specification 3"],
+    videoUrl: "12312312", 
+    features: ["Feature 1", "Feature 2", "Feature 3"],
+    warranty: "12312312",
+    quantity: 0,
+    focuseddata: {
+      price: {
+          price: 0,
+          capital: 0,
+          transactiongiveaway: 0,
+          omsiapprofit: 0
+      }
     },
-    uploaddate: "12312312"
-   },
-   backphoto: {
-     name: "12312312",
+    orderdetails: { 
+      quantity: 0,
+      product: {
+        price: 0,
+        capital: 0,
+        transactiongiveaway: 0,
+        omsiapprofit: 0,
+      },
+      shipment: {
+        totalkilos: 0,
+        totalshipmentfee: 0
+      }
+    }
+  });
+
+  const [registrantdata, setregistrantdata] = useState({
+    id: "12312312",
+    loginstatus: "12312312",
+    status: {
+    type: "12312312",
+    indication: "12312312",
+    requests: []
+  },
+  name: {
+  firstname: "12312312",
+  middlename: "12312312",
+  lastname: "12312312",
+  nickname: "12312312"
+  },
+  contact: {
+  phonenumber: "12312312",
+  telephonenumber: "12312312",
+  emailaddress: "12312312",
+  address: {
+    street: "12312312",
+    baranggay: "12312312",
+    trademark: "12312312",
+    city: "12312312",
+    province: "12312312",
+    country: "12312312"
+  }
+  },
+  personaldata: {
+  age: "12312312",
+  sex: "12312312",
+  bloodtype: "12312312",
+  dob: "12312312",
+  citizenship: "12312312",
+  civil_status: "12312312",
+  government_issued_identification: {
+    frontphoto: {
+      name: "12312312",
       description: "12312312",
       image: {
-       data: "12312312",
-       contenttype: "12312312"
-      },
-      uploaddate: "12312312"
-   }
- },
- birthcertificate: {
-   frontphoto: {
-     name: "12312312",
-     description: "12312312",
-     image: {
       data: "12312312",
       contenttype: "12312312"
-     },
-     uploaddate: "12312312"
+      },
+      uploaddate: "12312312"
     },
     backphoto: {
       name: "12312312",
-       description: "12312312",
-       image: {
+        description: "12312312",
+        image: {
         data: "12312312",
         contenttype: "12312312"
-       },
-       uploaddate: "12312312"
+        },
+        uploaddate: "12312312"
     }
- }
- },
- credits: {
- omsiapawasto: {
-   id: "12312312",
-   amount: "12312312",
-   transactions: {
-     deposits: [],
-     widthdrawals: [],
-     successful_deposits: [],
-     successful_widthdrawals: []
-   }
- }
- },
- transactions: []
-})
+  },
+  birthcertificate: {
+    frontphoto: {
+      name: "12312312",
+      description: "12312312",
+      image: {
+        data: "12312312",
+        contenttype: "12312312"
+      },
+      uploaddate: "12312312"
+      },
+      backphoto: {
+        name: "12312312",
+        description: "12312312",
+        image: {
+          data: "12312312",
+          contenttype: "12312312"
+        },
+        uploaddate: "12312312"
+      }
+  }
+  },
+  credits: {
+  omsiapawasto: {
+    id: "12312312",
+    amount: "12312312",
+    transactions: {
+      deposits: [],
+      widthdrawals: [],
+      successful_deposits: [],
+      successful_widthdrawals: []
+    }
+  }
+  },
+  transactions: []
+  })
 
  return (
    <div id="database-container">
@@ -844,30 +1191,45 @@ const [registrantdata, setregistrantdata] = useState({
                                      setShowTotalOrders={setShowTotalOrders}
                                      setShowPendingOrders={setShowPendingOrders}
                                      setShowAcceptedOrders={setShowAcceptedOrders}
+                                     setShowRejectedOrders={setShowRejectedOrders}
                                      setShowOrderDetails={setShowOrderDetails}
 
-                                     setShowTotalDeposits={setShowTotalDeposits}
-                                     setShowPendingDeposits={setShowPendingDeposits}
-                                     setShowSuccessfulDeposits={setShowSuccessfulDeposits}
-                                     setShowRejectedDeposits={setShowRejectedDeposits}
+                                     setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
+                                     setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
+                                     setShowSuccessfulCurrencyExchange={setShowSuccessfulCurrencyExchange}
+                                     setShowRejectedCurrencyExchange={setShowRejectedCurrencyExchange}
                
                                      setShowTotalWithdrawals={setShowTotalWithdrawals}
                                      setShowPendingWithdrawals={setShowPendingWithdrawals}
                                      setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
                                      setShowRejectedWithdrawals={setShowRejectedWithdrawals}
 
+                                     
+                                     setShowRegisteredRegistrantsWithVerifiedDocuments={setShowRegisteredRegistrantsWithVerifiedDocuments}
+                                     setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
+                                     setShowRegisteredRegistrantsWithRejectedDocuments={setShowRegisteredRegistrantsWithRejectedDocuments}
+
+                                     totalorders={totalorders}
+                                     pendingorders={pendingorders}
+                                     acceptedorders={acceptedorders}
+                                     rejectedorders={rejectedorders}
+
+                                     totalcurrencyexchange={totalcurrencyexchange}
+                                     pendingcurrencyexchange={pendingcurrencyexchange}
+                                     successfulcurrencyexchange={successfulcurrencyexchange}
+                                     rejectedcurrencyexchange={rejectedcurrencyexchange}
+
+                                     totalwithdrawals={totalwithdrawals}
+                                     pendingwithdrawals={pendingwithdrawals}
+                                     successfulwithdrawals={successfulwithdrawals}
+                                     rejectedwithdrawals={rejectedwithdrawals}
+
+                                     verifiedmfatipregistrants={verifiedmfatipregistrants}
+                                     pendingmfatipregistrants={pendingmfatipregistrants}
+                                     mfatipregistrantsrejecteddocuments={mfatipregistrantsrejecteddocuments}
 
                                      setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
                                      setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
-
-
-
- 
-
-
-                                     setShowPendingDeposits={setShowPendingDeposits}
-                                     setShowPendingWithdrawals={setShowPendingWithdrawals}
-                                     setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
                        />
 
        <StatisticsCardOperationScope stats={customStats}
@@ -878,24 +1240,47 @@ const [registrantdata, setregistrantdata] = useState({
                                      setShowTotalOrders={setShowTotalOrders}
                                      setShowPendingOrders={setShowPendingOrders}
                                      setShowAcceptedOrders={setShowAcceptedOrders}
+                                     setShowRejectedOrders={setShowRejectedOrders}
                                      setShowOrderDetails={setShowOrderDetails}
 
 
-                                     setShowTotalDeposits={setShowTotalDeposits}
-                                     setShowPendingDeposits={setShowPendingDeposits}
-                                     setShowSuccessfulDeposits={setShowSuccessfulDeposits}
-                                     setShowRejectedDeposits={setShowRejectedDeposits}
+                                     setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
+                                     setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
+                                     setShowSuccessfulCurrencyExchange={setShowSuccessfulCurrencyExchange}
+                                     setShowRejectedCurrencyExchange={setShowRejectedCurrencyExchange}
 
                                      setShowTotalWithdrawals={setShowTotalWithdrawals}
                                      setShowPendingWithdrawals={setShowPendingWithdrawals}
                                      setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
                                      setShowRejectedWithdrawals={setShowRejectedWithdrawals}
 
+                                     setShowRegisteredRegistrantsWithVerifiedDocuments={setShowRegisteredRegistrantsWithVerifiedDocuments}
+                                     setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
+                                     setShowRegisteredRegistrantsWithRejectedDocuments={setShowRegisteredRegistrantsWithRejectedDocuments}
+
+                                     totalorders={totalorders}
+                                     pendingorders={pendingorders}
+                                     acceptedorders={acceptedorders}
+                                     rejectedorders={rejectedorders}
+
+                                     totalcurrencyexchange={totalcurrencyexchange}
+                                     pendingcurrencyexchange={pendingcurrencyexchange}
+                                     successfulcurrencyexchange={successfulcurrencyexchange}
+                                     rejectedcurrencyexchange={rejectedcurrencyexchange}
+
+                                     totalwithdrawals={totalwithdrawals}
+                                     pendingwithdrawals={pendingwithdrawals}
+                                     successfulwithdrawals={successfulwithdrawals}
+                                     rejectedwithdrawals={rejectedwithdrawals}
+
+                                     verifiedmfatipregistrants={verifiedmfatipregistrants}
+                                     pendingmfatipregistrants={pendingmfatipregistrants}
+                                     mfatipregistrantsrejecteddocuments={mfatipregistrantsrejecteddocuments}
+
                                      setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
                                      setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
                                      
 
-                                     setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
                                     />
 
         <StatisticsCardDailyTasks stats={customStats}
@@ -905,24 +1290,47 @@ const [registrantdata, setregistrantdata] = useState({
                                   setShowTotalOrders={setShowTotalOrders}
                                   setShowPendingOrders={setShowPendingOrders}
                                   setShowAcceptedOrders={setShowAcceptedOrders}
+                                  setShowRejectedOrders={setShowRejectedOrders}
                                   setShowOrderDetails={setShowOrderDetails}
 
-                                  setShowTotalDeposits={setShowTotalDeposits}
-                                  setShowPendingDeposits={setShowPendingDeposits}
-                                  setShowSuccessfulDeposits={setShowSuccessfulDeposits}
-                                  setShowRejectedDeposits={setShowRejectedDeposits}
+                                  setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
+                                  setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
+                                  setShowSuccessfulCurrencyExchange={setShowSuccessfulCurrencyExchange}
+                                  setShowRejectedCurrencyExchange={setShowRejectedCurrencyExchange}
 
                                   setShowTotalWithdrawals={setShowTotalWithdrawals}
                                   setShowPendingWithdrawals={setShowPendingWithdrawals}
                                   setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
                                   setShowRejectedWithdrawals={setShowRejectedWithdrawals}
 
+                                  setShowRegisteredRegistrantsWithVerifiedDocuments={setShowRegisteredRegistrantsWithVerifiedDocuments}
+                                  setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
+                                  setShowRegisteredRegistrantsWithRejectedDocuments={setShowRegisteredRegistrantsWithRejectedDocuments}
+
+                                  totalorders={totalorders}
+                                  pendingorders={pendingorders}
+                                  acceptedorders={acceptedorders}
+                                  rejectedorders={rejectedorders}
+
+                                  totalcurrencyexchange={totalcurrencyexchange}
+                                  pendingcurrencyexchange={pendingcurrencyexchange}
+                                  successfulcurrencyexchange={successfulcurrencyexchange}
+                                  rejectedcurrencyexchange={rejectedcurrencyexchange}
+
+                                  totalwithdrawals={totalwithdrawals}
+                                  pendingwithdrawals={pendingwithdrawals}
+                                  successfulwithdrawals={successfulwithdrawals}
+                                  rejectedwithdrawals={rejectedwithdrawals}
+
+                                  verifiedmfatipregistrants={verifiedmfatipregistrants}
+                                  pendingmfatipregistrants={pendingmfatipregistrants}
+                                  mfatipregistrantsrejecteddocuments={mfatipregistrantsrejecteddocuments}
+
                                   setShowPendingPublicRegistrationModal={setShowPendingPublicRegistrationModal}
                                   setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
                               
-                                  setShowPendingDeposits={setShowPendingDeposits}
+                                  setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
                                   setShowPendingWithdrawals={setShowPendingWithdrawals}
-                                  setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
                        />
 
          <StatisticsCardProductCRUD stats={customStats}
@@ -955,7 +1363,8 @@ const [registrantdata, setregistrantdata] = useState({
 
            {
             showTotalOrders && (
-              <TotalOrders transactions={transactions}
+              <TotalOrders totalorders={totalorders}
+                           setOrderDetailsObject={setOrderDetailsObject}
 
                            setShowDatabaseConfiguration={setShowDatabaseConfiguration}
 
@@ -963,16 +1372,17 @@ const [registrantdata, setregistrantdata] = useState({
                            setShowPendingOrders={setShowPendingOrders}
                            setShowOrderDetails={setShowOrderDetails}
 
-                           setShowPendingOrders={setShowPendingOrders}
-                           setShowPendingOrderDetails={setShowPendingOrderDetails}
+                           acceptorderloadingindication={acceptorderloadingindication}
+                           acceptorderloadingindicationcb={acceptorderloadingindicationcb}
 
-                             />
+                           />
             )
             }
 
             {
             showPendingOrders && (
-              <PendingOrders transactions={transactions}
+              <PendingOrders pendingorders={pendingorders}
+                             setOrderDetailsObject={setOrderDetailsObject}
 
                              setShowDatabaseConfiguration={setShowDatabaseConfiguration}
 
@@ -980,7 +1390,8 @@ const [registrantdata, setregistrantdata] = useState({
                              setShowPendingOrders={setShowPendingOrders}
                              setShowOrderDetails={setShowOrderDetails}
 
-                             setShowPendingOrderDetails={setShowPendingOrderDetails}
+                             acceptorderloadingindication={acceptorderloadingindication}
+                             acceptorderloadingindicationcb={acceptorderloadingindicationcb}
 
                              />
             )
@@ -988,20 +1399,31 @@ const [registrantdata, setregistrantdata] = useState({
 
             {
             showAcceptedOrders && (
-              <AcceptedOrders transactions={transactions}
+              <AcceptedOrders acceptedorders={acceptedorders}
+                              setOrderDetailsObject={setOrderDetailsObject}
+
                               setShowDatabaseConfiguration={setShowDatabaseConfiguration}
 
                               setShowTotalOrders={setShowTotalOrders}
                               setShowAcceptedOrders={setShowAcceptedOrders}
                               setShowOrderDetails={setShowOrderDetails}
 
+                             />
+            )
+            }
 
+           {
+            showRejectedOrders && (
+              <RejectedOrders rejectedorders={rejectedorders}
+                              setOrderDetailsObject={setOrderDetailsObject}
 
+                              setShowDatabaseConfiguration={setShowDatabaseConfiguration}
 
-
+                              setShowTotalOrders={setShowTotalOrders}
+                              setShowAcceptedOrders={setShowAcceptedOrders}
                               setShowPendingOrders={setShowPendingOrders}
-
-                              setShowPendingOrderDetails={setShowPendingOrderDetails}
+                              setShowRejectedOrders={setShowRejectedOrders}
+                              setShowOrderDetails={setShowOrderDetails}
 
                              />
             )
@@ -1009,59 +1431,62 @@ const [registrantdata, setregistrantdata] = useState({
 
             {
               showOrderDetails && (
-                <OrderDetailsModal onClose={() => setShowModal(false)} 
-                                   transaction={transactions[0]} 
+                <OrderDetailsModal transaction={orderDetailsObject} 
                                    setShowOrderDetails={setShowOrderDetails}/>
               )
             }
 
             {
-            showTotalDeposits && (
-              <TotalDeposits transactions={creditstransactions}
+            showTotalCurrencyExchange && (
+              <TotalCurrencyExchange totalcurrencyexchange={totalcurrencyexchange}
+                                     credittransactionobjectcb={credittransactionobjectcb}
 
-                             setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                             setShowTotalDeposits={setShowTotalDeposits}
+                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                     setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
 
-                             setShowCreditTransaction={setShowCreditTransaction}
+                                     setShowCreditTransaction={setShowCreditTransaction}
 
                              />
             )
             }
 
             {
-            showPendingDeposits && (
-              <PendingDeposits transactions={creditstransactions}
+            showPendingCurrencyExchange && (
+              <PendingCurrencyExchange pendingcurrencyexchange={pendingcurrencyexchange}
+                                       credittransactionobjectcb={credittransactionobjectcb}
 
-                               setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                               setShowPendingDeposits={setShowPendingDeposits}
+                                       setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                       setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
 
-                               setShowCreditTransaction={setShowCreditTransaction}
+                                       setShowCreditTransaction={setShowCreditTransaction}
 
                              />
             )
             }
 
            {
-            showSuccessfulDeposits && (
-              <SuccessfulDeposits transactions={creditstransactions}
+            showSuccessfulCurrencyExchange && (
+              <SuccessfulCurrencyExchange successfulcurrencyexchange={successfulcurrencyexchange}
+                                          credittransactionobjectcb={credittransactionobjectcb}
 
-                                  setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                                  setShowSuccessfulDeposits={setShowSuccessfulDeposits}
+                                          setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                          setShowSuccessfulCurrencyExchange={setShowSuccessfulCurrencyExchange}
 
-                                  setShowCreditTransaction={setShowCreditTransaction}
+                                          setShowCreditTransaction={setShowCreditTransaction}
 
                              />
             )
            }
 
            {
-            showRejectedDeposits && (
-              <RejectedDeposits transactions={creditstransactions}
+            showRejectedCurrencyExchange && (
+              <RejectedCurrencyExchange rejectedcurrencyexchange={rejectedcurrencyexchange}
+                                        credittransactionobjectcb={credittransactionobjectcb}
 
-                                setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                                setShowRejectedDeposits={setShowRejectedDeposits}
+                                        setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                        setShowRejectedCurrencyExchange={setShowRejectedCurrencyExchange}
 
-                                setShowCreditTransaction={setShowCreditTransaction}
+                                        setShowCreditTransaction={setShowCreditTransaction}
 
                              />
             )
@@ -1069,7 +1494,8 @@ const [registrantdata, setregistrantdata] = useState({
 
             {
               showTotalWithdrawals && (
-                <TotalWithdrawals transactions={creditstransactions}
+                <TotalWithdrawals totalwithdrawals={totalwithdrawals}
+                                  credittransactionobjectcb={credittransactionobjectcb}
 
                                   setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                   setShowTotalWithdrawals={setShowTotalWithdrawals}
@@ -1080,7 +1506,8 @@ const [registrantdata, setregistrantdata] = useState({
 
             {
               showPendingWithdrawals && (
-                <PendingWithdrawals transactions={creditstransactions}
+                <PendingWithdrawals pendingwithdrawals={pendingwithdrawals}
+                                    credittransactionobjectcb={credittransactionobjectcb}
 
                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                     setShowPendingWithdrawals={setShowPendingWithdrawals}
@@ -1091,7 +1518,8 @@ const [registrantdata, setregistrantdata] = useState({
 
             {
               showSuccessfulWithdrawals && (
-                <SuccessfulWithdrawals transactions={creditstransactions}
+                <SuccessfulWithdrawals successfulwithdrawals={successfulwithdrawals}
+                                       credittransactionobjectcb={credittransactionobjectcb}
 
                                        setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                        setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
@@ -1102,7 +1530,9 @@ const [registrantdata, setregistrantdata] = useState({
 
             {
               showRejectedWithdrawals && (
-                <RejectedWithdrawals transactions={creditstransactions}
+                <RejectedWithdrawals rejectedwithdrawals={rejectedwithdrawals}
+                                     credittransactionobjectcb={credittransactionobjectcb}       
+
                                      setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                      setShowRejectedWithdrawals={setShowRejectedWithdrawals}
                                   
@@ -1112,9 +1542,47 @@ const [registrantdata, setregistrantdata] = useState({
 
             {
               showCreditTransaction && (
-                <CreditTransactionModal transaction={credittransactionobject}
+                <CreditTransactionModal credittransactionobject={credittransactionobject}
                                         setShowCreditTransaction={setShowCreditTransaction}/>
               )
+            }
+
+
+            {
+            showRegisteredRegistrantsWithVerifiedDocuments && (
+              <MfatipRegisteredRegistrantsWithVerifiedDocuments verifiedmfatipregistrants={verifiedmfatipregistrants}
+                                                                setregistrantdata={setregistrantdata}
+
+                                                                setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                                                setShowRegisteredRegistrantsWithVerifiedDocuments={setShowRegisteredRegistrantsWithVerifiedDocuments}
+                                                                setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
+                             />
+            )
+            }
+
+
+           {
+            showRegisteredRegistrantsWithPendingDocuments && (
+              <MfatipRegisteredRegistrantsWithPendingDocuments pendingmfatipregistrants={pendingmfatipregistrants}
+                                                               setregistrantdata={setregistrantdata}
+
+                                                               setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                                               setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
+                                                               setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
+                             />
+            )
+            }
+
+           {
+            showRegisteredRegistrantsWithRejectedDocuments && (
+              <MfatipRegisteredRegistrantsWithRejectedDocuments mfatipregistrantsrejecteddocuments={mfatipregistrantsrejecteddocuments}
+                                                                setregistrantdata={setregistrantdata}
+
+                                                                setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                                                setShowRegisteredRegistrantsWithRejectedDocuments={setShowRegisteredRegistrantsWithRejectedDocuments}
+                                                                setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
+                             />
+            )
             }
 
 
@@ -1133,28 +1601,11 @@ const [registrantdata, setregistrantdata] = useState({
             )
             }
  
-            {
-            showPendingWithdrawals && (
-              <PendingWithdrawals transactions={creditstransactions}
-                                   setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                                   setShowPendingWithdrawals={setShowPendingWithdrawals}
-                             />
-            )
-            }
-
-            {
-            showRegisteredRegistrantWithPendingDocuments && (
-              <MfatipPendingRegistrants registrants={registrants}
-                                        setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                                        setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
-                             />
-            )
-            }
+           
             
             {
               showProductReader && (
                 <ProductReader product={product} 
-                               onClose={() => setShowModal(false)} 
                                setShowPendingOrders={setShowPendingOrders}
                                setShowProductReader={setShowProductReader}/>
               )
@@ -1210,12 +1661,6 @@ const [registrantdata, setregistrantdata] = useState({
                                         setShowUpdateRegistrantFormDisplay={setShowUpdateRegistrantFormDisplay}
                                         registrantdata={registrantdata}
                                         setregistrantdata={setregistrantdata}/>
-              )
-            }
-
-            {
-              showGcashPaymentLink && (
-                <GCashPaymentLink />
               )
             }
 
@@ -1513,22 +1958,45 @@ const StatisticsCardOperationBasis = ({
   setShowTotalOrders, 
   setShowPendingOrders, 
   setShowAcceptedOrders, 
+  setShowRejectedOrders,
   setShowOrderDetails,
 
-  setShowTotalDeposits,
-  setShowPendingDeposits,
-  setShowSuccessfulDeposits,
-  setShowRejectedDeposits,
+  setShowTotalCurrencyExchange,
+  setShowPendingCurrencyExchange,
+  setShowSuccessfulCurrencyExchange,
+  setShowRejectedCurrencyExchange,
 
   setShowTotalWithdrawals,
   setShowPendingWithdrawals,
   setShowSuccessfulWithdrawals,
   setShowRejectedWithdrawals,
 
-  setShowRegisteredRegistrantsWithPendingDocuments 
+  setShowRegisteredRegistrantsWithVerifiedDocuments,
+  setShowRegisteredRegistrantsWithPendingDocuments,
+  setShowRegisteredRegistrantsWithRejectedDocuments,
 
+  totalorders,
+  pendingorders,
+  acceptedorders,
+  rejectedorders,
+
+  totalcurrencyexchange,
+  pendingcurrencyexchange,
+  successfulcurrencyexchange,
+  rejectedcurrencyexchange,
+
+  totalwithdrawals,
+  pendingwithdrawals,
+  successfulwithdrawals,
+  rejectedwithdrawals,
+
+  verifiedmfatipregistrants,
+  pendingmfatipregistrants,
+  mfatipregistrantsrejecteddocuments
 
 }) => {
+
+
   // Sample stats data if not provided
   const defaultStats = {
     pendingOrders: { count: 24 },
@@ -1559,11 +2027,11 @@ const StatisticsCardOperationBasis = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count} total orders</div>
+              <div className="stat-value">{totalorders.length} total orders</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>42 total orders</span>
+                <span>{totalorders.length} total orders</span>
                 <button className="action-button" onClick={() => {
 
                   setShowDatabaseConfiguration(true);
@@ -1574,7 +2042,7 @@ const StatisticsCardOperationBasis = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>20 pending orders</span>
+                <span>{pendingorders.length} pending orders</span>
                 <button className="action-button" onClick={() => {
                    
                    setShowDatabaseConfiguration(true);
@@ -1586,7 +2054,7 @@ const StatisticsCardOperationBasis = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 accepted orders</span>
+                <span>{acceptedorders.length} accepted orders</span>
                 <button className="action-button" onClick={() => {
 
                   setShowDatabaseConfiguration(true);
@@ -1594,6 +2062,25 @@ const StatisticsCardOperationBasis = ({
                   setShowPendingOrders(false)
                   setShowAcceptedOrders(true);
 
+                  
+                  setShowPendingOrders(false);
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span onClick={()=> {
+                  console.log(rejectedorders.length)
+                  console.log(rejectedorders)
+                }}>{rejectedorders.length} rejected order</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false);
+
+                  setShowRejectedOrders(true)
+                  
                   
                   setShowPendingOrders(false);
 
@@ -1620,14 +2107,14 @@ const StatisticsCardOperationBasis = ({
           </div>
         </div>
 
-        {/* TOTAL DEPOSITS */}
+        {/* TOTAL CURRENCY EXCHANGE */}
         <div className="statistics-card deposits-card" onClick={() => {
           setShowDatabaseConfiguration(true);
-          setShowPendingDeposits(true);
+          setShowPendingCurrencyExchange(true);
         }}>
           <div className="card-inner">
             <div className="card-header">
-              <span>TOTAL DEPOSITS</span>
+              <span>TOTAL CURRENCY EXCHANGE</span>
               <div className="card-icon deposits-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="5" width="20" height="14" rx="2"></rect>
@@ -1636,11 +2123,11 @@ const StatisticsCardOperationBasis = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} total deposits</div>
+              <div className="stat-value">{totalcurrencyexchange.length} total currency exchange</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>27 total deposits</span>
+                <span>{totalcurrencyexchange.length} total currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation();
@@ -1652,17 +2139,17 @@ const StatisticsCardOperationBasis = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(true)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(true)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
 
 
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>20 pending deposits</span>
+                <span>{pendingcurrencyexchange.length} pending currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation();
@@ -1674,16 +2161,16 @@ const StatisticsCardOperationBasis = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(true)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(true)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
 
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 successful deposits</span>
+                <span>{successfulcurrencyexchange.length} successful currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation();
@@ -1695,17 +2182,17 @@ const StatisticsCardOperationBasis = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(true)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(true)
+                  setShowRejectedCurrencyExchange(false)
 
 
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 rejected deposits</span>
+                <span>{rejectedcurrencyexchange.length} rejected currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation();
@@ -1717,10 +2204,10 @@ const StatisticsCardOperationBasis = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(true)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(true)
 
 
 
@@ -1760,11 +2247,11 @@ const StatisticsCardOperationBasis = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count} total withdrawals</div>
+              <div className="stat-value">{totalwithdrawals.length} total withdrawals</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>13 total withdrawals</span>
+                <span>{totalwithdrawals.length} total withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -1776,10 +2263,10 @@ const StatisticsCardOperationBasis = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(true)
                   setShowPendingWithdrawals(false)
@@ -1789,7 +2276,7 @@ const StatisticsCardOperationBasis = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>20 pending withdrawals</span>
+                <span>{pendingwithdrawals.length} pending withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -1801,10 +2288,10 @@ const StatisticsCardOperationBasis = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(true)
@@ -1814,7 +2301,7 @@ const StatisticsCardOperationBasis = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 successful withdrawals</span>
+                <span>{successfulwithdrawals.length} successful withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -1825,10 +2312,10 @@ const StatisticsCardOperationBasis = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(true)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(true)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(false)
@@ -1838,7 +2325,7 @@ const StatisticsCardOperationBasis = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 rejected withdrawals</span>
+                <span>{rejectedwithdrawals.length} rejected withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -1850,10 +2337,10 @@ const StatisticsCardOperationBasis = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(true)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(true)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(false)
@@ -1883,15 +2370,12 @@ const StatisticsCardOperationBasis = ({
           </div>
         </div>
 
-        {/* REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
-        <div className="statistics-card registrants-card" onClick={() => {
-          setShowDatabaseConfiguration(true);
-          setShowRegisteredRegistrantsWithPendingDocuments(true);
-        }}>
+         {/*  REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
+         <div className="statistics-card withdrawals-card">
           <div className="card-inner">
             <div className="card-header">
               <span>REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS</span>
-              <div className="card-icon registrations-icon">
+              <div className="card-icon withdrawals-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
@@ -1901,7 +2385,113 @@ const StatisticsCardOperationBasis = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingRegistrations.count} registrants</div>
+              <div className="stat-value">{pendingmfatipregistrants.length} total registrants with pending documents status</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>{verifiedmfatipregistrants.length} total MFATIP registered registrants pending documents verified</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(true)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{pendingmfatipregistrants.length} total MFATIP registered registrants with pending documents status</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(true)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{mfatipregistrantsrejecteddocuments.length} total MFATIP registered registrants pending documents rejected</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
             </div>
           </div>
         </div>
@@ -1919,19 +2509,43 @@ const StatisticsCardOperationScope = ({
   setShowTotalOrders, 
   setShowPendingOrders, 
   setShowAcceptedOrders, 
+  setShowRejectedOrders,
   setShowOrderDetails,
 
-  setShowTotalDeposits,
-  setShowPendingDeposits,
-  setShowSuccessfulDeposits,
-  setShowRejectedDeposits,
+  setShowTotalCurrencyExchange,
+  setShowPendingCurrencyExchange,
+  setShowSuccessfulCurrencyExchange,
+  setShowRejectedCurrencyExchange,
 
   setShowTotalWithdrawals,
   setShowPendingWithdrawals,
   setShowSuccessfulWithdrawals,
   setShowRejectedWithdrawals, 
 
-  setShowRegisteredRegistrantsWithPendingDocuments
+  setShowRegisteredRegistrantsWithVerifiedDocuments,
+  setShowRegisteredRegistrantsWithPendingDocuments,
+  setShowRegisteredRegistrantsWithRejectedDocuments,
+
+  totalorders,
+  pendingorders,
+  acceptedorders,
+  rejectedorders,
+
+  totalcurrencyexchange,
+  pendingcurrencyexchange,
+  successfulcurrencyexchange,
+  rejectedcurrencyexchange,
+
+  totalwithdrawals,
+  pendingwithdrawals,
+  successfulwithdrawals,
+  rejectedwithdrawals,
+
+  verifiedmfatipregistrants,
+  pendingmfatipregistrants,
+  mfatipregistrantsrejecteddocuments
+
+
 }) => {
   // Sample stats data if not provided
   const defaultStats = {
@@ -1977,11 +2591,11 @@ const StatisticsCardOperationScope = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count} pending orders</div>
+              <div className="stat-value">{pendingorders.length} pending orders</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>20 pending orders</span>
+                <span>{pendingorders.length} pending orders</span>
                 <button className="action-button" onClick={() => {
 
                   setShowDatabaseConfiguration(true)
@@ -1993,7 +2607,7 @@ const StatisticsCardOperationScope = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>42 total orders</span>
+                <span>{totalorders.length} total orders</span>
                 <button className="action-button" onClick={() => {
 
                   setShowDatabaseConfiguration(true);
@@ -2005,13 +2619,29 @@ const StatisticsCardOperationScope = ({
               </div>
 
               <div className="detail-item">
-                <span>22 accepted orders</span>
+                <span>{acceptedorders.length} accepted orders</span>
                 <button className="action-button" onClick={() => {
 
                   setShowDatabaseConfiguration(true);
                   setShowTotalOrders(false)
                   setShowPendingOrders(false);
                   setShowAcceptedOrders(true);
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{rejectedorders.length} rejected orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false);
+
+                  setShowRejectedOrders(true)
+
+                  
+                  setShowPendingOrders(false);
 
                 }}>view</button>
               </div>
@@ -2036,11 +2666,11 @@ const StatisticsCardOperationScope = ({
           </div>
         </div>
       
-        {/* PENDING DEPOSITS */}
+        {/* PENDING CURRENCY EXCHANGE */}
         <div className="statistics-card deposits-card">
           <div className="card-inner">
             <div className="card-header">
-              <span>PENDING DEPOSITS</span>
+              <span>PENDING CURRENCY EXCHANGE</span>
               <div className="card-icon deposits-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="5" width="20" height="14" rx="2"></rect>
@@ -2049,11 +2679,11 @@ const StatisticsCardOperationScope = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} pending deposits</div>
+              <div className="stat-value">{pendingcurrencyexchange.length} pending currency exchange</div>
             </div>
             <div className="card-details">
              <div className="detail-item">
-                <span>20 pending deposits</span>
+                <span>{pendingcurrencyexchange.length} pending currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2064,15 +2694,15 @@ const StatisticsCardOperationScope = ({
                   setShowPendingOrders(false)
                   setShowAcceptedOrders(false)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(true)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(true)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>27 total deposits</span>
+                <span>{totalcurrencyexchange.length} total currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                    e.stopPropagation()
@@ -2083,15 +2713,15 @@ const StatisticsCardOperationScope = ({
                    setShowPendingOrders(false)
                    setShowAcceptedOrders(false)
 
-                   setShowTotalDeposits(true)
-                   setShowPendingDeposits(false)
-                   setShowSuccessfulDeposits(false)
-                   setShowRejectedDeposits(false)
+                   setShowTotalCurrencyExchange(true)
+                   setShowPendingCurrencyExchange(false)
+                   setShowSuccessfulCurrencyExchange(false)
+                   setShowRejectedCurrencyExchange(false)
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 successful deposits</span>
+                <span>{successfulcurrencyexchange.length} successful currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2103,15 +2733,15 @@ const StatisticsCardOperationScope = ({
                   setShowPendingOrders(false)
                   setShowAcceptedOrders(false)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(true)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(true)
+                  setShowRejectedCurrencyExchange(false)
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 rejected deposits</span>
+                <span>{rejectedcurrencyexchange.length} rejected currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2121,10 +2751,10 @@ const StatisticsCardOperationScope = ({
                   setShowPendingOrders(false)
                   setShowAcceptedOrders(false)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(true)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(true)
 
                 }}>view</button>
               </div>
@@ -2162,11 +2792,11 @@ const StatisticsCardOperationScope = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count} pending withdrawals</div>
+              <div className="stat-value">{pendingwithdrawals.length} pending withdrawals</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>20 pending withdrawals</span>
+                <span>{pendingwithdrawals.length} pending withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2178,10 +2808,10 @@ const StatisticsCardOperationScope = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(true)
@@ -2191,7 +2821,7 @@ const StatisticsCardOperationScope = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>13 total withdrawals</span>
+                <span>{totalwithdrawals.length} total withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2203,10 +2833,10 @@ const StatisticsCardOperationScope = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(true)
                   setShowPendingWithdrawals(false)
@@ -2216,7 +2846,7 @@ const StatisticsCardOperationScope = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 successful withdrawals</span>
+                <span>{successfulwithdrawals.length} successful withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2228,10 +2858,10 @@ const StatisticsCardOperationScope = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(false)
@@ -2241,22 +2871,22 @@ const StatisticsCardOperationScope = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 rejected withdrawals</span>
+                <span>{rejectedwithdrawals.length} rejected withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
 
                   setShowDatabaseConfiguration(true)
 
-                   setShowTotalOrders(false)
+                  setShowTotalOrders(false)
                   setShowPendingOrders(false)
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(false)
@@ -2285,16 +2915,13 @@ const StatisticsCardOperationScope = ({
             </div>
           </div>
         </div>
-
-        {/* REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
-        <div className="statistics-card registrants-card" onClick={() => {
-          setShowDatabaseConfiguration(true);
-          setShowRegisteredRegistrantsWithPendingDocuments(true);
-        }}>
+ 
+         {/*  REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
+         <div className="statistics-card withdrawals-card">
           <div className="card-inner">
             <div className="card-header">
               <span>REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS</span>
-              <div className="card-icon registrations-icon">
+              <div className="card-icon withdrawals-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
@@ -2304,7 +2931,115 @@ const StatisticsCardOperationScope = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingRegistrations.count} registrants</div>
+              <div className="stat-value">{pendingmfatipregistrants.length} total registrants with pending documents status</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>{verifiedmfatipregistrants.length} total MFATIP registered registrants with pending documents verified</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(true)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{pendingmfatipregistrants.length} total MRATIP registered registrants with pending documents status</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(true)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{mfatipregistrantsrejecteddocuments.length} total MFRATIP registered registrants pending documents rejected</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                 setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(true)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(true)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(true)
+
+                  
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
             </div>
           </div>
         </div>
@@ -2323,21 +3058,42 @@ const StatisticsCardDailyTasks = ({
   setShowTotalOrders, 
   setShowPendingOrders, 
   setShowAcceptedOrders, 
+  setShowRejectedOrders,
   setShowOrderDetails, 
 
-  setShowTotalDeposits,
-  setShowPendingDeposits,
-  setShowSuccessfulDeposits,
-  setShowRejectedDeposits,
+  setShowTotalCurrencyExchange,
+  setShowPendingCurrencyExchange,
+  setShowSuccessfulCurrencyExchange,
+  setShowRejectedCurrencyExchange,
 
   setShowTotalWithdrawals,
   setShowPendingWithdrawals,
   setShowSuccessfulWithdrawals,
   setShowRejectedWithdrawals,
 
+  setShowRegisteredRegistrantsWithVerifiedDocuments,
+  setShowRegisteredRegistrantsWithPendingDocuments,
+  setShowRegisteredRegistrantsWithRejectedDocuments,
 
+  totalorders,
+  pendingorders,
+  acceptedorders,
+  rejectedorders,
 
-  setShowRegisteredRegistrantsWithPendingDocuments 
+  totalcurrencyexchange,
+  pendingcurrencyexchange,
+  successfulcurrencyexchange,
+  rejectedcurrencyexchange,
+
+  totalwithdrawals,
+  pendingwithdrawals,
+  successfulwithdrawals,
+  rejectedwithdrawals,
+
+  verifiedmfatipregistrants,
+  pendingmfatipregistrants,
+  mfatipregistrantsrejecteddocuments
+
 
 }) => {
   // Sample stats data if not provided
@@ -2384,11 +3140,11 @@ const StatisticsCardDailyTasks = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingOrders.count} accepted orders</div>
+              <div className="stat-value">{acceptedorders.length} accepted orders</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>42 total orders</span>
+                <span>{totalorders.length} total orders</span>
                 <button className="action-button" onClick={() => {
 
 
@@ -2403,7 +3159,7 @@ const StatisticsCardDailyTasks = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>20 pending orders</span>
+                <span>{pendingorders.length} pending orders</span>
                 <button className="action-button" onClick={() => {
 
                   setShowDatabaseConfiguration(true)
@@ -2415,7 +3171,7 @@ const StatisticsCardDailyTasks = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 accepted orders</span>
+                <span>{acceptedorders.length} accepted orders</span>
                 <button className="action-button" onClick={() => {
 
                   setShowDatabaseConfiguration(true)
@@ -2423,6 +3179,22 @@ const StatisticsCardDailyTasks = ({
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
                   setShowAcceptedOrders(true)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{rejectedorders.length} rejected orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true)
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+
+                  setShowRejectedOrders(true)
+
+                  
+                  setShowPendingOrders(false);
 
                 }}>view</button>
               </div>
@@ -2447,11 +3219,104 @@ const StatisticsCardDailyTasks = ({
           </div>
         </div>
 
-        {/* SUCCESSFUL DEPOSITS */}
+          {/* REJECTED ORDERS */}
+          <div className="statistics-card orders-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>REJECTED ORDERS</span>
+              <div className="card-icon orders-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{rejectedorders.length} rejected orders</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>42 total orders</span>
+                <button className="action-button" onClick={() => {
+
+
+                  setShowDatabaseConfiguration(true)
+                  
+                  setShowTotalOrders(true)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+
+
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{pendingorders.length} pending orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(true)
+                  setShowAcceptedOrders(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{acceptedorders.length} accepted orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(true)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{rejectedorders.length} rejected orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+
+                  setShowRejectedOrders(true)
+
+                  
+                  setShowPendingOrders(false);
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID"/>
+              </div>
+              <button className="search-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
+          </div>
+        </div>
+
+        {/* SUCCESSFUL CURRENCY EXCHANGE */}
         <div className="statistics-card deposits-card">
           <div className="card-inner">
             <div className="card-header">
-              <span>TOTAL DEPOSITS</span>
+              <span>TOTAL CURRENCY EXCHANGE</span>
               <div className="card-icon deposits-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="2" y="5" width="20" height="14" rx="2"></rect>
@@ -2460,62 +3325,62 @@ const StatisticsCardDailyTasks = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} successful deposits</div>
+              <div className="stat-value">{successfulcurrencyexchange.length} successful currency exchange</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>27 total deposits</span>
+                <span>{totalcurrencyexchange.length} total currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation();
                   setShowDatabaseConfiguration(true);
 
-                  setShowTotalDeposits(true)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(true)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>20 pending deposits</span>
+                <span>{pendingcurrencyexchange.length} pending currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
                   setShowDatabaseConfiguration(true)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(true)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(true)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 successful deposits</span>
+                <span>{successfulcurrencyexchange.length} successful currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
                   setShowDatabaseConfiguration(true)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(true)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(true)
+                  setShowRejectedCurrencyExchange(false)
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 rejected deposits</span>
+                <span>{rejectedcurrencyexchange.length} rejected currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
                   setShowDatabaseConfiguration(true)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(true)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(true)
 
                 }}>view</button>
               </div>
@@ -2540,10 +3405,10 @@ const StatisticsCardDailyTasks = ({
           </div>
         </div>
 
-         {/* REJECTED DEPOSITS */}
+         {/* REJECTED CURRENCY EXCHANGE */}
          <div className="statistics-card deposits-card" onClick={() => {
           setShowDatabaseConfiguration(true);
-          setShowPendingDeposits(true);
+          setShowPendingCurrencyExchange(true);
         }}>
           <div className="card-inner">
             <div className="card-header">
@@ -2556,65 +3421,65 @@ const StatisticsCardDailyTasks = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingDeposits.count} rejected deposits</div>
+              <div className="stat-value">{rejectedcurrencyexchange.length} rejected currency exchange</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>27 total deposits</span>
+                <span>{totalcurrencyexchange.length} total currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
                   setShowDatabaseConfiguration(true)
 
-                  setShowTotalDeposits(true)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(true)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                 
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>20 pending deposits</span>
+                <span>{pendingcurrencyexchange.length} pending currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
                   setShowDatabaseConfiguration(true)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(true)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(true)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 successful deposits</span>
+                <span>{successfulcurrencyexchange.length} successful currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
 
                   setShowDatabaseConfiguration(true)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(true)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(true)
+                  setShowRejectedCurrencyExchange(false)
 
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 rejected deposits</span>
+                <span>{rejectedcurrencyexchange.length} rejected currency exchange</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
 
                   setShowDatabaseConfiguration(true)
 
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(true)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(true)
 
                 }}>view</button>
               </div>
@@ -2655,7 +3520,7 @@ const StatisticsCardDailyTasks = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count} successful withdrawals</div>
+              <div className="stat-value">{successfulwithdrawals.length} successful withdrawals</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
@@ -2671,10 +3536,10 @@ const StatisticsCardDailyTasks = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(true)
                   setShowPendingWithdrawals(false)
@@ -2684,7 +3549,7 @@ const StatisticsCardDailyTasks = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>20 pending withdrawals</span>
+                <span>{pendingwithdrawals.length} pending withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2696,10 +3561,10 @@ const StatisticsCardDailyTasks = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(true)
@@ -2709,7 +3574,7 @@ const StatisticsCardDailyTasks = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 successful withdrawals</span>
+                <span>{successfulwithdrawals.length} successful withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2721,10 +3586,10 @@ const StatisticsCardDailyTasks = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(false)
@@ -2734,7 +3599,7 @@ const StatisticsCardDailyTasks = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 rejected withdrawals</span>
+                <span>{rejectedwithdrawals.length} rejected withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2746,10 +3611,10 @@ const StatisticsCardDailyTasks = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(false)
@@ -2792,11 +3657,11 @@ const StatisticsCardDailyTasks = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingWithdrawals.count} rejected withdrawals</div>
+              <div className="stat-value">{rejectedwithdrawals.length} rejected withdrawals</div>
             </div>
             <div className="card-details">
               <div className="detail-item">
-                <span>13 total withdrawals</span>
+                <span>{totalwithdrawals.length} total withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2808,10 +3673,10 @@ const StatisticsCardDailyTasks = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(true)
                   setShowPendingWithdrawals(false)
@@ -2821,7 +3686,7 @@ const StatisticsCardDailyTasks = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>20 pending withdrawals</span>
+                <span>{pendingwithdrawals.length} pending withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2833,10 +3698,10 @@ const StatisticsCardDailyTasks = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(true)
@@ -2846,7 +3711,7 @@ const StatisticsCardDailyTasks = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 successful withdrawals</span>
+                <span>{successfulwithdrawals.length} successful withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2858,10 +3723,10 @@ const StatisticsCardDailyTasks = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(false)
@@ -2871,7 +3736,7 @@ const StatisticsCardDailyTasks = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>22 rejected withdrawals</span>
+                <span>{rejectedwithdrawals.length} rejected withdrawals</span>
                 <button className="action-button" onClick={(e) => {
 
                   e.stopPropagation()
@@ -2883,10 +3748,10 @@ const StatisticsCardDailyTasks = ({
                   setShowAcceptedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalDeposits(false)
-                  setShowPendingDeposits(false)
-                  setShowSuccessfulDeposits(false)
-                  setShowRejectedDeposits(false)
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
                   
                   setShowTotalWithdrawals(false)
                   setShowPendingWithdrawals(false)
@@ -2916,15 +3781,12 @@ const StatisticsCardDailyTasks = ({
           </div>
         </div>
 
-        {/* REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
-        <div className="statistics-card registrants-card" onClick={() => {
-          setShowDatabaseConfiguration(true);
-          setShowRegisteredRegistrantsWithPendingDocuments(true);
-        }}>
+         {/*  REGISTERED MFATIP REGISTRANTS WITH VERIFIED DOCUMENTS */}
+         <div className="statistics-card withdrawals-card">
           <div className="card-inner">
             <div className="card-header">
-              <span>REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS</span>
-              <div className="card-icon registrations-icon">
+              <span>REGISTERED MFATIP REGISTRANTS WITH VERIFIED DOCUMENTS</span>
+              <div className="card-icon withdrawals-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
                   <circle cx="9" cy="7" r="4"></circle>
@@ -2934,7 +3796,240 @@ const StatisticsCardDailyTasks = ({
               </div>
             </div>
             <div className="card-content">
-              <div className="stat-value">{statsData.pendingRegistrations.count} registrants</div>
+              <div className="stat-value">{verifiedmfatipregistrants.length} total registrants with verified documents</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>{verifiedmfatipregistrants.length} total MFATIP regitered registrants pending documents verified</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(true)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{pendingmfatipregistrants.length} total MRATIP registered registrants with pending documents</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(true)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{mfatipregistrantsrejecteddocuments.length} total MFRATIP registered registrants pending documents rejected</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(true)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(true)
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
+            </div>
+          </div>
+        </div>
+
+          {/*  REGISTERED MFATIP REGISTRANTS WITH REJECTED DOCUMENTS */}
+          <div className="statistics-card withdrawals-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>REGISTERED MFATIP REGISTRANTS WITH REJECTED DOCUMENTS</span>
+              <div className="card-icon withdrawals-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="stat-value">{mfatipregistrantsrejecteddocuments.length} total registrants with rejected documents</div>
+            </div>
+            <div className="card-details">
+              <div className="detail-item">
+                <span>{verifiedmfatipregistrants.length} total MFATIP registered registrants pending documents verified</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(true)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{pendingmfatipregistrants.length} total MFATIP registered registrants with pending documents</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(true)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{mfatipregistrantsrejecteddocuments.length} total MFATIP registered registrants pending documents rejected</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowAcceptedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(true)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(true)
+
+
+                }}>view</button>
+              </div>
+            </div>
+            <div className="search-container">
+              <div className="search-field">
+                <label>Transaction ID:</label>
+                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
+              </div>
+              <button className="search-button" onClick={(e) => e.stopPropagation()}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                Search
+              </button>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">TRANSACTION ID:</span>
+              <span className="transaction-value">TNX-123asd-123aqwe</span>
             </div>
           </div>
         </div>
@@ -2943,6 +4038,11 @@ const StatisticsCardDailyTasks = ({
     </div>
   );
 };
+
+
+
+
+
 
 
 
@@ -3545,11 +4645,87 @@ const StatisticsCardRegistrantCRUD = ({
 };
 
 
+const OrderAcceptButton = ({ order, onAccept }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleAccept = async () => {
+    setIsLoading(true);
+    try {
+      await onAccept(order.id);
+    } catch (error) {
+      console.error('Error accepting order:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    isLoading ? (
+      <Spinner animation="border" variant="light" />
+    ) : (
+      <button 
+        className="accept-btn" 
+        onClick={handleAccept}
+        disabled={isLoading}
+      >
+        Accept
+      </button>
+    )
+  );
+};
 
 
+const TotalOrders = ({ 
+  totalorders,
+  pendingorders,
+  acceptedorders,
+  rejectedorders,
 
-const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShowPendingOrders, setShowOrderDetails }) => {
+  totaldeposits,
+  pendingdeposits,
+  successfuldeposits,
+  rejecteddeposits,
 
+  totalwithdrawals,
+  pendingwithdrawals,
+  successfulwithdrawals,
+  rejectedwithdrawals,
+
+  verifiedmfatipregistrants,
+  pendingmfatipregistrants,
+  mfatipregistrantsrejecteddocuments,
+
+  totalorderscb,
+  pendingorderscb,
+  acceptedorderscb,
+  rejectedorderscb,
+
+  totaldepositscb,
+  pendingdepositscb,
+  successfuldepositscb,
+  rejecteddepositscb,
+
+  totalwithdrawalscb,
+  pendingwithdrawalscb,
+  successfulwithdrawalscb,
+  rejectedwithdrawalscb,
+
+  verifiedmfatipregistrantscb,
+  pendingmfatipregistrantscb,
+  mfatipregistrantsrejecteddocumentscb,
+  
+  acceptorderloadingindication,
+  acceptorderloadingindicationcb,
+
+  setOrderDetailsObject, 
+  setShowDatabaseConfiguration, 
+  setShowTotalOrders, 
+  setShowPendingOrders, 
+  setShowOrderDetails, 
+
+  }) => {
+
+ {/*
   // Sample transaction data
   const sampleTransactions = [
     {
@@ -3751,30 +4927,36 @@ const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShow
       }
     }
   ];
+*/}
 
-  const [transactions, setTransactions] = useState(sampleTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
+  const [transactions, setTransactions] = useState(totalorders);
+  const [filteredTransactions, setFilteredTransactions] = useState(totalorders);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [activeRow, setActiveRow] = useState(null);
 
-  // Filter transactions based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredTransactions(transactions);
-      return;
-    }
+ // Filter transactions based on search query
+useEffect(() => {
+  if (!searchQuery.trim()) {
+    setFilteredTransactions(transactions);
+    return;
+  }
 
-    const query = searchQuery.toLowerCase();
-    const filtered = transactions.filter(transaction => 
-      transaction.id.toLowerCase().includes(query) ||
-      transaction.date.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.city.toLowerCase().includes(query)
-    );
+  const query = searchQuery.toLowerCase();
+  const filtered = transactions.filter(transaction => {
+    // Check if the property exists before accessing its toLowerCase method
+    const idMatch = transaction.id?.toLowerCase().includes(query) || false;
+    const dateMatch = transaction.date?.toLowerCase().includes(query) || false;
     
-    setFilteredTransactions(filtered);
-  }, [searchQuery, transactions]);
+    // Safely access nested properties
+    const addressMatch = transaction.details?.shippingInfo?.address?.toLowerCase().includes(query) || false;
+    const cityMatch = transaction.details?.shippingInfo?.city?.toLowerCase().includes(query) || false;
+    
+    return idMatch || dateMatch || addressMatch || cityMatch;
+  });
+  
+  setFilteredTransactions(filtered);
+}, [searchQuery, transactions]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -3783,23 +4965,69 @@ const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShow
 
   // Show status message with animation
   const showStatusMessage = (message) => {
+    
     setStatusMessage(message);
+
+    {/*
     setTimeout(() => {
       setStatusMessage('');
     }, 3000);
+    */}
+
   };
 
   // Button action handlers with visual feedback
-  const handleAcceptOrder = (id) => {
-    showStatusMessage(`Order ${id} has been accepted`);
-    // Update the table UI to reflect acceptance
-    setTransactions(prevTransactions => 
-      prevTransactions.map(t => 
-        t.id === id ? {...t, status: 'Processing'} : t
-      )
-    );
-  };
+  const handleAcceptOrder = async (id) => {
 
+    // Prevent multiple simultaneous requests
+    if (acceptorderloadingindicationcb) {
+      acceptorderloadingindicationcb(true);
+    }
+  
+    try {
+      // Send request to backend to accept the order
+      const response = await axiosCreatedInstance.post("/omsiap/acceptorder", { id });
+      
+      // Show success status message based on backend response
+      showStatusMessage(response.data.message || `Order ${id} has been accepted successfully`);
+
+
+    } catch (error) {
+      // Handle different types of backend errors
+      if (error.response) {
+
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        const errorMessage = error.response.data.message || 
+                             `Failed to accept Order ${id}. Server responded with an error.`;
+        showStatusMessage(errorMessage, 'error');
+
+        console.error('Backend error response:', error.response.data);
+
+
+      } else if (error.request) {
+
+        // The request was made but no response was received
+        showStatusMessage(`No response received when trying to accept Order ${id}. Please check your network connection.`, 'error');
+        console.error('No response received:', error.request);
+
+      } else {
+
+        // Something happened in setting up the request that triggered an Error
+        showStatusMessage(`Error in processing Order ${id}. Please try again.`, 'error');
+        console.error('Error setting up request:', error.message);
+
+      }
+    } finally {
+
+      // Ensure loading indication is set to false
+      if (acceptorderloadingindicationcb) {
+        acceptorderloadingindicationcb(false);
+      }
+
+    }
+  };
+  
   const handleRejectOrder = (id) => {
     showStatusMessage(`Order ${id} has been rejected`);
     // Update the table UI to reflect rejection
@@ -3815,6 +5043,7 @@ const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShow
   const handleEditOrder = (id) => {
     showStatusMessage(`Editing order ${id}`);
   };
+
 
   return (
     <div className="pending-orders-container">
@@ -3888,8 +5117,7 @@ const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShow
 
                       setShowOrderDetails(true);
 
-
-                      //setShowPendingOrders(false);
+                      setOrderDetailsObject(transaction)
 
 
                     }}
@@ -3902,12 +5130,11 @@ const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShow
                   >
                     Edit
                   </button>
-                  <button 
-                    className="accept-btn" 
-                    onClick={() => handleAcceptOrder(transaction.id)}
-                  >
-                    Accept
-                  </button>
+
+                  <OrderAcceptButton key={transaction.id}
+                                     order={transaction}
+                                     onAccept={handleAcceptOrder}/>
+                  
                   <button 
                     className="reject-btn" 
                     onClick={() => handleRejectOrder(transaction.id)}
@@ -3937,10 +5164,15 @@ const TotalOrders = ({ setShowDatabaseConfiguration, setShowTotalOrders, setShow
 };
 
 const PendingOrders = ({ 
+  pendingorders, 
+  setOrderDetailsObject, 
   setShowDatabaseConfiguration, 
   setShowPendingOrders, 
 
   setShowOrderDetails,
+
+  acceptorderloadingindication,
+  acceptorderloadingindicationcb,
   
   setShowPendingOrderDetails }) => {
   // Sample transaction data
@@ -4145,29 +5377,34 @@ const PendingOrders = ({
     }
   ];
 
-  const [transactions, setTransactions] = useState(sampleTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
+  const [transactions, setTransactions] = useState(pendingorders);
+  const [filteredTransactions, setFilteredTransactions] = useState(pendingorders);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [activeRow, setActiveRow] = useState(null);
 
-  // Filter transactions based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredTransactions(transactions);
-      return;
-    }
+ // Filter transactions based on search query
+ useEffect(() => {
+  if (!searchQuery.trim()) {
+    setFilteredTransactions(transactions);
+    return;
+  }
 
-    const query = searchQuery.toLowerCase();
-    const filtered = transactions.filter(transaction => 
-      transaction.id.toLowerCase().includes(query) ||
-      transaction.date.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.city.toLowerCase().includes(query)
-    );
+  const query = searchQuery.toLowerCase();
+  const filtered = transactions.filter(transaction => {
+    // Check if the property exists before accessing its toLowerCase method
+    const idMatch = transaction.id?.toLowerCase().includes(query) || false;
+    const dateMatch = transaction.date?.toLowerCase().includes(query) || false;
     
-    setFilteredTransactions(filtered);
-  }, [searchQuery, transactions]);
+    // Safely access nested properties
+    const addressMatch = transaction.details?.shippingInfo?.address?.toLowerCase().includes(query) || false;
+    const cityMatch = transaction.details?.shippingInfo?.city?.toLowerCase().includes(query) || false;
+    
+    return idMatch || dateMatch || addressMatch || cityMatch;
+  });
+  
+  setFilteredTransactions(filtered);
+}, [searchQuery, transactions]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -4177,20 +5414,63 @@ const PendingOrders = ({
   // Show status message with animation
   const showStatusMessage = (message) => {
     setStatusMessage(message);
+    {/*
     setTimeout(() => {
       setStatusMessage('');
     }, 3000);
+    */}
   };
 
   // Button action handlers with visual feedback
-  const handleAcceptOrder = (id) => {
-    showStatusMessage(`Order ${id} has been accepted`);
-    // Update the table UI to reflect acceptance
-    setTransactions(prevTransactions => 
-      prevTransactions.map(t => 
-        t.id === id ? {...t, status: 'Processing'} : t
-      )
-    );
+  const handleAcceptOrder = async (id) => {
+
+    // Prevent multiple simultaneous requests
+    if (acceptorderloadingindicationcb) {
+      acceptorderloadingindicationcb(true);
+    }
+  
+    try {
+      // Send request to backend to accept the order
+      const response = await axiosCreatedInstance.post("/omsiap/acceptorder", { id });
+      
+      // Show success status message based on backend response
+      showStatusMessage(response.data.message || `Order ${id} has been accepted successfully`);
+
+
+    } catch (error) {
+      // Handle different types of backend errors
+      if (error.response) {
+
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        const errorMessage = error.response.data.message || 
+                             `Failed to accept Order ${id}. Server responded with an error.`;
+        showStatusMessage(errorMessage, 'error');
+
+        console.error('Backend error response:', error.response.data);
+
+
+      } else if (error.request) {
+
+        // The request was made but no response was received
+        showStatusMessage(`No response received when trying to accept Order ${id}. Please check your network connection.`, 'error');
+        console.error('No response received:', error.request);
+
+      } else {
+
+        // Something happened in setting up the request that triggered an Error
+        showStatusMessage(`Error in processing Order ${id}. Please try again.`, 'error');
+        console.error('Error setting up request:', error.message);
+
+      }
+    } finally {
+
+      // Ensure loading indication is set to false
+      if (acceptorderloadingindicationcb) {
+        acceptorderloadingindicationcb(false);
+      }
+
+    }
   };
 
   const handleRejectOrder = (id) => {
@@ -4278,10 +5558,8 @@ const PendingOrders = ({
 
                       setShowOrderDetails(true)
 
-
-
-                      //setShowPendingOrders(false);
-                      //setShowPendingOrderDetails(true);
+                      setOrderDetailsObject(transaction)
+                      
 
                     }}
                   >
@@ -4293,12 +5571,11 @@ const PendingOrders = ({
                   >
                     Edit
                   </button>
-                  <button 
-                    className="accept-btn" 
-                    onClick={() => handleAcceptOrder(transaction.id)}
-                  >
-                    Accept
-                  </button>
+
+                  <OrderAcceptButton key={transaction.id}
+                                     order={transaction}
+                                     onAccept={handleAcceptOrder}/>
+
                   <button 
                     className="reject-btn" 
                     onClick={() => handleRejectOrder(transaction.id)}
@@ -4328,6 +5605,8 @@ const PendingOrders = ({
 };
 
 const AcceptedOrders = ({ 
+  acceptedorders,
+  setOrderDetailsObject,
 
   setShowDatabaseConfiguration, 
   setShowOrderDetails,
@@ -4538,29 +5817,34 @@ const AcceptedOrders = ({
     }
   ];
 
-  const [transactions, setTransactions] = useState(sampleTransactions);
-  const [filteredTransactions, setFilteredTransactions] = useState(sampleTransactions);
+  const [transactions, setTransactions] = useState(acceptedorders);
+  const [filteredTransactions, setFilteredTransactions] = useState(acceptedorders);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [activeRow, setActiveRow] = useState(null);
 
-  // Filter transactions based on search query
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredTransactions(transactions);
-      return;
-    }
+ // Filter transactions based on search query
+ useEffect(() => {
+  if (!searchQuery.trim()) {
+    setFilteredTransactions(transactions);
+    return;
+  }
 
-    const query = searchQuery.toLowerCase();
-    const filtered = transactions.filter(transaction => 
-      transaction.id.toLowerCase().includes(query) ||
-      transaction.date.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.address.toLowerCase().includes(query) ||
-      transaction.details.shippingInfo.city.toLowerCase().includes(query)
-    );
+  const query = searchQuery.toLowerCase();
+  const filtered = transactions.filter(transaction => {
+    // Check if the property exists before accessing its toLowerCase method
+    const idMatch = transaction.id?.toLowerCase().includes(query) || false;
+    const dateMatch = transaction.date?.toLowerCase().includes(query) || false;
     
-    setFilteredTransactions(filtered);
-  }, [searchQuery, transactions]);
+    // Safely access nested properties
+    const addressMatch = transaction.details?.shippingInfo?.address?.toLowerCase().includes(query) || false;
+    const cityMatch = transaction.details?.shippingInfo?.city?.toLowerCase().includes(query) || false;
+    
+    return idMatch || dateMatch || addressMatch || cityMatch;
+  });
+  
+  setFilteredTransactions(filtered);
+}, [searchQuery, transactions]);
 
   // Handle search input change
   const handleSearchChange = (e) => {
@@ -4570,9 +5854,13 @@ const AcceptedOrders = ({
   // Show status message with animation
   const showStatusMessage = (message) => {
     setStatusMessage(message);
+
+    {/*
     setTimeout(() => {
       setStatusMessage('');
     }, 3000);
+    */}
+
   };
 
   // Button action handlers with visual feedback
@@ -4671,9 +5959,404 @@ const AcceptedOrders = ({
 
                       setShowOrderDetails(true)
 
+                      setOrderDetailsObject(transaction)
 
-                      //setShowPendingOrders(false);
-                      //setShowPendingOrderDetails(true);
+                    }}
+                  >
+                    View
+                  </button>
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => handleEditOrder(transaction.id)}
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    className="accept-btn" 
+                    onClick={() => handleAcceptOrder(transaction.id)}
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    className="reject-btn" 
+                    onClick={() => handleRejectOrder(transaction.id)}
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    className="message-btn" 
+                    onClick={() => handleMessageOrder(transaction.id)}
+                  >
+                    Message
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredTransactions.length === 0 && (
+        <div className="no-results">
+          <p>No orders found matching your search</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const RejectedOrders = ({ 
+  rejectedorders,
+  setOrderDetailsObject,
+  setShowDatabaseConfiguration, 
+  setShowOrderDetails,
+  setShowRejectedOrders,
+
+  setShowPendingOrders, 
+  setShowPendingOrderDetails 
+
+}) => {
+  // Sample transaction data
+  const sampleTransactions = [
+    {
+      id: "ORD-12345",
+      date: "2025-03-12",
+      type: "Online",
+      amount: 278.50,
+      status: "Pending",
+      paymentmethod: "Credit Card",
+      details: {
+        products: [
+          { name: "Organic Coffee", price: 89.50, quantity: 3 },
+          { name: "Herbal Tea", price: 10.00, quantity: 1 }
+        ],
+        shippingInfo: {
+          address: "123 Main Street",
+          city: "Austin",
+          state: "TX",
+          zipCode: "78701",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 278.50,
+          shippingTotal: 15.00,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 48.75,
+          totalCapital: 214.75,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 1250,
+          totalWeightKilos: 1.25,
+          total: 293.50
+        }
+      }
+    },
+    {
+      id: "ORD-54321",
+      date: "2025-03-11",
+      type: "In-Store",
+      amount: 156.75,
+      status: "Pending",
+      paymentmethod: "Cash",
+      details: {
+        products: [
+          { name: "Green Tea", price: 45.25, quantity: 2 },
+          { name: "Black Tea", price: 33.00, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "456 Elm Street",
+          city: "Seattle",
+          state: "WA",
+          zipCode: "98101",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 156.75,
+          shippingTotal: 10.00,
+          totalTransactionGiveaway: 5.00,
+          totalOmsiaProfit: 32.75,
+          totalCapital: 129.00,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 750,
+          totalWeightKilos: 0.75,
+          total: 166.75
+        }
+      }
+    },
+    {
+      id: "ORD-67890",
+      date: "2025-03-10",
+      type: "Online",
+      amount: 455.25,
+      status: "Pending",
+      paymentmethod: "PayPal",
+      details: {
+        products: [
+          { name: "Oolong Tea", price: 120.75, quantity: 3 },
+          { name: "Chai Spices", price: 46.50, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "789 Oak Drive",
+          city: "Portland",
+          state: "OR",
+          zipCode: "97201",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 455.25,
+          shippingTotal: 20.00,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 89.25,
+          totalCapital: 366.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 1850,
+          totalWeightKilos: 1.85,
+          total: 475.25
+        }
+      }
+    },
+    {
+      id: "ORD-98765",
+      date: "2025-03-09",
+      type: "Online",
+      amount: 323.50,
+      status: "Pending",
+      paymentmethod: "Credit Card",
+      details: {
+        products: [
+          { name: "White Tea", price: 78.50, quantity: 2 },
+          { name: "Matcha Powder", price: 55.50, quantity: 3 }
+        ],
+        shippingInfo: {
+          address: "321 Pine Lane",
+          city: "Denver",
+          state: "CO",
+          zipCode: "80201",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 323.50,
+          shippingTotal: 12.50,
+          totalTransactionGiveaway: 10.00,
+          totalOmsiaProfit: 61.00,
+          totalCapital: 265.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 1100,
+          totalWeightKilos: 1.10,
+          total: 336.00
+        }
+      }
+    },
+    {
+      id: "ORD-24680",
+      date: "2025-03-08",
+      type: "In-Store",
+      amount: 189.25,
+      status: "Pending",
+      paymentmethod: "Debit Card",
+      details: {
+        products: [
+          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
+          { name: "Earl Grey", price: 28.75, quantity: 2 }
+        ],
+        shippingInfo: {
+          address: "654 Maple Avenue",
+          city: "Chicago",
+          state: "IL",
+          zipCode: "60601",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 189.25,
+          shippingTotal: 8.75,
+          totalTransactionGiveaway: 0,
+          totalOmsiaProfit: 40.00,
+          totalCapital: 158.00,
+          totalItems: 4,
+          totalProducts: 2,
+          totalWeightGrams: 900,
+          totalWeightKilos: 0.90,
+          total: 198.00
+        }
+      }
+    },
+    {
+      id: "ORD-13579",
+      date: "2025-03-07",
+      type: "Online",
+      amount: 512.75,
+      status: "Pending",
+      paymentmethod: "Bitcoin",
+      details: {
+        products: [
+          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
+          { name: "Tea Accessories", price: 40.75, quantity: 3 }
+        ],
+        shippingInfo: {
+          address: "987 Birch Street",
+          city: "New York",
+          state: "NY",
+          zipCode: "10001",
+          country: "USA"
+        },
+        orderSummary: {
+          merchandiseTotal: 512.75,
+          shippingTotal: 25.00,
+          totalTransactionGiveaway: 15.00,
+          totalOmsiaProfit: 98.75,
+          totalCapital: 424.00,
+          totalItems: 5,
+          totalProducts: 2,
+          totalWeightGrams: 2200,
+          totalWeightKilos: 2.20,
+          total: 537.75
+        }
+      }
+    }
+  ];
+
+  const [transactions, setTransactions] = useState(rejectedorders);
+  const [filteredTransactions, setFilteredTransactions] = useState(rejectedorders);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [activeRow, setActiveRow] = useState(null);
+
+  // Filter transactions based on search query
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredTransactions(transactions);
+      return;
+    }
+  
+    const query = searchQuery.toLowerCase();
+    const filtered = transactions.filter(transaction => {
+      // Check if the property exists before accessing its toLowerCase method
+      const idMatch = transaction.id?.toLowerCase().includes(query) || false;
+      const dateMatch = transaction.date?.toLowerCase().includes(query) || false;
+      
+      // Safely access nested properties
+      const addressMatch = transaction.details?.shippingInfo?.address?.toLowerCase().includes(query) || false;
+      const cityMatch = transaction.details?.shippingInfo?.city?.toLowerCase().includes(query) || false;
+      
+      return idMatch || dateMatch || addressMatch || cityMatch;
+    });
+    
+    setFilteredTransactions(filtered);
+  }, [searchQuery, transactions]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Show status message with animation
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 3000);
+  };
+
+  // Button action handlers with visual feedback
+  const handleAcceptOrder = (id) => {
+    showStatusMessage(`Order ${id} has been accepted`);
+    // Update the table UI to reflect acceptance
+    setTransactions(prevTransactions => 
+      prevTransactions.map(t => 
+        t.id === id ? {...t, status: 'Processing'} : t
+      )
+    );
+  };
+
+  const handleRejectOrder = (id) => {
+    showStatusMessage(`Order ${id} has been rejected`);
+    // Update the table UI to reflect rejection
+    setTransactions(prevTransactions => 
+      prevTransactions.filter(t => t.id !== id)
+    );
+  };
+
+  const handleMessageOrder = (id) => {
+    showStatusMessage(`Sending message regarding order ${id}`);
+  };
+
+  const handleEditOrder = (id) => {
+    showStatusMessage(`Editing order ${id}`);
+  };
+
+  return (
+    <div className="pending-orders-container">
+      <div className="header-section">
+        <h1 className="page-title">Rejected Orders</h1>
+        <div className="close-button" 
+            onClick={()=>{
+              setShowDatabaseConfiguration(false)
+              setShowRejectedOrders(false)
+            }}>
+          <span className="close-icon">✕</span>
+        </div>
+      </div>
+
+      <div className="search-header">
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by ID, Date, Location or Address..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+          {searchQuery && (
+            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
+          )}
+        </div>
+      </div>
+
+      {statusMessage && (
+        <div className="status-message">
+          {statusMessage}
+        </div>
+      )}
+
+      <div className="orders-table-container">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Location</th>
+              <th>Total Kilos</th>
+              <th>Items</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.map((transaction) => (
+              <tr 
+                key={transaction.id} 
+                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
+                onMouseEnter={() => setActiveRow(transaction.id)}
+                onMouseLeave={() => setActiveRow(null)}
+              >
+                <td className="order-id">{transaction.id}</td>
+                <td>{transaction.date}</td>
+                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
+                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
+                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
+                <td>{transaction.details.orderSummary.totalItems}</td>
+                <td className="action-buttons">
+                  <button 
+                    className="view-btn" 
+                    onClick={() => {
+
+                      setShowOrderDetails(true)
+
+                      setOrderDetailsObject(transaction)
 
                     }}
                   >
@@ -4900,10 +6583,50 @@ const OrderDetailsModal = ({ setShowOrderDetails,
 };
 
 
+const CurrencyExchangeAcceptButton = ({ order, onAccept }) => {
+  const [isLoading, setIsLoading] = useState(false);
 
+  const handleAccept = async () => {
+    setIsLoading(true);
+    try {
+      await onAccept(order.id);
+    } catch (error) {
+      console.error('Error accepting order:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  return (
+    isLoading ? (
+      <Spinner animation="border" variant="light" />
+    ) : (
+      <button 
+        className="accept-btn" 
+        onClick={handleAccept}
+        disabled={isLoading}
+      >
+        Accept
+      </button>
+    )
+  );
+};
 
-const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, setShowCreditTransaction, transactions, onClose, onView, onEdit }) => {
+const TotalCurrencyExchange = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowTotalCurrencyExchange, 
+  setShowCreditTransaction,
+
+  totalcurrencyexchange,
+  credittransactionobjectcb,
+
+  onClose, 
+  onView, 
+  onEdit 
+
+ }) => {
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -4914,15 +6637,15 @@ const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, set
     setIsVisible(true);
     
     // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    const pendingDeposits = totalcurrencyexchange.filter(
+      transaction => transaction.type === 'currency exchange' 
     );
     setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
+  }, [totalcurrencyexchange]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = transactions.filter(transaction => 
+      const results = totalcurrencyexchange.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         // Search by name or contact info (assuming these would be in details)
@@ -4935,21 +6658,114 @@ const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, set
       setFilteredTransactions(results);
     } else {
       // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      const pendingDeposits = totalcurrencyexchange.filter(
+        transaction => transaction.type === 'currency exchange' 
       );
       setFilteredTransactions(pendingDeposits);
     }
-  }, [searchQuery, transactions]);
+  }, [searchQuery, totalcurrencyexchange]);
 
-  const handleAccept = (id) => {
-    setAnimateRow(id);
-    // Additional accept logic would go here
-    setTimeout(() => {
-      setAnimateRow(null);
-      // Here you'd update the transaction status
-    }, 800);
+  const handleAcceptCurrencyExchange = async (id) => {
+
+    try {
+      // Initialize status message
+      showStatusMessage("Processing request...");
+      document.querySelectorAll(".status-message")[0].style.color = "white";
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#3b82f6";
+      
+      // Show animation for the affected row
+      setAnimateRow(id);
+      
+      // Make API call to accept the currency exchange
+      const response = await axiosCreatedInstance.post("/omsiap/acceptcurrencyexchange/accept", { id });
+      
+      // Handle different response statuses
+      switch(response.data.status) {
+        case 'EXCHANGE_APPROVED':
+          // Success case
+          showStatusMessage("Exchange approved successfully!");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#10b981"; // Green
+          
+          // Update UI to reflect changes
+          // You might want to refresh the transaction list or update the specific row
+          break;
+          
+        case 'TRANSACTION_NOT_FOUND':
+          showStatusMessage("Transaction not found. Please refresh the page.");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+          break;
+          
+        case 'NOT_FOUND':
+          showStatusMessage("System data not found. Please contact administrator.");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+          break;
+          
+        default:
+          showStatusMessage("Request processed with status: " + response.data.status);
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#f59e0b"; // Amber
+      }
+      
+    } catch (error) {
+      // Handle errors from the API call
+      console.error("Error accepting currency exchange:", error);
+      
+      // Check if it's a response error with status and message
+      if (error.response && error.response.data) {
+        showStatusMessage(error.response.data.message || "Error processing request", "error");
+      } else {
+        showStatusMessage("Network error or server unavailable", "error");
+      }
+      
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+      document.querySelectorAll(".status-message")[0].style.color = "white";
+    } finally {
+      // Clean up animation after a delay regardless of success or failure
+      setTimeout(() => {
+        setAnimateRow(null);
+      }, 800);
+    }
   };
+  
+  {/*
+  // Helper function to show status messages
+  const showStatusMessage = (message, type = "info") => {
+
+    const statusElement = document.querySelectorAll(".status-message")[0];
+    if (!statusElement) return;
+    
+    statusElement.textContent = message;
+    
+    // Set styling based on message type
+    switch(type) {
+      case "success":
+        statusElement.style.backgroundColor = "#10b981"; // Green
+        break;
+      case "error":
+        statusElement.style.backgroundColor = "#ef4444"; // Red
+        break;
+      case "warning":
+        statusElement.style.backgroundColor = "#f59e0b"; // Amber
+        break;
+      case "info":
+      default:
+        statusElement.style.backgroundColor = "#3b82f6"; // Blue
+    }
+    
+    statusElement.style.color = "white";
+    statusElement.style.display = "block";
+    
+    // Optionally auto-hide the message after some time
+    setTimeout(() => {
+      statusElement.style.opacity = "0";
+      setTimeout(() => {
+        statusElement.style.display = "none";
+        statusElement.style.opacity = "1";
+      }, 300);
+    }, 5000);
+
+  };
+  */}
+
 
   const handleReject = (id) => {
     setAnimateRow(id);
@@ -4975,14 +6791,16 @@ const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, set
     });
   };
 
+  const [statusMessage, showStatusMessage] = useState("")
+
   return (
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
       <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
         <div className="modal-header">
-          <h2>Total Deposits</h2>
+          <h2>Total Currency Exchange</h2>
           <button className="close-button" onClick={()=> {
              setShowDatabaseConfiguration(false)
-             setShowTotalDeposits(false)
+             setShowTotalCurrencyExchange(false)
           }}>
             <FaTimes />
           </button>
@@ -5001,11 +6819,17 @@ const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, set
           </div>
         </div>
         
+        {statusMessage && (
+          <div style={{position:"relative", top: "2vh"}}
+               className="status-message">
+            {statusMessage}
+          </div>
+        )}
         <div className="pending-deposits-container">
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
+              <p>No currency exchange transaction found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -5047,6 +6871,7 @@ const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, set
                             className="view-button" 
                             onClick={() => {
                               setShowCreditTransaction(true)
+                              credittransactionobjectcb(transaction)
                             }}
                             aria-label="View transaction details"
                           >
@@ -5061,14 +6886,10 @@ const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, set
                             <FaEdit />
                             <span className="button-text">Edit</span>
                           </button>
-                          <button 
-                            className="accept-button" 
-                            onClick={() => handleAccept(transaction.id)}
-                            aria-label="Accept transaction"
-                          >
-                            <FaCheckCircle />
-                            <span className="button-text">Accept</span>
-                          </button>
+
+                          <CurrencyExchangeAcceptButton key={transaction.id}
+                                                        order={transaction}
+                                                        onAccept={handleAcceptCurrencyExchange}/>
                           <button 
                             className="reject-button" 
                             onClick={() => handleReject(transaction.id)}
@@ -5099,7 +6920,20 @@ const TotalDeposits = ({ setShowDatabaseConfiguration, setShowTotalDeposits, set
   );
 };
 
-const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits, setShowCreditTransaction, transactions, onClose, onView, onEdit }) => {
+const PendingCurrencyExchange = ({ 
+
+  setShowDatabaseConfiguration,
+  setShowPendingCurrencyExchange, 
+  setShowCreditTransaction, 
+
+  pendingcurrencyexchange,
+  credittransactionobjectcb, 
+
+  onClose, 
+  onView, 
+  onEdit 
+}) => {
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -5108,17 +6942,18 @@ const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits,
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
-    
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
-    );
-    setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
+  }, []);
 
+  // Combined useEffect for filtering transactions
   useEffect(() => {
+    // Get only pending deposit transactions first
+    const pendingDepositsOnly = pendingcurrencyexchange.filter(
+      transaction => transaction.type === 'currency exchange' && transaction.status === 'pending'
+    );
+    
+    // Then apply search filter if there's a search query
     if (searchQuery) {
-      const results = transactions.filter(transaction => 
+      const results = pendingDepositsOnly.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         // Search by name or contact info (assuming these would be in details)
@@ -5130,20 +6965,17 @@ const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits,
       );
       setFilteredTransactions(results);
     } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
-      );
-      setFilteredTransactions(pendingDeposits);
+      // No search query, just show pending deposits
+      setFilteredTransactions(pendingDepositsOnly);
     }
-  }, [searchQuery, transactions]);
+  }, [searchQuery, pendingcurrencyexchange]);
 
   const handleClose = () => {
     setIsVisible(false);
     // Delay actual closing to allow for animation
     setTimeout(() => {
       setShowDatabaseConfiguration(false);
-      setShowPendingDeposits(false);
+      setShowPendingCurrencyExchange(false);
     }, 300);
   };
 
@@ -5184,11 +7016,8 @@ const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits,
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
       <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
         <div className="modal-header">
-          <h2>Pending Deposits</h2>
-          <button className="close-button" onClick={()=> {
-            setShowDatabaseConfiguration(false)
-            setShowPendingDeposits(false)
-          }}>
+          <h2>Pending Currency Exchange</h2>
+          <button className="close-button" onClick={handleClose}>
             <FaTimes />
           </button>
         </div>
@@ -5210,7 +7039,7 @@ const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits,
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
+              <p>No pending currency exchange found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -5252,6 +7081,7 @@ const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits,
                             className="view-button" 
                             onClick={() => {
                               setShowCreditTransaction(true)
+                              credittransactionobjectcb(transaction)
                             }}
                             aria-label="View transaction details"
                           >
@@ -5304,7 +7134,20 @@ const PendingDeposits = ({ setShowDatabaseConfiguration, setShowPendingDeposits,
   );
 };
 
-const SuccessfulDeposits = ({ setShowDatabaseConfiguration, setShowSuccessfulDeposits, setShowCreditTransaction, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
+const SuccessfulCurrencyExchange = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowSuccessfulCurrencyExchange, 
+  setShowCreditTransaction, 
+  setShowPendingCurrencyExchange, 
+
+  successfulcurrencyexchange, 
+  credittransactionobjectcb,
+
+  onClose, 
+  onView, 
+  onEdit
+  }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -5315,15 +7158,15 @@ const SuccessfulDeposits = ({ setShowDatabaseConfiguration, setShowSuccessfulDep
     setIsVisible(true);
     
     // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    const pendingDeposits = successfulcurrencyexchange.filter(
+      transaction => transaction.type === 'currency exchange' && transaction.status === 'successful'
     );
     setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
+  }, [successfulcurrencyexchange]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = transactions.filter(transaction => 
+      const results = successfulcurrencyexchange.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         // Search by name or contact info (assuming these would be in details)
@@ -5336,19 +7179,19 @@ const SuccessfulDeposits = ({ setShowDatabaseConfiguration, setShowSuccessfulDep
       setFilteredTransactions(results);
     } else {
       // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      const pendingDeposits = successfulcurrencyexchange.filter(
+        transaction => transaction.type === 'currency exchange' && transaction.status === 'successful'
       );
       setFilteredTransactions(pendingDeposits);
     }
-  }, [searchQuery, transactions]);
+  }, [searchQuery, successfulcurrencyexchange]);
 
   const handleClose = () => {
     setIsVisible(false);
     // Delay actual closing to allow for animation
     setTimeout(() => {
       setShowDatabaseConfiguration(false);
-      setShowPendingDeposits(false);
+      setShowPendingCurrencyExchange(false);
     }, 300);
   };
 
@@ -5389,10 +7232,10 @@ const SuccessfulDeposits = ({ setShowDatabaseConfiguration, setShowSuccessfulDep
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
       <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
         <div className="modal-header">
-          <h2>Successful Deposits</h2>
+          <h2>Successful Currency Exchange</h2>
           <button className="close-button" onClick={()=> {
             setShowDatabaseConfiguration(false)
-            setShowSuccessfulDeposits(false)
+            setShowSuccessfulCurrencyExchange(false)
           }}>
             <FaTimes />
           </button>
@@ -5415,7 +7258,7 @@ const SuccessfulDeposits = ({ setShowDatabaseConfiguration, setShowSuccessfulDep
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
+              <p>No successful currency exchange found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -5457,6 +7300,7 @@ const SuccessfulDeposits = ({ setShowDatabaseConfiguration, setShowSuccessfulDep
                             className="view-button" 
                             onClick={() => {
                               setShowCreditTransaction(true)
+                              credittransactionobjectcb(transaction)
                             }}
                             aria-label="View transaction details"
                           >
@@ -5509,7 +7353,22 @@ const SuccessfulDeposits = ({ setShowDatabaseConfiguration, setShowSuccessfulDep
   );
 };
 
-const RejectedDeposits = ({ setShowDatabaseConfiguration, setShowRejectedDeposits, setShowCreditTransaction, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
+const RejectedCurrencyExchange = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowRejectedCurrencyExchange, 
+  setShowCreditTransaction, 
+  setShowPendingCurrencyExchange, 
+
+  rejectedcurrencyexchange, 
+  credittransactionobjectcb,
+
+  onClose, 
+  onView, 
+  onEdit 
+
+  }) => {
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -5520,15 +7379,15 @@ const RejectedDeposits = ({ setShowDatabaseConfiguration, setShowRejectedDeposit
     setIsVisible(true);
     
     // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    const pendingDeposits = rejectedcurrencyexchange.filter(
+      transaction => transaction.type === 'currency exchange' && transaction.status === 'rejected'
     );
     setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
+  }, [rejectedcurrencyexchange]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = transactions.filter(transaction => 
+      const results = rejectedcurrencyexchange.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         // Search by name or contact info (assuming these would be in details)
@@ -5541,19 +7400,19 @@ const RejectedDeposits = ({ setShowDatabaseConfiguration, setShowRejectedDeposit
       setFilteredTransactions(results);
     } else {
       // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      const pendingDeposits = rejectedcurrencyexchange.filter(
+        transaction => transaction.type === 'currency exchange' && transaction.status === 'rejected'
       );
       setFilteredTransactions(pendingDeposits);
     }
-  }, [searchQuery, transactions]);
+  }, [searchQuery, rejectedcurrencyexchange]);
 
   const handleClose = () => {
     setIsVisible(false);
     // Delay actual closing to allow for animation
     setTimeout(() => {
       setShowDatabaseConfiguration(false);
-      setShowPendingDeposits(false);
+      setShowPendingCurrencyExchange(false);
     }, 300);
   };
 
@@ -5594,10 +7453,10 @@ const RejectedDeposits = ({ setShowDatabaseConfiguration, setShowRejectedDeposit
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
       <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
         <div className="modal-header">
-          <h2>Rejected Deposits</h2>
+          <h2>Rejected Currency Exchange</h2>
           <button className="close-button" onClick={()=> {
             setShowDatabaseConfiguration(false)
-            setShowRejectedDeposits(false)
+            setShowRejectedCurrencyExchange(false)
           }}>
             <FaTimes />
           </button>
@@ -5620,7 +7479,7 @@ const RejectedDeposits = ({ setShowDatabaseConfiguration, setShowRejectedDeposit
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
+              <p>No rejected currency exchange found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -5662,6 +7521,7 @@ const RejectedDeposits = ({ setShowDatabaseConfiguration, setShowRejectedDeposit
                             className="view-button" 
                             onClick={() => {
                               setShowCreditTransaction(true)
+                              credittransactionobjectcb(transaction)
                             }}
                             aria-label="View transaction details"
                           >
@@ -5717,7 +7577,21 @@ const RejectedDeposits = ({ setShowDatabaseConfiguration, setShowRejectedDeposit
 
 
 
-const TotalWithdrawals = ({ setShowDatabaseConfiguration, setShowTotalWithdrawals,  setShowCreditTransaction, transactions, onClose, onView, onEdit }) => {
+const TotalWithdrawals = ({
+
+  setShowDatabaseConfiguration, 
+  setShowTotalWithdrawals,  
+  setShowCreditTransaction,
+
+  totalwithdrawals,
+  credittransactionobjectcb,
+
+  onClose, 
+  onView, 
+  onEdit 
+
+  }) => {
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -5728,15 +7602,15 @@ const TotalWithdrawals = ({ setShowDatabaseConfiguration, setShowTotalWithdrawal
     setIsVisible(true);
     
     // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    const pendingDeposits = totalwithdrawals.filter(
+      transaction => transaction.type === 'withdrawal' 
     );
     setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
+  }, [totalwithdrawals]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = transactions.filter(transaction => 
+      const results = totalwithdrawals.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         // Search by name or contact info (assuming these would be in details)
@@ -5749,12 +7623,12 @@ const TotalWithdrawals = ({ setShowDatabaseConfiguration, setShowTotalWithdrawal
       setFilteredTransactions(results);
     } else {
       // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      const pendingDeposits = totalwithdrawals.filter(
+        transaction => transaction.type === 'withdrawal'  
       );
       setFilteredTransactions(pendingDeposits);
     }
-  }, [searchQuery, transactions]);
+  }, [searchQuery, totalwithdrawals]);
 
   const handleAccept = (id) => {
     setAnimateRow(id);
@@ -5861,6 +7735,7 @@ const TotalWithdrawals = ({ setShowDatabaseConfiguration, setShowTotalWithdrawal
                             className="view-button" 
                             onClick={() => {
                               setShowCreditTransaction(true)
+                              credittransactionobjectcb(transaction)
                             }}
                             aria-label="View transaction details"
                           >
@@ -5913,26 +7788,50 @@ const TotalWithdrawals = ({ setShowDatabaseConfiguration, setShowTotalWithdrawal
   );
 };
 
-const PendingWithdrawals = ({ setShowDatabaseConfiguration, setShowPendingWithdrawals, setShowCreditTransaction, transactions, onClose, onView, onEdit }) => {
+const PendingWithdrawals = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowPendingWithdrawals, 
+  setShowCreditTransaction, 
+
+  pendingwithdrawals, // Add default empty array
+  credittransactionobjectcb, 
+
+  onClose, 
+  onView, 
+  onEdit 
+
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
-  const [isVisible, setIsVisible] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
   const [animateRow, setAnimateRow] = useState(null);
 
+  // Combined useEffect for initial load and animations
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
     
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
-    );
-    setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
+    // Check if pendingwithdrawals exists before filtering
+    if (pendingwithdrawals && pendingwithdrawals.length > 0) {
+      // Initial filtering of only pending withdrawal transactions
+      const pendingDeposits = pendingwithdrawals.filter(
+        transaction => transaction.type === 'withdrawal' && transaction.status === 'pending'
+      );
+      setFilteredTransactions(pendingDeposits);
+    } else {
+      // Initialize with empty array if pendingwithdrawals is undefined or empty
+      setFilteredTransactions([]);
+    }
+  }, [pendingwithdrawals]);
 
+  // Separate useEffect for search functionality
   useEffect(() => {
+    // Only proceed if pendingwithdrawals exists
+    if (!pendingwithdrawals) return;
+    
     if (searchQuery) {
-      const results = transactions.filter(transaction => 
+      const results = pendingwithdrawals.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         // Search by name or contact info (assuming these would be in details)
@@ -5944,13 +7843,13 @@ const PendingWithdrawals = ({ setShowDatabaseConfiguration, setShowPendingWithdr
       );
       setFilteredTransactions(results);
     } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      // Reset to show only pending withdrawals when search is cleared
+      const pendingDeposits = pendingwithdrawals.filter(
+        transaction => transaction.type === 'withdrawal' && transaction.status === 'pending'
       );
       setFilteredTransactions(pendingDeposits);
     }
-  }, [searchQuery, transactions]);
+  }, [searchQuery, pendingwithdrawals]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -5999,10 +7898,7 @@ const PendingWithdrawals = ({ setShowDatabaseConfiguration, setShowPendingWithdr
       <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
         <div className="modal-header">
           <h2>Pending Withdrawals</h2>
-          <button className="close-button" onClick={()=> {
-            setShowDatabaseConfiguration(false)
-            setShowPendingWithdrawals(false)
-          }}>
+          <button className="close-button" onClick={handleClose}>
             <FaTimes />
           </button>
         </div>
@@ -6024,7 +7920,7 @@ const PendingWithdrawals = ({ setShowDatabaseConfiguration, setShowPendingWithdr
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
+              <p>No pending withdrawals found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -6066,6 +7962,7 @@ const PendingWithdrawals = ({ setShowDatabaseConfiguration, setShowPendingWithdr
                             className="view-button" 
                             onClick={() => {
                               setShowCreditTransaction(true)
+                              credittransactionobjectcb(transaction)
                             }}
                             aria-label="View transaction details"
                           >
@@ -6118,7 +8015,21 @@ const PendingWithdrawals = ({ setShowDatabaseConfiguration, setShowPendingWithdr
   );
 };
 
-const SuccessfulWithdrawals = ({ setShowDatabaseConfiguration, setShowSuccessfulWithdrawals, setShowCreditTransaction, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
+const SuccessfulWithdrawals = ({
+
+  setShowDatabaseConfiguration, 
+  setShowSuccessfulWithdrawals, 
+  setShowCreditTransaction, 
+  setShowPendingDeposits,
+
+  successfulwithdrawals,
+  credittransactionobjectcb,
+
+  onClose, 
+  onView, 
+  onEdit 
+  
+  }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -6129,15 +8040,15 @@ const SuccessfulWithdrawals = ({ setShowDatabaseConfiguration, setShowSuccessful
     setIsVisible(true);
     
     // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    const pendingDeposits = successfulwithdrawals.filter(
+      transaction => transaction.type === 'withdrawal' && transaction.status === 'successful'
     );
     setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
+  }, [successfulwithdrawals]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = transactions.filter(transaction => 
+      const results = successfulwithdrawals.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         // Search by name or contact info (assuming these would be in details)
@@ -6150,12 +8061,12 @@ const SuccessfulWithdrawals = ({ setShowDatabaseConfiguration, setShowSuccessful
       setFilteredTransactions(results);
     } else {
       // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      const pendingDeposits = successfulwithdrawals.filter(
+        transaction => transaction.type === 'withdrawal' && transaction.status === 'successful'
       );
       setFilteredTransactions(pendingDeposits);
     }
-  }, [searchQuery, transactions]);
+  }, [searchQuery, successfulwithdrawals]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -6271,6 +8182,7 @@ const SuccessfulWithdrawals = ({ setShowDatabaseConfiguration, setShowSuccessful
                             className="view-button" 
                             onClick={() => {
                               setShowCreditTransaction(true)
+                              credittransactionobjectcb(transaction)
                             }}
                             aria-label="View transaction details"
                           >
@@ -6323,7 +8235,22 @@ const SuccessfulWithdrawals = ({ setShowDatabaseConfiguration, setShowSuccessful
   );
 };
 
-const RejectedWithdrawals = ({ setShowDatabaseConfiguration, setShowRejectedWithdrawals, setShowCreditTransaction, setShowPendingDeposits, transactions, onClose, onView, onEdit }) => {
+const RejectedWithdrawals = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowRejectedWithdrawals, 
+  setShowCreditTransaction, 
+  setShowPendingDeposits, 
+ 
+  rejectedwithdrawals,
+  credittransactionobjectcb,
+
+  onClose, 
+  onView, 
+  onEdit 
+
+  }) => {
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -6334,15 +8261,15 @@ const RejectedWithdrawals = ({ setShowDatabaseConfiguration, setShowRejectedWith
     setIsVisible(true);
     
     // Initial filtering of only pending deposit transactions
-    const pendingDeposits = transactions.filter(
-      transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+    const pendingDeposits = rejectedwithdrawals.filter(
+      transaction => transaction.type === 'withdrawal' && transaction.status === 'rejected'
     );
     setFilteredTransactions(pendingDeposits);
-  }, [transactions]);
+  }, [rejectedwithdrawals]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = transactions.filter(transaction => 
+      const results = rejectedwithdrawals.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         // Search by name or contact info (assuming these would be in details)
@@ -6355,12 +8282,12 @@ const RejectedWithdrawals = ({ setShowDatabaseConfiguration, setShowRejectedWith
       setFilteredTransactions(results);
     } else {
       // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = transactions.filter(
-        transaction => transaction.type === 'deposit' && transaction.status === 'pending'
+      const pendingDeposits = rejectedwithdrawals.filter(
+        transaction => transaction.type === 'withdrawal' && transaction.status === 'rejected'
       );
       setFilteredTransactions(pendingDeposits);
     }
-  }, [searchQuery, transactions]);
+  }, [searchQuery, rejectedwithdrawals]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -6476,6 +8403,7 @@ const RejectedWithdrawals = ({ setShowDatabaseConfiguration, setShowRejectedWith
                             className="view-button" 
                             onClick={() => {
                               setShowCreditTransaction(true)
+                              credittransactionobjectcb(transaction)
                             }}
                             aria-label="View transaction details"
                           >
@@ -6529,7 +8457,12 @@ const RejectedWithdrawals = ({ setShowDatabaseConfiguration, setShowRejectedWith
 };
 
 
-const CreditTransactionModal = ({ transaction, setShowCreditTransaction }) => {
+
+
+
+
+
+const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransaction }) => {
   // Destructure the transaction data for easier access
   const {
     id,
@@ -6539,7 +8472,13 @@ const CreditTransactionModal = ({ transaction, setShowCreditTransaction }) => {
     status,
     paymentmethod,
     details
-  } = transaction;
+  } = credittransactionobject;
+
+  // Get transaction image from the correct path in the schema
+  const transactionImage = details?.reference?.transactionimage;
+  
+  // State to control image modal visibility
+  const [showImageModal, setShowImageModal] = useState(false);
 
   // Format date for better readability
   const formattedDate = new Date(date).toLocaleString();
@@ -6552,135 +8491,1279 @@ const CreditTransactionModal = ({ transaction, setShowCreditTransaction }) => {
     }).format(value);
   };
 
-  return (
-    <div className="modal-overlay">
-      <div className="modal-container">
-        <div className="modal-header">
-          <h2>Transaction Details</h2>
-          <button className="close-button" onClick={()=> {
-            setShowCreditTransaction(false)
-          }}>×</button>
+  // Determine if transaction is a deposit or withdrawal
+  const isDeposit = type?.toLowerCase() === 'deposit';
+  const isWithdrawal = type?.toLowerCase() === 'withdrawal';
+
+  // Handle image click to open the image modal
+  const handleImageClick = (e) => {
+    e.stopPropagation(); // Stop event from bubbling up
+    setShowImageModal(true);
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  };
+
+  // Handle closing the image modal
+  const handleCloseImageModal = (e) => {
+    if (e) e.stopPropagation();
+    setShowImageModal(false);
+    document.body.style.overflow = ''; // Restore scrolling
+  };
+
+  // Handle modal container click (to prevent closing when clicking inside the content)
+  const handleModalContainerClick = (e) => {
+    e.stopPropagation(); // Prevent event from reaching the overlay
+  };
+
+  // Reference number from the schema
+  const referenceNumber = details?.reference?.referencenumber;
+
+  // Create portal for the image modal to render at the document body level
+  const imageModal = showImageModal && transactionImage && (
+    <div 
+      className="transaction-image-modal-overlay" 
+      onClick={handleCloseImageModal}
+    >
+      <div 
+        className="transaction-image-modal-container"
+        onClick={handleModalContainerClick} // Add click handler here
+      >
+        <button 
+          className="transaction-image-modal-close-button" 
+          onClick={handleCloseImageModal}
+          aria-label="Close"
+        >×</button>
+        <div className="transaction-image-modal-content">
+          <img 
+            src={transactionImage} 
+            alt="Transaction Receipt" 
+            className="transaction-image-modal-full"
+          />
         </div>
-        
-        <div className="modal-content">
-          <div className="transaction-main-info">
-            <div className="transaction-id">
-              <span className="label">Transaction ID:</span>
-              <span className="value">{id}</span>
-            </div>
-            
-            <div className="transaction-date">
-              <span className="label">Date:</span>
-              <span className="value">{formattedDate}</span>
-            </div>
-            
-            <div className="transaction-type">
-              <span className="label">Type:</span>
-              <span className="value highlight-type">{type}</span>
-            </div>
-            
-            <div className="transaction-amount">
-              <span className="label">Amount:</span>
-              <span className="value highlight-amount">{formatCurrency(amount)}</span>
-            </div>
-            
-            <div className="transaction-status">
-              <span className="label">Status:</span>
-              <span className={`value highlight-status status-${status.toLowerCase()}`}>{status}</span>
-            </div>
-            
-            <div className="transaction-payment">
-              <span className="label">Payment Method:</span>
-              <span className="value highlight-payment">{paymentmethod}</span>
-            </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <>
+      <div className="credit-transaction-modal-overlay">
+        <div className="credit-transaction-modal-container">
+          <div className="credit-transaction-modal-header">
+            <h2>Currency Exchange Transaction Details</h2>
+            <button 
+              className="credit-transaction-modal-close-button" 
+              onClick={() => setShowCreditTransaction(false)}
+              aria-label="Close"
+            >×</button>
           </div>
           
-          {details && (
-            <>
-              <div className="transaction-section">
-                <h3>Order Summary</h3>
-                <div className="summary-grid">
-                  <div className="summary-item">
-                    <span className="label">Merchandise Total:</span>
-                    <span className="value">{formatCurrency(details.orderSummary.merchandiseTotal)}</span>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <span className="label">Shipping Total:</span>
-                    <span className="value">{formatCurrency(details.orderSummary.shippingTotal)}</span>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <span className="label">Transaction Giveaway:</span>
-                    <span className="value">{formatCurrency(details.orderSummary.totalTransactionGiveaway)}</span>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <span className="label">Omsia Profit:</span>
-                    <span className="value highlight-profit">{formatCurrency(details.orderSummary.totalOmsiaProfit)}</span>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <span className="label">Total Capital:</span>
-                    <span className="value">{formatCurrency(details.orderSummary.totalCapital)}</span>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <span className="label">Total Items:</span>
-                    <span className="value">{details.orderSummary.totalItems}</span>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <span className="label">Total Products:</span>
-                    <span className="value">{details.orderSummary.totalProducts}</span>
-                  </div>
-                  
-                  <div className="summary-item">
-                    <span className="label">Weight:</span>
-                    <span className="value">{details.orderSummary.totalWeightKilos} kg ({details.orderSummary.totalWeightGrams} g)</span>
-                  </div>
-                  
-                  <div className="summary-item total">
-                    <span className="label">Total:</span>
-                    <span className="value highlight-total">{formatCurrency(details.orderSummary.total)}</span>
+         
+
+          <div className="credit-transaction-modal-content">
+            <div className="credit-transaction-modal-main-info">
+              <div className="credit-transaction-modal-info-item">
+                <span className="credit-transaction-modal-label">Transaction ID:</span>
+                <span className="credit-transaction-modal-value">{id}</span>
+              </div>
+              
+              <div className="credit-transaction-modal-info-item">
+                <span className="credit-transaction-modal-label">Date:</span>
+                <span className="credit-transaction-modal-value">{formattedDate}</span>
+              </div>
+              
+              <div className="credit-transaction-modal-info-item">
+                <span className="credit-transaction-modal-label">Type:</span>
+                <span className={`credit-transaction-modal-value credit-transaction-modal-type credit-transaction-modal-type-${type?.toLowerCase()}`}>
+                  {type}
+                </span>
+              </div>
+              
+              <div className="credit-transaction-modal-info-item">
+                <span className="credit-transaction-modal-label">Amount:</span>
+                <span className={`credit-transaction-modal-value credit-transaction-modal-amount credit-transaction-modal-amount-${type?.toLowerCase()}`}>
+                  {formatCurrency(amount)}
+                </span>
+              </div>
+              
+              <div className="credit-transaction-modal-info-item">
+                <span className="credit-transaction-modal-label">Status:</span>
+                <span className={`credit-transaction-modal-value credit-transaction-modal-status credit-transaction-modal-status-${status?.toLowerCase()}`}>
+                  {status}
+                </span>
+              </div>
+              
+              <div className="credit-transaction-modal-info-item">
+                <span className="credit-transaction-modal-label">Payment Method:</span>
+                <span className="credit-transaction-modal-value">{paymentmethod}</span>
+              </div>
+              
+              {referenceNumber && (
+                <div className="credit-transaction-modal-info-item">
+                  <span className="credit-transaction-modal-label">Reference Number:</span>
+                  <span className="credit-transaction-modal-value">{referenceNumber}</span>
+                </div>
+              )}
+            </div>
+            
+            {/* Transaction Image Thumbnail */}
+            {transactionImage && (
+              <div className="credit-transaction-modal-section">
+                <h3>Transaction Receipt</h3>
+                <div className="credit-transaction-modal-image-container">
+                  <img 
+                    src={transactionImage} 
+                    alt="Transaction Receipt" 
+                    className="credit-transaction-modal-thumbnail"
+                    onClick={handleImageClick}
+                  />
+                  <div className="credit-transaction-modal-image-caption">
+                    Click to view full image
                   </div>
                 </div>
               </div>
-              
-              {details.shippingInfo && (
-                <div className="transaction-section">
-                  <h3>Shipping Information</h3>
-                  <div className="shipping-info">
-                    <p>{details.shippingInfo.address}</p>
-                    <p>{details.shippingInfo.city}, {details.shippingInfo.state} {details.shippingInfo.zipCode}</p>
-                    <p>{details.shippingInfo.country}</p>
-                  </div>
-                </div>
-              )}
-              
-              {details.products?.length > 0 && (
-                <div className="transaction-section">
-                  <h3>Products</h3>
-                  <div className="products-list">
-                    {details.products.map((product, index) => (
-                      <div key={index} className="product-item">
-                        <div className="product-name">{product.name}</div>
-                        <div className="product-info">
-                          <span>Qty: {product.quantity}</span>
-                          <span>Price: {formatCurrency(product.price)}</span>
-                        </div>
+            )}
+            
+            {details && (
+              <>
+                {/* Show appropriate details based on transaction type */}
+                {isDeposit && (
+                  <div className="credit-transaction-modal-section">
+                    <h3>Deposit Details</h3>
+                    <div className="credit-transaction-modal-details-grid">
+                      {details.orderSummary && (
+                        <>
+                          <div className="credit-transaction-modal-details-item">
+                            <span className="credit-transaction-modal-label">Deposit Amount:</span>
+                            <span className="credit-transaction-modal-value credit-transaction-modal-highlight-amount">
+                              {formatCurrency(details.orderSummary.total || amount)}
+                            </span>
+                          </div>
+                          
+                          {details.orderSummary.totalOmsiaProfit !== undefined && (
+                            <div className="credit-transaction-modal-details-item">
+                              <span className="credit-transaction-modal-label">Processing Fee:</span>
+                              <span className="credit-transaction-modal-value">
+                                {formatCurrency(details.orderSummary.totalOmsiaProfit)}
+                              </span>
+                            </div>
+                          )}
+                        </>
+                      )}
+                      
+                      <div className="credit-transaction-modal-details-item credit-transaction-modal-total">
+                        <span className="credit-transaction-modal-label">Total Added to Balance:</span>
+                        <span className="credit-transaction-modal-value credit-transaction-modal-highlight-total">
+                          {formatCurrency(amount)}
+                        </span>
                       </div>
-                    ))}
+                    </div>
                   </div>
-                </div>
+                )}
+                
+                {isWithdrawal && (
+                  <div className="credit-transaction-modal-section">
+                    <h3>Withdrawal Details</h3>
+                    <div className="credit-transaction-modal-details-grid">
+                      <div className="credit-transaction-modal-details-item">
+                        <span className="credit-transaction-modal-label">Withdrawal Amount:</span>
+                        <span className="credit-transaction-modal-value credit-transaction-modal-highlight-amount">
+                          {formatCurrency(amount)}
+                        </span>
+                      </div>
+                      
+                      {details.orderSummary && details.orderSummary.totalOmsiaProfit !== undefined && (
+                        <div className="credit-transaction-modal-details-item">
+                          <span className="credit-transaction-modal-label">Processing Fee:</span>
+                          <span className="credit-transaction-modal-value">
+                            {formatCurrency(details.orderSummary.totalOmsiaProfit)}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {details.orderSummary && details.orderSummary.total !== undefined && (
+                        <div className="credit-transaction-modal-details-item credit-transaction-modal-total">
+                          <span className="credit-transaction-modal-label">Total Withdrawn:</span>
+                          <span className="credit-transaction-modal-value credit-transaction-modal-highlight-total">
+                            {formatCurrency(details.orderSummary.total)}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Display recipient information if available */}
+                {details.shippingInfo && (
+                  <div className="credit-transaction-modal-section">
+                    <h3>{isWithdrawal ? 'Recipient Information' : 'Sender Information'}</h3>
+                    <div className="credit-transaction-modal-address-info">
+                      {details.shippingInfo.trademark && <p>{details.shippingInfo.trademark}</p>}
+                      <p>
+                        {details.shippingInfo.street}
+                        {details.shippingInfo.baranggay && `, ${details.shippingInfo.baranggay}`}
+                      </p>
+                      <p>
+                        {details.shippingInfo.city}
+                        {details.shippingInfo.province && `, ${details.shippingInfo.province}`} 
+                        {details.shippingInfo.zipcode && ` ${details.shippingInfo.zipcode}`}
+                      </p>
+                      {details.shippingInfo.country && <p>{details.shippingInfo.country}</p>}
+                    </div>
+                  </div>
+                )}
+                
+                {/* If there are associated products, display them, but this is less common for credit transactions */}
+                {details.products?.length > 0 && (
+                  <div className="credit-transaction-modal-section">
+                    <h3>Related Items</h3>
+                    <div className="credit-transaction-modal-items-list">
+                      {details.products.map((product, index) => (
+                        <div key={index} className="credit-transaction-modal-item">
+                          <div className="credit-transaction-modal-item-name">{product.name}</div>
+                          <div className="credit-transaction-modal-item-info">
+                            <span>Qty: {product.quantity}</span>
+                            <span>Price: {formatCurrency(product.price)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      
+      {/* Render image modal OUTSIDE the main modal container */}
+      {imageModal}
+    </>
+  );
+};
+
+
+
+
+
+
+const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowRegisteredRegistrantsWithVerifiedDocuments, 
+  setShowRegistrantDetailsDisplay, 
+
+  verifiedmfatipregistrants, 
+  setregistrantdata,
+
+  onClose, 
+  onView, 
+  onEdit, 
+  onDelete,
+  onVerify, 
+  onReject 
+
+}) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredRegistrants, setFilteredRegistrants] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [duplicateWarnings, setDuplicateWarnings] = useState({});
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    // Animation effect on mount with slight delay for better visual effect
+    setTimeout(() => {
+      setIsVisible(true);
+    }, 50);
+    
+    // Initial filtering of only registrants with pending documents
+    const pendingDocumentsRegistrants = verifiedmfatipregistrants.filter(
+      registrant => registrant.status && registrant.status.indication === 'Documents verified'
+    );
+    setFilteredRegistrants(pendingDocumentsRegistrants);
+    
+    // Check for duplicate information
+    const duplicates = findDuplicates(verifiedmfatipregistrants);
+    setDuplicateWarnings(duplicates);
+    
+    // Add click outside listener
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [verifiedmfatipregistrants]);
+
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      handleClose();
+    }
+  };
+
+  // Function to find duplicate registrants (by name, phone, or email)
+  const findDuplicates = (registrantsList) => {
+    const duplicateInfo = {};
+    const nameMap = {};
+    const phoneMap = {};
+    const emailMap = {};
+    
+    registrantsList.forEach(registrant => {
+      // Check for duplicate names
+      const fullName = `${registrant.name.firstname} ${registrant.name.middlename || ''} ${registrant.name.lastname}`.toLowerCase().trim();
+      if (nameMap[fullName]) {
+        nameMap[fullName].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('name');
+      } else {
+        nameMap[fullName] = [registrant.id];
+      }
+      
+      // Check for duplicate phone numbers
+      const phone = registrant.contact.phonenumber;
+      if (phone && phoneMap[phone]) {
+        phoneMap[phone].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('phone');
+      } else if (phone) {
+        phoneMap[phone] = [registrant.id];
+      }
+      
+      // Check for duplicate emails
+      const email = registrant.contact.emailaddress;
+      if (email && emailMap[email]) {
+        emailMap[email].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('email');
+      } else if (email) {
+        emailMap[email] = [registrant.id];
+      }
+    });
+    
+    return duplicateInfo;
+  };
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = verifiedmfatipregistrants.filter(registrant => 
+        // Filter by pending documents status first
+        registrant.status && 
+        registrant.status.indication === 'Documents verified' &&
+        (
+          // Then search by various fields
+          registrant.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (registrant.name.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (registrant.contact.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
+          (registrant.contact.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
+      );
+      setFilteredRegistrants(results);
+    } else {
+      // Reset to show only pending documents registrants when search is cleared
+      const pendingDocumentsRegistrants = verifiedmfatipregistrants.filter(
+        registrant => registrant.status && registrant.status.indication === 'Documents verified'
+      );
+      setFilteredRegistrants(pendingDocumentsRegistrants);
+    }
+  }, [searchQuery, verifiedmfatipregistrants]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowRegisteredRegistrantsWithVerifiedDocuments(false);
+    }, 300);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getRegistrationDate = (registrant) => {
+    // Assume the first transaction or status request might be the registration date
+    if (registrant.transactions && registrant.transactions.length > 0) {
+      return registrant.transactions[0].date;
+    } else if (registrant.status && 
+              registrant.status.requests && 
+              registrant.status.requests.length > 0) {
+      return registrant.status.requests[0].date;
+    }
+    return "N/A"; // No date found
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div 
+        ref={modalRef}
+        className={`mfatip-pending-registrants-modal ${isVisible ? 'visible' : ''}`}
+      >
+        <div className="modal-header">
+          <h2>
+            <FaFileAlt className="header-icon" />
+            MFATIP Registrants with Verified Documents
+          </h2>
+          <button className="close-button" onClick={handleClose} aria-label="Close">
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, phone number, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+              aria-label="Search registrants"
+            />
+            {searchQuery && (
+              <button 
+                className="clear-search-button" 
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+          <div className="results-count">
+            <span className="count-number">{filteredRegistrants.length}</span> registrant{filteredRegistrants.length !== 1 ? 's' : ''} found
+          </div>
+        </div>
+        
+        <div className="registrants-container">
+          {filteredRegistrants.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No registrants with pending documents found</p>
+              {searchQuery && (
+                <button className="reset-search-button" onClick={() => setSearchQuery('')}>
+                  Clear search
+                </button>
               )}
-            </>
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="registrants-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRegistrants.map((registrant, index) => (
+                    <tr 
+                      key={registrant.id} 
+                      className={`registrant-row ${duplicateWarnings[registrant.id] ? 'has-duplicates' : ''}`}
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <td className="registrant-id">
+                        <div className="id-container">
+                          <FaIdCard className="id-icon" />
+                          <span>{registrant.id}</span>
+                        </div>
+                      </td>
+                      <td className="name-cell">
+                        <div className="name-flex-container">
+                          <FaUserCircle className="user-icon" />
+                          <div className="name-details">
+                            <span className="full-name">
+                              {registrant.name.firstname} {registrant.name.middlename} {registrant.name.lastname}
+                            </span>
+                            {registrant.name.nickname && (
+                              <span className="nickname">({registrant.name.nickname})</span>
+                            )}
+                          </div>
+                          {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('name') && (
+                            <div className="duplicate-warning" title="Duplicate name found">
+                              <FaExclamationTriangle className="warning-icon" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="contact-cell">
+                        <div className="contact-details">
+                          <div className="phone-number">
+                            <FaPhone className="contact-icon" />
+                            <span>{registrant.contact.phonenumber || 'N/A'}</span>
+                            {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('phone') && (
+                              <FaExclamationTriangle className="warning-icon-small" title="Duplicate phone number found" />
+                            )}
+                          </div>
+                          <div className="email-address">
+                            <FaEnvelope className="contact-icon" />
+                            <span>{registrant.contact.emailaddress || 'N/A'}</span>
+                            {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('email') && (
+                              <FaExclamationTriangle className="warning-icon-small" title="Duplicate email found" />
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="date-cell">
+                        <div className="date-flex-container">
+                          <FaCalendarAlt className="date-icon" />
+                          <span>{formatDate(getRegistrationDate(registrant))}</span>
+                        </div>
+                      </td>
+                      <td className="status-cell">
+                        <div className="status-indicator pending">
+                          <FaExclamationCircle className="status-icon pulse" />
+                          <span>{registrant.status.indication}</span>
+                        </div>
+                      </td>
+                      <td className="actions-cell">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowRegistrantDetailsDisplay(true)
+                              setregistrantdata(registrant)
+                            }}
+                            aria-label="View registrant details"
+                          >
+                            <FaEye className="action-icon" />
+                            <span className="action-text">View</span>
+                          </button>
+                          <button 
+                            className="verify-button" 
+                            onClick={() => onVerify(registrant.id)}
+                            aria-label="Verify registrant documents"
+                          >
+                            <FaCheckCircle className="action-icon" />
+                            <span className="action-text">Verify</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => onReject(registrant.id)}
+                            aria-label="Reject registrant documents"
+                          >
+                            <FaTimesCircle className="action-icon" />
+                            <span className="action-text">Reject</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(registrant.id)}
+                            aria-label="Edit registrant"
+                          >
+                            <FaEdit className="action-icon" />
+                            <span className="action-text">Edit</span>
+                          </button>
+                          <button 
+                            className="delete-button" 
+                            onClick={() => onDelete(registrant.id)}
+                            aria-label="Delete registrant"
+                          >
+                            <FaTrash className="action-icon" />
+                            <span className="action-text">Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
     </div>
   );
 };
+
+const MfatipRegisteredRegistrantsWithPendingDocuments = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowRegisteredRegistrantsWithPendingDocuments, 
+  setShowRegistrantDetailsDisplay, 
+
+  pendingmfatipregistrants, 
+  setregistrantdata,
+
+  onClose, 
+  onView, 
+  onEdit,
+  onDelete, 
+  onVerify, 
+  onReject
+  
+  }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredRegistrants, setFilteredRegistrants] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [duplicateWarnings, setDuplicateWarnings] = useState({});
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    // Animation effect on mount with slight delay for better visual effect
+    setTimeout(() => {
+      setIsVisible(true);
+    }, 50);
+    
+    // Initial filtering of only registrants with pending documents
+    const pendingDocumentsRegistrants = pendingmfatipregistrants.filter(
+      registrant => registrant.status && registrant.status.indication === 'pending documents'
+    );
+    setFilteredRegistrants(pendingDocumentsRegistrants);
+    
+    // Check for duplicate information
+    const duplicates = findDuplicates(pendingmfatipregistrants);
+    setDuplicateWarnings(duplicates);
+    
+    // Add click outside listener
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [pendingmfatipregistrants]);
+
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      handleClose();
+    }
+  };
+
+  // Function to find duplicate registrants (by name, phone, or email)
+  const findDuplicates = (registrantsList) => {
+    const duplicateInfo = {};
+    const nameMap = {};
+    const phoneMap = {};
+    const emailMap = {};
+    
+    registrantsList.forEach(registrant => {
+      // Check for duplicate names
+      const fullName = `${registrant.name.firstname} ${registrant.name.middlename || ''} ${registrant.name.lastname}`.toLowerCase().trim();
+      if (nameMap[fullName]) {
+        nameMap[fullName].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('name');
+      } else {
+        nameMap[fullName] = [registrant.id];
+      }
+      
+      // Check for duplicate phone numbers
+      const phone = registrant.contact.phonenumber;
+      if (phone && phoneMap[phone]) {
+        phoneMap[phone].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('phone');
+      } else if (phone) {
+        phoneMap[phone] = [registrant.id];
+      }
+      
+      // Check for duplicate emails
+      const email = registrant.contact.emailaddress;
+      if (email && emailMap[email]) {
+        emailMap[email].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('email');
+      } else if (email) {
+        emailMap[email] = [registrant.id];
+      }
+    });
+    
+    return duplicateInfo;
+  };
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = pendingmfatipregistrants.filter(registrant => 
+        // Filter by pending documents status first
+        registrant.status && 
+        registrant.status.indication === 'pending documents' &&
+        (
+          // Then search by various fields
+          registrant.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (registrant.name.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (registrant.contact.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
+          (registrant.contact.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
+      );
+      setFilteredRegistrants(results);
+    } else {
+      // Reset to show only pending documents registrants when search is cleared
+      const pendingDocumentsRegistrants = pendingmfatipregistrants.filter(
+        registrant => registrant.status && registrant.status.indication === 'pending documents'
+      );
+      setFilteredRegistrants(pendingDocumentsRegistrants);
+    }
+  }, [searchQuery, pendingmfatipregistrants]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowRegisteredRegistrantsWithPendingDocuments(false);
+    }, 300);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getRegistrationDate = (registrant) => {
+    // Assume the first transaction or status request might be the registration date
+    if (registrant.transactions && registrant.transactions.length > 0) {
+      return registrant.transactions[0].date;
+    } else if (registrant.status && 
+              registrant.status.requests && 
+              registrant.status.requests.length > 0) {
+      return registrant.status.requests[0].date;
+    }
+    return "N/A"; // No date found
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div 
+        ref={modalRef}
+        className={`mfatip-pending-registrants-modal ${isVisible ? 'visible' : ''}`}
+      >
+        <div className="modal-header">
+          <h2>
+            <FaFileAlt className="header-icon" />
+            MFATIP Registrants with Pending Documents
+          </h2>
+          <button className="close-button" onClick={handleClose} aria-label="Close">
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, phone number, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+              aria-label="Search registrants"
+            />
+            {searchQuery && (
+              <button 
+                className="clear-search-button" 
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+          <div className="results-count">
+            <span className="count-number">{filteredRegistrants.length}</span> registrant{filteredRegistrants.length !== 1 ? 's' : ''} found
+          </div>
+        </div>
+        
+        <div className="registrants-container">
+          {filteredRegistrants.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No registrants with pending documents found</p>
+              {searchQuery && (
+                <button className="reset-search-button" onClick={() => setSearchQuery('')}>
+                  Clear search
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="registrants-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRegistrants.map((registrant, index) => (
+                    <tr 
+                      key={registrant.id} 
+                      className={`registrant-row ${duplicateWarnings[registrant.id] ? 'has-duplicates' : ''}`}
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <td className="registrant-id">
+                        <div className="id-container">
+                          <FaIdCard className="id-icon" />
+                          <span>{registrant.id}</span>
+                        </div>
+                      </td>
+                      <td className="name-cell">
+                        <div className="name-flex-container">
+                          <FaUserCircle className="user-icon" />
+                          <div className="name-details">
+                            <span className="full-name">
+                              {registrant.name.firstname} {registrant.name.middlename} {registrant.name.lastname}
+                            </span>
+                            {registrant.name.nickname && (
+                              <span className="nickname">({registrant.name.nickname})</span>
+                            )}
+                          </div>
+                          {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('name') && (
+                            <div className="duplicate-warning" title="Duplicate name found">
+                              <FaExclamationTriangle className="warning-icon" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="contact-cell">
+                        <div className="contact-details">
+                          <div className="phone-number">
+                            <FaPhone className="contact-icon" />
+                            <span>{registrant.contact.phonenumber || 'N/A'}</span>
+                            {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('phone') && (
+                              <FaExclamationTriangle className="warning-icon-small" title="Duplicate phone number found" />
+                            )}
+                          </div>
+                          <div className="email-address">
+                            <FaEnvelope className="contact-icon" />
+                            <span>{registrant.contact.emailaddress || 'N/A'}</span>
+                            {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('email') && (
+                              <FaExclamationTriangle className="warning-icon-small" title="Duplicate email found" />
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="date-cell">
+                        <div className="date-flex-container">
+                          <FaCalendarAlt className="date-icon" />
+                          <span>{formatDate(getRegistrationDate(registrant))}</span>
+                        </div>
+                      </td>
+                      <td className="status-cell">
+                        <div className="status-indicator pending">
+                          <FaExclamationCircle className="status-icon pulse" />
+                          <span>{registrant.status.indication}</span>
+                        </div>
+                      </td>
+                      <td className="actions-cell">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowRegistrantDetailsDisplay(true)
+                              setregistrantdata(registrant)
+                            }}
+                            aria-label="View registrant details"
+                          >
+                            <FaEye className="action-icon" />
+                            <span className="action-text">View</span>
+                          </button>
+                          <button 
+                            className="verify-button" 
+                            onClick={() => onVerify(registrant.id)}
+                            aria-label="Verify registrant documents"
+                          >
+                            <FaCheckCircle className="action-icon" />
+                            <span className="action-text">Verify</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => onReject(registrant.id)}
+                            aria-label="Reject registrant documents"
+                          >
+                            <FaTimesCircle className="action-icon" />
+                            <span className="action-text">Reject</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(registrant.id)}
+                            aria-label="Edit registrant"
+                          >
+                            <FaEdit className="action-icon" />
+                            <span className="action-text">Edit</span>
+                          </button>
+                          <button 
+                            className="delete-button" 
+                            onClick={() => onDelete(registrant.id)}
+                            aria-label="Delete registrant"
+                          >
+                            <FaTrash className="action-icon" />
+                            <span className="action-text">Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const MfatipRegisteredRegistrantsWithRejectedDocuments = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowRegisteredRegistrantsWithRejectedDocuments, 
+  setShowRegistrantDetailsDisplay,
+
+  mfatipregistrantsrejecteddocuments, 
+  setregistrantdata,
+
+  onClose, 
+  onView, 
+  onEdit, 
+  onDelete, 
+  onVerify, 
+  onReject
+
+  }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredRegistrants, setFilteredRegistrants] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [duplicateWarnings, setDuplicateWarnings] = useState({});
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    // Animation effect on mount with slight delay for better visual effect
+    setTimeout(() => {
+      setIsVisible(true);
+    }, 50);
+    
+    // Initial filtering of only registrants with pending documents
+    const pendingDocumentsRegistrants = mfatipregistrantsrejecteddocuments.filter(
+      registrant => registrant.status && registrant.status.indication === 'rejected documents'
+    );
+    setFilteredRegistrants(pendingDocumentsRegistrants);
+    
+    // Check for duplicate information
+    const duplicates = findDuplicates(mfatipregistrantsrejecteddocuments);
+    setDuplicateWarnings(duplicates);
+    
+    // Add click outside listener
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mfatipregistrantsrejecteddocuments]);
+
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      handleClose();
+    }
+  };
+
+  // Function to find duplicate registrants (by name, phone, or email)
+  const findDuplicates = (registrantsList) => {
+    const duplicateInfo = {};
+    const nameMap = {};
+    const phoneMap = {};
+    const emailMap = {};
+    
+    registrantsList.forEach(registrant => {
+      // Check for duplicate names
+      const fullName = `${registrant.name.firstname} ${registrant.name.middlename || ''} ${registrant.name.lastname}`.toLowerCase().trim();
+      if (nameMap[fullName]) {
+        nameMap[fullName].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('name');
+      } else {
+        nameMap[fullName] = [registrant.id];
+      }
+      
+      // Check for duplicate phone numbers
+      const phone = registrant.contact.phonenumber;
+      if (phone && phoneMap[phone]) {
+        phoneMap[phone].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('phone');
+      } else if (phone) {
+        phoneMap[phone] = [registrant.id];
+      }
+      
+      // Check for duplicate emails
+      const email = registrant.contact.emailaddress;
+      if (email && emailMap[email]) {
+        emailMap[email].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('email');
+      } else if (email) {
+        emailMap[email] = [registrant.id];
+      }
+    });
+    
+    return duplicateInfo;
+  };
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = mfatipregistrantsrejecteddocuments.filter(registrant => 
+        // Filter by pending documents status first
+        registrant.status && 
+        registrant.status.indication === 'rejected documents' &&
+        (
+          // Then search by various fields
+          registrant.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (registrant.name.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (registrant.contact.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
+          (registrant.contact.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
+      );
+      setFilteredRegistrants(results);
+    } else {
+      // Reset to show only pending documents registrants when search is cleared
+      const pendingDocumentsRegistrants = mfatipregistrantsrejecteddocuments.filter(
+        registrant => registrant.status && registrant.status.indication === 'rejected documents'
+      );
+      setFilteredRegistrants(pendingDocumentsRegistrants);
+    }
+  }, [searchQuery, mfatipregistrantsrejecteddocuments]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowRegisteredRegistrantsWithRejectedDocuments(false);
+    }, 300);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getRegistrationDate = (registrant) => {
+    // Assume the first transaction or status request might be the registration date
+    if (registrant.transactions && registrant.transactions.length > 0) {
+      return registrant.transactions[0].date;
+    } else if (registrant.status && 
+              registrant.status.requests && 
+              registrant.status.requests.length > 0) {
+      return registrant.status.requests[0].date;
+    }
+    return "N/A"; // No date found
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div 
+        ref={modalRef}
+        className={`mfatip-pending-registrants-modal ${isVisible ? 'visible' : ''}`}
+      >
+        <div className="modal-header">
+          <h2>
+            <FaFileAlt className="header-icon" />
+            MFATIP Registrants with Rejected Documents
+          </h2>
+          <button className="close-button" onClick={handleClose} aria-label="Close">
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, phone number, or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+              aria-label="Search registrants"
+            />
+            {searchQuery && (
+              <button 
+                className="clear-search-button" 
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+          <div className="results-count">
+            <span className="count-number">{filteredRegistrants.length}</span> registrant{filteredRegistrants.length !== 1 ? 's' : ''} found
+          </div>
+        </div>
+        
+        <div className="registrants-container">
+          {filteredRegistrants.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No registrants with pending documents found</p>
+              {searchQuery && (
+                <button className="reset-search-button" onClick={() => setSearchQuery('')}>
+                  Clear search
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="registrants-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRegistrants.map((registrant, index) => (
+                    <tr 
+                      key={registrant.id} 
+                      className={`registrant-row ${duplicateWarnings[registrant.id] ? 'has-duplicates' : ''}`}
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <td className="registrant-id">
+                        <div className="id-container">
+                          <FaIdCard className="id-icon" />
+                          <span>{registrant.id}</span>
+                        </div>
+                      </td>
+                      <td className="name-cell">
+                        <div className="name-flex-container">
+                          <FaUserCircle className="user-icon" />
+                          <div className="name-details">
+                            <span className="full-name">
+                              {registrant.name.firstname} {registrant.name.middlename} {registrant.name.lastname}
+                            </span>
+                            {registrant.name.nickname && (
+                              <span className="nickname">({registrant.name.nickname})</span>
+                            )}
+                          </div>
+                          {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('name') && (
+                            <div className="duplicate-warning" title="Duplicate name found">
+                              <FaExclamationTriangle className="warning-icon" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="contact-cell">
+                        <div className="contact-details">
+                          <div className="phone-number">
+                            <FaPhone className="contact-icon" />
+                            <span>{registrant.contact.phonenumber || 'N/A'}</span>
+                            {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('phone') && (
+                              <FaExclamationTriangle className="warning-icon-small" title="Duplicate phone number found" />
+                            )}
+                          </div>
+                          <div className="email-address">
+                            <FaEnvelope className="contact-icon" />
+                            <span>{registrant.contact.emailaddress || 'N/A'}</span>
+                            {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('email') && (
+                              <FaExclamationTriangle className="warning-icon-small" title="Duplicate email found" />
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="date-cell">
+                        <div className="date-flex-container">
+                          <FaCalendarAlt className="date-icon" />
+                          <span>{formatDate(getRegistrationDate(registrant))}</span>
+                        </div>
+                      </td>
+                      <td className="status-cell">
+                        <div className="status-indicator pending">
+                          <FaExclamationCircle className="status-icon pulse" />
+                          <span>{registrant.status.indication}</span>
+                        </div>
+                      </td>
+                      <td className="actions-cell">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowRegistrantDetailsDisplay(true)
+                              setregistrantdata(registrant)
+                            }}
+                            aria-label="View registrant details"
+                          >
+                            <FaEye className="action-icon" />
+                            <span className="action-text">View</span>
+                          </button>
+                          <button 
+                            className="verify-button" 
+                            onClick={() => onVerify(registrant.id)}
+                            aria-label="Verify registrant documents"
+                          >
+                            <FaCheckCircle className="action-icon" />
+                            <span className="action-text">Verify</span>
+                          </button>
+                          <button 
+                            className="reject-button" 
+                            onClick={() => onReject(registrant.id)}
+                            aria-label="Reject registrant documents"
+                          >
+                            <FaTimesCircle className="action-icon" />
+                            <span className="action-text">Reject</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(registrant.id)}
+                            aria-label="Edit registrant"
+                          >
+                            <FaEdit className="action-icon" />
+                            <span className="action-text">Edit</span>
+                          </button>
+                          <button 
+                            className="delete-button" 
+                            onClick={() => onDelete(registrant.id)}
+                            aria-label="Delete registrant"
+                          >
+                            <FaTrash className="action-icon" />
+                            <span className="action-text">Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+
+
+
+
+
 
 
 
@@ -7159,412 +10242,9 @@ const PendingPrivateRegistrationsModal = ({ onClose, setShowDatabaseConfiguratio
 };
 
 
-const MfatipPendingRegistrants = ({ setShowDatabaseConfiguration, setShowRegisteredRegistrantsWithPendingDocuments, registrants, onClose, onView, onEdit, onDelete }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredRegistrants, setFilteredRegistrants] = useState([]);
-  const [isVisible, setIsVisible] = useState(false);
-  const [duplicateWarnings, setDuplicateWarnings] = useState({});
-  const modalRef = useRef(null);
-
-  useEffect(() => {
-    // Animation effect on mount
-    setIsVisible(true);
-    
-    // Initial filtering of only registrants with pending documents
-    const pendingDocumentsRegistrants = registrants.filter(
-      registrant => registrant.status && registrant.status.indication === 'pending documents'
-    );
-    setFilteredRegistrants(pendingDocumentsRegistrants);
-    
-    // Check for duplicate information
-    const duplicates = findDuplicates(registrants);
-    setDuplicateWarnings(duplicates);
-    
-    // Add click outside listener
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [registrants]);
-
-  const handleClickOutside = (event) => {
-    if (modalRef.current && !modalRef.current.contains(event.target)) {
-      handleClose();
-    }
-  };
-
-  // Function to find duplicate registrants (by name, phone, or email)
-  const findDuplicates = (registrantsList) => {
-    const duplicateInfo = {};
-    const nameMap = {};
-    const phoneMap = {};
-    const emailMap = {};
-    
-    registrantsList.forEach(registrant => {
-      // Check for duplicate names
-      const fullName = `${registrant.name.firstname} ${registrant.name.middlename} ${registrant.name.lastname}`.toLowerCase();
-      if (nameMap[fullName]) {
-        nameMap[fullName].push(registrant.id);
-        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
-        duplicateInfo[registrant.id].push('name');
-      } else {
-        nameMap[fullName] = [registrant.id];
-      }
-      
-      // Check for duplicate phone numbers
-      const phone = registrant.contact.phonenumber;
-      if (phone && phoneMap[phone]) {
-        phoneMap[phone].push(registrant.id);
-        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
-        duplicateInfo[registrant.id].push('phone');
-      } else if (phone) {
-        phoneMap[phone] = [registrant.id];
-      }
-      
-      // Check for duplicate emails
-      const email = registrant.contact.emailaddress;
-      if (email && emailMap[email]) {
-        emailMap[email].push(registrant.id);
-        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
-        duplicateInfo[registrant.id].push('email');
-      } else if (email) {
-        emailMap[email] = [registrant.id];
-      }
-    });
-    
-    return duplicateInfo;
-  };
-
-  useEffect(() => {
-    if (searchQuery) {
-      const results = registrants.filter(registrant => 
-        // Filter by pending documents status first
-        registrant.status && 
-        registrant.status.indication === 'pending documents' &&
-        (
-          // Then search by various fields
-          registrant.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (registrant.name.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (registrant.contact.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
-          (registrant.contact.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
-        )
-      );
-      setFilteredRegistrants(results);
-    } else {
-      // Reset to show only pending documents registrants when search is cleared
-      const pendingDocumentsRegistrants = registrants.filter(
-        registrant => registrant.status && registrant.status.indication === 'pending documents'
-      );
-      setFilteredRegistrants(pendingDocumentsRegistrants);
-    }
-  }, [searchQuery, registrants]);
-
-  const handleClose = () => {
-   // setIsVisible(false);
-    // Delay actual closing to allow for animation
-   // setTimeout(() => {
-   //   onClose();
-   // }, 300);
-
-   setShowDatabaseConfiguration(false);
-   setShowRegisteredRegistrantsWithPendingDocuments(false);
-
-  };
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  const getRegistrationDate = (registrant) => {
-    // Assume the first transaction or status request might be the registration date
-    // This logic might need adjustment based on your actual data structure
-    if (registrant.transactions && registrant.transactions.length > 0) {
-      return registrant.transactions[0].date;
-    } else if (registrant.status && 
-              registrant.status.requests && 
-              registrant.status.requests.length > 0) {
-      return registrant.status.requests[0].date;
-    }
-    return "N/A"; // No date found
-  };
-
-  return (
-    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
-      <div 
-        ref={modalRef}
-        className={`mfatip-pending-registrants-modal ${isVisible ? 'visible' : ''}`}
-      >
-        <div className="modal-header">
-          <h2>
-            <FaFileAlt className="header-icon" />
-            MFATIP Registrants with Pending Documents
-          </h2>
-          <button className="close-button" onClick={handleClose}>
-            <FaTimes />
-          </button>
-        </div>
-        
-        <div className="search-section">
-          <div className="search-input-container">
-            <FaSearch className="search-icon" />
-            <input
-              type="text"
-              placeholder="Search by ID, name, phone number, or email..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
-            />
-          </div>
-          <div className="results-count">
-            {filteredRegistrants.length} registrant{filteredRegistrants.length !== 1 ? 's' : ''} found
-          </div>
-        </div>
-        
-        <div className="registrants-container">
-          {filteredRegistrants.length === 0 ? (
-            <div className="no-results">
-              <FaExclamationCircle className="no-results-icon" />
-              <p>No registrants with pending documents found</p>
-            </div>
-          ) : (
-            <table className="registrants-table">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Name</th>
-                  <th>Contact</th>
-                  <th>Registration Date</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredRegistrants.map((registrant) => (
-                  <tr 
-                    key={registrant.id} 
-                    className={`registrant-row ${duplicateWarnings[registrant.id] ? 'has-duplicates' : ''}`}
-                  >
-                    <td className="registrant-id">
-                      <FaIdCard className="id-icon" />
-                      {registrant.id}
-                    </td>
-                    <td className="name-cell">
-                      <FaUserCircle className="user-icon" />
-                      <div className="name-details">
-                        <span className="full-name">
-                          {registrant.name.firstname} {registrant.name.middlename} {registrant.name.lastname}
-                        </span>
-                        {registrant.name.nickname && (
-                          <span className="nickname">({registrant.name.nickname})</span>
-                        )}
-                      </div>
-                      {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('name') && (
-                        <div className="duplicate-warning" title="Duplicate name found">
-                          <FaExclamationTriangle className="warning-icon" />
-                        </div>
-                      )}
-                    </td>
-                    <td className="contact-cell">
-                      <div className="contact-details">
-                        <div className="phone-number">
-                          <FaPhone className="contact-icon" />
-                          {registrant.contact.phonenumber || 'N/A'}
-                          {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('phone') && (
-                            <FaExclamationTriangle className="warning-icon-small" title="Duplicate phone number found" />
-                          )}
-                        </div>
-                        <div className="email-address">
-                          <FaEnvelope className="contact-icon" />
-                          {registrant.contact.emailaddress || 'N/A'}
-                          {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('email') && (
-                            <FaExclamationTriangle className="warning-icon-small" title="Duplicate email found" />
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="date-cell">
-                      <FaCalendarAlt className="date-icon" />
-                      <span>{formatDate(getRegistrationDate(registrant))}</span>
-                    </td>
-                    <td className="status-cell">
-                      <div className="status-indicator pending">
-                        <FaExclamationCircle className="status-icon pulse" />
-                        <span>Pending Documents</span>
-                      </div>
-                    </td>
-                    <td className="actions-cell">
-                      <div className="action-buttons">
-                        <button 
-                          className="view-button" 
-                          onClick={() => onView(registrant.id)}
-                          aria-label="View registrant details"
-                        >
-                          <FaEye className="action-icon" />
-                          <span className="action-text">View</span>
-                        </button>
-                        <button 
-                          className="edit-button" 
-                          onClick={() => onEdit(registrant.id)}
-                          aria-label="Edit registrant"
-                        >
-                          <FaEdit className="action-icon" />
-                          <span className="action-text">Edit</span>
-                        </button>
-                        <button 
-                          className="delete-button" 
-                          onClick={() => onDelete(registrant.id)}
-                          aria-label="Delete registrant"
-                        >
-                          <FaTrash className="action-icon" />
-                          <span className="action-text">Delete</span>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 
 
-const GCashPaymentLink = () => {
-  const [amount, setAmount] = useState('');
-  const [description, setDescription] = useState('');
-  const [recipientMobile, setRecipientMobile] = useState('');
-  const [generatedLink, setGeneratedLink] = useState('');
-  const [error, setError] = useState('');
-
-  // GCash uses a specific format for their payment links
-  const generatePaymentLink = () => {
-    // Validate inputs
-    if (!amount || isNaN(amount) || parseFloat(amount) <= 0) {
-      setError('Please enter a valid amount');
-      return;
-    }
-
-    if (!recipientMobile || !recipientMobile.match(/^09\d{9}$|^\+639\d{9}$/)) {
-      setError('Please enter a valid Philippine mobile number (e.g., 09xxxxxxxxx or +639xxxxxxxxx)');
-      return;
-    }
-
-    // Clear previous errors
-    setError('');
-
-    // Format the mobile number to ensure it's in the correct format
-    // GCash typically uses +63 format
-    let formattedMobile = recipientMobile;
-    if (recipientMobile.startsWith('09')) {
-      formattedMobile = '+63' + recipientMobile.substring(1);
-    }
-
-    // Create the payment link
-    // Note: This is a simplified version. The actual GCash payment link structure may vary.
-    const paymentLink = `https://www.gcash.com/fund-transfer?receiver=${encodeURIComponent(formattedMobile)}&amount=${encodeURIComponent(amount)}&description=${encodeURIComponent(description)}`;
-    
-    setGeneratedLink(paymentLink);
-  };
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedLink);
-    alert('Payment link copied to clipboard!');
-  };
-
-  return (
-    <div className="max-w-md mx-auto p-4 bg-white rounded-lg shadow-md">
-      <h2 className="text-xl font-bold mb-4 text-blue-600">GCash Payment Link Generator</h2>
-      
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="amount">
-          Amount (PHP)
-        </label>
-        <input
-          id="amount"
-          type="number"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          placeholder="Enter amount"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-        />
-      </div>
-      
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-          Description (Optional)
-        </label>
-        <input
-          id="description"
-          type="text"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          placeholder="What's this payment for?"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-      
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="mobile">
-          Recipient's GCash Number
-        </label>
-        <input
-          id="mobile"
-          type="text"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          placeholder="09xxxxxxxxx or +639xxxxxxxxx"
-          value={recipientMobile}
-          onChange={(e) => setRecipientMobile(e.target.value)}
-        />
-      </div>
-      
-      {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
-      
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline w-full"
-        onClick={generatePaymentLink}
-      >
-        Generate Payment Link
-      </button>
-      
-      {generatedLink && (
-        <div className="mt-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2">
-            Payment Link
-          </label>
-          <div className="flex">
-            <input
-              readOnly
-              className="shadow appearance-none border rounded-l w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-              value={generatedLink}
-            />
-            <button
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r focus:outline-none focus:shadow-outline"
-              onClick={copyToClipboard}
-            >
-              Copy
-            </button>
-          </div>
-          <p className="text-sm text-gray-600 mt-2">
-            Share this link with your payer to request payment via GCash
-          </p>
-        </div>
-      )}
-    </div>
-  );
-};
 
 const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) => {
   const [images, setImages] = useState([]);
@@ -9594,6 +12274,9 @@ const DeleteProductReader = ({ product, onClose, setShowProductReader, setShowPe
 };
 
 
+
+
+
 const RegistrationForm = ({ onClose, setShowDatabaseConfiguration, setShowCreateRegistrantForm }) => {
 
   const [formData, setFormData] = useState({
@@ -10249,7 +12932,6 @@ const ReadRegistrantFormDetails = ({ setShowDatabaseConfiguration, setShowRegist
         <div className="form-header">
           <h2>MFATIP Registrant Details</h2>
           <button className="close-button" onClick={()=> {
-            setShowDatabaseConfiguration(false);
             setShowRegistrantDetailsDisplay(false);
           }}>
             ×

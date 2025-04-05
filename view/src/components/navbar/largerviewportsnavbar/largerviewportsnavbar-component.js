@@ -93,14 +93,14 @@ const ResponsiveNavbar = (props) => {
                   <Dropdown.Toggle 
                     variant="dark" 
                     id="dropdown-account" 
-                    className={`custom-dropdown-toggle ${props.user && props.user.loginstatus === "logged in" ? "logged-in" : "logged-out"}`}
+                    className={`custom-dropdown-toggle ${props.user && props.user.registrationstatusesandlogs.deviceloginstatus === "logged in" ? "logged-in" : "logged-out"}`}
                   >
                     {props.user && props.user.loginstatus === "logged in" 
                       ? "LOG OUT" 
                       : "LOG IN / REGISTER"}
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="custom-dropdown-menu">
-                    {props.user && props.user.loginstatus === "logged in" 
+                    {props.user && props.user.registrationstatusesandlogs.deviceloginstatus === "logged in" 
                       ? <Dropdown.Item href="/mfatip/loginregister">LOG OUT MFATIP PROFILE ACCOUNT</Dropdown.Item>
                       : <Dropdown.Item href="/mfatip/loginregister">MFATIP LOGIN / MFATIP REGISTER PAGE</Dropdown.Item>}
                   </Dropdown.Menu>

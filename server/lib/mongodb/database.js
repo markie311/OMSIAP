@@ -1,28 +1,39 @@
 const mongoose = require('mongoose');
 
+// Centralized MongoDB connection function
+const connectToDatabase = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      maxPoolSize: 50, // Increase connection pool size
+      socketTimeoutMS: 45000, // Increase socket timeout
+      serverSelectionTimeoutMS: 30000, // Increase server selection timeout
+      heartbeatFrequencyMS: 10000, // Customize heartbeat frequency
+      retryWrites: true,
+      dbName: process.env.DB_NAME
+    });
+    console.log('MongoDB connection established successfully');
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+    // Implement reconnection strategy
+    setTimeout(connectToDatabase, 5000);
+  }
+};
 
-module.exports = {
-    connect: async (id, settings, status) => {
-        await mongoose.connect(id, settings);
-    },
-    log: (atlas) => {
+// Connection event listeners
+mongoose.connection.on('connected', () => {
+  console.log('Mongoose connected to database');
+});
 
-        // on open
-        atlas.once('open', () => {
-            console.log('Fetching to database....')
-            atlas.close();
-        })
+mongoose.connection.on('error', (err) => {
+  console.error('Mongoose connection error:', err);
+});
 
-        // on error
-        atlas.on('error', () => {
-             console.log('Error occured while sending a ping on database')
-             atlas.close();
-        })
- 
-         // on disconnect 
-         atlas.on('disconnecting', () => {
-            console.log('Fetching to database indentified, temporarily closing connection....' + '\n')
-            atlas.close();
-         })
-    }
-}
+mongoose.connection.on('disconnected', () => {
+  console.log('Mongoose disconnected');
+  // Attempt to reconnect
+  connectToDatabase();
+});
+
+module.exports = connectToDatabase;

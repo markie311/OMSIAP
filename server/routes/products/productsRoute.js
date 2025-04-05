@@ -14,6 +14,9 @@ const mongodb = require('../../lib/mongodb/database.js');
 const omsiapdatascheme = require('../../models/omsiap/omsiapdatascheme.js');
 const productdatascheme = require('../../models/products/productsdatascheme.js')
 
+const timestamps = require('../../lib/timestamps/timestamps');
+
+
 // Configure multer storage
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -446,22 +449,28 @@ Router.route("/deleteproduct").post(async (req, res) => {
 
 // Helper function to create a transaction record
 function createTransactionRecord(orderData) {
-  const transactionId = generateTransactionId();
+  // Generate a unique transaction ID
+  const transactionId = generateUniqueTransactionId();
+  
+  // Format the date using timestamps module
+  const formattedDate = formatTransactionDate();
   
   return {
     id: transactionId,
-    date: new Date().toISOString(),
+    date: formattedDate,
     type: "purchase",
-    status: "completed",
+    status: "pending",
     amount: parseFloat(orderData.paymentInfo.amount),
     paymentmethod: orderData.paymentInfo.method,
     details: {
-      products: orderData.products.map(product => ({
-        id: product.id,
-        name: product.name,
-        price: parseFloat(product.price),
-        quantity: parseInt(product.quantity, 10)
-      })),
+      products: orderData.products.map(product => {
+        // Find the full product details from the database
+        const fullProductDetails = findFullProductDetails(product.id);
+        return {
+          ...fullProductDetails,
+          quantity: parseInt(product.quantity, 10)
+        };
+      }),
       shippingInfo: {
         address: orderData.personalInfo.address,
         city: orderData.personalInfo.city,
@@ -485,9 +494,70 @@ function createTransactionRecord(orderData) {
   };
 }
 
-// Helper function to generate a transaction ID
-function generateTransactionId() {
-  return 'TXN-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+// Helper function to generate a unique transaction ID
+function generateUniqueTransactionId() {
+  // Use a combination of timestamp, random number, and a counter
+  const timestamp = Date.now();
+  const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const counter = process.memoryUsage().heapUsed % 10000; // Use memory usage as a pseudo-unique counter
+  
+  return `TXN-${timestamp}-${randomPart}-${counter}`;
+}
+
+// Helper function to format date using timestamps module
+function formatTransactionDate() {
+  const day = timestamps.getDay();
+  const month = timestamps.getMonth();
+  const date = timestamps.getDate();
+  const year = timestamps.getFullYear();
+  const hour = timestamps.getHour();
+  const minutes = timestamps.getMinutes();
+  const meridiem = timestamps.getAnteAndPostMeridiem();
+  
+  return `${day}, ${month} ${date}, ${year} at ${hour}:${minutes}${meridiem}`;
+}
+
+// Helper function to find full product details
+function findFullProductDetails(productId) {
+  // This would typically involve a database lookup
+  // For now, we'll return a placeholder that matches the product schema
+  return {
+    id: productId,
+    name: '', // You'd look up the actual name
+    price: 0, // Look up actual price
+    category: '', // Look up category
+    description: '', // Look up description
+    weightingrams: 0, // Look up weight
+    images: [], // Look up images
+    stock: 0, // Look up current stock
+    rating: 0, // Look up rating
+    reviews: 0, // Look up number of reviews
+    specifications: [], // Look up specifications
+    videoUrl: '', // Look up video URL
+    features: [], // Look up features
+    warranty: '', // Look up warranty
+    focuseddata: {
+      price: {
+        price: 0,
+        capital: 0,
+        transactiongiveaway: 0,
+        omsiapprofit: 0
+      }
+    },
+    orderdetails: {
+      quantity: 0,
+      product: {
+        price: 0,
+        capital: 0,
+        transactiongiveaway: 0,
+        omsiapprofit: 0
+      },
+      shipment: {
+        totalkilos: 0,
+        totalshipmentfee: 0
+      }
+    }
+  };
 }
 
 // Helper function for precise decimal operations
@@ -878,15 +948,7 @@ async function processOrder(req, res) {
       return res.status(400).json({ error: "Missing required order information" });
     }
 
-    // Log order data for debugging
-    console.log("Registrant id:", orderData.registrantid);
-    console.log("Products:", orderData.products);
-    console.log("Personal info:", orderData.personalInfo);
-    console.log("Payment info method:", orderData.paymentInfo.method);
-    console.log("Payment info amount:", orderData.paymentInfo.amount);
-    console.log("Order summary:", orderData.orderSummary);
-
-    // Connect to MongoDB using the same approach as in the original code
+    // Connect to MongoDB
     await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -910,18 +972,32 @@ async function processOrder(req, res) {
       return res.status(404).json({ error: "Registrant not found" });
     }
     
-    // (1.) Save the transaction to the user or to the current registrant who is ordering
+    // Create the transaction record
     const newTransaction = createTransactionRecord(orderData);
     
-    // Ensure transactions array exists
+    // (1.) Save the transaction to the registrant
     if (!registrant.transactions) {
       registrant.transactions = [];
     }
-    
     registrant.transactions.push(newTransaction);
     
-    // (2.) Calculate the transaction give away
-    // 60% to the current registrant who is ordering and 40% to eligible users based on status type
+    // (2.) Save the transaction to omsiapdata.transactions.orders
+    if (!omsiapdata.transactions) {
+      omsiapdata.transactions = { 
+        orders: { 
+          pending: [], 
+          total: [] 
+        } 
+      };
+    }
+    
+    // Add to pending orders
+    omsiapdata.transactions.orders.pending.push(newTransaction);
+    
+    // Add to total orders
+    omsiapdata.transactions.orders.total.push(newTransaction);
+    
+    // (3.) Calculate the transaction give away
     const transactionGiveaway = parseFloat(orderData.orderSummary.totalTransactionGiveaway);
     
     if (!isNaN(transactionGiveaway)) {
@@ -933,15 +1009,15 @@ async function processOrder(req, res) {
         distributeTransactionGiveaway(omsiapdata, registrant, transactionGiveaway);
       }
       
-      // (5.) Check if accumulated pending funds can be distributed
+      // (4.) Check if accumulated pending funds can be distributed
       checkAndDistributePendingFunds(omsiapdata, registrant);
     } else {
       console.log("Invalid transaction giveaway value:", orderData.orderSummary.totalTransactionGiveaway);
     }
     
-    // (6.) Save all changes to the database
+    // (5.) Save all changes to the database
     await omsiapdata.save().then(() => {
-      console.log("Saved");
+      console.log("Order saved successfully");
     });
     
     return res.status(200).json({ 

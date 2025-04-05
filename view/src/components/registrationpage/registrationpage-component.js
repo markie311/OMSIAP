@@ -11,14 +11,16 @@ import '../../styles/registrationpage/registrationpage.scss';
 
 import axiosCreatedInstance from '../lib/axiosutil.js';
 
-const RegistrationPage = (props) => {
+const LoginAndRegistrationPage = (props) => {
 
   const navigate = useNavigate();
 
   const [signinbuttonloadingindication, signinbuttonloadingindicationcb] = useState(false);
   const [registerbuttonloadingindication, registerbuttonloadingindicationcb] = useState(false); 
   const [refresh, setRefresh] = useState(false);
-  const [fullname, setFullname] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [middleName, setMiddleName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [password, setPassword] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState('');
@@ -30,6 +32,7 @@ const RegistrationPage = (props) => {
     bulletpoint2: "",
     advice: ""
   });
+
   const [registrationresponsemessagetextcolorindication, registrationresponsemessagetextcolorindicationcb] = useState("green");
 
   // Verification state
@@ -74,80 +77,81 @@ const RegistrationPage = (props) => {
   const [errors, setErrors] = useState({});
 
   const handleSignIn = async (e) => {
+    
     e.preventDefault();
+    
+    // Reset previous errors
+    setError(null);
+    
+    // Start loading indication
     signinbuttonloadingindicationcb(true);
-
-    if (!fullname || !password) {
-      setError('Please fill in all fields');
+    
+    // Input validation
+    if (!firstName || !lastName || !password) {
+      setError('Please fill in all required fields');
       signinbuttonloadingindicationcb(false);
       return;
     }
-
-    const _parsedfullname = parseFullName(fullname);
-    alert(JSON.stringify(_parsedfullname))
-  
-    {/*
-    // Simulate API call
-    setTimeout(() => {
-      // Check if the user has multiple accounts with the same name
-      const matchingAccounts = userAccounts.filter(account => 
-        account.fullName.toLowerCase() === fullname.toLowerCase()
-      );
+    
+    try {
+      // Make API call
+      const response = await axiosCreatedInstance.post("/people/login", {
+        $firstname: firstName,
+        $middlename: middleName, // Send empty string if no middle name
+        $lastname: lastName,
+        $password: password
+      });
       
-      if (matchingAccounts.length > 1) {
-        // Show verification modal if multiple accounts exist
-        setShowVerificationModal(true);
-        signinbuttonloadingindicationcb(false);
-      } else if (matchingAccounts.length === 1) {
-        // Show password confirmation modal for single account
-        setSelectedAccount(matchingAccounts[0]);
-        setShowPasswordModal(true);
-        signinbuttonloadingindicationcb(false);
-      } else {
-        // No matching accounts
-        setError('No account found with that name');
-        signinbuttonloadingindicationcb(false);
+      // Handle response
+      const _responsemessage = response.data.message;
+      const _registrant = response.data.registrant;
+      
+      switch(_responsemessage) {
+        case "No user found with the provided name details":
+          setError('No account found with those name details');
+          break;
+          
+        case "Login successful":
+          // Store the MongoDB ObjectId in a cookie for 1 year
+          const oneYearFromNow = 365 * 24 * 60 * 60;
+          document.cookie = `id=${_registrant.objectId}; path=/; max-age=${oneYearFromNow}; SameSite=Strict; Secure`;
+          
+          // Optional: Display success message
+          document.querySelectorAll(".loginpage-responsemessagecontainer")[0].style.display = "block";
+          break;
+          
+        case "Incorrect password":
+          setError('Incorrect password');
+          break;
+          
+        case "Database connection error. Please try again later.":
+          setError('Internet connection problem. Please check your connection and try again.');
+          break;
+          
+        default:
+          setError('An unexpected error occurred');
       }
-    }, 1000);
-     */}
-
-     await axiosCreatedInstance.post("/people/login", {
-       $firstname: _parsedfullname.firstName,
-       $middlename: _parsedfullname.middleName,
-       $lastname: _parsedfullname.lastName,
-       $password: password
-     }).then((response)=> {
-       console.log(response.data)
-       const _responsemessage = response.data.message;
-       const _registrant = response.data.registrant;
-       switch(_responsemessage) {
-          case "No user found with the provided name details":
-            setError('No account found with that name');
-            signinbuttonloadingindicationcb(false);
-          break;
-          case "Login successful":
-              alert(_registrant.id)
-              // Save nickname and encrypted password in cookies for 1 year (365 days)
-              const oneYearFromNow = 365 * 24 * 60 * 60;
-              document.cookie = `id=${_registrant.id}; path=/; max-age=${oneYearFromNow}`;
-              // In a real application, you would never store passwords in cookies
-              // This is just for demonstration purposes
-              // Normally you would handle authentication via a secure backend
-              // document.cookie = `auth=true; path=/; max-age=${oneYearFromNow}`;
-              //   props.usercb(_registrant)
-              document.querySelectorAll(".loginpage-responsemessagecontainer")[0].style.display = "block";
-          break;
-          case "Incorrect password":
-            setError('Incorrect password');
-            signinbuttonloadingindicationcb(false);
-          break;
-       }
-
-     //  document.querySelector("#registration-results").style.display = "block";
-       registerbuttonloadingindicationcb(false);
-     })
-
-
+    } catch (error) {
+      // Handle network errors or server connection issues
+      console.error('Login error:', error);
+      
+      if (!navigator.onLine) {
+        setError('You appear to be offline. Please check your internet connection.');
+      } else if (error.response) {
+        // The request was made and the server responded with a status code
+        // that falls out of the range of 2xx
+        setError(error.response.data.message || 'Server error occurred');
+      } else if (error.request) {
+        // The request was made but no response was received
+        setError('No response from server. Please check your connection.');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        setError('Error processing your login. Please try again.');
+      }
+    } finally {
+      // Always stop loading indication
+      signinbuttonloadingindicationcb(false);
+    }
   };
 
   const completeSignIn = () => {
@@ -209,6 +213,7 @@ const RegistrationPage = (props) => {
   };
 
   const validateForm = () => {
+
     const newErrors = {};
     if (!formData.firstName) newErrors.firstName = 'First name is required';
     if (!formData.lastName) newErrors.lastName = 'Last name is required';
@@ -225,206 +230,188 @@ const RegistrationPage = (props) => {
     }
     
     return newErrors;
+
   };
 
-  function parseFullName(fullName) {
-    // Trim whitespace and handle empty input
-    if (!fullName || typeof fullName !== 'string') {
-      return {
-        firstName: '',
-        middleName: '',
-        lastName: ''
-      };
-    }
-    
-    // Trim and split the full name by spaces
-    const nameParts = fullName.trim().split(/\s+/);
-    
-    // Handle different cases based on the number of parts
-    if (nameParts.length === 1) {
-      // Just a first name
-      return {
-        firstName: nameParts[0],
-        middleName: '',
-        lastName: ''
-      };
-    } else if (nameParts.length === 2) {
-      // First and last name only
-      return {
-        firstName: nameParts[0],
-        middleName: '',
-        lastName: nameParts[1]
-      };
-    } else {
-      // First name, middle name(s), and last name
-      const firstName = nameParts[0];
-      const lastName = nameParts[nameParts.length - 1];
-      
-      // Everything between first and last name is considered middle name
-      const middleName = nameParts.slice(1, nameParts.length - 1).join(' ');
-      
-      return {
-        firstName,
-        middleName,
-        lastName
-      };
-    }
-  }
+const handleRegistration = async (e) => {
 
-  const handleRegistration = async (e) => {
-
-     e.preventDefault();
-     registerbuttonloadingindicationcb(false);
-
+    e.preventDefault();
+    registerbuttonloadingindicationcb(true);
+  
     const validationErrors = validateForm();
- 
+   
     if (Object.keys(validationErrors).length === 0) {
-
-      {/*
-      // Simulate registration processing
-      setTimeout(() => {
-        // Create a new account entry
-        const newAccount = {
-          id: userAccounts.length + 1,
-          fullName: `${formData.firstName} ${formData.lastName}`,
-          birthDate: formData.birthDate,
-          registrationDate: new Date().toISOString().split('T')[0],
-          password: formData.password // In a real app, this would be hashed
-        };
-        
-        // Add to accounts (in a real app, this would be sent to a server)
-        setUserAccounts([...userAccounts, newAccount]);
-        
-        document.querySelector("#registration-results").style.display = "block";
-        registerbuttonloadingindicationcb(false);
-      }, 1500);
-      */}
-
-       const _registeringdate = `${timestamp.getDay()}, ${timestamp.getMonth()}, ${timestamp.getDate()},${timestamp.getFullYear()}, ${timestamp.getHour()}:${timestamp.getMinutes()}:${timestamp.getSeconds()},`
-
-       const _registrant =  { 
-        id: `${generateInt32StringsDataType(16)}-A-1`,
-        loginstatus: "logged out",
-        status: {
-          indication: "Trying to register",
-          requests: [
-           { 
-             purpose: "Registration",
-             message: "Attempting for registering for the MFATIP PROGRAM",
-             status: "FIRST REGISTRATION. STATUS REGISTERING",
-             date: _registeringdate
-           }
-         ]
-        },
-        name: {
-          firstname: formData.firstName,
-          middlename: formData.middleName,
-          lastname: formData.lastName,
-          nickname: ""
-        },
-        contact: {
-          phonenumber: formData.phoneNumber,
-          telephonenumber: "",
-          emailaddress: formData.email,
-          address: {
-            street: "",
-            baranggay: "",
-            trademark: "",
-            city: "",
-            province: "",
-            country: ''
-          }
-        },
-        personalinformation: {
-          age: 0,
-          sex: "",
-          bloodtype: "",
-          dob: "",
-          citizenship: "",
-          civil_status: "",
-          government_issued_identification: "" 
-        },
-        passwords: {
-         account: {
-          password: formData.confirmPassword
-         }
-        },
-        credits: {
-          omsiapawasto: {
-            id: `${generateInt32StringsDataType(16)}-A-1`,
-            amount: 0,
-            transactions: {
-              deposits: [],
-              widthdrawals: [],
-              successful_deposits: [],
-              successful_widthdrawals: []
+      try {
+        const _registeringdate = timestamp.getFormattedDate();
+  
+        const _registrant = { 
+          id: `1000-0000-A-1`, // This will be replaced on the server
+          registrationstatusesandlogs: {
+            type: "Month Financial Allocation To Individual People ( MFATIP )",
+            indication: "Trying to register",
+            deviceloginstatus: "logged out",
+            registrationdetails: []
+          },
+          name: {
+            firstname: formData.firstName,
+            middlename: formData.middleName,
+            lastname: formData.lastName,
+            nickname: ""
+          },
+          contact: {
+            phonenumber: formData.phoneNumber,
+            telephonenumber: "",
+            emailaddress: formData.email,
+            address: {
+              street: "",
+              baranggay: "",
+              trademark: "",
+              city: "",
+              province: "",
+              country: ""
+            }
+          },
+          personaldata: {
+            age: 0,
+            sex: "",
+            bloodtype: "",
+            height: "",
+            weight: "",
+            deviceprofilepicture: "",
+            dob: "",
+            citizenship: "",
+            civil_status: "",
+            government_issued_identification: {
+              frontphoto: {
+                name: "",
+                description: "",
+                image: "",
+                uploaddate: ""
+              },
+              backphoto: {
+                name: "",
+                description: "",
+                image: "",
+                uploaddate: ""
+              }
+            },
+            birthcertificate: {
+              frontphoto: {
+                name: "",
+                description: "",
+                image: "",
+                uploaddate: ""
+              },
+              backphoto: {
+                name: "",
+                description: "",
+                image: "",
+                uploaddate: ""
+              }
+            }
+          },
+          passwords: {
+            account: {
+              password: formData.confirmPassword
+            }
+          },
+          credits: {
+            omsiapawasto: {
+              id: `${generateInt32StringsDataType(16)}-A-1`,
+              amount: 0,
+              transactions: {
+                currencyexchange: {
+                  total: [],
+                  pending: [],
+                  successful: [],
+                  rejected: []
+                },
+                widthdrawals: {
+                  total: [],
+                  pending: [],
+                  successful: [],
+                  rejected: []
+                },
+                omsiapawastransfer: []
+              }
+            }
+          },
+          transactions: {
+            merchandise: {
+              total: [],
+              pending: [],
+              accepted: [],
+              rejected: []
             }
           }
-        },
-        order: {
-          name: {
-            firstname: "",
-            middlename: "",
-            lastname: ""
-          },
-          shippingdetails: {
-            street: "",
-            baranggay: "",
-            city: "",
-            province: "",
-            country: "",
-            postal_zipcode: ""
-          },
-          paymentdetails: {
-            merchandise_total: 0,
-            merchandise_total_weight: 0,
-            merchandise_count: 0,
-            total_payment: 0,
-            totalshipment: 0,
-          },
-          products: []
-        }
-       }
-
-       await axiosCreatedInstance.post("/people/registration", {
-         $registrant: _registrant
-        }).then((response)=> {
-          console.log(response.data)
-          const _responsemessage = response.data.message 
-          switch(_responsemessage) {
-             case "Registrant registered":
-              registrationresponsemessagetextcolorindicationcb("green");
-              registrationresponsemessagecb({
-                status: "Successfully REGISTERED",
-                indication: "You may now continue logging in your account and do not forger to submit these documents later",
-                bulletpoint1: "Front and back photo of your birth certificate",
-                bulletpoint2: "Front and back photo of your one valid government ID",
-                advice: "These documents really ensures that there will be no lazy duplicate accounts on OMSIAP"
-              })
-             break;
-             case "Same passwords":
-              registrationresponsemessagetextcolorindicationcb("red");
-              registrationresponsemessagecb({
-                status: "Same password",
-                indication: "Registration failed. The registration will only succeed if you change your password making sure there are no duplicate accounts",
-                bulletpoint1: "Change your password within the registration form to make sure you have no duplicate acccounts here on OMSIAP",
-                bulletpoint2: "Minimun of 8 characters",
-                advice: "Try changing your password first before clicking register button again"
-              })
-             break;
-          }
-
-          document.querySelector("#registration-results").style.display = "block";
-          registerbuttonloadingindicationcb(false);
-        })
+        };
   
-
+        const response = await axiosCreatedInstance.post("/people/registration", {
+          $registrant: _registrant
+        });
+  
+        const _responsemessage = response.data.message;
+        
+        switch(_responsemessage) {
+          case "Registrant registered":
+            document.querySelector('#registration-results').style.display = "block";
+            registrationresponsemessagetextcolorindicationcb("green");
+            registrationresponsemessagecb({
+              status: "Successfully REGISTERED",
+              indication: "You may now continue logging in your account and do not forget to submit these documents later",
+              bulletpoint1: "Front and back photo of your birth certificate",
+              bulletpoint2: "Front and back photo of your one valid government ID",
+              advice: "These documents really ensure that there will be no lazy duplicate accounts on OMSIAP abusing the MFATIP program. Your documents will be used as credentials."
+            });
+            break;
+          case "Same passwords":
+            registrationresponsemessagetextcolorindicationcb("red");
+            registrationresponsemessagecb({
+              status: "Same password",
+              indication: "Registration failed. The registration will only succeed if you change your password. This process is making sure that there will be no duplicate accounts abusing the MFATIP program",
+              bulletpoint1: "Change your password within the registration form. Make sure your password is unique and secure with a minimun of 8 characters. This process is making sure that there will be no duplicate accounts abusing the MFATIP program.",
+              bulletpoint2: "Minimum of 8 characters",
+              advice: "Try changing your password first before clicking register button again"
+            });
+            break;
+          case "OMSIAP_USER_LIMIT_REACHED":
+            registrationresponsemessagetextcolorindicationcb("blue");
+            registrationresponsemessagecb({
+              status: "OMSIAP First 1000 Users Milestone Reached",
+              indication: "Congratulations! You're among the first to witness this momentous occasion.",
+              bulletpoint1: "OMSIAP has successfully reached its initial user capacity of 1000 registrants",
+              bulletpoint2: "Accommodation and verification process will be initiated soon",
+              advice: "Stay tuned! We'll be expanding our user base and processing registrations in phases. Your interest is valuable to us.",
+              additionalNote: "You'll be notified about next steps via the contact information provided."
+            });
+            break;
+        }
+  
+        document.querySelector("#registration-results").style.display = "block";
+        registerbuttonloadingindicationcb(false);
+  
+      } catch (error) {
+        console.error("Registration error:", error);
+        
+        const errorMessage = error.response?.data?.message || "Connection to server failed";
+        
+        registrationresponsemessagetextcolorindicationcb("red");
+        registrationresponsemessagecb({
+          status: "Registration Failed",
+          indication: errorMessage,
+          bulletpoint1: "Check your internet connection",
+          bulletpoint2: "Verify server status",
+          advice: "If the problem persists, please contact support"
+        });
+  
+        document.querySelector("#registration-results").style.display = "block";
+        registerbuttonloadingindicationcb(false);
+      }
     } else {
       setErrors(validationErrors);
       registerbuttonloadingindicationcb(false);
     }
-
-  };
+};
 
   // Utility function (mocked)
   const generateInt32StringsDataType = (length) => {
@@ -434,30 +421,57 @@ const RegistrationPage = (props) => {
   };
 
   return (
-    <div className="auth-container"
+    <div className="loginandregister-auth-container"
          style={{display: props.authcontainer}}>
-      <div className="auth-card">
-        <div className="auth-header">
+
+      <div className="loginandregister-auth-card">
+
+        <div className="loginandregister-auth-header">
           <h1>Welcome</h1>
           <p>Sign in to access your account</p>
         </div>
 
-        {error && <div className="error-message">{error}</div>}
+        {error && <div className="loginandregister-error-message">{error}</div>}
 
-        <form onSubmit={handleSignIn} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="fullname">Full name</label>
+        <form onSubmit={handleSignIn} className="loginandregister-auth-form">
+          <div className="loginandregister-form-row">
+            <div className="loginandregister-form-group">
+              <label htmlFor="firstName">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Enter your first name"
+                required
+              />
+            </div>
+
+            <div className="loginandregister-form-group">
+              <label htmlFor="middleName">Middle Name</label>
+              <input
+                type="text"
+                id="middleName"
+                value={middleName}
+                onChange={(e) => setMiddleName(e.target.value)}
+                placeholder="Enter your middle name"
+              />
+            </div>
+          </div>
+
+          <div className="loginandregister-form-group">
+            <label htmlFor="lastName">Last Name</label>
             <input
               type="text"
-              id="fullname"
-              value={fullname}
-              onChange={(e) => setFullname(e.target.value)}
-              placeholder="Enter your fullname"
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Enter your last name"
               required
             />
           </div>
 
-          <div className="form-group">
+          <div className="loginandregister-form-group">
             <label htmlFor="password">Password</label>
             <input
               type="password"
@@ -471,47 +485,47 @@ const RegistrationPage = (props) => {
 
           <div className="loginpage-responsemessagecontainer">
               <p className="loginpage-responsemessagecontainer-responsemessageheaderindication">Succesfully logged in</p>
-              <p className="loginpage-responsemessagecontainer-responsemessageheaderindication">You know process to Home</p>
+              <p className="loginpage-responsemessagecontainer-responsemessageheaderindication">Click to go to home to go to home landing page</p>
               <a href={"/"}>Go to home</a>
           </div>
 
-          <div className="forgot-password">
+          <div className="loginandregister-forgot-password">
             <a href="#reset">Forgot Password?</a>
           </div>
           
-          <h4 id="successfullyloggedin-headerindication">Successfully logged in</h4>
-          <a href="/" id="gobacktohome-atag">Go back to home</a>
-          <button type="submit" className="auth-button">
-            {
-              signinbuttonloadingindication ? 
-              (
-                <Spinner animation="border" variant="light" />
-              )
-              :
-              (
+          {
+             signinbuttonloadingindication ?  
+             (
+              <Spinner animation="border" variant="info" />
+             )
+             :
+             (
+              <button type="submit" className="loginandregister-auth-button">
                 <span>Sign In</span>
-              )
-            }
-          </button>
+              </button>
+             )
+          }
+        
         </form>
 
-        <div className="auth-footer">
-          <p>Don't have an account? <button onClick={() => setShowModal(true)} className="text-button">Sign Up</button></p>
+        <div className="loginandregister-auth-footer">
+          <p>Don't have an account? <button onClick={() => setShowModal(true)} className="loginandregister-text-button">Sign Up</button></p>
         </div>
       </div>
 
       {/* Registration Modal */}
       {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div className="modal-header">
+
+        <div className="loginandregister-modal-overlay">
+          <div className="loginandregister-modal-content">
+            <div className="loginandregister-modal-header">
               <h2>Create Your Account</h2>
-              <button className="close-button" onClick={() => setShowModal(false)}>&times;</button>
+              <button className="loginandregister-close-button" onClick={() => setShowModal(false)}>&times;</button>
             </div>
             
-            <form onSubmit={handleRegistration} className="registration-form">
-              <div className="form-row">
-                <div className="form-group">
+            <form onSubmit={handleRegistration} className="loginandregister-registration-form">
+              <div className="loginandregister-form-row">
+                <div className="loginandregister-form-group">
                   <label htmlFor="firstName">First Name*</label>
                   <input
                     type="text"
@@ -521,10 +535,10 @@ const RegistrationPage = (props) => {
                     onChange={handleChange}
                     placeholder="Enter first name"
                   />
-                  {errors.firstName && <span className="error">{errors.firstName}</span>}
+                  {errors.firstName && <span className="loginandregister-error">{errors.firstName}</span>}
                 </div>
                 
-                <div className="form-group">
+                <div className="loginandregister-form-group">
                   <label htmlFor="middleName">Middle Name</label>
                   <input
                     type="text"
@@ -537,8 +551,8 @@ const RegistrationPage = (props) => {
                 </div>
               </div>
               
-              <div className="form-row">
-                <div className="form-group">
+              <div className="loginandregister-form-row">
+                <div className="loginandregister-form-group">
                   <label htmlFor="lastName">Last Name*</label>
                   <input
                     type="text"
@@ -548,10 +562,10 @@ const RegistrationPage = (props) => {
                     onChange={handleChange}
                     placeholder="Enter last name"
                   />
-                  {errors.lastName && <span className="error">{errors.lastName}</span>}
+                  {errors.lastName && <span className="loginandregister-error">{errors.lastName}</span>}
                 </div>
                 
-                <div className="form-group">
+                <div className="loginandregister-form-group">
                   <label htmlFor="phoneNumber">Phone Number*</label>
                   <input
                     type="tel"
@@ -561,11 +575,11 @@ const RegistrationPage = (props) => {
                     onChange={handleChange}
                     placeholder="Enter phone number"
                   />
-                  {errors.phoneNumber && <span className="error">{errors.phoneNumber}</span>}
+                  {errors.phoneNumber && <span className="loginandregister-error">{errors.phoneNumber}</span>}
                 </div>
               </div>
               
-              <div className="form-group">
+              <div className="loginandregister-form-group">
                 <label htmlFor="birthDate">Birth Date*</label>
                 <input
                   type="date"
@@ -574,11 +588,11 @@ const RegistrationPage = (props) => {
                   value={formData.birthDate}
                   onChange={handleChange}
                 />
-                {errors.birthDate && <span className="error">{errors.birthDate}</span>}
+                {errors.birthDate && <span className="loginandregister-error">{errors.birthDate}</span>}
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
+              <div className="loginandregister-form-row">
+                <div className="loginandregister-form-group">
                   <label htmlFor="regPassword">Password*</label>
                   <input
                     type="password"
@@ -588,10 +602,10 @@ const RegistrationPage = (props) => {
                     onChange={handleChange}
                     placeholder="Create password"
                   />
-                  {errors.password && <span className="error">{errors.password}</span>}
+                  {errors.password && <span className="loginandregister-error">{errors.password}</span>}
                 </div>
                 
-                <div className="form-group">
+                <div className="loginandregister-form-group">
                   <label htmlFor="confirmPassword">Confirm Password*</label>
                   <input
                     type="password"
@@ -601,25 +615,24 @@ const RegistrationPage = (props) => {
                     onChange={handleChange}
                     placeholder="Confirm password"
                   />
-                  {errors.confirmPassword && <span className="error">{errors.confirmPassword}</span>}
+                  {errors.confirmPassword && <span className="loginandregister-error">{errors.confirmPassword}</span>}
                 </div>
               </div>
               
-              <div className="document-notice">
-                <h3>Important Notice:</h3>
-                <p>To complete your registration, you will need to submit:</p>
+              <div className="loginandregister-document-notice">
+                <h3>Important Notice</h3>
+                <p>To complete your registration process, please have the following documents ready for submission:</p>
                 <ul>
                   <li>Front and back photos of your birth certificate</li>
-                  <li>Front and back photos of your one of your valid government ID</li>
+                  <li>Front and back photos of one valid government ID</li>
                 </ul>
+                <p>You may proceed with registration now and submit these documents at your convenience.</p>
                 <p>
-                  You can register now and submit these documents later. 
-                  These documents are used to validate your identity and 
-                  prevent duplicate accounts.
+                  These documents help us verify your identity and prevent duplicate accounts from misusing the MFATIP program. Your submitted documentation will also serve as the credential for receiving your monthly financial allocations.
                 </p>
               </div>
 
-              <div className="document-notice" id="registration-results">
+              <div className="loginandregister-document-notice" id="registration-results">
                 <h3 className="registration-results-registrationresultsheaderindication">Registration results:</h3>
                 <h4 className="registration-results-registrationresultsheaderindication"
                     style={{color: registrationresponsemessagetextcolorindication}}>{registrationresponsemessage.status}</h4>
@@ -636,144 +649,29 @@ const RegistrationPage = (props) => {
                 </p>
               </div>
               
-              <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={() => setShowModal(false)}>Cancel</button>
-                <button type="submit" className="submit-button">
-                  {
-                    registerbuttonloadingindication ? 
-                    (
-                      <Spinner animation="border" variant="primary" />
-                    )
-                    :
-                    (   
-                      <span>Register</span>
-                    )
-                  }
-                </button>
+              <div className="loginandregister-form-actions">
+                <button type="button" className="loginandregister-cancel-button" onClick={() => setShowModal(false)}>Cancel</button>
+                {
+                   registerbuttonloadingindication ? 
+                   (
+                    <Spinner animation="border" variant="primary" />
+                   )
+                   :
+                   (
+                    <button type="submit" className="loginandregister-auth-button">  
+                        <span>Register</span>
+                    </button>
+                   )
+                }
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Account Verification Modal */}
-      {showVerificationModal && (
-        <div className="modal-overlay">
-          <div className="modal-content verification-modal">
-            <div className="modal-header">
-              <h2>Verify Your Account</h2>
-              <button className="close-button" onClick={() => setShowVerificationModal(false)}>&times;</button>
-            </div>
-            
-            <div className="verification-content">
-              <p>We found multiple accounts with the name <strong>{fullname}</strong>.</p>
-              <p>Please select your account to continue:</p>
-              
-              <div className="account-selection">
-                {userAccounts.filter(account => 
-                  account.fullName.toLowerCase() === fullname.toLowerCase()
-                ).map(account => (
-                  <div 
-                    key={account.id} 
-                    className={`account-option ${selectedAccount === account ? 'selected' : ''}`}
-                    onClick={() => handleSelectAccount(account)}
-                  >
-                    <div className="account-details">
-                      <span className="account-name">{account.fullName}</span>
-                      <span className="account-info">Birth Date: {account.birthDate}</span>
-                      <span className="account-info">Registered: {account.registrationDate}</span>
-                    </div>
-                    <div className="selection-indicator"></div>
-                  </div>
-                ))}
-              </div>
-              
-              {error && <div className="error-message">{error}</div>}
-              
-              <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={() => setShowVerificationModal(false)}>Cancel</button>
-                <button type="button" className="submit-button" onClick={handleVerification}>Continue</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Password Verification Modal */}
-      {showPasswordModal && (
-        <div className="modal-overlay">
-          <div className="modal-content password-modal">
-            <div className="modal-header">
-              <h2>Password Verification</h2>
-              <button className="close-button" onClick={() => setShowPasswordModal(false)}>&times;</button>
-            </div>
-            
-            <div className="verification-content">
-              <div className="selected-account-summary">
-                <h3>Account Details</h3>
-                <div className="account-details-summary">
-                  <div className="account-detail-item">
-                    <span className="detail-label">Name:</span>
-                    <span className="detail-value">{selectedAccount?.fullName}</span>
-                  </div>
-                  <div className="account-detail-item">
-                    <span className="detail-label">Birth Date:</span>
-                    <span className="detail-value">{selectedAccount?.birthDate}</span>
-                  </div>
-                  <div className="account-detail-item">
-                    <span className="detail-label">Registration Date:</span>
-                    <span className="detail-value">{selectedAccount?.registrationDate}</span>
-                  </div>
-                </div>
-              </div>
-              
-              <p className="verification-instruction">Please enter your password to verify your identity:</p>
-              
-              <div className="form-group">
-                <input
-                  type="password"
-                  value={verificationPassword}
-                  onChange={(e) => setVerificationPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  className="password-verification-input"
-                />
-                {passwordError && <span className="error password-error">{passwordError}</span>}
-              </div>
-              
-              <div className="form-actions">
-                <button type="button" className="cancel-button" onClick={() => {
-                  setShowPasswordModal(false);
-                  // Go back to account selection if there were multiple accounts
-                  if (userAccounts.filter(account => 
-                    account.fullName.toLowerCase() === fullname.toLowerCase()
-                  ).length > 1) {
-                    setShowVerificationModal(true);
-                  }
-                }}>Back</button>
-                <button 
-                  type="button" 
-                  className="submit-button" 
-                  onClick={handlePasswordVerification}
-                  disabled={!verificationPassword}
-                >
-                  {
-                    passwordLoading ? 
-                    (
-                      <Spinner animation="border" variant="light" />
-                    )
-                    :
-                    (
-                      <span>Verify & Login</span>
-                    )
-                  }
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
+
 };
 
-export default RegistrationPage;
+export default LoginAndRegistrationPage;
