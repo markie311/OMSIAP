@@ -131,6 +131,7 @@ const UserAccount = (props) => {
   const [activeTab, setActiveTab] = useState('account');
 
   const [currencyexchangeloadingindication, currencyexchangeloadingindicationcb] = useState(false)
+  const [widthdrawalloadingindication, withdrawalloadingindicationcb] = useState(false)
 
   const handleWithdrawalChange = (e) => {
     const { name, value } = e.target;
@@ -255,45 +256,110 @@ const UserAccount = (props) => {
     });
     setPreviewImage(null);
   };
-  
-  const handleWithdrawalSubmit = (e) => {
+   
+  const handleWithdrawalSubmit = async (e) => {
+
     e.preventDefault();
     
     // In a real app, send withdrawal data to server
     console.log('Withdrawal submitted:', withdrawalForm);
     
-    // Mock successful withdrawal
-    const newTransaction = {
-      id: `TXN-00${transactions.length + 1}`,
-      date: new Date().toISOString().split('T')[0],
-      type: 'Withdrawal',
-      amount: -parseFloat(withdrawalForm.amount),
-      status: 'Pending',
-      products: [],
-      transactionDetails: {
-        receiptNumber: `WDRL-${Math.floor(1000 + Math.random() * 9000)}`,
-        withdrawalMethod: 'GCash',
-        accountNumber: withdrawalForm.phoneNumber.replace(/(\d{2})(\d{3})(\d{4})/, '**-***-$3'),
-        notes: 'Withdrawal to GCash'
+    const widthdrawalResponseMessage = document.querySelector('#widthdrawal-responsemessage');
+    widthdrawalResponseMessage.innerText = "Processing withdrawal request...";
+    widthdrawalResponseMessage.style.color = "white";
+    
+    try {
+      // Form validation before submission
+      if (!withdrawalForm.firstName || !withdrawalForm.lastName || !withdrawalForm.phoneNumber || 
+          !withdrawalForm.amount || !withdrawalForm.password) {
+        widthdrawalResponseMessage.innerText = "Please fill in all required fields.";
+        widthdrawalResponseMessage.style.color = "red";
+        return;
       }
-    };
+      
+      // Validate amount is a positive number
+      if (isNaN(withdrawalForm.amount) || parseFloat(withdrawalForm.amount) <= 0) {
+        widthdrawalResponseMessage.innerText = "Please enter a valid withdrawal amount.";
+        widthdrawalResponseMessage.style.color = "red";
+        return;
+      }
+      
+      // Include the user ID in the withdrawal form
+      const requestData = {
+        ...withdrawalForm,
+        userId: props.user._id // Add user ID from props
+      };
+      
+      const response = await axiosCreatedInstance.post("/omsiap/widthdrawal", requestData);
+      
+      // Handle success response
+      if (response.data.success) {
+        widthdrawalResponseMessage.innerText = response.data.message || "Withdrawal request submitted successfully!";
+        widthdrawalResponseMessage.style.color = "green";
+        
+        // Reset form
+        setWithdrawalForm({
+          firstName: '',
+          middleName: '',
+          lastName: '',
+          phoneNumber: '',
+          amount: '',
+          password: ''
+        });
+        
+        // If you have a callback to refresh user data, call it here
+        if (props.onWithdrawalSuccess) {
+          props.onWithdrawalSuccess();
+        }
+      } else {
+        // Handle specific error from server
+        widthdrawalResponseMessage.innerText = response.data.message || "Failed to process withdrawal.";
+        widthdrawalResponseMessage.style.color = "red";
+      }
+    } catch (error) {
+      console.error("Withdrawal error:", error);
+      
+      // Handle password error specifically
+      if (error.response && error.response.status === 401) {
+        widthdrawalResponseMessage.innerText = "Incorrect password. Please try again.";
+        
+        // Clear only the password field
+        setWithdrawalForm({
+          ...withdrawalForm,
+          password: ''
+        });
+        
+        // Optional: focus the password input field if you have a ref to it
+        // if (passwordInputRef.current) {
+        //   passwordInputRef.current.focus();
+        // }
+      }
+
+      // Handle other specific errors
+      else if (error.response && error.response.status === 400 && 
+               error.response.data.message === 'Insufficient balance') {
+        widthdrawalResponseMessage.innerText = "You don't have enough balance for this withdrawal.";
+      }
+      // Handle network/connection errors
+      else if (error.message === "Network Error" || !navigator.onLine) {
+        widthdrawalResponseMessage.innerText = "No internet connection. Please check your connection and try again.";
+      } else if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        widthdrawalResponseMessage.innerText = error.response.data.message ||
+          `Error ${error.response.status}: ${error.response.statusText}`;
+      } else if (error.request) {
+        // The request was made but no response was received
+        widthdrawalResponseMessage.innerText = "Server not responding. Please try again later.";
+      } else {
+        // Something else caused the error
+        widthdrawalResponseMessage.innerText = "An error occurred. Please try again.";
+      }
+      
+      widthdrawalResponseMessage.style.color = "red";
+    }
     
-    setTransactions([newTransaction, ...transactions]);
-    setUser({
-      ...user,
-      balance: user.balance - parseFloat(withdrawalForm.amount)
-    });
-    
-    // Reset form
-    setWithdrawalForm({
-      firstName: '',
-      middleName: '',
-      lastName: '',
-      phoneNumber: '',
-      amount: '',
-      password: ''
-    });
   };
+
 // Initial state for the exchange form
 const [exchangeForm, setExchangeForm] = useState({
   phpAmount: '',
@@ -378,8 +444,8 @@ const calculateOmsiapasAmount = (phpAmount) => {
   return 0;
 };
 
-
 const handleExchangeSubmit = async (e) => {
+
   e.preventDefault();
   
   // Get response message element and reset it
@@ -469,22 +535,33 @@ const handleExchangeSubmit = async (e) => {
       }
     });
     
+    // Log the full response for debugging
+    console.log('Exchange response:', response.data);
+    
     // Handle response status and display appropriate message
-    handleResponseStatus(response.data);
-    
-    // Log success
-    console.log('Exchange submitted:', {
-      ...exchangeForm,
-      omsiapasToReceive: omsiapasAmount,
-      userName: `${props.user.name.firstname} ${props.user.name.middlename || ''} ${props.user.name.lastname}`,
-      userPhone: props.user.contact.phonenumber,
-      currentBalance: props.user.credits.omsiapawasto.amount
-    });
-    
-    // Reset form on success
-    if (response.data.success) {
+    if (response.data && response.data.success) {
+      // Handle successful response
+      handleResponseStatus(response.data);
+      
+      // Safely log success info using optional chaining to avoid errors
+      try {
+        console.log('Exchange submitted:', {
+          ...exchangeForm,
+          omsiapasToReceive: omsiapasAmount,
+          userName: `${props.user.name.firstname} ${props.user.name.middlename || ''} ${props.user.name.lastname}`,
+          userPhone: props.user.contact.phonenumber,
+          currentBalance: props.user.credits?.omsiapawas?.amount || 'N/A'  // Corrected to omsiapawas
+        });
+      } catch (logError) {
+        console.warn('Non-critical error when logging exchange info:', logError);
+      }
+      
+      // Reset form on success
       setExchangeForm({ phpAmount: '', referenceNumber: '', transactionImage: null });
       setPreviewImage(null);
+    } else {
+      // Handle unsuccessful response
+      handleResponseStatus(response.data);
     }
     
   } catch (error) {
@@ -516,6 +593,9 @@ const handleResponseStatus = (responseData) => {
     console.error("Response message element not found");
     return;
   }
+  
+  // Debug the response data
+  console.log("handleResponseStatus received:", responseData);
   
   // Default error message if no response data
   if (!responseData) {
@@ -612,8 +692,8 @@ const getOMSIAPASAmount = (phpAmount) => {
       Account
     </button>
     <button 
-      className={`userdashboard-tab-btn ${activeTab === 'deposit' ? 'userdashboard-active' : ''}`} 
-      onClick={() => setActiveTab('deposit')}
+      className={`userdashboard-tab-btn ${activeTab === 'currencyexchange' ? 'userdashboard-active' : ''}`} 
+      onClick={() => setActiveTab('currencyexchange')}
     >
       Exchange Currency
     </button>
@@ -637,6 +717,9 @@ const getOMSIAPASAmount = (phpAmount) => {
     </button>
     </div>
     <button className="userdashboard-gotohome-btn"><a href={"/"} id="gotohomeatag">Go to home</a></button>
+
+
+    {/*
     {
     props.user.loginstatus === "logged in" ?
     (
@@ -649,6 +732,7 @@ const getOMSIAPASAmount = (phpAmount) => {
       }}>LOG IN</button>
     )
     }
+    */}
 
     </header>
 
@@ -676,7 +760,7 @@ const getOMSIAPASAmount = (phpAmount) => {
           </div>
           <div className="userdashboard-summary-item" style={{"--item-index": 3}}>
             <span className="userdashboard-label">Email:</span>
-            <span className="userdashboard-value">{props.user.contact.emailaddress}</span>
+            <span className="userdashboard-value">{props.user.contact.emailaddress || "Add or change your email address in the account settings tab"}</span>
           </div>
           <div className="userdashboard-summary-item" style={{"--item-index": 4}}>
             <span className="userdashboard-label">Phone:</span>
@@ -684,11 +768,14 @@ const getOMSIAPASAmount = (phpAmount) => {
           </div>
           <div className="userdashboard-summary-item" style={{"--item-index": 5}}>
             <span className="userdashboard-label">Status:</span>
-            <span className="userdashboard-value userdashboard-status-active">{props.user.status.indication}</span>
+            <span className="userdashboard-value userdashboard-status-active">{props.user.registrationstatusesandlogs.indication}</span>
           </div>
           <div className="userdashboard-summary-item" style={{"--item-index": 6}}>
+
             <span className="userdashboard-label">Member Since:</span>
-            <span className="userdashboard-value">{props.user.status.requests[0].date}</span>
+            
+            <span className="userdashboard-value">{props.user.registrationstatusesandlogs.registrationlog[0].date}</span>
+            
           </div>
         </div>
       </section>
@@ -696,8 +783,8 @@ const getOMSIAPASAmount = (phpAmount) => {
       <section className="userdashboard-balance-details">
         <h2>Balance Details</h2>
         <div className="userdashboard-balance-amount">
-          <span className="userdashboard-currency">$</span>
-          <span className="userdashboard-amount">{props.user.credits.omsiapawasto.amount.toFixed(2)}</span>
+          <span className="userdashboard-currency"></span>
+          <span className="userdashboard-amount">{props.user.credits.omsiapawas.amount.toFixed(2)}</span>
         </div>
       </section>
       
@@ -748,7 +835,7 @@ const getOMSIAPASAmount = (phpAmount) => {
     )}
 
     {/* Currency Exchange Tab */}
-    {activeTab === 'deposit' && (
+    {activeTab === 'currencyexchange' && (
       <div className="userdashboard-exchange-panel">
         <section className="userdashboard-exchange-user-info">
           <h2>Your Information</h2>
@@ -777,7 +864,7 @@ const getOMSIAPASAmount = (phpAmount) => {
                     <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
                   </span> &nbsp; Balance:
                 </span>
-                <span className="info-value omsiapas-balance">{props.user.credits.omsiapawasto.amount} 
+                <span className="info-value omsiapas-balance">{props.user.credits.omsiapawas.amount} 
                   <span className="tooltip-container">
                   &nbsp;OMSIAPAWAS
                     <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
@@ -861,7 +948,7 @@ const getOMSIAPASAmount = (phpAmount) => {
 
         <section className="userdashboard-exchange-form-section">
           <h2>Currency Exchange Form</h2>
-          <form className="userdashboard-exchange-form" onSubmit={handleExchangeSubmit}>
+          <form className="userdashboard-exchange-form" >
             <div className="userdashboard-preset-amounts">
               <h3>Select Amount to Exchange</h3>
               <div className="userdashboard-preset-buttons">
@@ -1007,9 +1094,10 @@ const getOMSIAPASAmount = (phpAmount) => {
               :
               (
                 <button 
-                  type="submit" 
+                  type="button" 
                   className={`userdashboard-exchange-btn ${(!exchangeForm.phpAmount || exchangeForm.phpAmount < 210 || exchangeForm.phpAmount > 5250) ? 'disabled-btn' : ''}`}
                   disabled={!exchangeForm.phpAmount || exchangeForm.phpAmount < 210 || exchangeForm.phpAmount > 5250}
+                  onClick={(e)=> handleExchangeSubmit(e)}
                 >
                   Process Exchange
                </button>
@@ -1103,7 +1191,15 @@ const getOMSIAPASAmount = (phpAmount) => {
             </div>
           </div>
           
-          <button type="submit" className="userdashboard-withdrawal-btn">Submit Withdrawal</button>
+          <h4 style={{color:'black', textAlign: 'center'}} id="widthdrawal-responsemessage">Response message</h4>
+
+          {
+            widthdrawalloadingindication ? 
+            <Spinner animation="border" variant="success" style={{marginLeft: "auto", marginRight: "auto"}}/>
+            :
+            <button type="submit" className="userdashboard-withdrawal-btn">Submit Withdrawal</button>
+          }
+
         </form>
       </section>
     </div>
@@ -1337,7 +1433,7 @@ const getOMSIAPASAmount = (phpAmount) => {
     )}
 
     </div>
-
+  
     {/* Transaction Details Modal */}
     {isModalOpen && selectedTransaction && (
     <div className="userdashboard-modal-overlay" onClick={closeTransactionModal}>

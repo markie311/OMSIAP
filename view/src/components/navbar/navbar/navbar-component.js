@@ -14,7 +14,7 @@ import LargerViewportsNavbar from '../largerviewportsnavbar/largerviewportsnavba
 export default function NavBar(props) {
  return (
     <LargerViewportsNavbar user={props.user}
-                                usercb={props.usercb}/>
+                           usercb={props.usercb}/>
    
  )
 }

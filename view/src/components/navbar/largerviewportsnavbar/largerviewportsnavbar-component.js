@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { Dropdown, Navbar, Nav, Container } from 'react-bootstrap';
 import { List, X } from 'lucide-react';
 
+import axiosCreatedInstance from '../../lib/axiosutil.js';
+
 const ResponsiveNavbar = (props) => {
   const [expanded, setExpanded] = useState(false);
 
@@ -94,14 +96,49 @@ const ResponsiveNavbar = (props) => {
                     variant="dark" 
                     id="dropdown-account" 
                     className={`custom-dropdown-toggle ${props.user && props.user.registrationstatusesandlogs.deviceloginstatus === "logged in" ? "logged-in" : "logged-out"}`}
-                  >
-                    {props.user && props.user.loginstatus === "logged in" 
-                      ? "LOG OUT" 
-                      : "LOG IN / REGISTER"}
+                    >
+                    {
+                    props.user && props.user.registrationstatusesandlogs.deviceloginstatus === "logged in" 
+                      ? 
+                      "LOG OUT" 
+                      : 
+                      "LOG IN / REGISTER"
+                    }
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="custom-dropdown-menu">
                     {props.user && props.user.registrationstatusesandlogs.deviceloginstatus === "logged in" 
-                      ? <Dropdown.Item href="/mfatip/loginregister">LOG OUT MFATIP PROFILE ACCOUNT</Dropdown.Item>
+                      ? <Dropdown.Item onClick={ async () => {
+                        try {
+                          // Check for internet connection first
+                          if (!navigator.onLine) {
+                            alert("You appear to be offline. Please check your connection and try again.");
+                            return;
+                          }
+                          
+                          // Call the logout API
+                          const response = await axiosCreatedInstance.post("/people/logout", {
+                            $userid: props.user.id
+                          });
+                          
+                          // Check if the request was successful
+                          if (response.data.success) {
+                            // Only delete the cookie if the server logout was successful
+                            document.cookie = "id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Strict; Secure";
+                            
+                            // Redirect if provided
+                            if (response.data.redirectTo) {
+                              window.location.href = response.data.redirectTo;
+                            }
+                          } else {
+                            // Handle server-side logout failure
+                            console.error("Logout failed:", response.data.message);
+                            alert("Logout failed. Please try again.");
+                          }
+                        } catch (error) {
+                          console.error("Error during logout:", error);
+                          alert("An error occurred during logout. Please try again.");
+                        }
+                      }}>LOG OUT MFATIP PROFILE ACCOUNT</Dropdown.Item>
                       : <Dropdown.Item href="/mfatip/loginregister">MFATIP LOGIN / MFATIP REGISTER PAGE</Dropdown.Item>}
                   </Dropdown.Menu>
                 </Dropdown>

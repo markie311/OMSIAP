@@ -1,152 +1,155 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const productimagedatascheme = new Schema({
-  url: { type: "string" }
+const productImageDataSchema = new Schema({
+  url: { type: String }
 });
 
-const productvideodatascheme = new Schema({
-  url: { type: "string" }
+const productVideoDataSchema = new Schema({
+  url: { type: String }
 });
 
-const productfeaturesdatascheme = new Schema({
-  data: { type: "string" }
+const productFeaturesDataSchema = new Schema({
+  data: { type: String }
 });
 
-const productspecificationdatascheme = new Schema({
+const productSpecificationDataSchema = new Schema({
   authentications: {
     producttype: {
-     type: 'string'
+     type: String
     },
     id: {
-     type: 'string'
+     type: String
     }
   },
   details: {
    productname: {
-     type: 'string'
+     type: String
    },
    category: {
-     type: 'string'
+     type: String
    },
    description: {
-     type: 'string'
+     type: String
    },
-   features: [productfeaturesdatascheme],
+   features: [productFeaturesDataSchema],
    weightingrams: {
-     type: 'number',
+     type: Number,
      default: 0
    },
    warranty: {
-     type: 'string'
+     type: String
    },
    for: {
     age: {
-      type: 'string'
+      type: String
     },
     part: {
-      type: 'string'
+      type: String
     },
     gender: {
-      type: 'string'
+      type: String
     },
     reminder: {
-      type: 'string'
+      type: String
     }
    },
    price: {
      amount: {
-       type: 'number',
+       type: Number,
        default: 0
      },
      capital: {
-       type: 'number',
+       type: Number,
        default: 0
      },
      transactiongiveaway: {
-       type: 'number',
+       type: Number,
        default: 0
      },
      profit: {
-       type: 'number',
+       type: Number,
        default: 0
      }
    },
    specifications: []
   },
-  images: [productimagedatascheme],
-  videos: [productvideodatascheme],
+  images: [productImageDataSchema],
+  videos: [productVideoDataSchema],
   customerfeedback: {
    rating: {
-     type: 'number',
+     type: Number,
      default: 0
    },
    reviews: {
-     type: 'number',
+     type: Number,
      default: 0,
    }
   },
   system: {
-   stocks: []
+   stocks: {
+    type: Number,
+    default: 0
+   }
   }
 });
 
-const productdatascheme = new Schema({
+const productDataSchema = new Schema({
  authentications: {
    producttype: {
-    type: 'string'
+    type: String
    },
    id: {
-    type: 'string'
+    type: String
    }
  },
  details: {
   productname: {
-    type: 'string'
+    type: String
   },
   category: {
-    type: 'string'
+    type: String
   },
   description: {
-    type: 'string'
+    type: String
   },
-  features: [productfeaturesdatascheme],
+  features: [productFeaturesDataSchema],
   weightingrams: {
-    type: 'number',
+    type: Number,
     default: 0
   },
   warranty: {
-    type: 'string'
+    type: String
   },
   price: {
     amount: {
-      type: 'number',
+      type: Number,
       default: 0
     },
     capital: {
-      type: 'number',
+      type: Number,
       default: 0
     },
     transactiongiveaway: {
-      type: 'number',
+      type: Number,
       default: 0
     },
     profit: {
-      type: 'number',
+      type: Number,
       default: 0
     }
   },
-  specifications: [productspecificationdatascheme]
+  specifications: [productSpecificationDataSchema]
  },
- images: [productimagedatascheme],
- videos: [productvideodatascheme],
+ images: [productImageDataSchema],
+ videos: [productVideoDataSchema],
  customerfeedback: {
   rating: {
-    type: 'number',
+    type: Number,
     default: 0
   },
   reviews: {
-    type: 'number',
+    type: Number,
     default: 0,
   }
  },
@@ -158,6 +161,11 @@ const productdatascheme = new Schema({
     rejected: []
   }
  }
-})
+});
 
-module.exports = productdatascheme;
+// Option 1: Export just the schema if you're creating the model elsewhere
+// module.exports = productDataSchema;
+
+// Option 2: Create and export the model directly
+const ProductDataModel = mongoose.model('Product', productDataSchema);
+module.exports = ProductDataModel;

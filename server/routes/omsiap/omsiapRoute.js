@@ -5,7 +5,9 @@ const mongoose = require('mongoose');
 
 const mongodb = require('../../lib/mongodb/database.js');
 
-const omsiapdatascheme = require('../../models/omsiap/omsiapdatascheme.js');
+const RegistrantDataModel = require('../../models/people/registrantdatascheme.js')
+const CurrencyExchangeTransactionDataModel = require('../../models/transactions/currencyexchangetransactiondatascheme.js')
+const WidthdrawalTransactionDataModel = require('../../models/transactions/withdrawaltransactiondatascheme.js');
 
 const multer = require('multer');
 const path = require('path');
@@ -167,39 +169,32 @@ Router.route('/acceptorder').post(async (req, res) => {
     });
   }
 });
+// Define path for transaction images
+const UPLOAD_PATH = path.join(__dirname, '../../../view/public/images/currencyexchange');
 
-// Define paths for different transaction states
-const UPLOAD_PATHS = {
-  TEMP: path.join(__dirname, '../../../tmp/uploads'),
-  PENDING: path.join(__dirname, '../../../view/public/images/currencyexchange/pending'),
-  SUCCESSFUL: path.join(__dirname, '../../../view/public/images/currencyexchange/successful'),
-  REJECTED: path.join(__dirname, '../../../view/public/images/currencyexchange/rejected'),
-  TOTAL: path.join(__dirname, '../../../view/public/images/currencyexchange/total')
-};
-
-// Ensure all directories exist
-Object.values(UPLOAD_PATHS).forEach(dirPath => {
-  if (!fs.existsSync(dirPath)) {
-    fs.mkdirSync(dirPath, { recursive: true });
-  }
-});
+// Ensure directory exists
+if (!fs.existsSync(UPLOAD_PATH)) {
+  fs.mkdirSync(UPLOAD_PATH, { recursive: true });
+}
 
 // Configure multer storage
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
-    // Store initially in temporary directory
-    cb(null, UPLOAD_PATHS.TEMP);
+    cb(null, UPLOAD_PATH);
   },
   filename: function(req, file, cb) {
-    // Create unique filename with original extension
+    // Create filename with date prefix for easier management
+    const now = new Date();
+    const datePrefix = now.getFullYear() + 
+                      ('0' + (now.getMonth() + 1)).slice(-2) + 
+                      ('0' + now.getDate()).slice(-2);
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueSuffix + path.extname(file.originalname));
+    cb(null, `${datePrefix}-${uniqueSuffix}${path.extname(file.originalname)}`);
   }
 });
 
 // File filter to only accept images
 const fileFilter = (req, file, cb) => {
-  // Check if file is an image
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
@@ -216,80 +211,139 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-// Helper functions for file management
-const fileManager = {
-  // Move file from temp to pending directory
-  moveToPending: function(tempFilePath) {
-    const fileName = path.basename(tempFilePath);
-    const targetPath = path.join(UPLOAD_PATHS.PENDING, fileName);
-    
-    fs.copyFileSync(tempFilePath, targetPath);
-    fs.unlinkSync(tempFilePath); // Remove the original file
-    
-    return `/images/currencyexchange/pending/${fileName}`;
-
-  },
+// Manual cleanup function for files older than a specified time period
+function cleanupOldFiles(monthsOld = 1) {
+  console.log(`Running cleanup of transaction images older than ${monthsOld} month(s)...`);
   
-  // Move file from pending to successful directory
-  moveToSuccessful: function(pendingFilePath) {
-    const fileName = path.basename(pendingFilePath);
-    const sourcePath = path.join(__dirname, '../../../view/public', pendingFilePath);
-    const targetPath = path.join(UPLOAD_PATHS.SUCCESSFUL, fileName);
-    
-    fs.copyFileSync(sourcePath, targetPath);
-    fs.unlinkSync(sourcePath); // Remove from pending
-    
-    return `/images/currencyexchange/successful/${fileName}`;
-  },
-  
-  // Move file from pending to rejected directory
-  moveToRejected: function(pendingFilePath) {
-    const fileName = path.basename(pendingFilePath);
-    const sourcePath = path.join(__dirname, '../../../view/public', pendingFilePath);
-    const targetPath = path.join(UPLOAD_PATHS.REJECTED, fileName);
-    
-    fs.copyFileSync(sourcePath, targetPath);
-    fs.unlinkSync(sourcePath); // Remove from pending
-    
-    return `/images/currencyexchange/rejected/${fileName}`;
-  },
-  
-  // Move file from pending to total directory
-  moveToTotal: function(pendingFilePath) {
-    const fileName = path.basename(pendingFilePath);
-    const sourcePath = path.join(__dirname, '../../../view/public', pendingFilePath);
-    const targetPath = path.join(UPLOAD_PATHS.TOTAL, fileName);
-    
-    fs.copyFileSync(sourcePath, targetPath);
-    fs.unlinkSync(sourcePath); // Remove from pending
-    
-    return `/images/currencyexchange/total/${fileName}`;
-  },
-  
-  // Delete file from any directory
-  deleteFile: function(filePath) {
-    try {
-      const fullPath = path.join(__dirname, '../../../view/public', filePath);
-      if (fs.existsSync(fullPath)) {
-        fs.unlinkSync(fullPath);
-        return true;
+  return new Promise((resolve, reject) => {
+    fs.readdir(UPLOAD_PATH, (err, files) => {
+      if (err) {
+        console.error('Error reading directory for cleanup:', err);
+        reject(`Error reading directory: ${err.message}`);
+        return;
       }
-      return false;
-    } catch (error) {
-      console.error('Error deleting file:', error);
-      return false;
-    }
-  }
+      
+      if (files.length === 0) {
+        console.log('No files found in directory');
+        resolve({ message: 'No files found to clean up', deletedCount: 0 });
+        return;
+      }
+      
+      const currentDate = new Date();
+      const cutoffDate = new Date();
+      cutoffDate.setMonth(cutoffDate.getMonth() - monthsOld);
+      
+      let processedCount = 0;
+      let deletedCount = 0;
+      let errors = [];
+      
+      files.forEach(file => {
+        const filePath = path.join(UPLOAD_PATH, file);
+        
+        // Get file stats to check last modified date
+        fs.stat(filePath, (err, stats) => {
+          if (err) {
+            console.error(`Error getting stats for file ${file}:`, err);
+            errors.push(`Error getting stats for file ${file}: ${err.message}`);
+            processedCount++;
+            
+            if (processedCount === files.length) {
+              finishCleanup();
+            }
+            return;
+          }
+          
+          // Check if file is older than specified months based on filename date prefix
+          const dateMatch = file.match(/^(\d{8})-/);
+          let fileDate;
+          let shouldDelete = false;
+          
+          if (dateMatch) {
+            const fileYear = parseInt(dateMatch[1].substring(0, 4));
+            const fileMonth = parseInt(dateMatch[1].substring(4, 6)) - 1;
+            const fileDay = parseInt(dateMatch[1].substring(6, 8));
+            fileDate = new Date(fileYear, fileMonth, fileDay);
+            shouldDelete = fileDate < cutoffDate;
+          } 
+          // Fallback to file modification time
+          else {
+            fileDate = stats.mtime;
+            shouldDelete = fileDate < cutoffDate;
+          }
+          
+          if (shouldDelete) {
+            fs.unlink(filePath, err => {
+              if (err) {
+                console.error(`Error deleting old file ${file}:`, err);
+                errors.push(`Error deleting file ${file}: ${err.message}`);
+              } else {
+                console.log(`Deleted old file ${file} (from ${fileDate.toDateString()})`);
+                deletedCount++;
+              }
+              
+              processedCount++;
+              if (processedCount === files.length) {
+                finishCleanup();
+              }
+            });
+          } else {
+            processedCount++;
+            if (processedCount === files.length) {
+              finishCleanup();
+            }
+          }
+        });
+      });
+      
+      function finishCleanup() {
+        const result = {
+          message: `Cleanup completed. Deleted ${deletedCount} of ${files.length} files.`,
+          deletedCount,
+          totalFiles: files.length,
+          errors: errors.length > 0 ? errors : undefined
+        };
+        
+        console.log(result.message);
+        resolve(result);
+      }
+    });
+  });
+}
 
-};
+// Expose a route to manually trigger the cleanup
+Router.route('/currencyexchange/cleanup').post(async (req, res) => {
+  try {
+    // Get months parameter - default to 1 month if not specified
+    const months = req.body.months ? parseInt(req.body.months) : 1;
+    
+    if (isNaN(months) || months < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid months parameter. Must be a positive number.'
+      });
+    }
+    
+    // Run the cleanup
+    const result = await cleanupOldFiles(months);
+    
+    return res.status(200).json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error('Error during manual cleanup:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error during cleanup process',
+      error: error.message
+    });
+  }
+});
 
 // Currency Exchange Route
 Router.route('/currencyexchange').post(upload.single('transactionImage'), async (req, res) => {
 
   try {
-    // Define the model (only need OmsiapData now)
-    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
-    
     // Get request data
     const {
       transactionmadeby,
@@ -300,7 +354,6 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
     
     // Validate required fields
     if (!exchangeamount || !referenceNumber || !req.file) {
-
       console.log("Missing required fields");
       
       // Delete uploaded file if validation fails
@@ -313,12 +366,10 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
         status: 'MISSING_FIELDS',
         message: 'Please provide all required fields'
       });
-
     }
     
     // Validate exchange amount
     const exchangeAmountFloat = parseFloat(exchangeamount);
-
     if (isNaN(exchangeAmountFloat) || exchangeAmountFloat <= 0) {
       // Delete uploaded file
       if (req.file && req.file.path) {
@@ -330,14 +381,11 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
         status: 'INVALID_AMOUNT',
         message: 'Invalid exchange amount'
       });
-
     }
     
     // Validate PHP amount
     const phpAmountFloat = parseFloat(phpAmount);
-
     if (isNaN(phpAmountFloat) || phpAmountFloat < 210 || phpAmountFloat > 5250) {
-
       // Delete uploaded file
       if (req.file && req.file.path) {
         fs.unlinkSync(req.file.path);
@@ -348,46 +396,11 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
         status: 'INVALID_AMOUNT',
         message: 'PHP amount must be between ₱210 and ₱5,250'
       });
-
     }
     
-    // Move file from temp to pending directory
-    const imagePath = fileManager.moveToPending(req.file.path);
-    
-    // Fetch the omsiap document to update
-    const omsiapDocument = await OmsiapData.findById("Code-113-1143");
-    
-    if (!omsiapDocument) {
-      // Delete uploaded file
-      fileManager.deleteFile(imagePath);
-      
-      return res.status(404).json({
-        success: false,
-        status: 'NOT_FOUND',
-        message: 'OMSIAP data document not found'
-      });
-    }
-    
-    // Check for duplicate reference number in all transaction arrays
-    const allTransactions = [
-      ...(omsiapDocument.transactions?.currencyexchange?.total || [])
-    ];
-    
-    const duplicateTransaction = allTransactions.find(transaction => 
-      transaction.details?.reference?.referencenumber === referenceNumber && 
-      transaction.type === 'currency exchange'
-    );
-    
-    if (duplicateTransaction) {
-      // Delete uploaded file
-      fileManager.deleteFile(imagePath);
-      
-      return res.status(400).json({
-        success: false,
-        status: 'DUPLICATE_REFERENCE',
-        message: 'This reference number has already been used for another transaction'
-      });
-    }
+    // Get image path relative to public directory
+    const imageFilename = req.file.filename;
+    const imagePath = `/images/currencyexchange/${imageFilename}`;
     
     // Parse user data
     let userDataObj;
@@ -401,73 +414,160 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
       console.error('Error parsing user data:', error);
       
       // Delete uploaded file
-      fileManager.deleteFile(imagePath);
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
       
       return res.status(400).json({
         success: false,
         status: 'INVALID_USER_DATA',
         message: 'Invalid user data format'
       });
-
     }
     
-    // Use the timestamps library for formatted date
+    // Check for existing transaction with same reference number
+    const existingTransaction = await CurrencyExchangeTransactionDataModel.findOne({
+      'details.referrence.number': referenceNumber
+    });
+    
+    if (existingTransaction) {
+      // Delete uploaded file
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        status: 'DUPLICATE_REFERENCE',
+        message: 'This reference number has already been used for another transaction'
+      });
+    }
+
+    // Get user ID
+    const userId = userDataObj._id || userDataObj.id;
+    
+    // Check if registrant exists
+    const registrantExists = await RegistrantDataModel.findById(userId);
+    
+    if (!registrantExists) {
+      // Delete uploaded file
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        status: 'REGISTRANT_NOT_FOUND',
+        message: 'User account not found. Please check your account details or register first.'
+      });
+    }
+
+    // Generate transaction ID
+    const transactionId = uuidv4();
+    
+    // Get formatted date
     const formattedDate = timestamps.getFormattedDate();
     
     // Create new transaction object
     const newTransaction = {
-      id: uuidv4(),
-      date: formattedDate,
-      type: 'currency exchange',
-      amount: exchangeAmountFloat,
-      status: 'pending',
-      paymentmethod: 'GCASH',
-      details: {
-        transactionmadeby: userDataObj,
-        to: {
-          id: "system",
-          name: {
-            firstname: "OMSIAP",
-            middlename: "",
-            lastname: "System"
-          }
-        },
-        phpAmount: phpAmountFloat,
-        reference: {
-          referencenumber: referenceNumber,
-          transactionimage: imagePath
-        },
-        statuses: [
+      id: transactionId,
+      intent: 'currency exchange',
+      statusesandlogs: {
+        status: 'pending',
+        indication: 'waiting for approval',
+        logs: [
           {
-            type: 'pending',
-            indication: 'info',
             date: formattedDate,
-            message: 'Your exchange request has been submitted and is pending approval.'
+            type: 'pending',
+            indication: 'first log, waiting for approval',
+            messages: [
+              { message: 'Your exchange request has been submitted and is pending approval.' }
+            ]
           }
         ]
+      },
+      details: {
+        paymentmethod: 'GCASH',
+        thistransactionismadeby: {
+          id: userDataObj.id,
+          name: {
+            firstname: userDataObj.name.firstname,
+            middlename: userDataObj.name.middlename || '',
+            lastname: userDataObj.name.lastname,
+            nickname: userDataObj.name.nickname || ''
+          },
+          contact: {
+            phonenumber: userDataObj.contact.phonenumber,
+            emailaddress: userDataObj.contact.emailaddress,
+            address: {
+              street: userDataObj.contact.address?.street || '',
+              trademark: userDataObj.contact.address?.trademark || '',
+              baranggay: userDataObj.contact.address?.baranggay || '',
+              city: userDataObj.contact.address?.city || '',
+              province: userDataObj.contact.address?.province || '',
+              postal_zip_code: userDataObj.contact.address?.postal_zip_code || '',
+              country: userDataObj.contact.address?.country || ''
+            }
+          }
+        },
+        thistransactionismainlyintendedto: {
+          id: 'system',
+          name: {
+            firstname: 'OMSIAP',
+            middlename: '',
+            lastname: 'System',
+            nickname: ''
+          },
+          contact: {
+            phonenumber: '',
+            emailaddress: '',
+            address: {
+              street: '',
+              trademark: '',
+              baranggay: '',
+              city: '',
+              province: '',
+              postal_zip_code: '',
+              country: ''
+            }
+          }
+        },
+        amounts: {
+          intent: exchangeAmountFloat,
+          phppurchaseorexchangeamount: phpAmountFloat,
+          deductions: {
+            successfulprocessing: {
+              amount: 0,
+              reasons: ''
+            },
+            rejectionprocessing: {
+              amount: 0,
+              reasons: ''
+            }
+          },
+          profit: 0,
+          omsiapawasamounttorecieve: exchangeAmountFloat
+        },
+        referrence: {
+          number: referenceNumber,
+          gcashtransactionrecieptimage: imagePath
+        }
       }
     };
     
-    // Initialize arrays if they don't exist
-    if (!omsiapDocument.transactions) {
-      omsiapDocument.transactions = {};
-    }
+    // Save transaction to database
+    const savedTransaction = await CurrencyExchangeTransactionDataModel.create(newTransaction);
     
-    if (!omsiapDocument.transactions.currencyexchange) {
-      omsiapDocument.transactions.currencyexchange = {
-        total: [],
-        pending: [],
-        successful: [],
-        rejected: []
-      };
-    }
-    
-    // Add transaction directly to the arrays
-    omsiapDocument.transactions.currencyexchange.total.push(newTransaction);
-    omsiapDocument.transactions.currencyexchange.pending.push(newTransaction);
-    
-    // Save the updated omsiap document
-    await omsiapDocument.save();
+    // Update user's credits.transactions.currencyexchange
+    await RegistrantDataModel.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          'credits.omsiapawas.transactions.currencyexchange': newTransaction
+        }
+      },
+      { new: true }
+    );
     
     // Return success response
     return res.status(200).json({
@@ -475,16 +575,15 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
       status: 'EXCHANGE_PENDING',
       message: 'Your exchange request has been submitted and is pending approval.',
       transaction: {
-        id: newTransaction.id,
-        date: newTransaction.date,
-        amount: newTransaction.amount,
-        status: newTransaction.status,
+        id: transactionId,
+        date: formattedDate,
+        amount: exchangeAmountFloat,
+        status: 'pending',
         phpAmount: phpAmountFloat
       }
     });
     
   } catch (error) {
-
     console.error('Currency exchange error:', error);
     
     // Delete the uploaded file if any error occurs
@@ -496,117 +595,8 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
       }
     }
     
-    return res.status(500).json({
-      success: false,
-      status: 'SERVER_ERROR',
-      message: 'An error occurred while processing your request.'
-    });
+    console.log("Error" + " " + error)
 
-  }
-});
-
-// Route for approving currency exchange requests
-Router.route('/acceptcurrencyexchange/accept').post(async (req, res) => {
-
-  try {
-    const { id } = req.body; // Get transaction ID from request body
-    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
-    
-    // Fetch the omsiap document
-    const omsiapDocument = await OmsiapData.findById("Code-113-1143");
-    
-    if (!omsiapDocument) {
-      return res.status(404).json({
-        success: false,
-        status: 'NOT_FOUND',
-        message: 'OMSIAP data document not found'
-      });
-    }
-    
-    // Find the transaction in the pending array
-    const pendingTransactionIndex = omsiapDocument.transactions?.currencyexchange?.pending?.findIndex(
-      transaction => transaction.id === id
-    );
-    
-    if (pendingTransactionIndex === -1 || pendingTransactionIndex === undefined) {
-      return res.status(404).json({
-        success: false,
-        status: 'TRANSACTION_NOT_FOUND',
-        message: 'Transaction not found in pending transactions'
-      });
-    }
-    
-    // Get the transaction
-    const transaction = omsiapDocument.transactions.currencyexchange.pending[pendingTransactionIndex];
-    
-    // Update transaction status
-    transaction.status = 'successful';
-    
-    // Add status to the statuses array
-    const formattedDate = timestamps.getFormattedDate();
-    transaction.details.statuses.push({
-      type: 'successful',
-      indication: 'success',
-      date: formattedDate,
-      message: 'Your exchange request has been approved and processed successfully.'
-    });
-    
-    // Move the transaction image to the successful directory
-    if (transaction.details.reference.transactionimage) {
-      const newImagePath = fileManager.moveToSuccessful(transaction.details.reference.transactionimage);
-      transaction.details.reference.transactionimage = newImagePath;
-    }
-    
-    // Move transaction from pending to successful array
-    omsiapDocument.transactions.currencyexchange.successful.push(transaction);
-    omsiapDocument.transactions.currencyexchange.pending.splice(pendingTransactionIndex, 1);
-    
-    // Update the status in the total array as well
-    const totalTransactionIndex = omsiapDocument.transactions?.currencyexchange?.total?.findIndex(
-      totalTransaction => totalTransaction.id === id
-    );
-    
-    if (totalTransactionIndex !== -1 && totalTransactionIndex !== undefined) {
-      omsiapDocument.transactions.currencyexchange.total[totalTransactionIndex].status = 'successful';
-      
-      // Update statuses in total array as well
-      omsiapDocument.transactions.currencyexchange.total[totalTransactionIndex].details.statuses.push({
-        type: 'successful',
-        indication: 'success',
-        date: formattedDate,
-        message: 'Your exchange request has been approved and processed successfully.'
-      });
-      
-      // Update the image path in total array as well
-      if (transaction.details.reference.transactionimage) {
-        omsiapDocument.transactions.currencyexchange.total[totalTransactionIndex].details.reference.transactionimage = 
-          transaction.details.reference.transactionimage;
-      }
-    }
-    
-    // Update funds (if the transaction is being approved, remove from pending funds)
-    if (omsiapDocument.pendingfunds !== undefined && transaction.amount) {
-      omsiapDocument.pendingfunds -= transaction.amount;
-    }
-    
-    // Save the updated document
-    await omsiapDocument.save();
-    
-    return res.status(200).json({
-      success: true,
-      status: 'EXCHANGE_APPROVED',
-      message: 'Exchange request has been approved successfully.',
-      transaction: {
-        id: transaction.id,
-        date: transaction.date,
-        amount: transaction.amount,
-        status: transaction.status
-      }
-    });
-    
-  } catch (error) {
-    console.error('Error approving currency exchange:', error);
-    
     return res.status(500).json({
       success: false,
       status: 'SERVER_ERROR',
@@ -615,105 +605,215 @@ Router.route('/acceptcurrencyexchange/accept').post(async (req, res) => {
   }
 });
 
-
-// Route for rejecting currency exchange requests
-Router.route('/currencyexchange/reject/:transactionId').post(async (req, res) => {
+Router.route('/widthdrawal').post(async(req, res) => {
   try {
-    const { transactionId } = req.params;
-    const { rejectionReason } = req.body;
+    const { firstName, middleName, lastName, phoneNumber, amount, password, userId } = req.body;
     
-    if (!rejectionReason) {
+    // Basic validation
+    if (!firstName || !lastName || !phoneNumber || !amount || !password || !userId) {
       return res.status(400).json({
         success: false,
-        status: 'MISSING_REASON',
-        message: 'Rejection reason is required'
+        message: 'Missing required fields'
       });
     }
     
-    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
+    // Convert string ID to MongoDB ObjectId
+    let objectId;
+    try {
+      objectId = new mongoose.Types.ObjectId(userId);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid user ID format'
+      });
+    }
     
-    // Fetch the omsiap document
-    const omsiapDocument = await OmsiapData.findById("Code-113-1143");
-    
-    if (!omsiapDocument) {
+    // Find user by ObjectId
+    const user = await RegistrantDataModel.findOne({ _id: objectId });
+    if (!user) {
       return res.status(404).json({
         success: false,
-        status: 'NOT_FOUND',
-        message: 'OMSIAP data document not found'
+        message: 'User not found'
       });
     }
     
-    // Find the transaction in the pending array
-    const pendingTransactionIndex = omsiapDocument.transactions?.currencyexchange?.pending?.findIndex(
-      transaction => transaction.id === transactionId
-    );
-    
-    if (pendingTransactionIndex === -1 || pendingTransactionIndex === undefined) {
-      return res.status(404).json({
+    // Verify password using bcrypt
+    const storedHashedPassword = user.passwords?.account?.password;
+    if (!storedHashedPassword) {
+      return res.status(401).json({
         success: false,
-        status: 'TRANSACTION_NOT_FOUND',
-        message: 'Transaction not found in pending transactions'
+        message: 'Password information not found'
+      });
+    }
+
+    // Compare plain password with hashed password using bcrypt
+    const isPasswordValid = await bcrypt.compare(password, storedHashedPassword);
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid password'
       });
     }
     
-    // Get the transaction
-    const transaction = omsiapDocument.transactions.currencyexchange.pending[pendingTransactionIndex];
-    
-    // Update transaction status
-    transaction.status = 'REJECTED';
-    
-    // Add status to the statuses array
-    const formattedDate = timestamps.getFormattedDate();
-    transaction.details.statuses.push({
-      type: 'REJECTED',
-      indication: 'error',
-      date: formattedDate,
-      message: `Your exchange request has been rejected: ${rejectionReason}`
-    });
-    
-    // Move the transaction image to the rejected directory
-    if (transaction.details.reference.transactionimage) {
-      const newImagePath = fileManager.moveToRejected(transaction.details.reference.transactionimage);
-      transaction.details.reference.transactionimage = newImagePath;
+    // Check for sufficient balance
+    const userBalance = user.credits?.omsiapawas?.amount || 0;
+    if (userBalance < parseFloat(amount)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient balance'
+      });
     }
     
-    // Move transaction from pending to rejected array
-    omsiapDocument.transactions.currencyexchange.rejected.push(transaction);
-    omsiapDocument.transactions.currencyexchange.pending.splice(pendingTransactionIndex, 1);
+    // Calculate deductions and final amount
+    const processingFee = parseFloat(amount) * 0.025; // Example: 2.5% processing fee
+    const finalAmount = parseFloat(amount) - processingFee;
     
-    // Update funds
-    if (omsiapDocument.pendingfunds !== undefined) {
-      omsiapDocument.pendingfunds -= transaction.amount;
-    }
-    
-    // Save the updated document
-    await omsiapDocument.save();
-    
-    return res.status(200).json({
-      success: true,
-      status: 'EXCHANGE_REJECTED',
-      message: 'Exchange request has been rejected.',
-      transaction: {
-        id: transaction.id,
-        date: transaction.date,
-        amount: transaction.amount,
-        status: transaction.status
+    // Create a new withdrawal transaction record
+    const withdrawalTransaction = new WidthdrawalTransactionDataModel({
+      id: uuidv4(),
+      intent: 'withdrawal',
+      statusesandlogs: {
+        status: 'pending',
+        indication: 'waiting for approval',
+        logs: [{
+          date: timestamps.getFormattedDate(),
+          type: 'first submission',
+          indication: 'first log, waiting for approval',
+          messages: [{ message: 'Withdrawal request received' }]
+        }]
+      },
+      details: {
+        paymentmethod: 'gcash', // Assuming GCash as payment method
+        thistransactionismadeby: {
+          id: userId,
+          name: {
+            firstname: firstName,
+            middlename: middleName || '',
+            lastname: lastName,
+            nickname: user.name?.nickname || ''
+          },
+          contact: {
+            phonenumber: phoneNumber,
+            emailaddress: user.contact?.emailaddress || '',
+            address: {
+              street: user.contact?.address?.street || '',
+              trademark: user.contact?.address?.trademark || '',
+              baranggay: user.contact?.address?.baranggay || '',
+              city: user.contact?.address?.city || '',
+              province: user.contact?.address?.province || '',
+              postal_zip_code: user.contact?.address?.postal_zip_code || '',
+              country: user.contact?.address?.country || 'Philippines'
+            }
+          }
+        },
+        thistransactionismainlyintendedto: {
+          id: 'system_account',
+          name: {
+            firstname: 'System',
+            middlename: '',
+            lastname: 'Account',
+            nickname: 'SysAccount'
+          },
+          contact: {
+            phonenumber: '12345678900',
+            emailaddress: 'system@example.com',
+            address: {
+              street: '',
+              trademark: 'Company HQ',
+              baranggay: '',
+              city: 'Metro Manila',
+              province: '',
+              postal_zip_code: '',
+              country: 'Philippines'
+            }
+          }
+        },
+        amounts: {
+          intent: parseFloat(amount),
+          deductions: {
+            successfulprocessing: {
+              amount: processingFee,
+              reasons: 'Processing fee'
+            },
+            rejectionprocessing: {
+              amount: 0,
+              reasons: ''
+            }
+          },
+          profit: processingFee,
+          phpamounttorecieve: finalAmount
+        },
+        referrence: {
+          gcashphonenumber: phoneNumber
+        }
       }
     });
     
-  } catch (error) {
-    console.error('Error rejecting currency exchange:', error);
+    // Save the transaction to database
+    const savedTransaction = await withdrawalTransaction.save();
     
-    return res.status(500).json({
-      success: false,
-      status: 'SERVER_ERROR',
-      message: 'An error occurred while processing your request.'
+    // Update user's balance and add transaction to their widthdrawals array
+    if (!user.credits) {
+      user.credits = { omsiapawas: { amount: 0, transactions: { widthdrawals: [] } } };
+    }
+    if (!user.credits.omsiapawas) {
+      user.credits.omsiapawas = { amount: 0, transactions: { widthdrawals: [] } };
+    }
+    if (!user.credits.omsiapawas.transactions) {
+      user.credits.omsiapawas.transactions = { widthdrawals: [] };
+    }
+    if (!user.credits.omsiapawas.transactions.widthdrawals) {
+      user.credits.omsiapawas.transactions.widthdrawals = [];
+    }
+    
+    // Deduct the withdrawal amount from user's balance
+    // user.credits.omsiapawas.amount -= parseFloat(amount);
+    
+    // Push the withdrawal transaction to user's widthdrawals array
+    user.credits.omsiapawas.transactions.widthdrawals.push(savedTransaction);
+    
+    // Save the updated user document
+    await user.save();
+    
+    // Respond with success
+    return res.status(200).json({
+      success: true,
+      message: 'Withdrawal request has been submitted successfully',
+      transactionId: withdrawalTransaction.id,
+      amount: finalAmount,
+      status: 'pending',
+      estimatedCompletionTime: '24-48 hours',
+      remainingBalance: user.credits.omsiapawas.amount
     });
+    
+  } catch (err) {
+    console.error('Withdrawal error:', err);
+    
+    // Handle different types of errors
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error: ' + err.message
+      });
+    } else if (err.name === 'MongoError' && err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Duplicate transaction detected'
+      });
+    } else if (err.name === 'MongooseServerSelectionError') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection error. Please try again later.'
+      });
+    } else {
+      // General server error
+      return res.status(500).json({
+        success: false,
+        message: 'An error occurred while processing your withdrawal request'
+      });
+    }
   }
 });
 
-
-
-
-
+// Export the cleanupOldFiles function so it can be used elsewhere in your application
 module.exports = Router;

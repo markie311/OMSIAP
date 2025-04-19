@@ -8,30 +8,34 @@ const peoplesRoute = require('./routes/people/peoplesRoute');
 const productsRoute = require('./routes/products/productsRoute');
 const omsiapRoute = require('./routes/omsiap/omsiapRoute');
 
+// Reconnection attempt tracker
+let reconnectAttempts = 0;
+
 // MongoDB Connection Configuration
 const connectToDatabase = async () => {
   try {
     await mongoose.connect(process.env.MONGODB_URI, {
-      // Removed deprecated options
-      maxPoolSize: 50, // Supports 50 simultaneous connections
-      socketTimeoutMS: 45000, // 45 seconds socket timeout
-      serverSelectionTimeoutMS: 30000, // 30 seconds server selection timeout
-      heartbeatFrequencyMS: 10000, // Connection health check every 10 seconds
+      maxPoolSize: 50, 
+      socketTimeoutMS: 45000,
+      serverSelectionTimeoutMS: 30000,
+      heartbeatFrequencyMS: 10000, 
       retryWrites: true,
       dbName: process.env.DB_NAME
     });
-    console.log('✅ MongoDB connection established successfully');
+    // Don't log success here - let the 'connected' event handle it
   } catch (error) {
     console.error('❌ Failed to connect to MongoDB:', error);
-    // Implement exponential backoff for reconnection
+    // More descriptive error for authentication issues
+    if (error.name === 'MongoServerError' && (error.code === 8000 || error.message.includes('auth'))) {
+      console.error('🔐 Authentication failed. Please check your username and password in .env file');
+    }
+    
     const reconnectDelay = Math.min(30000, Math.pow(2, reconnectAttempts) * 1000);
+    console.log(`⏱️ Will attempt reconnection in ${reconnectDelay/1000} seconds...`);
     setTimeout(connectToDatabase, reconnectDelay);
     reconnectAttempts++;
   }
 };
-
-// Reconnection attempt tracker
-let reconnectAttempts = 0;
 
 // Create Express App
 const app = express();
@@ -49,6 +53,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // MongoDB Connection Event Listeners
 mongoose.connection.on('connected', () => {
+  console.log('✅ MongoDB connection established successfully');
   console.log('🔗 Mongoose connected to database');
   // Reset reconnection attempts on successful connection
   reconnectAttempts = 0;
@@ -60,7 +65,10 @@ mongoose.connection.on('error', (err) => {
 
 mongoose.connection.on('disconnected', () => {
   console.log('🔌 Mongoose disconnected');
-  connectToDatabase(); // Attempt to reconnect
+  if (mongoose.connection.readyState !== 1) {
+    // Only try to reconnect if we're not already connecting
+    connectToDatabase();
+  }
 });
 
 // Routes
@@ -94,7 +102,8 @@ const startServer = async () => {
     // Connect to database first
     await connectToDatabase();
     
-    // Then start listening
+    // Start server regardless of database connection status
+    // This allows the server to keep trying to connect to DB
     app.listen(PORT, () => {
       console.log(`🚀 Server listening on PORT ${PORT}`);
       console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -115,6 +124,12 @@ process.on('SIGINT', async () => {
     console.error('Error during graceful shutdown:', error);
     process.exit(1);
   }
+});
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  // Application continues running, but logs the error
 });
 
 // Kick off the server

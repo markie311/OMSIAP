@@ -177,8 +177,18 @@ amounts: {
   type: 'number',
   default: 0
  }
+},
+referrence: {
+ number: {
+  type: 'string'
+ },
+ gcashtransactionrecieptimage: {
+  type: 'string'
+ }
 }
 }
 });
 
-module.exports = currencyexchangetransactiondatascheme;
+const CurrencyExhangeTransactionDataModel = mongoose.model("CurrencyExchange", currencyexchangetransactiondatascheme)
+
+module.exports = CurrencyExhangeTransactionDataModel;

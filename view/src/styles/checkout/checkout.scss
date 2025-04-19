@@ -1,556 +1,740 @@
-/* checkout-enhanced.css */
+/* 
+ * Checkout Page Stylesheet
+ * Responsive design with animations and improved color scheme
+ * Fixed visibility issues - forcing BLACK text on white backgrounds
+ */
 
-/* Base styles */
+/* Variables for consistent theming with enhanced contrast */
 :root {
---primary-color: #4a6de5;
---primary-hover: #3a5bd0;
---background-color: #f8f9fa;
---card-color: #ffffff;
---text-color: #333333;
---text-light: #666666;
---border-color: #e4e7eb;
---success-color: #28a745;
---danger-color: #dc3545;
---border-radius: 8px;
---shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --primary-color: #2980b9;
+  --primary-dark: #1a5e8a;
+  --primary-light: #e1f0fa;
+  --secondary-color: #27ae60;
+  --secondary-dark: #1e8449;
+  --accent-color: #f39c12;
+  --danger-color: #e74c3c;
+  --success-color: #2ecc71;
+  --text-color: #000000;          /* Changed to pure black for maximum contrast */
+  --text-light: #333333;          /* Darker text light for better visibility */
+  --background-color: #ecf0f1;
+  --card-background: #ffffff;
+  --border-color: #bdc3c7;
+  --input-bg: #ffffff;
+  --input-border: #bdc3c7;
+  --input-focus-border: #2980b9;
+  --input-focus-shadow: rgba(41, 128, 185, 0.2);
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.1);
+  --border-radius: 8px;
+  --border-radius-sm: 4px;
+  --transition-fast: 0.2s;
+  --transition-normal: 0.3s;
+  --transition-slow: 0.5s;
 }
 
-* {
-box-sizing: border-box;
-margin: 0;
-padding: 0;
-}
-
-body {
-font-family: 'Inter', 'Segoe UI', Roboto, -apple-system, sans-serif;
-color: var(--text-color);
-background-color: var(--background-color);
-line-height: 1.5;
-}
-
-/* Container */
-.checkout-page {
-position:relative;
-height:100%;
-width:100%;
-padding: 32px 16px;
-overflow-y:scroll;
-}
-
-/* width */
-.checkout-page::-webkit-scrollbar {
-width: 20px;
-}
-
-/* Track */
-.checkout-page::-webkit-scrollbar-track {
-box-shadow: inset 0 0 5px grey; 
-border-radius: 10px;
-}
-
-/* Handle */
-.checkout-page::-webkit-scrollbar-thumb {
-background: blue; 
-border-radius: 10px;
-}
-
-/* Handle on hover */
-.checkout-page::-webkit-scrollbar-thumb:hover {
-background: dodgerblue; 
-}
-
-/* width */
-.checkout-page::-webkit-scrollbar {
-width: 20px;
-}
-
-/* Track */
-.checkout-page::-webkit-scrollbar-track {
-box-shadow: inset 0 0 5px grey; 
-border-radius: 10px;
-}
-
-/* Handle */
-.checkout-page::-webkit-scrollbar-thumb {
-background: blue; 
-border-radius: 10px;
-}
-
-/* Handle on hover */
-.checkout-page::-webkit-scrollbar-thumb:hover {
-background: dodgerblue; 
-}
-
+/* Global styles with increased specificity and !important flags */
 .checkout-container {
-max-width: 1280px;
-margin: 0 auto;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  color: var(--text-color) !important;
+  background-color: var(--background-color);
+  position:relative;
+  height:100vh;
+  overflow-y:scroll;
 }
 
-/* Header */
-.checkout-header {
-margin-bottom: 24px;
+/* Force BLACK color on all standard text elements with increased specificity */
+.checkout-container h1,
+.checkout-container h2,
+.checkout-container h3,
+.checkout-container h4,
+.checkout-container h5,
+.checkout-container h6,
+.checkout-container p,
+.checkout-container span,
+.checkout-container div,
+.checkout-container label {
+  color: var(--text-color) !important;
 }
 
-.checkout-header h1 {
-font-size: 28px;
-font-weight: 700;
-color: var(--text-color);
+/* Extra specificity for all input text - forcing BLACK text */
+.checkout-container input,
+.checkout-container select,
+.checkout-container textarea {
+  color: var(--text-color) !important;
+}
+
+/* Typography with improved contrast and forced BLACK colors */
+.checkout-title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 2rem;
+  color: var(--text-color) !important;
+  animation: fadeInDown 0.7s ease-out;
+}
+
+.checkout-card-header {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color) !important; /* Changed to black header text */
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--primary-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checkout-section-heading {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-color) !important;
+  margin: 1.5rem 0 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 /* Layout */
-.checkout-layout {
-display: grid;
-grid-template-columns: 1fr 350px;
-gap: 24px;
+.checkout-grid-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
 }
 
-/* Card styling */
-.card {
-background-color: var(--card-color);
-border-radius: var(--border-radius);
-box-shadow: var(--shadow);
-margin-bottom: 24px;
-overflow: hidden;
+@media (min-width: 992px) {
+  .checkout-grid-layout {
+    grid-template-columns: 1.25fr 1fr;
+  }
 }
 
-.card-header {
-padding: 20px;
-border-bottom: 1px solid var(--border-color);
-display: flex;
-justify-content: space-between;
-align-items: center;
+.checkout-info-card {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-md);
+  height: fit-content;
+  animation: fadeIn 0.6s ease-out;
 }
 
-.card-header h2 {
-font-size: 18px;
-font-weight: 600;
+/* Icons with better contrast and forced colors */
+.checkout-header-icon,
+.checkout-section-icon,
+.checkout-input-icon {
+  color: var(--primary-dark) !important;
 }
 
-/* Cart summary */
-.item-count {
-color: var(--text-light);
-font-size: 14px;
+.checkout-secure-icon {
+  color: var(--success-color) !important;
+  margin-right: 0.5rem;
 }
 
-.empty-cart {
-padding: 32px 20px;
-text-align: center;
-color: var(--text-light);
+.checkout-warning-icon {
+  color: var(--danger-color) !important;
+  margin-right: 0.5rem;
 }
 
-.cart-items {
-padding: 0;
+/* Form with improved visibility and forced BLACK colors */
+.checkout-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
 }
 
-.cart-item {
-display: grid;
-grid-template-columns: 80px 1fr auto;
-gap: 16px;
-padding: 20px;
-border-bottom: 1px solid var(--border-color);
+.checkout-form-section {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+  border: 1px solid var(--border-color);
 }
 
-.cart-item:last-child {
-border-bottom: none;
+.checkout-form-section:hover {
+  box-shadow: var(--shadow-md);
 }
 
-.item-image {
-width: 80px;
-height: 80px;
-border-radius: 6px;
-overflow: hidden;
+.checkout-form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
 }
 
-.item-image img {
-width: 100%;
-height: 100%;
-object-fit: cover;
+@media (min-width: 576px) {
+  .checkout-form-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
-.item-details {
-display: flex;
-flex-direction: column;
+.checkout-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.item-name {
-font-weight: 500;
-margin-bottom: 4px;
+.checkout-full-width {
+  grid-column: 1 / -1;
 }
 
-.item-price {
-color: var(--text-light);
-margin-bottom: 12px;
+/* Force BLACK label colors with high specificity */
+.checkout-form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text-color) !important;
 }
 
-.item-actions {
-display: flex;
-align-items: center;
-gap: 16px;
-margin-top: auto;
+/* Force BLACK input text colors */
+.checkout-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  color: var(--text-color) !important;
+  background-color: var(--input-bg) !important;
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.quantity-control {
-display: flex;
-align-items: center;
-border: 1px solid var(--border-color);
-border-radius: 4px;
-overflow: hidden;
+.checkout-input:focus {
+  outline: none;
+  border-color: var(--input-focus-border);
+  box-shadow: 0 0 0 3px var(--input-focus-shadow);
+  color: var(--text-color) !important;
 }
 
-.quantity-btn {
-width: 32px;
-height: 32px;
-background: none;
-border: none;
-cursor: pointer;
-font-size: 16px;
-display: flex;
-align-items: center;
-justify-content: center;
+.checkout-input::placeholder {
+  color: var(--text-light) !important;
+  opacity: 0.8;
 }
 
-.quantity-btn:hover {
-background-color: var(--background-color);
-}
-
-.quantity {
-width: 32px;
-text-align: center;
-font-size: 14px;
-}
-
-.remove-btn {
-background: none;
-border: none;
-color: var(--danger-color);
-cursor: pointer;
-font-size: 14px;
-padding: 4px 0;
-}
-
-.remove-btn:hover {
-text-decoration: underline;
-}
-
-.item-total {
-font-weight: 600;
-text-align: right;
-}
-
-/* Shipping options */
-.shipping-methods {
-padding: 20px;
-}
-
-.shipping-method {
-display: flex;
-align-items: flex-start;
-padding: 12px 16px;
-margin-bottom: 8px;
-border: 1px solid var(--border-color);
-border-radius: 6px;
-cursor: pointer;
-transition: all 0.2s ease;
-}
-
-.shipping-method:hover {
-border-color: var(--primary-color);
-}
-
-.shipping-method input[type="radio"] {
-position:relative;
-width:10%;
-margin-top: 4px;
-margin-right: 12px;
-}
-
-
-.method-details {
-flex: 1;
-}
-
-.method-name {
-font-weight: 500;
-margin-bottom: 4px;
-}
-
-.method-info {
-display: flex;
-justify-content: space-between;
-color: var(--text-light);
-font-size: 14px;
-}
-
-/* Payment options */
-.payment-methods {
-padding: 20px;
-}
-
-.payment-section {
-margin-bottom: 24px;
-}
-
-.payment-section h3 {
-font-size: 16px;
-font-weight: 500;
-margin-bottom: 12px;
-}
-
-.radio-group {
-display: flex;
-flex-direction: column;
-gap: 8px;
-}
-
-.payment-method {
-display: flex;
-align-items: center;
-padding: 12px 16px;
-border: 1px solid var(--border-color);
-border-radius: 6px;
-cursor: pointer;
-transition: all 0.2s ease;
-width:40%;
-}
-
-.payment-method:hover {
-border-color: var(--primary-color);
-}
-
-.payment-method input[type="radio"] {
-margin-right: 12px;
-}
-
-/* Order summary */
-.summary-content {
-padding: 20px;
-}
-
-.summary-row {
-display: flex;
-justify-content: space-between;
-margin-bottom: 12px;
-}
-
-.summary-divider {
-height: 1px;
-background-color: var(--border-color);
-margin: 16px 0;
-}
-
-.total {
-font-size: 18px;
-font-weight: 600;
-margin-bottom: 24px;
-}
-
+/* Button with better contrast - keeping white text for buttons */
 .checkout-button {
-width: 100%;
-background-color: var(--primary-color);
-color: white;
-border: none;
-border-radius: 6px;
-padding: 14px;
-font-size: 16px;
-font-weight: 600;
-cursor: pointer;
-transition: background-color 0.2s ease;
+  background-color: var(--primary-dark) !important;
+  color: white !important; /* Keep white text for button */
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 1rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  box-shadow: var(--shadow-md);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .checkout-button:hover {
-background-color: var(--primary-hover);
+  background-color: var(--primary-dark) !important;
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Responsive design */
-@media (max-width: 992px) {
-.checkout-layout {
-grid-template-columns: 1fr;
+.checkout-button:active {
+  transform: translateY(0);
 }
 
-.checkout-main {
-order: 2;
+.checkout-button.checkout-loading {
+  background-color: var(--primary-dark) !important;
+  opacity: 0.8;
+  cursor: not-allowed;
 }
 
-.checkout-sidebar {
-order: 1;
-}
-}
-
-@media (max-width: 768px) {
-.checkout-page {
-padding: 24px 12px;
+.checkout-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
-.checkout-header h1 {
-font-size: 24px;
+/* Order Summary with better contrast and forced BLACK colors */
+.checkout-summary-column {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all var(--transition-slow);
 }
 
-.cart-item {
-grid-template-columns: 70px 1fr;
-grid-template-rows: auto auto;
+.checkout-slide-in {
+  opacity: 1;
+  transform: translateX(0);
 }
 
-.item-total {
-grid-column: 2;
-text-align: left;
-margin-top: 8px;
+.checkout-summary-section {
+  margin-bottom: 1.5rem;
 }
 
-.item-actions {
-flex-wrap: wrap;
-}
+.checkout-cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
+.checkout-cart-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background-color: var(--primary-light);
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+  border: 1px solid rgba(41, 128, 185, 0.2);
+}
+
+.checkout-cart-item:hover {
+  background-color: var(--card-background);
+  transform: translateX(3px);
+  border-color: var(--primary-color);
+}
+
+.checkout-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Force BLACK item name color */
+.checkout-item-name {
+  font-weight: 600;
+  color: var(--text-color) !important;
+}
+
+/* Force BLACK item quantity color */
+.checkout-item-quantity {
+  color: var(--text-color) !important;
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+/* Force BLACK item price color */
+.checkout-item-price {
+  font-weight: 600;
+  color: var(--text-color) !important;
+}
+
+.checkout-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 576px) {
+  .checkout-summary-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.checkout-summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.95rem;
+  padding: 0.5rem 0;
+}
+
+/* Force BLACK label color */
+.checkout-label {
+  color: var(--text-color) !important;
+  opacity: 0.85;
+  font-weight: 500;
+}
+
+/* Force BLACK value color */
+.checkout-value {
+  font-weight: 600;
+  color: var(--text-color) !important;
+}
+
+.checkout-divider {
+  width: 100%;
+  height: 1px;
+  background-color: var(--border-color);
+  margin: 1.25rem 0;
+}
+
+.checkout-total {
+  font-size: 1.2rem;
+  padding: 0.75rem 0;
+}
+
+/* Force BLACK highlight text color */
+.checkout-highlight {
+  color: var(--text-color) !important;
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+/* Payment Methods with improved visibility and forced BLACK colors */
+.checkout-payment-details {
+  margin-top: 1.5rem;
+}
+
+.checkout-payment-selection {
+  margin-top: 1rem;
+}
+
+.checkout-payment-method {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.checkout-payment-method:hover {
+  background-color: var(--primary-light);
+  border-color: var(--primary-color);
+}
+
+.checkout-method-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+/* Force BLACK method name color */
+.checkout-method-name {
+  font-weight: 600;
+  color: var(--text-color) !important;
+}
+
+/* Force method balance color */
+.checkout-method-balance {
+  color: var(--success-color) !important;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.checkout-payment-confirmation {
+  margin-top: 1rem;
+}
+
+/* Force danger text color for insufficient funds */
+.checkout-insufficient-funds {
+  background-color: rgba(231, 76, 60, 0.1);
+  border-left: 4px solid var(--danger-color);
+  padding: 1rem;
+  margin-top: 1rem;
+  color: var(--danger-color) !important;
+  border-radius: var(--border-radius-sm);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+/* Empty cart state with better visibility and forced BLACK colors */
+.checkout-empty-cart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  gap: 1.5rem;
+  text-align: center;
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+}
+
+.checkout-empty-cart p {
+  color: var(--text-color) !important;
+  font-weight: 500;
+}
+
+.checkout-empty-icon {
+  font-size: 3rem;
+  color: var(--text-color) !important;
+  opacity: 0.6;
+}
+
+.checkout-back-button {
+  background-color: var(--primary-dark) !important;
+  color: white !important; /* Keep white text for button */
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.checkout-back-button:hover {
+  background-color: var(--primary-dark) !important;
+  filter: brightness(1.1);
+}
+
+/* Enhanced contrast for labels and text - forcing BLACK */
+.checkout-container .checkout-form-group label,
+.checkout-container .checkout-label,
+.checkout-container .checkout-value,
+.checkout-container .checkout-item-name,
+.checkout-container .checkout-item-quantity,
+.checkout-container .checkout-method-name {
+  color: var(--text-color) !important;
+}
+
+/* Enhanced input text contrast - forcing BLACK */
+.checkout-container input[type="text"],
+.checkout-container input[type="tel"],
+.checkout-container input[type="email"],
+.checkout-container input[type="number"],
+.checkout-container select,
+.checkout-container textarea {
+  color: var(--text-color) !important;
+  background-color: var(--input-bg) !important;
+}
+
+/* Ensure all radio buttons and checkboxes have BLACK text */
+.checkout-container input[type="radio"] + label,
+.checkout-container input[type="checkbox"] + label {
+  color: var(--text-color) !important;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Enhanced input field focus styles with forced BLACK colors */
+.checkout-form-group:focus-within label {
+  color: var(--text-color) !important;
+  transform: translateY(-2px);
+  transition: all var(--transition-fast);
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 767px) {
+  .checkout-title {
+    font-size: 1.8rem;
+  }
+  
+  .checkout-card-header {
+    font-size: 1.3rem;
+  }
+  
+  .checkout-form-section {
+    padding: 1rem;
+  }
+  
+  .checkout-summary-section {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Responsive adjustments for very small screens */
 @media (max-width: 480px) {
-.checkout-page {
-padding: 16px 8px;
-}
-
-.checkout-header h1 {
-font-size: 22px;
-}
-
-.card-header {
-padding: 16px;
-}
-
-.cart-item {
-padding: 16px;
-grid-template-columns: 60px 1fr;
-gap: 12px;
-}
-
-.item-image {
-width: 60px;
-height: 60px;
-}
-
-.quantity-control {
-margin-bottom: 8px;
-}
-
-.item-actions {
-flex-direction: column;
-align-items: flex-start;
-gap: 8px;
-}
-
-.shipping-method,
-.payment-method {
-padding: 10px 12px;
-}
-
-.method-info {
-flex-direction: column;
-align-items: flex-start;
-gap: 4px;
-}
-}
-
-.weight-warning-banner {
-    background-color: #fff3cd;
-    color: #856404;
-    padding: 10px 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-    border-left: 5px solid #ffeeba;
+  .checkout-container {
+    padding: 1rem 0.5rem;
   }
   
-  .weight-error-banner {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 10px 15px;
-    margin-bottom: 20px;
-    border-radius: 4px;
-    border-left: 5px solid #f5c6cb;
-  }
-  
-  .text-error {
-    color: #dc3545;
-    font-weight: bold;
-  }
-  
-  .weight-limit-note {
-    margin-top: 15px;
-    font-size: 0.9rem;
-    color: #6c757d;
-  }
-  
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  .modal-content {
-    background-color: white;
-    padding: 0;
-    border-radius: 8px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-  }
-  
-  .modal-header {
-    padding: 15px 20px;
-    border-bottom: 1px solid #e9ecef;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #dc3545;
-    color: white;
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-  }
-  
-  .modal-header h3 {
-    margin: 0;
-  }
-  
-  .close-button {
-    background: transparent;
-    border: none;
+  .checkout-title {
     font-size: 1.5rem;
-    color: white;
-    cursor: pointer;
   }
   
-  .modal-body {
-    padding: 20px;
+  .checkout-info-card {
+    padding: 1.25rem 1rem;
   }
   
-  .modal-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #e9ecef;
-    display: flex;
-    justify-content: flex-end;
+  .checkout-button {
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
   }
-  
-  .primary-btn {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
+}
+
+/* Additional Animation for hover effects with forced BLACK colors */
+.checkout-form-section:hover .checkout-section-heading {
+  color: var(--text-color) !important;
+  transform: translateX(3px);
+  transition: all var(--transition-normal);
+}
+
+/* Styling required field indicators with better visibility */
+label[for]:after {
+  content: attr(for);
+}
+
+label[for$="*"]:after {
+  content: attr(for);
+  position: relative;
+}
+
+label[for$="*"]:before {
+  content: '*';
+  color: var(--danger-color) !important;
+  position: absolute;
+  right: -10px;
+  top: 0;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+/* Improve form submission loading state */
+@keyframes pulse {
+  0% {
+    opacity: 1;
   }
-  
-  .checkout-button:disabled {
-    background-color: #dc3545;
-    opacity: 0.8;
-    cursor: not-allowed;
+  50% {
+    opacity: 0.6;
   }
-  
-  .weight-limit-error-message {
-    color: #dc3545;
-    text-align: center;
-    margin-top: 10px;
-    font-size: 0.9rem;
+  100% {
+    opacity: 1;
   }
+}
+
+.checkout-loading {
+  animation: pulse 1.5s infinite;
+}
+
+/* Phone field specific styling */
+.checkout-phone-field .checkout-input {
+  letter-spacing: 0.5px;
+}
+
+/* Better accessibility focus states with forced colors */
+.checkout-input:focus-visible,
+.checkout-button:focus-visible,
+.checkout-payment-method:focus-visible {
+  outline: 2px solid var(--primary-dark);
+  outline-offset: 2px;
+}
+
+/* Add stronger contrast for radio buttons and checkboxes */
+.checkout-container input[type="radio"],
+.checkout-container input[type="checkbox"] {
+  accent-color: var(--primary-dark);
+}
+
+/* Fix potential contrast issues in hover states */
+.checkout-cart-item:hover .checkout-item-name,
+.checkout-cart-item:hover .checkout-item-quantity,
+.checkout-cart-item:hover .checkout-item-price {
+  color: var(--text-color) !important;
+}
+
+/* Extra ensuring black text on all content (regardless of parent container) */
+.checkout-container *:not(.checkout-button):not(.checkout-back-button):not(svg):not(i):not(.fa):not(.fas):not(.far):not(.fab) {
+  color: var(--text-color) !important;
+}
+
+/* Override any potential inline styles with !important */
+.checkout-container [style*="color"] {
+  color: var(--text-color) !important;
+}
+
+/* Exception for buttons - keep them with white text */
+.checkout-button,
+.checkout-back-button {
+  color: white !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Fix for text visibility issues */
+/* This CSS needs to be imported AFTER any other stylesheets */
+
+/* Global color override with maximum specificity */
+html body .checkout-container,
+html body .checkout-container *:not(.checkout-button):not(.checkout-back-button):not(svg):not(i):not(.fa):not(.fas):not(.far):not(.fab) {
+  color: #000000 !important;
+}
+
+/* Input field text color fix */
+html body .checkout-container input,
+html body .checkout-container select,
+html body .checkout-container textarea {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* Specific text elements that might be problematic */
+html body .checkout-container h1,
+html body .checkout-container h2,
+html body .checkout-container h3,
+html body .checkout-container label,
+html body .checkout-container .checkout-label,
+html body .checkout-container .checkout-value,
+html body .checkout-container .checkout-item-name,
+html body .checkout-container .checkout-item-quantity,
+html body .checkout-container .checkout-item-price,
+html body .checkout-container .checkout-method-name,
+html body .checkout-container .checkout-method-balance {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* Force buttons to have white text */
+html body .checkout-container .checkout-button,
+html body .checkout-container .checkout-back-button {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Override any inline styles */
+html body [style*="color"] {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}
+
+/* Extra safety: Add background color contrast to text containers */
+html body .checkout-container .checkout-info-card,
+html body .checkout-container .checkout-form-section {
+  background-color: #ffffff !important;
+}
+
+/* Make black backgrounds lighter if they exist */
+html body .checkout-container [style*="background-color: #000"],
+html body .checkout-container [style*="background-color: black"],
+html body .checkout-container [style*="background-color: rgb(0, 0, 0)"],
+html body .checkout-container [style*="background-color: rgba(0, 0, 0"] {
+  background-color: #ffffff !important;
+}
+
+/* Address high-specificity selectors that might be coming from frameworks */
+html body #root .checkout-container *:not(.checkout-button):not(.checkout-back-button),
+html body .app .checkout-container *:not(.checkout-button):not(.checkout-back-button),
+html body #app .checkout-container *:not(.checkout-button):not(.checkout-back-button) {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+}

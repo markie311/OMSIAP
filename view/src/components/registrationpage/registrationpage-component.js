@@ -242,6 +242,7 @@ const handleRegistration = async (e) => {
    
     if (Object.keys(validationErrors).length === 0) {
       try {
+        
         const _registeringdate = timestamp.getFormattedDate();
   
         const _registrant = { 
@@ -250,7 +251,7 @@ const handleRegistration = async (e) => {
             type: "Month Financial Allocation To Individual People ( MFATIP )",
             indication: "Trying to register",
             deviceloginstatus: "logged out",
-            registrationdetails: []
+            registrationlog: []
           },
           name: {
             firstname: formData.firstName,
@@ -316,33 +317,18 @@ const handleRegistration = async (e) => {
             }
           },
           credits: {
-            omsiapawasto: {
+            omsiapawas: {
               id: `${generateInt32StringsDataType(16)}-A-1`,
               amount: 0,
               transactions: {
-                currencyexchange: {
-                  total: [],
-                  pending: [],
-                  successful: [],
-                  rejected: []
-                },
-                widthdrawals: {
-                  total: [],
-                  pending: [],
-                  successful: [],
-                  rejected: []
-                },
+                currencyexchange: [],
+                widthdrawals: [],
                 omsiapawastransfer: []
               }
             }
           },
           transactions: {
-            merchandise: {
-              total: [],
-              pending: [],
-              accepted: [],
-              rejected: []
-            }
+            merchandise: []
           }
         };
   

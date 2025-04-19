@@ -2,6 +2,8 @@ const express = require('express');
 const Router = require('express').Router();
 
 const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
 const Decimal128 = mongoose.Types.Decimal128;
 
 const multer = require('multer');
@@ -11,8 +13,12 @@ const { v4: uuidv4 } = require('uuid');
 
 const mongodb = require('../../lib/mongodb/database.js');
 
-const omsiapdatascheme = require('../../models/omsiap/omsiapdatascheme.js');
-const productdatascheme = require('../../models/products/productsdatascheme.js')
+const RegistrantDataModel = require('../../models/people/registrantdatascheme.js')
+const ProductDataModel = require('../../models/products/productsdatascheme.js')
+const MerchandiseTransactionDataModel = require('../../models/transactions/merchandisetransactiondatascheme.js')
+const PendingFundsDataModel = require('../../models/pendingfunds/pendingfundsdatascheme.js')
+
+
 
 const timestamps = require('../../lib/timestamps/timestamps');
 
@@ -448,47 +454,99 @@ Router.route("/deleteproduct").post(async (req, res) => {
 });
 
 // Helper function to create a transaction record
-function createTransactionRecord(orderData) {
+function createTransactionRecord(orderData, registrant) {
   // Generate a unique transaction ID
   const transactionId = generateUniqueTransactionId();
   
-  // Format the date using timestamps module
-  const formattedDate = formatTransactionDate();
+  // Process products from the order data
+  const productList = orderData.products.map(product => {
+    // Find full product details for each product in the order
+    const fullProductDetails = findFullProductDetails(product.id);
+    
+    // Add quantity from the order
+    fullProductDetails.quantity = product.quantity || 1;
+    
+    return fullProductDetails;
+  });
   
+  // Create the transaction record following the merchandisetransactiondatascheme
   return {
     id: transactionId,
-    date: formattedDate,
-    type: "purchase",
-    status: "pending",
-    amount: parseFloat(orderData.paymentInfo.amount),
-    paymentmethod: orderData.paymentInfo.method,
+    intent: "Purchase merchandise",
+    statusesandlogs: {
+      status: "pending",
+      indication: "Processing",
+      date: timestamps.getFormattedDate(),
+      logs: [
+        {
+          date: timestamps.getFormattedDate(),
+          type: "Order submitted",
+          indication: "Processing",
+          messages: [
+            { message: "Order received and is being processed" }
+          ]
+        }
+      ]
+    },
     details: {
-      products: orderData.products.map(product => {
-        // Find the full product details from the database
-        const fullProductDetails = findFullProductDetails(product.id);
-        return {
-          ...fullProductDetails,
-          quantity: parseInt(product.quantity, 10)
-        };
-      }),
-      shippingInfo: {
-        address: orderData.personalInfo.address,
-        city: orderData.personalInfo.city,
-        state: orderData.personalInfo.state,
-        zipCode: orderData.personalInfo.zipCode,
-        country: orderData.personalInfo.country
+      merchandise: {
+        list: productList
       },
-      orderSummary: {
-        merchandiseTotal: parseFloat(orderData.orderSummary.merchandiseTotal),
-        shippingTotal: parseFloat(orderData.orderSummary.shippingTotal),
-        totalTransactionGiveaway: parseFloat(orderData.orderSummary.totalTransactionGiveaway),
-        totalOmsiaProfit: parseFloat(orderData.orderSummary.totalOmsiaProfit),
-        totalCapital: parseFloat(orderData.orderSummary.totalCapital),
-        totalItems: parseInt(orderData.orderSummary.totalItems, 10),
-        totalProducts: parseInt(orderData.orderSummary.totalProducts, 10),
-        totalWeightGrams: parseFloat(orderData.orderSummary.totalWeightGrams),
-        totalWeightKilos: parseFloat(orderData.orderSummary.totalWeightKilos),
-        total: parseFloat(orderData.orderSummary.total)
+      paymentmethod: orderData.paymentInfo.method || "N/A"
+    },
+    system: {
+      thistransactionismadeby: {
+        id: registrant._id.toString() || registrant.id,
+        name: {
+          firstname: registrant.name?.firstname || "",
+          middlename: registrant.name?.middlename || "",
+          lastname: registrant.name?.lastname || ""
+        },
+        address: registrant.contact?.address || {
+          street: "",
+          trademark: "",
+          baranggay: "",
+          city: "",
+          province: "",
+          postal_zip_code: "",
+          country: ""
+        }
+      },
+      thistransactionismainlyintendedto: {
+        id: registrant._id.toString() || registrant.id,
+        name: {
+          firstname: orderData.personalInfo?.firstName || registrant.name?.firstname || "",
+          middlename: orderData.personalInfo?.middleName || registrant.name?.middlename || "",
+          lastname: orderData.personalInfo?.lastName || registrant.name?.lastname || ""
+        },
+        address: {
+          street: orderData.personalInfo?.address?.street || "",
+          trademark: orderData.personalInfo?.address?.trademark || "",
+          baranggay: orderData.personalInfo?.address?.baranggay || "",
+          city: orderData.personalInfo?.address?.city || "",
+          province: orderData.personalInfo?.address?.province || "",
+          postal_zip_code: orderData.personalInfo?.address?.zipCode || "",
+          country: orderData.personalInfo?.address?.country || ""
+        }
+      },
+      ordersummary: {
+        merchandisetotal: parseFloat(orderData.orderSummary?.total || 0),
+        shippingtotal: parseFloat(orderData.orderSummary?.shippingCost || 0),
+        totalcapital: parseFloat(orderData.orderSummary?.totalCapital || 0),
+        totaltransactiongiveaway: parseFloat(orderData.orderSummary?.totalTransactionGiveaway || 0),
+        totalprofit: parseFloat(orderData.orderSummary?.totalProfit || 0),
+        totalitems: orderData.products?.reduce((total, product) => total + (product.quantity || 1), 0) || 0,
+        totalweightgrams: parseFloat(orderData.orderSummary?.totalWeightGrams || 0),
+        totalweightkilos: parseFloat(orderData.orderSummary?.totalWeightKilos || 0)
+      },
+      shippinginfo: {
+        street: orderData.personalInfo?.address?.street || "",
+        trademark: orderData.personalInfo?.address?.trademark || "",
+        baranggay: orderData.personalInfo?.address?.baranggay || "",
+        city: orderData.personalInfo?.address?.city || "",
+        province: orderData.personalInfo?.address?.province || "",
+        zipcode: orderData.personalInfo?.address?.zipCode || "",
+        country: orderData.personalInfo?.address?.country || ""
       }
     }
   };
@@ -497,66 +555,54 @@ function createTransactionRecord(orderData) {
 // Helper function to generate a unique transaction ID
 function generateUniqueTransactionId() {
   // Use a combination of timestamp, random number, and a counter
-  const timestamp = Date.now();
+  const timestamp = timestamps.dateNow();
   const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
   const counter = process.memoryUsage().heapUsed % 10000; // Use memory usage as a pseudo-unique counter
   
   return `TXN-${timestamp}-${randomPart}-${counter}`;
 }
 
-// Helper function to format date using timestamps module
-function formatTransactionDate() {
-  const day = timestamps.getDay();
-  const month = timestamps.getMonth();
-  const date = timestamps.getDate();
-  const year = timestamps.getFullYear();
-  const hour = timestamps.getHour();
-  const minutes = timestamps.getMinutes();
-  const meridiem = timestamps.getAnteAndPostMeridiem();
-  
-  return `${day}, ${month} ${date}, ${year} at ${hour}:${minutes}${meridiem}`;
-}
-
 // Helper function to find full product details
 function findFullProductDetails(productId) {
   // This would typically involve a database lookup
-  // For now, we'll return a placeholder that matches the product schema
+  // For now, we'll return a placeholder that matches the new product schema
   return {
-    id: productId,
-    name: '', // You'd look up the actual name
-    price: 0, // Look up actual price
-    category: '', // Look up category
-    description: '', // Look up description
-    weightingrams: 0, // Look up weight
-    images: [], // Look up images
-    stock: 0, // Look up current stock
-    rating: 0, // Look up rating
-    reviews: 0, // Look up number of reviews
-    specifications: [], // Look up specifications
-    videoUrl: '', // Look up video URL
-    features: [], // Look up features
-    warranty: '', // Look up warranty
-    focuseddata: {
+    authentications: {
+      producttype: '',  // You'd look up the actual product type
+      id: productId
+    },
+    details: {
+      productname: '',  // Look up product name
+      category: '',     // Look up category
+      description: '',  // Look up description
+      features: [],     // Look up features (array of productfeaturesdatascheme)
+      weightingrams: 0, // Look up weight in grams
+      warranty: '',     // Look up warranty
       price: {
-        price: 0,
-        capital: 0,
-        transactiongiveaway: 0,
-        omsiapprofit: 0
+        amount: 0,      // Look up price amount
+        capital: 0,     // Look up capital
+        transactiongiveaway: 0, // Look up transaction giveaway
+        profit: 0       // Look up profit (previously omsiapprofit)
+      },
+      specifications: [] // Look up specifications
+    },
+    images: [],         // Look up images (array of productimagedatascheme)
+    videos: [],         // Look up videos (array of productvideodatascheme)
+    customerfeedback: {
+      rating: 0,        // Look up rating
+      reviews: 0        // Look up number of reviews
+    },
+    system: {
+      stocks: 0,        // Look up current stock
+      purchases: {
+        total: [],
+        pending: [],
+        accepted: [],
+        rejected: []
       }
     },
-    orderdetails: {
-      quantity: 0,
-      product: {
-        price: 0,
-        capital: 0,
-        transactiongiveaway: 0,
-        omsiapprofit: 0
-      },
-      shipment: {
-        totalkilos: 0,
-        totalshipmentfee: 0
-      }
-    }
+    // Add quantity for order processing
+    quantity: 0
   };
 }
 
@@ -603,136 +649,129 @@ function preciseMul(num1, num2) {
   return precise('mul', num1, num2);
 }
 
-// Helper function to ensure credits structure exists
+// Helper function to ensure credits structure exists - updated for schema match
 function ensureCreditsStructure(user) {
   if (!user.credits) {
     user.credits = {};
   }
   
-  if (!user.credits.omsiapawasto) {
-    user.credits.omsiapawasto = {
+  if (!user.credits.omsiapawas) {
+    user.credits.omsiapawas = {
+      id: `OMSIAPAWAS-${user._id || user.id}`,
       amount: 0,
       transactions: {
-        successful_deposits: [],
-        successful_withdrawals: [],
-        failed_deposits: [],
-        failed_withdrawals: []
+        currencyexchange: [],
+        widthdrawals: [],
+        omsiapawastransfer: []
       }
     };
   }
   
-  if (!user.credits.omsiapawasto.transactions) {
-    user.credits.omsiapawasto.transactions = {
-      successful_deposits: [],
-      successful_withdrawals: [],
-      failed_deposits: [],
-      failed_withdrawals: []
-    };
-  }
-  
   // Ensure amount is a number
-  user.credits.omsiapawasto.amount = parseFloat(user.credits.omsiapawasto.amount || 0);
+  user.credits.omsiapawas.amount = parseFloat(user.credits.omsiapawas.amount || 0);
   
   return user;
 }
 
-// Helper function to create a deposit record
+// Helper function to create a deposit record - modified for schema
 function createDepositRecord(type, amount) {
+  const now = timestamps.getFormattedDate();
+  
   return {
-    id: 'DEP-' + type + '-' + Date.now() + '-' + Math.floor(Math.random() * 1000),
-    type: type,
-    amount: parseFloat(amount),
-    timestamp: new Date(),
-    status: "completed"
+    id: 'DEP-' + type + '-' + timestamps.dateNow() + '-' + Math.floor(Math.random() * 1000),
+    intent: "Credit deposit",
+    statusesandlogs: {
+      status: "completed",
+      indication: "Completed",
+      logs: [
+        {
+          date: now,
+          type: type,
+          indication: "Completed",
+          messages: [
+            { message: `Deposit of ${amount} credits completed` }
+          ]
+        }
+      ]
+    },
+    details: {
+      paymentmethod: "system_distribution",
+      thistransactionismadeby: {
+        id: "system",
+        name: {
+          firstname: "System",
+          middlename: "",
+          lastname: "Distribution",
+          nickname: ""
+        },
+        contact: {
+          phonenumber: "",
+          emailaddress: "",
+          address: {
+            street: "",
+            trademark: "",
+            baranggay: "",
+            city: "",
+            province: "",
+            postal_zip_code: "",
+            country: ""
+          }
+        }
+      },
+      thistransactionismainlyintendedto: {
+        id: "",  // Will be filled with user ID
+        name: {
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          nickname: ""
+        },
+        contact: {
+          phonenumber: "",
+          emailaddress: "",
+          address: {
+            street: "",
+            trademark: "",
+            baranggay: "",
+            city: "",
+            province: "",
+            postal_zip_code: "",
+            country: ""
+          }
+        }
+      },
+      amounts: {
+        intent: parseFloat(amount),
+        phppurchaseorexchangeamount: 0,
+        deductions: {
+          successfulprocessing: {
+            amount: 0,
+            reasons: ""
+          },
+          rejectionprocessing: {
+            amount: 0,
+            reasons: ""
+          }
+        },
+        profit: 0,
+        omsiapawasamounttorecieve: parseFloat(amount)
+      },
+      referrence: {
+        number: "",
+        gcashtransactionrecieptimage: ""
+      }
+    }
   };
 }
 
-function distributeTransactionGiveaway(omsiapdata, currentRegistrant, totalGiveaway) {
-  
-  // Ensure data structures exist
-  ensureCreditsStructure(currentRegistrant);
-  
-  // Ensure totalGiveaway is a properly parsed float
-  totalGiveaway = parseFloat(totalGiveaway);
-  
-  if (isNaN(totalGiveaway) || totalGiveaway <= 0) {
-    console.log("Invalid giveaway amount:", totalGiveaway);
-    return; // Skip distribution for invalid amounts
-  }
-  
-  // 60% goes to the current registrant - using precise multiplication
-  const currentRegistrantShare = preciseMul(totalGiveaway, 0.6);
-  
-  // Update current registrant's omsiapawasto amount with precise addition
-  currentRegistrant.credits.omsiapawasto.amount = preciseAdd(
-    currentRegistrant.credits.omsiapawasto.amount, 
-    currentRegistrantShare
-  );
-  
-  // Add to successful deposits
-  const deposit = createDepositRecord("order_reward", currentRegistrantShare);
-  currentRegistrant.credits.omsiapawasto.transactions.successful_deposits.push(deposit);
-  
-  // 40% for distribution based on registrant status type
-  const distributionShare = preciseMul(totalGiveaway, 0.4);
-  
-  // Determine which users to distribute to based on the registrant's status type
-  const registrantStatusType = currentRegistrant.status.type;
-  
-  // Define eligible recipients based on registrant status
-  let eligibleRecipients = [];
-  
-  if (registrantStatusType === "MFATIP") {
-    // Distribute to Public and Private citizens
-    eligibleRecipients = omsiapdata.people.filter(user => 
-      user.status.type === "Public citizen" || user.status.type === "Private citizen"
-    );
-  } else if (registrantStatusType === "Public citizen") {
-    // Distribute only to Private citizens
-    eligibleRecipients = omsiapdata.people.filter(user => 
-      user.status.type === "Private citizen"
-    );
-  } else if (registrantStatusType === "Private citizen") {
-    // Distribute only to Private citizens
-    eligibleRecipients = omsiapdata.people.filter(user => 
-      user.status.type === "Private citizen"
-    );
-  } else {
-    // Unknown status type, default to all users
-    console.log("Unknown registrant status type:", registrantStatusType);
-    eligibleRecipients = omsiapdata.people;
-  }
-  
-  // Check if there are eligible recipients
-  if (eligibleRecipients.length === 0) {
-    console.log("No eligible recipients found for distribution");
-    // Store the funds for future distribution
-    omsiapdata.pendingfunds = preciseAdd(omsiapdata.pendingfunds || 0, distributionShare);
-    return;
-  }
-  
-  // Calculate per-user share
-  const perUserShare = preciseMul(distributionShare, 1/eligibleRecipients.length);
-  
-  // Check if the amount per user meets the minimum threshold (1)
-  if (perUserShare >= 1) {
-    // If each user gets at least 1, distribute to eligible recipients
-    distributeToEligibleUsers(eligibleRecipients, distributionShare);
-  } else {
-    // Otherwise, add to pending funds for future distribution
-    omsiapdata.pendingfunds = preciseAdd(omsiapdata.pendingfunds || 0, distributionShare);
-    console.log(`Added ${distributionShare} to pending funds. New total: ${omsiapdata.pendingfunds}`);
-  }
-}
-
-// Helper function to distribute funds to eligible users
-function distributeToEligibleUsers(eligibleUsers, totalAmount) {
+// Helper function to distribute funds to eligible users - updated for schema match
+async function distributeToEligibleUsers(eligibleUsers, totalAmount) {
   // Get total eligible users count
   const totalUsers = eligibleUsers.length;
   
   if (totalUsers === 0) {
     console.log("No eligible users found to distribute funds to");
-    return;
+    return [];
   }
   
   // Calculate per-user share with high precision
@@ -740,199 +779,261 @@ function distributeToEligibleUsers(eligibleUsers, totalAmount) {
   
   // Track the total actually distributed to ensure no money is lost
   let totalDistributed = 0;
+  let updatedUsers = [];
   
   // Distribute to all eligible users except the last one
   for (let i = 0; i < eligibleUsers.length - 1; i++) {
     let user = eligibleUsers[i];
     
     // Ensure credits structure exists
-    ensureCreditsStructure(user);
+    user = ensureCreditsStructure(user);
     
     // Update user's balance with precise addition
-    user.credits.omsiapawasto.amount = preciseAdd(
-      user.credits.omsiapawasto.amount, 
+    user.credits.omsiapawas.amount = preciseAdd(
+      user.credits.omsiapawas.amount, 
       perUserShare
     );
     
     // Track the running total of distributions
     totalDistributed = preciseAdd(totalDistributed, perUserShare);
     
-    // Add to successful deposits for each user
+    // Create a deposit transaction record
     const userDeposit = createDepositRecord("community_share", perUserShare);
-    user.credits.omsiapawasto.transactions.successful_deposits.push(userDeposit);
+    
+    // Fill in recipient details
+    userDeposit.details.thistransactionismainlyintendedto.id = user._id.toString() || user.id;
+    if (user.name) {
+      userDeposit.details.thistransactionismainlyintendedto.name.firstname = user.name.firstname || "";
+      userDeposit.details.thistransactionismainlyintendedto.name.middlename = user.name.middlename || "";
+      userDeposit.details.thistransactionismainlyintendedto.name.lastname = user.name.lastname || "";
+      userDeposit.details.thistransactionismainlyintendedto.name.nickname = user.name.nickname || "";
+    }
+    
+    // Add transaction to user's currencyexchange array
+    user.credits.omsiapawas.transactions.currencyexchange.push(userDeposit);
+    
+    // Add to array of updated users
+    updatedUsers.push(user);
+    
+    // Save the user document
+    await user.save();
   }
   
   // For the last user, add the remainder to ensure the total is exactly correct
-  // This prevents any tiny fractions from being lost in the distribution
   if (eligibleUsers.length > 0) {
     let lastUser = eligibleUsers[eligibleUsers.length - 1];
     
     // Ensure credits structure exists
-    ensureCreditsStructure(lastUser);
+    lastUser = ensureCreditsStructure(lastUser);
     
     let lastUserShare = preciseSub(totalAmount, totalDistributed);
     
     // Update last user's balance with precise addition
-    lastUser.credits.omsiapawasto.amount = preciseAdd(
-      lastUser.credits.omsiapawasto.amount, 
+    lastUser.credits.omsiapawas.amount = preciseAdd(
+      lastUser.credits.omsiapawas.amount, 
       lastUserShare
     );
     
-    // Add to successful deposits for the last user
+    // Create a deposit transaction record for the last user
     const lastUserDeposit = createDepositRecord("community_share", lastUserShare);
-    lastUser.credits.omsiapawasto.transactions.successful_deposits.push(lastUserDeposit);
+    
+    // Fill in recipient details
+    lastUserDeposit.details.thistransactionismainlyintendedto.id = lastUser._id.toString() || lastUser.id;
+    if (lastUser.name) {
+      lastUserDeposit.details.thistransactionismainlyintendedto.name.firstname = lastUser.name.firstname || "";
+      lastUserDeposit.details.thistransactionismainlyintendedto.name.middlename = lastUser.name.middlename || "";
+      lastUserDeposit.details.thistransactionismainlyintendedto.name.lastname = lastUser.name.lastname || "";
+      lastUserDeposit.details.thistransactionismainlyintendedto.name.nickname = lastUser.name.nickname || "";
+    }
+    
+    // Add transaction to user's currencyexchange array
+    lastUser.credits.omsiapawas.transactions.currencyexchange.push(lastUserDeposit);
+    
+    // Add to array of updated users
+    updatedUsers.push(lastUser);
+    
+    // Save the last user document
+    await lastUser.save();
   }
   
   console.log(`Distributed ${totalAmount} to eligible users. Each received approximately ${perUserShare}`);
+  
+  return updatedUsers;
 }
 
-// Helper function to check and distribute pending funds if threshold is met
-function checkAndDistributePendingFunds(omsiapdata, currentRegistrant) {
-  // Ensure pendingfunds exists and is a number
-  omsiapdata.pendingfunds = parseFloat(omsiapdata.pendingfunds || 0);
+// Implementation of the distribution system - updated for schema match
+async function distributeTransactionGiveaway(currentRegistrant, totalGiveaway, pendingFundDoc) {
+  // Ensure totalGiveaway is a properly parsed float
+  totalGiveaway = parseFloat(totalGiveaway);
+  
+  if (isNaN(totalGiveaway) || totalGiveaway <= 0) {
+    console.log("Invalid giveaway amount:", totalGiveaway);
+    return { updatedRegistrant: currentRegistrant, updatedPendingFund: pendingFundDoc.amount }; // Skip distribution for invalid amounts
+  }
+  
+  // Ensure data structures exist
+  currentRegistrant = ensureCreditsStructure(currentRegistrant);
+  
+  // 60% goes to the current registrant - using precise multiplication
+  const currentRegistrantShare = preciseMul(totalGiveaway, 0.6);
+  
+  // Update current registrant's omsiapawas amount with precise addition
+  currentRegistrant.credits.omsiapawas.amount = preciseAdd(
+    currentRegistrant.credits.omsiapawas.amount, 
+    currentRegistrantShare
+  );
+  
+  // Create a deposit transaction record
+  const deposit = createDepositRecord("order_reward", currentRegistrantShare);
+  
+  // Fill in recipient details
+  deposit.details.thistransactionismainlyintendedto.id = currentRegistrant._id.toString() || currentRegistrant.id;
+  if (currentRegistrant.name) {
+    deposit.details.thistransactionismainlyintendedto.name.firstname = currentRegistrant.name.firstname || "";
+    deposit.details.thistransactionismainlyintendedto.name.middlename = currentRegistrant.name.middlename || "";
+    deposit.details.thistransactionismainlyintendedto.name.lastname = currentRegistrant.name.lastname || "";
+    deposit.details.thistransactionismainlyintendedto.name.nickname = currentRegistrant.name.nickname || "";
+  }
+  
+  // Add transaction to the currency exchange array
+  currentRegistrant.credits.omsiapawas.transactions.currencyexchange.push(deposit);
+  
+  // 40% for distribution based on registrant status type
+  const distributionShare = preciseMul(totalGiveaway, 0.4);
   
   // Determine which users to distribute to based on the registrant's status type
-  const registrantStatusType = currentRegistrant.status.type;
+  const registrantStatusType = currentRegistrant.registrationstatusesandlogs.type;
   
   // Define eligible recipients based on registrant status
   let eligibleRecipients = [];
   
-  if (registrantStatusType === "MFATIP") {
-    // Distribute to Public and Private citizens
-    eligibleRecipients = omsiapdata.people.filter(user => 
-      user.status.type === "Public citizen" || user.status.type === "Private citizen"
-    );
-  } else if (registrantStatusType === "Public citizen") {
-    // Distribute only to Private citizens
-    eligibleRecipients = omsiapdata.people.filter(user => 
-      user.status.type === "Private citizen"
-    );
-  } else if (registrantStatusType === "Private citizen") {
-    // Distribute only to Private citizens
-    eligibleRecipients = omsiapdata.people.filter(user => 
-      user.status.type === "Private citizen"
-    );
-  } else {
-    // Unknown status type, default to all users
-    console.log("Unknown registrant status type:", registrantStatusType);
-    eligibleRecipients = omsiapdata.people;
+  try {
+    if (registrantStatusType === "Month Financial Allocation To Individual People ( MFATIP )") {
+      // Distribute to Public and Private citizens
+      eligibleRecipients = await RegistrantDataModel.find({
+        "registrationstatusesandlogs.type": { $in: ["Public citizen", "Private citizen"] }
+      });
+    } else if (registrantStatusType === "Public citizen") {
+      // Distribute only to Private citizens
+      eligibleRecipients = await RegistrantDataModel.find({
+        "registrationstatusesandlogs.type": "Private citizen"
+      });
+    } else if (registrantStatusType === "Private citizen") {
+      // Distribute only to Private citizens
+      eligibleRecipients = await RegistrantDataModel.find({
+        "registrationstatusesandlogs.type": "Private citizen"
+      });
+    } else {
+      // Unknown status type, log and return
+      console.log("Unknown registrant status type:", registrantStatusType);
+      // Just add to pending funds in this case
+      pendingFundDoc.amount = preciseAdd(pendingFundDoc.amount || 0, distributionShare);
+      return { 
+        updatedRegistrant: currentRegistrant, 
+        updatedPendingFund: pendingFundDoc.amount 
+      };
+    }
+    
+    // Check if there are eligible recipients
+    if (eligibleRecipients.length === 0) {
+      console.log("No eligible recipients found for distribution");
+      // Store the funds for future distribution
+      pendingFundDoc.amount = preciseAdd(pendingFundDoc.amount || 0, distributionShare);
+      return { 
+        updatedRegistrant: currentRegistrant, 
+        updatedPendingFund: pendingFundDoc.amount 
+      };
+    }
+    
+    // Calculate per-user share
+    const perUserShare = preciseMul(distributionShare, 1/eligibleRecipients.length);
+    
+    // Check if the amount per user meets the minimum threshold (1)
+    if (perUserShare >= 1) {
+      // If each user gets at least 1, distribute to eligible recipients
+      await distributeToEligibleUsers(eligibleRecipients, distributionShare);
+    } else {
+      // Otherwise, add to pending funds for future distribution
+      pendingFundDoc.amount = preciseAdd(pendingFundDoc.amount || 0, distributionShare);
+      console.log(`Added ${distributionShare} to pending funds. New total: ${pendingFundDoc.amount}`);
+    }
+    
+  } catch (error) {
+    console.error("Error in distributeTransactionGiveaway:", error);
+    // In case of error, add to pending funds
+    pendingFundDoc.amount = preciseAdd(pendingFundDoc.amount || 0, distributionShare);
   }
   
-  if (eligibleRecipients.length === 0) {
-    console.log("No eligible recipients found to distribute pending funds to");
-    return;
-  }
-  
-  // Calculate the per-user amount if we were to distribute pending funds
-  const perUserAmount = preciseMul(omsiapdata.pendingfunds, 1/eligibleRecipients.length);
-  
-  // Only distribute if each user would receive at least 1
-  if (perUserAmount >= 1) {
-    console.log(`Pending funds can now be distributed. Amount per user: ${perUserAmount}`);
+  return { 
+    updatedRegistrant: currentRegistrant, 
+    updatedPendingFund: pendingFundDoc.amount 
+  };
+}
+
+// Helper function to check and distribute pending funds - updated for schema match
+async function checkAndDistributePendingFunds(pendingFundDoc, currentRegistrant) {
+  try {
+    // Ensure pendingfunds exists and is a number
+    pendingFundDoc.amount = parseFloat(pendingFundDoc.amount || 0);
     
-    // Distribute the pending funds
-    const amountToDistribute = omsiapdata.pendingfunds;
-    distributeToEligibleUsers(eligibleRecipients, amountToDistribute);
+    // Determine which users to distribute to based on the registrant's status type
+    const registrantStatusType = currentRegistrant.registrationstatusesandlogs.type;
     
-    // Reset pending funds to zero
-    omsiapdata.pendingfunds = 0;
-  } else {
-    console.log(`Pending funds (${omsiapdata.pendingfunds}) not yet sufficient to distribute. Need ${eligibleRecipients.length} to give 1 to each eligible user.`);
+    // Define eligible recipients based on registrant status
+    let eligibleRecipients = [];
+    
+    if (registrantStatusType === "Month Financial Allocation To Individual People ( MFATIP )") {
+      // Distribute to Public and Private citizens
+      eligibleRecipients = await RegistrantDataModel.find({
+        "registrationstatusesandlogs.type": { $in: ["Public citizen", "Private citizen"] }
+      });
+    } else if (registrantStatusType === "Public citizen") {
+      // Distribute only to Private citizens
+      eligibleRecipients = await RegistrantDataModel.find({
+        "registrationstatusesandlogs.type": "Private citizen"
+      });
+    } else if (registrantStatusType === "Private citizen") {
+      // Distribute only to Private citizens
+      eligibleRecipients = await RegistrantDataModel.find({
+        "registrationstatusesandlogs.type": "Private citizen"
+      });
+    } else {
+      // Unknown status type, default to all users
+      console.log("Unknown registrant status type:", registrantStatusType);
+      eligibleRecipients = await RegistrantDataModel.find({});
+    }
+    
+    if (eligibleRecipients.length === 0) {
+      console.log("No eligible recipients found to distribute pending funds to");
+      return pendingFundDoc;
+    }
+    
+    // Calculate the per-user amount if we were to distribute pending funds
+    const perUserAmount = preciseMul(pendingFundDoc.amount, 1/eligibleRecipients.length);
+    
+    // Only distribute if each user would receive at least 1
+    if (perUserAmount >= 1) {
+      console.log(`Pending funds can now be distributed. Amount per user: ${perUserAmount}`);
+      
+      // Distribute the pending funds
+      const amountToDistribute = pendingFundDoc.amount;
+      await distributeToEligibleUsers(eligibleRecipients, amountToDistribute);
+      
+      // Reset pending funds to zero
+      pendingFundDoc.amount = 0;
+    } else {
+      console.log(`Pending funds (${pendingFundDoc.amount}) not yet sufficient to distribute. Need ${eligibleRecipients.length} to give 1 to each eligible user.`);
+    }
+    
+    return pendingFundDoc;
+    
+  } catch (error) {
+    console.error("Error in checkAndDistributePendingFunds:", error);
+    return pendingFundDoc;
   }
 }
 
-// Helper function to distribute funds to all users
-function distributeToAllUsers(omsiapdata, totalAmount) {
-  // Get total users count
-  const totalUsers = omsiapdata.people.length;
-  
-  if (totalUsers === 0) {
-    console.log("No users found to distribute funds to");
-    return;
-  }
-  
-  // Calculate per-user share with high precision
-  let perUserShare = preciseMul(totalAmount, 1/totalUsers);
-  
-  // Track the total actually distributed to ensure no money is lost
-  let totalDistributed = 0;
-  
-  // Distribute to all users except the last one
-  for (let i = 0; i < omsiapdata.people.length - 1; i++) {
-    let user = omsiapdata.people[i];
-    
-    // Ensure credits structure exists
-    ensureCreditsStructure(user);
-    
-    // Update user's balance with precise addition
-    user.credits.omsiapawasto.amount = preciseAdd(
-      user.credits.omsiapawasto.amount, 
-      perUserShare
-    );
-    
-    // Track the running total of distributions
-    totalDistributed = preciseAdd(totalDistributed, perUserShare);
-    
-    // Add to successful deposits for each user
-    const userDeposit = createDepositRecord("community_share", perUserShare);
-    user.credits.omsiapawasto.transactions.successful_deposits.push(userDeposit);
-  }
-  
-  // For the last user, add the remainder to ensure the total is exactly correct
-  // This prevents any tiny fractions from being lost in the distribution
-  if (omsiapdata.people.length > 0) {
-    let lastUser = omsiapdata.people[omsiapdata.people.length - 1];
-    
-    // Ensure credits structure exists
-    ensureCreditsStructure(lastUser);
-    
-    let lastUserShare = preciseSub(totalAmount, totalDistributed);
-    
-    // Update last user's balance with precise addition
-    lastUser.credits.omsiapawasto.amount = preciseAdd(
-      lastUser.credits.omsiapawasto.amount, 
-      lastUserShare
-    );
-    
-    // Add to successful deposits for the last user
-    const lastUserDeposit = createDepositRecord("community_share", lastUserShare);
-    lastUser.credits.omsiapawasto.transactions.successful_deposits.push(lastUserDeposit);
-  }
-  
-  console.log(`Distributed ${totalAmount} to all users. Each received approximately ${perUserShare}`);
-}
-
-// Helper function to check and distribute pending funds if threshold is met
-function checkAndDistributePendingFunds(omsiapdata) {
-  // Ensure pendingfunds exists and is a number
-  omsiapdata.pendingfunds = parseFloat(omsiapdata.pendingfunds || 0);
-  
-  // Calculate the per-user amount if we were to distribute pending funds
-  const totalUsers = omsiapdata.people.length;
-  
-  if (totalUsers === 0) {
-    console.log("No users found to distribute pending funds to");
-    return;
-  }
-  
-  const perUserAmount = preciseMul(omsiapdata.pendingfunds, 1/totalUsers);
-  
-  // Only distribute if each user would receive at least 1
-  if (perUserAmount >= 1) {
-    console.log(`Pending funds can now be distributed. Amount per user: ${perUserAmount}`);
-    
-    // Distribute the pending funds
-    const amountToDistribute = omsiapdata.pendingfunds;
-    distributeToAllUsers(omsiapdata, amountToDistribute);
-    
-    // Reset pending funds to zero
-    omsiapdata.pendingfunds = 0;
-  } else {
-    console.log(`Pending funds (${omsiapdata.pendingfunds}) not yet sufficient to distribute. Need ${totalUsers} to give 1 to each user.`);
-  }
-}
-
-// Main function to process the order
+// Updated to handle the schema match
 async function processOrder(req, res) {
   try {
     // Validate input
@@ -947,24 +1048,22 @@ async function processOrder(req, res) {
         !orderData.paymentInfo || !orderData.orderSummary) {
       return res.status(400).json({ error: "Missing required order information" });
     }
+    
+    // Try to find the registrant by MongoDB ObjectID first
+    let registrant;
 
-    // Connect to MongoDB
-    await mongodb.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      dbName: 'omsiap',
-      autoCreate: false
-    });
-    
-    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
-    const omsiapdata = await OmsiapData.findById("Code-113-1143");
-    
-    if (!omsiapdata) {
-      return res.status(404).json({ error: "Database record not found" });
+    try {
+      // First try to use it as an ObjectID
+      registrant = await RegistrantDataModel.findById(orderData.registrantid);
+    } catch (e) {
+      // If that fails (not a valid ObjectID), try as a string ID
+      console.log("Not a valid ObjectID, trying as string ID");
     }
     
-    // Find the registrant
-    const registrant = omsiapdata.people.find((user) => user.id === orderData.registrantid);
+    // If not found by ObjectID, try using the custom id field
+    if (!registrant) {
+      registrant = await RegistrantDataModel.findOne({ _id: new mongoose.Types.ObjectId(orderData.registrantid) });
+    }
     
     // Check if registrant exists
     if (!registrant) {
@@ -972,53 +1071,57 @@ async function processOrder(req, res) {
       return res.status(404).json({ error: "Registrant not found" });
     }
     
-    // Create the transaction record
-    const newTransaction = createTransactionRecord(orderData);
+    // Get or create pendingFund document
+    let pendingFund = await PendingFundsDataModel.findOne({});
+    if (!pendingFund) {
+      pendingFund = new PendingFundsDataModel({ amount: 0 });
+      await pendingFund.save();
+    }
     
-    // (1.) Save the transaction to the registrant
+    // Create the transaction record following the schema
+    const newTransaction = createTransactionRecord(orderData, registrant);
+    
+    // Save the transaction to the MerchandiseTransaction collection
+    const merchandiseTransaction = new MerchandiseTransactionDataModel(newTransaction);
+    await merchandiseTransaction.save();
+    
+    // Ensure the transactions structure exists in the registrant
     if (!registrant.transactions) {
-      registrant.transactions = [];
+      registrant.transactions = { merchandise: [] };
     }
-    registrant.transactions.push(newTransaction);
-    
-    // (2.) Save the transaction to omsiapdata.transactions.orders
-    if (!omsiapdata.transactions) {
-      omsiapdata.transactions = { 
-        orders: { 
-          pending: [], 
-          total: [] 
-        } 
-      };
+    if (!registrant.transactions.merchandise) {
+      registrant.transactions.merchandise = [];
     }
     
-    // Add to pending orders
-    omsiapdata.transactions.orders.pending.push(newTransaction);
+    // Add transaction ID to registrant's transactions
+    registrant.transactions.merchandise.push(newTransaction);
     
-    // Add to total orders
-    omsiapdata.transactions.orders.total.push(newTransaction);
-    
-    // (3.) Calculate the transaction give away
+    // Calculate the transaction give away
     const transactionGiveaway = parseFloat(orderData.orderSummary.totalTransactionGiveaway);
     
     if (!isNaN(transactionGiveaway)) {
       if (transactionGiveaway < 0) {
-        // If negative, store the new pending funds on omsiapadata.pendingfunds
-        omsiapdata.pendingfunds = preciseAdd(omsiapdata.pendingfunds || 0, Math.abs(transactionGiveaway));
+        // If negative, add to pending funds (absolute value)
+        pendingFund.amount = preciseAdd(pendingFund.amount || 0, Math.abs(transactionGiveaway));
       } else {
         // If not negative, process distribution
-        distributeTransactionGiveaway(omsiapdata, registrant, transactionGiveaway);
+        const result = await distributeTransactionGiveaway(registrant, transactionGiveaway, pendingFund);
+        // Update with the results from distribution
+        Object.assign(registrant, result.updatedRegistrant);
+        pendingFund.amount = result.updatedPendingFund;
       }
       
-      // (4.) Check if accumulated pending funds can be distributed
-      checkAndDistributePendingFunds(omsiapdata, registrant);
+      // Check if accumulated pending funds can be distributed
+      pendingFund = await checkAndDistributePendingFunds(pendingFund, registrant);
     } else {
       console.log("Invalid transaction giveaway value:", orderData.orderSummary.totalTransactionGiveaway);
     }
     
-    // (5.) Save all changes to the database
-    await omsiapdata.save().then(() => {
-      console.log("Order saved successfully");
-    });
+    // Save the updated registrant
+    await registrant.save();
+    
+    // Save the updated pending fund
+    await pendingFund.save();
     
     return res.status(200).json({ 
       success: true, 
@@ -1036,5 +1139,4 @@ async function processOrder(req, res) {
 Router.route("/order").post(processOrder);
 
 
-
-module.exports = Router;
+module.exports = Router

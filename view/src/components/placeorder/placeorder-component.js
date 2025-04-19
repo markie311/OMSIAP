@@ -1,509 +1,675 @@
-import React, { useState, useEffect, useMemo } from 'react';
-
-import { useLocation,
-  useNavigate
- } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FaShoppingCart, FaTruck, FaMoneyBillWave, FaTrashAlt, FaWeightHanging, FaExclamationTriangle, FaCheckCircle } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
 
 import '../../styles/placeorder/placeorder.scss';
 
-import axiosCreatedInstance from '../lib/axiosutil.js';
-
-// Move decimal precision utility outside the component to prevent recreation on each render
-const decimalPrecision = {
-  // Convert a number to a precise decimal string representation
-  toDecimal: (num, precision = 10) => {
-    return Number(parseFloat(num).toFixed(precision));
-  },
-  
-  // Add two numbers with precise decimal handling
-  add: (a, b) => {
-    // Convert to strings to determine decimal places
-    const aStr = a.toString();
-    const bStr = b.toString();
-    
-    // Determine decimal places
-    const aDecimals = aStr.includes('.') ? aStr.split('.')[1].length : 0;
-    const bDecimals = bStr.includes('.') ? bStr.split('.')[1].length : 0;
-    const maxDecimals = Math.max(aDecimals, bDecimals);
-    
-    // Use a multiplier based on the maximum decimal places
-    const multiplier = Math.pow(10, maxDecimals);
-    
-    // Convert to integers, perform addition, then convert back
-    const result = (Math.round(a * multiplier) + Math.round(b * multiplier)) / multiplier;
-    return result;
-  },
-  
-  // Multiply two numbers with precise decimal handling
-  multiply: (a, b) => {
-    // Convert to strings
-    const aStr = a.toString();
-    const bStr = b.toString();
-    
-    // Determine decimal places
-    const aDecimals = aStr.includes('.') ? aStr.split('.')[1].length : 0;
-    const bDecimals = bStr.includes('.') ? bStr.split('.')[1].length : 0;
-    
-    // Calculate combined decimal places
-    const totalDecimals = aDecimals + bDecimals;
-    
-    // Remove decimal points, multiply as integers, then adjust the result
-    const aInt = parseInt(aStr.replace('.', ''));
-    const bInt = parseInt(bStr.replace('.', ''));
-    
-    let result = (aInt * bInt) / Math.pow(10, totalDecimals);
-    return result;
-  },
-  
-  // Format currency to 2 decimal places correctly
-  formatCurrency: (amount) => {
-    return parseFloat(amount.toFixed(2));
-  }
-};
-
-const PlaceOrder = (props) => {
-  const location = useLocation();
+const PlaceOrderPage = () => {
   const navigate = useNavigate();
-  
-  // Use useMemo to stabilize orderData reference
-  const orderData = useMemo(() => 
-    location.state?.orderData || { cartItems: [], cartStats: {} },
-    [location.state]
-  );
-  
-  // Form data for personal and shipping information
-  const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    phoneNumber: '',
-    address: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: ''
-  });
-
-  // Order summary state that will be calculated from orderData
-  const [orderSummary, setOrderSummary] = useState({
-    merchandiseTotal: 0,
-    shippingTotal: 0,
-    totalTransactionGiveaway: 0,
-    totalOmsiaProfit: 0,
-    totalCapital: 0,
+  const location = useLocation();
+  const [cartItems, setCartItems] = useState([]);
+  const [selectedShipping, setSelectedShipping] = useState('weight-based');
+  const [paymentMethod, setPaymentMethod] = useState('omsiapawasto');
+  const [combinedPayment, setCombinedPayment] = useState('none');
+  const [showWeightLimitModal, setShowWeightLimitModal] = useState(false);
+  const [cartStats, setCartStats] = useState({
     totalItems: 0,
-    totalProducts: 0,
     totalWeightGrams: 0,
     totalWeightKilos: 0,
-    total: 0
+    shippingCost: 0,
+    subtotal: 0,
+    total: 0,
+    exceedsWeightLimit: false
   });
-
-  // Payment details using OMSIAPAWASTO currency
-  const [paymentDetails, setPaymentDetails] = useState({
-    omsiapawastoBalance: 1000, // Example balance
-    selectedPaymentMethod: 'omsiapawasto'
-  });
-
-  // Calculate order summary from order data, using useMemo to prevent recalculation on every render
-  const calculatedSummary = useMemo(() => {
-    if (orderData && orderData.cartItems && orderData.cartItems.length > 0) {
-      // Initialize totals
-      let merchandiseTotal = 0;
-      let totalTransactionGiveaway = 0;
-      let totalOmsiaProfit = 0;
-      let totalCapital = 0;
-      let totalItems = 0;
-      
-      // Process each item
-      orderData.cartItems.forEach(item => {
-        const quantity = item.quantity || (item.orderdetails?.quantity || 0);
-        const itemPrice = item.focuseddata?.price?.price || item.price || (item.orderdetails?.product?.price || 0);
+  
+  // Maximum weight limit in kilograms
+  const MAX_WEIGHT_LIMIT = 20;
+  
+  // Initialize cart from location state
+  useEffect(() => {
+    // Access cart from location.state
+    const cart = location.state?.cart || [];
+    
+    if (cart.length > 0) {
+      // Ensure all quantities are integers
+      const normalizedCart = cart.map(item => {
+        const normalizedItem = { ...item };
         
-        // Get values directly from focuseddata.price properties
-        const itemTransactionGiveaway = item.focuseddata?.price?.transactiongiveaway || 0;
-        const itemOmsiaProfit = item.focuseddata?.price?.omsiapprofit || 0;
-        const itemCapital = item.focuseddata?.price?.capital || 0;
+        // Ensure quantity is an integer
+        if (normalizedItem.quantity) {
+          normalizedItem.quantity = Math.floor(normalizedItem.quantity);
+          if (normalizedItem.quantity < 1) normalizedItem.quantity = 1;
+        } else {
+          // Add quantity property if it doesn't exist
+          normalizedItem.quantity = 1;
+        }
         
-        // Multiply values by quantity using precise decimal multiplication
-        const totalItemPrice = decimalPrecision.multiply(itemPrice, quantity);
-        const totalItemTransactionGiveaway = decimalPrecision.multiply(itemTransactionGiveaway, quantity);
-        const totalItemOmsiaProfit = decimalPrecision.multiply(itemOmsiaProfit, quantity);
-        const totalItemCapital = decimalPrecision.multiply(itemCapital, quantity);
-        
-        // Add to running totals using precise decimal addition
-        merchandiseTotal = decimalPrecision.add(merchandiseTotal, totalItemPrice);
-        totalTransactionGiveaway = decimalPrecision.add(totalTransactionGiveaway, totalItemTransactionGiveaway);
-        totalOmsiaProfit = decimalPrecision.add(totalOmsiaProfit, totalItemOmsiaProfit);
-        totalCapital = decimalPrecision.add(totalCapital, totalItemCapital);
-        totalItems += quantity;
+        return normalizedItem;
       });
       
-      // Get shipping and weight from cartStats
-      const shippingTotal = orderData.cartStats?.shippingCost || 0;
-      const totalWeightGrams = orderData.cartStats?.totalWeightGrams || 0;
-      const totalWeightKilos = orderData.cartStats?.totalWeightKilos || 0;
-      
-      // Calculate final total using precise decimal addition
-      const total = decimalPrecision.add(merchandiseTotal, shippingTotal);
-      
-      // Return formatted values
-      return {
-        merchandiseTotal: decimalPrecision.formatCurrency(merchandiseTotal),
-        shippingTotal: decimalPrecision.formatCurrency(shippingTotal),
-        totalTransactionGiveaway: decimalPrecision.formatCurrency(totalTransactionGiveaway),
-        totalOmsiaProfit: decimalPrecision.formatCurrency(totalOmsiaProfit),
-        totalCapital: decimalPrecision.formatCurrency(totalCapital),
-        totalItems,
-        totalProducts: orderData.cartItems.length,
-        totalWeightGrams: parseFloat(totalWeightGrams.toFixed(2)),
-        totalWeightKilos: parseFloat(totalWeightKilos.toFixed(3)),
-        total: decimalPrecision.formatCurrency(total)
-      };
+      setCartItems(normalizedCart);
+    }
+  }, [location.state]);
+  
+  // Calculate cart statistics whenever cartItems changes
+  useEffect(() => {
+    if (cartItems.length === 0) return;
+    
+    const { totalSummary } = calculateProductDetails(cartItems);
+    
+    // Calculate total number of items
+    const totalItemCount = cartItems.reduce((count, product) => 
+      count + (product.quantity || 1), 0);
+    
+    // Get weight and calculate shipping
+    const totalWeightGrams = totalSummary.totalWeightInGrams;
+    const totalWeightKilos = totalSummary.totalWeightInKilos;
+    const shippingCost = calculateShippingCost(totalWeightKilos);
+    
+    // Update cart statistics
+    setCartStats({
+      totalItems: totalItemCount,
+      totalWeightGrams,
+      totalWeightKilos,
+      shippingCost,
+      subtotal: totalSummary.totalPrice,
+      total: totalSummary.totalPrice + shippingCost,
+      exceedsWeightLimit: totalWeightKilos > MAX_WEIGHT_LIMIT
+    });
+  }, [cartItems]);
+  
+  // Calculate shipping cost based on weight in kilos
+  const calculateShippingCost = (weightInKilos) => {
+    // If weight exceeds MAX_WEIGHT_LIMIT, shipping is MAX_WEIGHT_LIMIT * 100 pesos
+    if (weightInKilos > MAX_WEIGHT_LIMIT) {
+      return MAX_WEIGHT_LIMIT * 100;
     }
     
-    // Return default values if no cart items
-    return {
-      merchandiseTotal: 0,
-      shippingTotal: 0,
+    // Round up to the next kilo and multiply by 100 pesos
+    // e.g., 1.1kg would be rounded up to 2kg = 200 pesos
+    const weightBracket = Math.ceil(weightInKilos);
+    return weightBracket * 100;
+  };
+  
+  // Update cart item quantity - ensure integer values
+  const updateQuantity = (itemId, newQuantity) => {
+    // Ensure quantity is a valid integer
+    const intQuantity = Math.floor(newQuantity);
+    
+    // Don't allow quantities less than 1
+    if (intQuantity < 1) return;
+    
+    setCartItems(prevItems => 
+      prevItems.map(item => {
+        if (item.authentications?.id === itemId) {
+          return { ...item, quantity: intQuantity };
+        }
+        return item;
+      })
+    );
+  };
+  
+  // Quantity handlers
+  const increaseQuantity = (itemId) => {
+    const item = cartItems.find(item => item.authentications?.id === itemId);
+    // Get current quantity and ensure it's an integer
+    let currentQty = item.quantity || 1;
+    currentQty = Math.floor(currentQty);
+    updateQuantity(itemId, currentQty + 1);
+  };
+  
+  const decreaseQuantity = (itemId) => {
+    const item = cartItems.find(item => item.authentications?.id === itemId);
+    // Get current quantity and ensure it's an integer
+    let currentQty = item.quantity || 1;
+    currentQty = Math.floor(currentQty);
+    if (currentQty > 1) {
+      updateQuantity(itemId, currentQty - 1);
+    }
+  };
+  
+  const removeItem = (itemId) => {
+    setCartItems(prevItems => prevItems.filter(item => item.authentications?.id !== itemId));
+  };
+  
+  // Validate order
+  const validateOrder = () => {
+    if (cartItems.length === 0) {
+      // Use a more elegant notification
+      setShowErrorToast("Your cart is empty");
+      return false;
+    }
+    
+    if (!paymentMethod) {
+      setShowErrorToast("Please select a payment method");
+      return false;
+    }
+    
+    // Check weight limit
+    if (cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT) {
+      setShowWeightLimitModal(true);
+      return false;
+    }
+    
+    return true;
+  };
+  
+  const [showErrorToast, setShowErrorToast] = useState(null);
+  
+  useEffect(() => {
+    if (showErrorToast) {
+      const timer = setTimeout(() => {
+        setShowErrorToast(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showErrorToast]);
+  
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateOrder()) {
+      // Prepare order data
+      const orderData = {
+        cartItems,
+        cartStats,
+        paymentMethod,
+        combinedPayment
+      };
+      console.log('Order data:', orderData);
+      
+      // Immediately redirect to checkout
+      navigate('/checkout', { state: { orderData } });
+      
+      // Since we're not using props anymore, we need another way to update components
+      // You might use a global state manager or context to sync changes
+      if (window.updateCheckoutComponent) {
+        window.updateCheckoutComponent();
+      }
+    }
+  };
+  
+  // Calculate product details without modifying the original cart items
+  function calculateProductDetails(products) {
+    // Make a deep copy of the products to avoid mutating the original data
+    const updatedProducts = JSON.parse(JSON.stringify(products));
+    
+    // Total calculations across all products
+    let totalSummary = {
+      totalPrice: 0,
+      totalCapital: 0,
       totalTransactionGiveaway: 0,
       totalOmsiaProfit: 0,
-      totalCapital: 0,
-      totalItems: 0,
-      totalProducts: 0,
-      totalWeightGrams: 0,
-      totalWeightKilos: 0,
-      total: 0
-    };
-  }, [orderData]);
-
-  // Update order summary state only when calculated summary changes
-  useEffect(() => {
-    setOrderSummary(calculatedSummary);
-  }, [calculatedSummary]);
-
-  // Handle form input changes
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  };
-
-  // Handle order submission
-  const handleSubmit = async (e) => {
-    
-    e.preventDefault();
-    
-    if (paymentDetails.omsiapawastoBalance < orderSummary.total) {
-      alert('Insufficient OMSIAPAWASTO balance. Please add funds before placing your order.');
-      return;
-    }
-    
-    // Prepare complete order data
-    const completeOrderData = {
-      personal: formData,
-      orderSummary,
-      paymentMethod: paymentDetails.selectedPaymentMethod,
-      cartItems: orderData.cartItems,
-      orderDate: new Date().toISOString()
+      totalWeightInGrams: 0,
+      totalWeightInKilos: 0
     };
     
-    // Log the data for now (would be sent to backend in production)
-    console.log('Complete order data:', completeOrderData);
-    
-    try {
-      // Example API call
-      await axiosCreatedInstance.post("/products/order", {
-        $order: {
-          registrantid: props.user?.id,
-          products: orderData.cartItems,
-          personalInfo: formData,
-          paymentInfo: {
-            method: paymentDetails.selectedPaymentMethod,
-            amount: orderSummary.total
-          },
-          orderSummary
-        },
-      });
+    // Helper function for precise multiplication of decimals
+    function preciseMultiply(a, b) {
+      const aString = a.toString();
+      const bString = b.toString();
       
-      // Show success message
-      alert('Order successfully placed using OMSIAPAWASTO currency!');
-      // Navigate to order confirmation page or dashboard
-      // navigate('/order-confirmation', { state: { orderReference: 'ORD' + Date.now() } });
-    } catch (error) {
-      console.error('Error placing order:', error);
-      alert('There was an error processing your order. Please try again.');
+      const aDecimals = aString.includes('.') ? aString.split('.')[1].length : 0;
+      const bDecimals = bString.includes('.') ? bString.split('.')[1].length : 0;
+      
+      const factor = Math.pow(10, aDecimals + bDecimals);
+      
+      const aInt = Number(aString.replace('.', ''));
+      const bInt = Number(bString.replace('.', ''));
+      
+      return (aInt * bInt) / factor;
     }
-  };
-
-  // Memoize item calculations to prevent recalculation on each render
-  const cartItemsWithCalculatedPrices = useMemo(() => {
-    return orderData.cartItems.map(item => {
-      const itemPrice = item.focuseddata?.price?.price || item.price || 0;
-      const quantity = item.quantity || item.orderdetails?.quantity || 0;
-      const totalPrice = decimalPrecision.multiply(itemPrice, quantity);
+    
+    // Helper function for precise addition of decimals
+    function preciseAdd(a, b) {
+      const aString = a.toString();
+      const bString = b.toString();
       
-      return {
-        ...item,
-        calculatedPrice: totalPrice,
-        calculatedQuantity: quantity
-      };
+      const aDecimals = aString.includes('.') ? aString.split('.')[1].length : 0;
+      const bDecimals = bString.includes('.') ? bString.split('.')[1].length : 0;
+      
+      const maxDecimals = Math.max(aDecimals, bDecimals);
+      const factor = Math.pow(10, maxDecimals);
+      
+      return (Math.round(a * factor) + Math.round(b * factor)) / factor;
+    }
+    
+    // Process each product
+    updatedProducts.forEach(product => {
+      // Use quantity from product or default to 1
+      let quantity = product.quantity || 1;
+      
+      // Ensure quantity is an integer
+      quantity = Math.floor(quantity);
+      if (quantity < 1) quantity = 1;
+      
+      // Get price data from the new structure
+      const price = product.details?.price?.amount || 0;
+      const capital = product.details?.price?.capital || 0;
+      const transactionGiveaway = product.details?.price?.transactiongiveaway || 0;
+      const profit = product.details?.price?.profit || 0;
+      
+      // Calculate product totals with precise decimal handling
+      const productPrice = preciseMultiply(price, quantity);
+      const productCapital = preciseMultiply(capital, quantity);
+      const productTransactionGiveaway = preciseMultiply(transactionGiveaway, quantity);
+      const productOmsiaProfit = preciseMultiply(profit, quantity);
+      
+      // Calculate weight - ensure we're working with numbers
+      const weightInGrams = preciseMultiply(parseFloat(product.details?.weightingrams || 0), quantity);
+      const weightInKilos = preciseMultiply(weightInGrams, 0.001); // Convert to kilos
+      
+      // Add to total summary with precise addition
+      totalSummary.totalPrice = preciseAdd(totalSummary.totalPrice, productPrice);
+      totalSummary.totalCapital = preciseAdd(totalSummary.totalCapital, productCapital);
+      totalSummary.totalTransactionGiveaway = preciseAdd(totalSummary.totalTransactionGiveaway, productTransactionGiveaway);
+      totalSummary.totalOmsiaProfit = preciseAdd(totalSummary.totalOmsiaProfit, productOmsiaProfit);
+      totalSummary.totalWeightInGrams = preciseAdd(totalSummary.totalWeightInGrams, weightInGrams);
+      totalSummary.totalWeightInKilos = preciseAdd(totalSummary.totalWeightInKilos, weightInKilos);
     });
-  }, [orderData.cartItems]);
-
-  // If there's no order data, show a message
-  if (!orderData || !orderData.cartItems || orderData.cartItems.length === 0) {
-    return (
-      <div className="place-order-container">
-        <h1>Check out</h1>
-        <div className="empty-cart-message">
-          <p>No order data available. Please go back to your cart.</p>
-          <button 
-            className="back-button"
-            onClick={() => navigate('/checkout')}
-          >
-            Return to Cart
-          </button>
-        </div>
-      </div>
-    );
+    
+    // Format total summary to appropriate decimal places
+    totalSummary = {
+      totalPrice: Number(totalSummary.totalPrice.toFixed(2)),
+      totalCapital: Number(totalSummary.totalCapital.toFixed(2)),
+      totalTransactionGiveaway: Number(totalSummary.totalTransactionGiveaway.toFixed(2)),
+      totalOmsiaProfit: Number(totalSummary.totalOmsiaProfit.toFixed(2)),
+      totalWeightInGrams: Number(totalSummary.totalWeightInGrams.toFixed(2)),
+      totalWeightInKilos: Number(totalSummary.totalWeightInKilos.toFixed(3))
+    };
+    
+    return {
+      updatedProducts,
+      totalSummary
+    };
   }
-
+  
+  // Function to get product image
+  const getProductImage = (item) => {
+    if (item.images && item.images.length > 0) return item.images[0].url;
+    return '../images/market/products/watch.jpg'; // Fallback image
+  };
+  
+  // Function to get product name
+  const getProductName = (item) => {
+    return item.details?.productname || "Unnamed Product";
+  };
+  
+  // Function to get product price
+  const getProductPrice = (item) => {
+    return item.details?.price?.amount || 0;
+  };
+  
+  // Weight Limit Modal Component with animation
+  const WeightLimitModal = ({ show, onClose }) => {
+    if (!show) return null;
+    
+    return (
+      <AnimatePresence>
+        {show && (
+          <motion.div 
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div 
+              className="modal-content"
+              initial={{ scale: 0.8, y: 50 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.8, y: 50 }}
+              transition={{ type: 'spring', damping: 25 }}
+            >
+              <div className="modal-header">
+                <h3><FaExclamationTriangle className="warning-icon" /> Weight Limit Exceeded</h3>
+                <button className="close-button" onClick={onClose}>×</button>
+              </div>
+              <div className="modal-body">
+                <p>Your order weight exceeds our limit of {MAX_WEIGHT_LIMIT} kilograms.</p>
+                <div className="weight-progress">
+                  <div className="weight-bar">
+                    <div 
+                      className="weight-fill exceeded" 
+                      style={{ width: `${(cartStats.totalWeightKilos / MAX_WEIGHT_LIMIT) * 100}%` }}
+                    ></div>
+                  </div>
+                  <div className="weight-labels">
+                    <span>0kg</span>
+                    <span>{MAX_WEIGHT_LIMIT}kg</span>
+                  </div>
+                </div>
+                <p className="current-weight">Current weight: <strong>{cartStats.totalWeightKilos.toFixed(3)} kg</strong></p>
+                <p>Please reduce the quantity of items in your cart to continue.</p>
+              </div>
+              <div className="modal-footer">
+                <button className="btn primary-btn" onClick={onClose}>I Understand</button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  };
+  
+  // Toast notification component
+  const ToastNotification = ({ message, type }) => {
+    return (
+      <AnimatePresence>
+        {message && (
+          <motion.div 
+            className={`toast-notification ${type}`}
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="toast-icon">
+              {type === 'error' ? <FaExclamationTriangle /> : <FaCheckCircle />}
+            </div>
+            <div className="toast-message">{message}</div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    );
+  };
+  
   return (
-    <div className="place-order-container">
-      <h1 className="checkout-title">Check out</h1>
+    <div className="placeorder-page">
+      {/* Toast Notification */}
+      <ToastNotification message={showErrorToast} type="error" />
       
-      <div className="order-grid-layout">
-        {/* Left Column: Shipping & Personal Information */}
-        <div className="shipping-details-column">
-          <div className="info-card">
-            <h2 className="card-header">Shipping & Personal Information</h2>
-            <form onSubmit={handleSubmit}>
-              <div className="form-section">
-                <h3 className="section-heading">Personal Details</h3>
-                <div className="form-grid">
-                  <div className="form-group">
-                    <label htmlFor="firstName">First Name*</label>
-                    <input
-                      type="text"
-                      id="firstName"
-                      name="firstName"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="middleName">Middle Name</label>
-                    <input
-                      type="text"
-                      id="middleName"
-                      name="middleName"
-                      value={formData.middleName}
-                      onChange={handleChange}
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="lastName">Last Name*</label>
-                    <input
-                      type="text"
-                      id="lastName"
-                      name="lastName"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group phone-field">
-                    <label htmlFor="phoneNumber">Phone Number*</label>
-                    <input
-                      type="tel"
-                      id="phoneNumber"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="form-section">
-                <h3 className="section-heading">Shipping Address</h3>
-                <div className="form-grid">
-                  <div className="form-group full-width">
-                    <label htmlFor="address">Street Address*</label>
-                    <input
-                      type="text"
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="city">City*</label>
-                    <input
-                      type="text"
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="state">State/Province*</label>
-                    <input
-                      type="text"
-                      id="state"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="zipCode">Zip/Postal Code*</label>
-                    <input
-                      type="text"
-                      id="zipCode"
-                      name="zipCode"
-                      value={formData.zipCode}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="country">Country*</label>
-                    <input
-                      type="text"
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <button type="submit" className="place-order-button">
-                Confirm Order & Pay with OMSIAPAWASTO
-              </button>
-            </form>
-          </div>
-        </div>
-
-        {/* Right Column: Order Summary */}
-        <div className="order-summary-column">
-          <div className="info-card">
-            <h2 className="card-header">Order Summary</h2>
-            
-            <div className="summary-section">
-              <h3 className="section-heading">Products ({orderSummary.totalProducts})</h3>
-              <div className="cart-items-summary">
-                {cartItemsWithCalculatedPrices.map(item => (
-                  <div key={item.id} className="cart-item-summary">
-                    <div className="item-info">
-                      <span className="item-name">{item.name || 'Product'}</span>
-                      <span className="item-quantity">x{item.calculatedQuantity}</span>
-                    </div>
-                    <span className="item-price">
-                      ₱{item.calculatedPrice.toFixed(2)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="summary-section">
-              <h3 className="section-heading">Order Details</h3>
-              <div className="summary-grid">
-                <div className="summary-item">
-                  <span className="label">Total Items:</span>
-                  <span className="value">{orderSummary.totalItems} units</span>
-                </div>
-                <div className="summary-item">
-                  <span className="label">Total Weight:</span>
-                  <span className="value">{orderSummary.totalWeightGrams}g ({orderSummary.totalWeightKilos}kg)</span>
-                </div>
-                <div className="summary-item">
-                  <span className="label">Merchandise Total:</span>
-                  <span className="value">₱{orderSummary.merchandiseTotal.toFixed(2)}</span>
-                </div>
-                <div className="summary-item">
-                  <span className="label">Shipping Total:</span>
-                  <span className="value">₱{orderSummary.shippingTotal.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="summary-section">
-              <h3 className="section-heading">Financial Breakdown</h3>
-              <div className="summary-grid">
-                <div className="summary-item">
-                  <span className="label">Transaction Giveaway:</span>
-                  <span className="value">₱{orderSummary.totalTransactionGiveaway.toFixed(2)}</span>
-                </div>
-                <div className="summary-item">
-                  <span className="label">Omsia Profit:</span>
-                  <span className="value">₱{orderSummary.totalOmsiaProfit.toFixed(2)}</span>
-                </div>
-                <div className="summary-item">
-                  <span className="label">Capital Cost:</span>
-                  <span className="value">₱{orderSummary.totalCapital.toFixed(2)}</span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="summary-divider"></div>
-            
-            <div className="summary-item total">
-              <span className="label">Total Amount:</span>
-              <span className="value highlight">₱{orderSummary.total.toFixed(2)}</span>
-            </div>
-            
-            <div className="payment-details">
-              <h3 className="section-heading">Payment Method</h3>
-              <div className="payment-method-selection">
-                <label className="payment-method">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="omsiapawasto"
-                    checked={paymentDetails.selectedPaymentMethod === 'omsiapawasto'}
-                    onChange={() => setPaymentDetails({...paymentDetails, selectedPaymentMethod: 'omsiapawasto'})}
-                  />
-                  <div className="method-info">
-                    <div className="method-name">OMSIAPAWASTO Currency</div>
-                    <div className="method-balance">Balance: ₱{paymentDetails.omsiapawastoBalance.toFixed(2)}</div>
-                  </div>
-                </label>
-              </div>
-              
-              <div className="summary-divider"></div>
-              
-              <div className="payment-confirmation">
-                <div className="summary-item total">
-                  <span className="label">Amount to Pay:</span>
-                  <span className="value highlight">₱{orderSummary.total.toFixed(2)}</span>
+      <div className="placeorder-container">
+        <motion.header 
+          className="placeorder-header"
+          initial={{ y: -50, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h1><FaShoppingCart className="header-icon" /> Place Order</h1>
+        </motion.header>
+        
+        {/* Weight Warning Banner - shows when approaching limit */}
+        <AnimatePresence>
+          {cartStats.totalWeightKilos > (MAX_WEIGHT_LIMIT * 0.8) && cartStats.totalWeightKilos <= MAX_WEIGHT_LIMIT && (
+            <motion.div 
+              className="weight-warning-banner"
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <FaExclamationTriangle className="warning-icon" />
+              <p>
+                <strong>Warning:</strong> Your order is approaching the {MAX_WEIGHT_LIMIT}kg weight limit.
+                Current weight: <strong>{cartStats.totalWeightKilos.toFixed(3)} kg</strong>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        {/* Weight Exceeded Banner - shows when over limit */}
+        <AnimatePresence>
+          {cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT && (
+            <motion.div 
+              className="weight-error-banner"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
+              <FaExclamationTriangle className="error-icon" />
+              <p>
+                <strong>Error:</strong> Your order exceeds the {MAX_WEIGHT_LIMIT}kg weight limit.
+                Current weight: <strong>{cartStats.totalWeightKilos.toFixed(3)} kg</strong>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+        
+        <form onSubmit={handleSubmit}>
+          <div className="placeorder-layout">
+            <div className="placeorder-main">
+              {/* Cart Summary */}
+              <motion.section 
+                className="card cart-summary"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <div className="card-header">
+                  <h2><FaShoppingCart className="section-icon" /> Cart Summary</h2>
+                  <span className="item-count">{cartItems.length} products ({cartStats.totalItems} items)</span>
                 </div>
                 
-                {paymentDetails.omsiapawastoBalance < orderSummary.total && (
-                  <div className="insufficient-funds-warning">
-                    Warning: Insufficient OMSIAPAWASTO balance. Please add funds before placing your order.
+                {cartItems.length === 0 ? (
+                  <div className="empty-cart">
+                    <motion.div
+                      initial={{ scale: 0.8 }}
+                      animate={{ scale: 1 }}
+                      transition={{ 
+                        repeat: 2, 
+                        repeatType: "reverse", 
+                        duration: 1 
+                      }}
+                    >
+                      <FaShoppingCart className="empty-cart-icon" />
+                    </motion.div>
+                    <p>Your cart is empty</p>
+                  </div>
+                ) : (
+                  <div className="cart-items">
+                    {cartItems.map((item, index) => (
+                      <motion.div 
+                        key={item.authentications?.id} 
+                        className="cart-item"
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.1 * index }}
+                      >
+                        <div className="item-image">
+                          <img src={getProductImage(item)} alt={getProductName(item)} />
+                        </div>
+                        
+                        <div className="item-details">
+                          <div className="item-name">{getProductName(item)}</div>
+                          <div className="item-price">
+                            ₱{getProductPrice(item).toFixed(2)}
+                          </div>
+                          
+                          <div className="item-actions">
+                            <div className="quantity-control">
+                              <motion.button 
+                                type="button" 
+                                className="quantity-btn"
+                                onClick={() => decreaseQuantity(item.authentications?.id)}
+                                whileTap={{ scale: 0.9 }}
+                              >
+                                -
+                              </motion.button>
+                              <span className="quantity">{Math.floor(item.quantity || 1)}</span>
+                              <motion.button 
+                                type="button" 
+                                className="quantity-btn"
+                                onClick={() => increaseQuantity(item.authentications?.id)}
+                                whileTap={{ scale: 0.9 }}
+                              >
+                                +
+                              </motion.button>
+                            </div>
+                            
+                            <motion.button 
+                              type="button" 
+                              className="remove-btn"
+                              onClick={() => removeItem(item.authentications?.id)}
+                              whileHover={{ scale: 1.05 }}
+                              whileTap={{ scale: 0.95 }}
+                            >
+                              <FaTrashAlt /> Remove
+                            </motion.button>
+                          </div>
+                        </div>
+                        
+                        <div className="item-total">
+                          ₱{(getProductPrice(item) * Math.floor(item.quantity || 1)).toFixed(2)}
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
                 )}
-              </div>
+              </motion.section>
+              
+              {/* Shipping Information */}
+              <motion.section 
+                className="card shipping-options"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+              >
+                <div className="card-header">
+                  <h2><FaTruck className="section-icon" /> Shipping Information</h2>
+                </div>
+                
+                <div className="shipping-details">
+                  <div className="shipping-info-row">
+                    <span><FaTruck /> Weight-based shipping:</span>
+                    <span className="shipping-value">₱{cartStats.shippingCost.toFixed(2)}</span>
+                  </div>
+                  
+                  <div className="shipping-info-row">
+                    <span><FaWeightHanging /> Total Weight:</span>
+                    <span className={`shipping-value ${cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT ? "text-error" : ""}`}>
+                      {cartStats.totalWeightGrams.toFixed(2)}g ({cartStats.totalWeightKilos.toFixed(3)}kg)
+                      {cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT && (
+                        <span className="weight-exceed-marker">
+                          <FaExclamationTriangle /> Exceeds {MAX_WEIGHT_LIMIT}kg limit!
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  
+                  <div className="shipping-info-row">
+                    <span>Shipping Rate:</span>
+                    <span className="shipping-value">₱100 per 1kg (Any fraction of a kg counts as a full kg)</span>
+                  </div>
+                  
+                  <div className="shipping-info-row">
+                    <span>Example:</span>
+                    <span className="shipping-value">1.1kg = 2kg = ₱200</span>
+                  </div>
+                  
+                  <div className="shipping-info-row weight-limit-note">
+                    <FaExclamationTriangle className="note-icon" />
+                    <span>Orders are limited to a maximum of {MAX_WEIGHT_LIMIT}kg per order.</span>
+                  </div>
+                </div>
+              </motion.section>
+            </div>
+            
+            <div className="placeorder-sidebar">
+              {/* Order Summary */}
+              <motion.section 
+                className="card order-summary"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5 }}
+              >
+                <div className="card-header">
+                  <h2><FaMoneyBillWave className="section-icon" /> Order Summary</h2>
+                </div>
+                
+                <div className="summary-content">
+                  <div className="summary-row">
+                    <span>Products</span>
+                    <span>{cartItems.length} items</span>
+                  </div>
+                  
+                  <div className="summary-row">
+                    <span>Total Quantity</span>
+                    <span>{cartStats.totalItems} units</span>
+                  </div>
+                  
+                  <div className="summary-row">
+                    <span>Total Weight</span>
+                    <span className={cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT ? "text-error" : ""}>
+                      {cartStats.totalWeightGrams.toFixed(2)}g 
+                      ({cartStats.totalWeightKilos.toFixed(3)}kg)
+                      {cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT && (
+                        <FaExclamationTriangle className="inline-warning-icon" />
+                      )}
+                    </span>
+                  </div>
+                  
+                  <div className="summary-row">
+                    <span>Subtotal</span>
+                    <span>₱{cartStats.subtotal.toFixed(2)}</span>
+                  </div>
+                  
+                  <div className="summary-row">
+                    <span>Shipping</span>
+                    <span>₱{cartStats.shippingCost.toFixed(2)}</span>
+                  </div>
+                  
+                  <div className="summary-divider"></div>
+                  
+                  <motion.div 
+                    className="summary-row total"
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1, 1.03, 1] }}
+                    transition={{ duration: 1, delay: 0.8 }}
+                  >
+                    <span>Total</span>
+                    <span>₱{(cartStats.subtotal + cartStats.shippingCost).toFixed(2)}</span>
+                  </motion.div>
+                  
+                  <motion.button 
+                    type="submit" 
+                    className="checkout-button"
+                    disabled={cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                  >
+                    {cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT 
+                      ? (
+                        <>
+                          <FaExclamationTriangle className="button-icon" />
+                          Order Exceeds {MAX_WEIGHT_LIMIT}kg Weight Limit
+                        </>
+                      ) 
+                      : (
+                        <>
+                          <FaCheckCircle className="button-icon" />
+                          Place Order And Proceed To Payment
+                        </>
+                      )
+                    }
+                  </motion.button>
+                  
+                  {cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT && (
+                    <motion.div 
+                      className="weight-limit-error-message"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.5 }}
+                    >
+                      <FaExclamationTriangle className="error-icon" />
+                      Please reduce your order weight to continue.
+                    </motion.div>
+                  )}
+                </div>
+              </motion.section>
             </div>
           </div>
-        </div>
+        </form>
+        
+        {/* Weight Limit Modal */}
+        <WeightLimitModal 
+          show={showWeightLimitModal} 
+          onClose={() => setShowWeightLimitModal(false)} 
+        />
+        
       </div>
     </div>
   );
 };
 
-export default PlaceOrder;
+export default PlaceOrderPage;

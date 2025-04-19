@@ -5,8 +5,7 @@ const mongoose = require('mongoose');
 
 const mongodb = require('../../lib/mongodb/database.js')
 
-const omsiapdatascheme = require('../../models/omsiap/omsiapdatascheme.js')
-const registrantdatascheme = require('../../models/people/registrantdatascheme.js')
+const RegistrantDataModel = require('../../models/people/registrantdatascheme.js')
 
 const timestamps = require('../../lib/timestamps/timestamps');
 
@@ -47,14 +46,10 @@ const uploadFields = upload.fields([
 Router.route("/registration").post(async (req, res) => {
 
   try {
-    
-    // Create model for the Registrants collection
-    const Registrants = mongoose.model('Registrants', registrantdatascheme);
-    
-    // Generate next sequential ID based on existing registrants
+    // Generate next sequential ID for registrant
     const generateNextRegistrantId = async () => {
       // Count all registrants
-      const registrantCount = await Registrants.countDocuments();
+      const registrantCount = await RegistrantDataModel.countDocuments();
       
       // Check if registrant count has reached the limit of 1000
       if (registrantCount >= 1000) {
@@ -66,6 +61,30 @@ Router.route("/registration").post(async (req, res) => {
       return `1000-${paddedCount}-A-1`;
     };
 
+    // Generate unique ID for omsiapawas credits
+    const generateOmsiapawasId = async () => {
+
+      const currentDate = new Date();
+      const year = currentDate.getFullYear().toString();
+      const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+      const day = currentDate.getDate().toString().padStart(2, '0');
+      
+      // Get count of registrants for today to generate sequential number
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      
+      const todayRegistrantCount = await RegistrantDataModel.countDocuments({
+        'registrationstatusesandlogs.registrationlog.date': {
+          $regex: `^${year}-${month}-${day}`
+        }
+      });
+      
+      const sequentialNum = (todayRegistrantCount + 1).toString().padStart(3, '0');
+      
+      // Generate format: OMSAW-YYYYMMDD-XXX
+      return `OMSAW-${year}${month}${day}-${sequentialNum}`;
+    };
+
     // Normalize new registrant data for comparison
     const normalizedNewRegistrant = {
       firstName: req.body.$registrant.name.firstname.toLowerCase().trim(),
@@ -74,8 +93,8 @@ Router.route("/registration").post(async (req, res) => {
       password: req.body.$registrant.passwords.account.password
     };
 
-    // Check for matches among existing users - from the Registrants collection
-    const nameMatches = await Registrants.find({
+    // Check for matches among existing users
+    const nameMatches = await RegistrantDataModel.find({
       'name.firstname': new RegExp(`^${normalizedNewRegistrant.firstName}$`, 'i'),
       'name.lastname': new RegExp(`^${normalizedNewRegistrant.lastName}$`, 'i'),
       'name.middlename': normalizedNewRegistrant.middleName ? 
@@ -85,7 +104,6 @@ Router.route("/registration").post(async (req, res) => {
 
     // New registrant (no name matches)
     if (nameMatches.length === 0) {
-
       // Generate ID and check user limit
       const registrantId = await generateNextRegistrantId();
       
@@ -100,14 +118,21 @@ Router.route("/registration").post(async (req, res) => {
         });
       }
 
+      // Generate omsiapawas credit ID
+      const omsiapawasId = await generateOmsiapawasId();
+      
       const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password, 13);
       const _registeringdate = timestamps.getFormattedDate();
       
-      // Set the ID and pending documents status
+      // Set the IDs and pending documents status
       req.body.$registrant.id = registrantId;
+      req.body.$registrant.credits = req.body.$registrant.credits || {};
+      req.body.$registrant.credits.omsiapawas = req.body.$registrant.credits.omsiapawas || {};
+      req.body.$registrant.credits.omsiapawas.id = omsiapawasId;
+      req.body.$registrant.credits.omsiapawas.amount = 0;
       req.body.$registrant.registrationstatusesandlogs.indication = "pending documents";
       
-      // Fixed: Create registration detail with proper structure according to schema
+      // Create registration detail with proper structure
       req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
         date: _registeringdate,
         type: "Registration",
@@ -120,16 +145,17 @@ Router.route("/registration").post(async (req, res) => {
 
       req.body.$registrant.passwords.account.password = _hashedpassword;
       
-      // Create a new document in the Registrants collection
-      const newRegistrant = new Registrants(req.body.$registrant);
+      // Create a new document using the imported model
+      const newRegistrant = new RegistrantDataModel(req.body.$registrant);
       await newRegistrant.save();
       
-      console.log(`Registrant registered: ${req.body.$registrant.name.firstname}, ${req.body.$registrant.name.middlename}, ${req.body.$registrant.name.lastname}. ID: ${req.body.$registrant.id}`);
+      console.log(`Registrant registered: ${req.body.$registrant.name.firstname}, ${req.body.$registrant.name.middlename}, ${req.body.$registrant.name.lastname}. ID: ${req.body.$registrant.id}, OMSAW ID: ${omsiapawasId}`);
 
       res.status(200).send({
         message: "Registrant registered"
       });
     } 
+
     // Existing user name found - handle password scenario
     else {
 
@@ -152,7 +178,6 @@ Router.route("/registration").post(async (req, res) => {
 
       // Name matches but different password - register as new
       else {
-
         // Generate ID and check user limit
         const registrantId = await generateNextRegistrantId();
         
@@ -167,14 +192,21 @@ Router.route("/registration").post(async (req, res) => {
           });
         }
 
+        // Generate omsiapawas credit ID
+        const omsiapawasId = await generateOmsiapawasId();
+        
         const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password, 13);
         const _registeringdate = timestamps.getFormattedDate();
         
-        // Set the ID and pending documents status
+        // Set the IDs and pending documents status
         req.body.$registrant.id = registrantId;
+        req.body.$registrant.credits = req.body.$registrant.credits || {};
+        req.body.$registrant.credits.omsiapawas = req.body.$registrant.credits.omsiapawas || {};
+        req.body.$registrant.credits.omsiapawas.id = omsiapawasId;
+        req.body.$registrant.credits.omsiapawas.amount = 0;
         req.body.$registrant.registrationstatusesandlogs.indication = "pending documents";
-        
-        // Fixed: Create registration detail with proper structure according to schema
+                         
+        // Create registration detail with proper structure
         req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
           date: _registeringdate,
           type: "Registration",
@@ -187,11 +219,11 @@ Router.route("/registration").post(async (req, res) => {
 
         req.body.$registrant.passwords.account.password = _hashedpassword;
         
-        // Create a new document in the Registrants collection
-        const newRegistrant = new Registrants(req.body.$registrant);
+        // Create a new document using the imported model
+        const newRegistrant = new RegistrantDataModel(req.body.$registrant);
         await newRegistrant.save();
         
-        console.log(`Registrant registered: ${req.body.$registrant.name.firstname}, ${req.body.$registrant.name.middlename}, ${req.body.$registrant.name.lastname}. ID: ${req.body.$registrant.id}`);
+        console.log(`Registrant registered: ${req.body.$registrant.name.firstname}, ${req.body.$registrant.name.middlename}, ${req.body.$registrant.name.lastname}. ID: ${req.body.$registrant.id}, OMSAW ID: ${omsiapawasId}`);
 
         res.status(200).send({
           message: "Registrant registered"
@@ -217,11 +249,9 @@ Router.route("/registration").post(async (req, res) => {
   }
 });
 
-Router.route("/login").post(async (req, res) => {
+Router.route("/login").post( async (req, res) => {
+
   try {
-    // Use the registrant schema
-    const Registrant = mongoose.model('registrants', registrantdatascheme);
-    
     // Log the incoming request data for debugging
     console.log("Login request received:", {
       firstName: req.body.$firstname,
@@ -240,7 +270,7 @@ Router.route("/login").post(async (req, res) => {
     {/*
     // First, try to find ALL users to check what's in the database
     // This is for debugging only - remove in production
-    const allUsers = await Registrant.find({}, 'name');
+    const allUsers = await RegistrantDataModel.find({}, 'name');
     console.log("Available users in DB:", allUsers.map(u => ({ 
       _id: u._id, 
       name: u.name 
@@ -248,7 +278,7 @@ Router.route("/login").post(async (req, res) => {
     */}
 
     // First, try a more permissive search - just by firstName and lastName
-    const initialQuery = await Registrant.find({
+    const initialQuery = await RegistrantDataModel.find({
       'name.firstname': normalizedLoginDetails.firstName,
       'name.lastname': normalizedLoginDetails.lastName
     });
@@ -263,7 +293,7 @@ Router.route("/login").post(async (req, res) => {
     }
     
     // Now try the exact match including middle name
-    const exactQuery = await Registrant.find({
+    const exactQuery = await RegistrantDataModel.find({
       'name.firstname': normalizedLoginDetails.firstName,
       'name.middlename': normalizedLoginDetails.middleName,
       'name.lastname': normalizedLoginDetails.lastName
@@ -276,7 +306,7 @@ Router.route("/login").post(async (req, res) => {
     
     if (matchingUsers.length === 0) {
       // Try a more flexible search with case-insensitive plain text match
-      matchingUsers = await Registrant.find({
+      matchingUsers = await RegistrantDataModel.find({
         'name.firstname': { $regex: normalizedLoginDetails.firstName, $options: 'i' },
         'name.lastname': { $regex: normalizedLoginDetails.lastName, $options: 'i' }
       });
@@ -310,11 +340,20 @@ Router.route("/login").post(async (req, res) => {
         );
         
         if (passwordMatches) {
-          // Return the actual MongoDB _id of the user
+          // Update the device login status to "logged in"
+          await RegistrantDataModel.findByIdAndUpdate(
+            user._id,
+            { 'registrationstatusesandlogs.deviceloginstatus': 'logged in' }
+          );
+          
+          // Get the updated user document
+          const updatedUser = await RegistrantDataModel.findById(user._id);
+          
+          // Return the actual MongoDB _id of the user with updated status
           return res.status(200).json({
             registrant: {
-              ...user._doc,
-              objectId: user._id // Explicitly send the MongoDB ObjectId
+              ...updatedUser._doc,
+              objectId: updatedUser._id // Explicitly send the MongoDB ObjectId
             },
             message: "Login successful"
           });
@@ -349,7 +388,87 @@ Router.route("/login").post(async (req, res) => {
   }
 });
 
+Router.route("/logout").post(async (req, res) => {
+  
+  try {
+    // Get the user ID from the request body
+    const userId = req.body.$userid;
+    
+    // Validate if user ID exists
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required for logout",
+        redirectTo: null
+      });
+    }
+    
+    console.log(`Attempting to log out user with ID: ${userId}`);
+    
+    // First, check if the user exists by ID
+    const user = await RegistrantDataModel.findOne({ id: userId });
+    
+    if (!user) {
+      console.log(`No user found with ID: ${userId}. Trying with MongoDB ObjectId.`);
+      
+      // Try looking up by MongoDB's internal _id if it's a valid ObjectId
+      let objectIdUser = null;
+      
+      // Check if the ID might be a valid MongoDB ObjectId
+      if (mongoose.Types.ObjectId.isValid(userId)) {
+        objectIdUser = await RegistrantDataModel.findById(userId);
+      }
+      
+      if (!objectIdUser) {
+        console.log(`User not found with either ID format: ${userId}`);
+        return res.status(404).json({
+          success: false,
+          message: "User not found with the provided ID",
+          redirectTo: null
+        });
+      }
+      
+      // Use the found user by ObjectId
+      console.log(`Found user by ObjectId: ${objectIdUser.id}`);
+      
+      // Update the user's device login status
+      objectIdUser.registrationstatusesandlogs.deviceloginstatus = 'logged out';
+      await objectIdUser.save();
+      
+      return res.status(200).json({
+        success: true,
+        message: "Logout successful",
+        redirectTo: "/mfatip/loginregister"
+      });
+    }
+    
+    // Update the user's device login status
+    user.registrationstatusesandlogs.deviceloginstatus = 'logged out';
+    await user.save();
+    
+    console.log(`User logged out successfully: ${userId}`);
+    
+    // Return success response with redirect URL
+    return res.status(200).json({
+      success: true,
+      message: "Logout successful",
+      redirectTo: "/mfatip/loginregister"
+    });
+    
+  } catch (err) {
+    console.error('Logout route error:', err);
+    
+    // Send an error response
+    return res.status(500).json({
+      success: false,
+      message: "Logout failed: " + err.message,
+      redirectTo: null
+    });
+  }
+});
+
 Router.route('/getregistrant').post(async (req, res) => {
+  
   try {
     // Validate input
     if (!req.body.$userid) {
@@ -359,11 +478,8 @@ Router.route('/getregistrant').post(async (req, res) => {
       });
     }
     
-    // Use the registrant model directly
-    const Registrant = mongoose.model('registrants', registrantdatascheme);
-    
-    // Find registrant by ObjectId
-    const registrant = await Registrant.findById(req.body.$userid);
+    // Find registrant by ObjectId using the imported model
+    const registrant = await RegistrantDataModel.findById(req.body.$userid);
     
     if (!registrant) {
       return res.status(404).json({
@@ -375,15 +491,19 @@ Router.route('/getregistrant').post(async (req, res) => {
     // Create a copy of the registrant object to modify
     const foundRegistrant = {...registrant.toObject()};
     
+    // Map _id to id for frontend consistency
+    // foundRegistrant.id = foundRegistrant._id.toString();
+    
     // Remove password before sending
     if (foundRegistrant.passwords && foundRegistrant.passwords.account) {
       delete foundRegistrant.passwords.account.password;
     }
     
     // Update login status
-    registrant.registrationstatusesandlogs.deviceloginstatus = "logged in";
+    // registrant.registrationstatusesandlogs.deviceloginstatus = "logged in";
     await registrant.save();
     
+    {/*
     // Additional checks if needed
     if (foundRegistrant.registrationstatusesandlogs.indication === 'inactive') {
       return res.status(403).json({
@@ -391,7 +511,8 @@ Router.route('/getregistrant').post(async (req, res) => {
         description: "This user account is currently inactive"
       });
     }
-    
+    */}
+
     // Successful response
     res.status(200).json({
       message: "REGISTRANT_FOUND",

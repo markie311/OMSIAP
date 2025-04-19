@@ -1,24 +1,46 @@
+"use client"
+
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { ChevronLeft, ChevronRight, ShoppingCart, Search, Star, X, Play } from "lucide-react"
+import {
+  Search,
+  ShoppingCart,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Play,
+  Heart,
+  Plus,
+  Minus,
+  ShoppingBag,
+  Info,
+  Facebook,
+  Twitter,
+  Instagram,
+} from "lucide-react"
 
-import "../../styles/market/market.scss";
+import "../../styles/market/market.scss"
 
 const Market = (props) => {
   const navigate = useNavigate()
+  const { loadingState, updateLoadingState } = props.useLoading || { loadingState: { products: false } }
 
   const [products, setProducts] = useState([])
   const [cart, setCart] = useState([])
   const [categories, setCategories] = useState([])
   const [selectedCategory, setSelectedCategory] = useState("all")
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 }) // Adjusted for Peso
+  const [priceRange, setPriceRange] = useState({ min: 0, max: 50000 })
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [imageModalOpen, setImageModalOpen] = useState(false)
+  const [fullScreenImage, setFullScreenImage] = useState("")
   const [searchQuery, setSearchQuery] = useState("")
   const [activeImageIndex, setActiveImageIndex] = useState(0)
   const [showVideo, setShowVideo] = useState(false)
   const [currentSlide, setCurrentSlide] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [isCartOpen, setIsCartOpen] = useState(false)
   const carouselRef = useRef(null)
   const autoplayRef = useRef(null)
 
@@ -46,309 +68,35 @@ const Market = (props) => {
     },
   ]
 
-  // Sample product data - replace with your API call
-  useEffect(() => {
-    // Simulating API fetch
-    const fetchProducts = () => {
-      const sampleProducts = [
-        {
-          id: 1,
-          name: "Premium Headphones",
-          price: 14999.99,  // Converted to Peso
-          category: "electronics",
-          description: "High-quality noise-cancelling headphones with premium sound.",
-          weightingrams: 1000,
-          images: [
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-          ],
-          stock: 15,
-          rating: 4.8,
-          reviews: 127,
-          specifications: [
-            { name: "Battery Life", value: "30 hours" },
-            { name: "Noise Cancellation", value: "Active" },
-            { name: "Connectivity", value: "Bluetooth 5.0" },
-            { name: "Weight", value: "250g" },
-          ],
-          videoUrl: "/placeholder.svg?height=400&width=400", // Placeholder for video URL
-          features: [
-            "Active noise cancellation",
-            "Transparency mode",
-            "Spatial audio",
-            "Voice assistant compatibility",
-          ],
-          warranty: "2 years manufacturer warranty",
-          quantity: 0,         
-          focuseddata: {
-            price: {
-                price: 60,
-                capital: 57,
-                transactiongiveaway: 2,
-                omsiapprofit: 1
-            }
-          },
-          orderdetails: { 
-            quantity: 0,
-            product: {
-              price: 0,
-              capital: 0,
-              transactiongiveaway: 0,
-              omsiapprofit: 0,
-            },
-            shipment: {
-              totalkilos: 0,
-              totalshipmentfee: 0
-            }
-          }
-        },
-        {
-          id: 2,
-          name: "Designer Watch",
-          price: 9999.99,  // Converted to Peso
-          category: "accessories",
-          description: "Elegant timepiece with leather strap and Swiss movement.",
-          weightingrams: 1000,
-          images: [
-           "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-          ],
-          stock: 8,
-          rating: 4.5,
-          reviews: 84,
-          specifications: [
-            { name: "Movement", value: "Swiss Quartz" },
-            { name: "Water Resistance", value: "50 meters" },
-            { name: "Case Material", value: "Stainless Steel" },
-            { name: "Band Material", value: "Genuine Leather" },
-          ],
-          videoUrl: "/placeholder.svg?height=400&width=400",
-          features: ["Luminous hands", "Sapphire crystal glass", "Date display", "Chronograph function"],
-          warranty: "1 year limited warranty",
-          quantity: 0, 
-          focuseddata: {
-            price: {
-                price: 60,
-                capital: 57,
-                transactiongiveaway: 2,
-                omsiapprofit: 1
-            }
-          },
-          orderdetails: { 
-            quantity: 0,
-            product: {
-              price: 0,
-              capital: 0,
-              transactiongiveaway: 0,
-              omsiapprofit: 0,
-            },
-            shipment: {
-              totalkilos: 0,
-              totalshipmentfee: 0
-            }
-          }
-        },
-        {
-          id: 3,
-          name: "Wireless Earbuds",
-          price: 7499.99,  // Converted to Peso
-          category: "electronics",
-          description: "True wireless earbuds with long battery life and water resistance.",
-          weightingrams: 1000,
-          images: [
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-          ],
-          stock: 20,
-          rating: 4.3,
-          reviews: 156,
-          specifications: [
-            { name: "Battery Life", value: "8 hours (28 with case)" },
-            { name: "Water Resistance", value: "IPX7" },
-            { name: "Connectivity", value: "Bluetooth 5.2" },
-            { name: "Charging", value: "USB-C & Wireless" },
-          ],
-          videoUrl: "/placeholder.svg?height=400&width=400",
-          features: ["Touch controls", "Active noise cancellation", "Ambient sound mode", "Auto-pause when removed"],
-          warranty: "1 year warranty",
-          quantity: 0, 
-          focuseddata: {
-            price: {
-                price: 60,
-                capital: 57,
-                transactiongiveaway: 2,
-                omsiapprofit: 1
-            }
-          },
-          orderdetails: { 
-            quantity: 0,
-            product: {
-              price: 0,
-              capital: 0,
-              transactiongiveaway: 0,
-              omsiapprofit: 0,
-            },
-            shipment: {
-              totalkilos: 0,
-              totalshipmentfee: 0
-            }
-          }
-        },
-        {
-          id: 4,
-          name: "Leather Wallet",
-          price: 2999.99,  // Converted to Peso
-          category: "accessories",
-          description: "Genuine leather wallet with RFID protection.",
-          weightingrams: 1000,
-          images: [
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-          ],
-          stock: 25,
-          rating: 4.2,
-          reviews: 63,
-          specifications: [
-            { name: "Material", value: "Full-grain Leather" },
-            { name: "Card Slots", value: "8" },
-            { name: "Dimensions", value: '4.5" x 3.5"' },
-            { name: "RFID Protection", value: "Yes" },
-          ],
-          videoUrl: "/placeholder.svg?height=400&width=400",
-          features: ["RFID blocking technology", "Multiple card slots", "Bill compartment", "ID window"],
-          warranty: "1 year warranty",
-          quantity: 0, 
-          focuseddata: {
-            price: {
-                price: 60,
-                capital: 57,
-                transactiongiveaway: 2,
-                omsiapprofit: 1
-            }
-          },
-          orderdetails: { 
-            quantity: 0,
-            product: {
-              price: 0,
-              capital: 0,
-              transactiongiveaway: 0,
-              omsiapprofit: 0,
-            },
-            shipment: {
-              totalkilos: 0,
-              totalshipmentfee: 0
-            }
-          }
-        },
-        {
-          id: 5,
-          name: "Smart Speaker",
-          price: 6499.99,  // Converted to Peso
-          category: "electronics",
-          description: "Voice-controlled smart speaker with premium sound quality.",
-          weightingrams: 1000,
-          images: [
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-          ],
-          stock: 12,
-          rating: 4.6,
-          reviews: 92,
-          specifications: [
-            { name: "Connectivity", value: "Wi-Fi, Bluetooth" },
-            { name: "Power", value: "30W" },
-            { name: "Voice Assistant", value: "Multiple platform support" },
-            { name: "Microphones", value: "6 far-field mics" },
-          ],
-          videoUrl: "/placeholder.svg?height=400&width=400",
-          features: ["Multi-room audio", "Voice control", "Smart home integration", "Audio streaming"],
-          warranty: "1 year limited warranty",
-          quantity: 0, 
-          focuseddata: {
-            price: {
-                price: 60,
-                capital: 57,
-                transactiongiveaway: 2,
-                omsiapprofit: 1
-            }
-          },
-          orderdetails: { 
-            quantity: 0,
-            product: {
-              price: 0,
-              capital: 0,
-              transactiongiveaway: 0,
-              omsiapprofit: 0,
-            },
-            shipment: {
-              totalkilos: 0,
-              totalshipmentfee: 0
-            }
-          }
-        },
-        {
-          id: 6,
-          name: "Sunglasses",
-          price: 4499.99,  // Converted to Peso
-          category: "accessories",
-          description: "Polarized sunglasses with UV protection.",
-          weightingrams: 1000,
-          images: [
-           "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-            "../images/market/products/watch.jpg",
-          ],
-          stock: 18,
-          rating: 4.1,
-          reviews: 47,
-          specifications: [
-            { name: "Frame Material", value: "Acetate" },
-            { name: "Lens Material", value: "Polarized Glass" },
-            { name: "UV Protection", value: "100%" },
-            { name: "Weight", value: "25g" },
-          ],
-          videoUrl: "/placeholder.svg?height=400&width=400",
-          features: ["Polarized lenses", "UV400 protection", "Lightweight design", "Spring hinges"],
-          warranty: "6 months warranty",
-          quantity: 0, 
-          focuseddata: {
-            price: {
-                price: 60,
-                capital: 57,
-                transactiongiveaway: 2,
-                omsiapprofit: 1
-            }
-          },
-          orderdetails: { 
-            quantity: 0,
-            product: {
-              price: 0,
-              capital: 0,
-              transactiongiveaway: 0,
-              omsiapprofit: 0,
-            },
-            shipment: {
-              totalkilos: 0,
-              totalshipmentfee: 0
-            }
-          }
-        }
-      ]
+  // Add these state variables to your component
+const [fullScreenVideo, setFullScreenVideo] = useState(false);
 
-      setProducts(sampleProducts)
+// Add these functions to your component
+const openFullScreenVideo = () => {
+  setFullScreenVideo(true);
+};
+
+const closeFullScreenVideo = () => {
+  setFullScreenVideo(false);
+};
+
+
+  // Load products from props
+  useEffect(() => {
+    if (props.alloftheproducts && props.alloftheproducts.length > 0) {
+      setProducts(props.alloftheproducts)
 
       // Extract unique categories
-      const uniqueCategories = [...new Set(sampleProducts.map((product) => product.category))]
+      const uniqueCategories = [
+        ...new Set(
+          props.alloftheproducts.map((product) =>
+            product.details && product.details.category ? product.details.category : "uncategorized",
+          ),
+        ),
+      ]
       setCategories(uniqueCategories)
     }
-
-    fetchProducts()
-  }, [])
+  }, [props.alloftheproducts])
 
   // Carousel autoplay
   useEffect(() => {
@@ -365,7 +113,7 @@ const Market = (props) => {
         clearInterval(autoplayRef.current)
       }
     }
-  }, [])
+  }, [carouselSlides.length])
 
   // Update carousel position when slide changes
   useEffect(() => {
@@ -374,61 +122,83 @@ const Market = (props) => {
     }
   }, [currentSlide])
 
-  // Filter products based on selected category and price range
+  // Filter products based on selected category, price range, and search query
   const filteredProducts = products.filter((product) => {
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory
-    const matchesPrice = product.price >= priceRange.min && product.price <= priceRange.max
+    if (!product.details) return false
+
+    const productCategory = product.details.category || "uncategorized"
+    const productPrice = product.details.price && product.details.price.amount ? product.details.price.amount : 0
+    const productName = product.details.productname || ""
+    const productDescription = product.details.description || ""
+
+    const matchesCategory = selectedCategory === "all" || productCategory === selectedCategory
+    const matchesPrice = productPrice >= priceRange.min && productPrice <= priceRange.max
     const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchQuery.toLowerCase())
+      productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      productDescription.toLowerCase().includes(searchQuery.toLowerCase())
 
     return matchesCategory && matchesPrice && matchesSearch
   })
 
   // Cart functions
   const addToCart = (product, quantity = 1) => {
-    const existingItem = cart.find((item) => item.id === product.id)
+    const existingItem = cart.find(
+      (item) =>
+        item.authentications && product.authentications && item.authentications.id === product.authentications.id,
+    )
 
     if (existingItem) {
-      // Increase quantity if already in cart - using integer quantities
-      setCart(cart.map((item) => 
-        item.id === product.id 
-          ? { 
-              ...item, 
-              quantity: item.quantity + quantity 
-            } 
-          : item
-      ))
+      // Increase quantity if already in cart
+      setCart(
+        cart.map((item) =>
+          item.authentications && product.authentications && item.authentications.id === product.authentications.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item,
+        ),
+      )
     } else {
       // Add new item to cart
       setCart([...cart, { ...product, quantity: quantity }])
     }
+
+    // Show cart after adding item
+    setIsCartOpen(true)
+
+    // Animation for added to cart
+    const productElement = document.getElementById(`product-${product.authentications.id}`)
+    if (productElement) {
+      productElement.classList.add("market-added-to-cart")
+      setTimeout(() => {
+        productElement.classList.remove("market-added-to-cart")
+      }, 1000)
+    }
   }
 
   const removeFromCart = (productId) => {
-    setCart(cart.filter((item) => item.id !== productId))
+    setCart(cart.filter((item) => !(item.authentications && item.authentications.id === productId)))
   }
 
   const updateQuantity = (productId, newQuantity) => {
     // Use integer quantities
     const intQuantity = Math.max(1, newQuantity)
-    
+
     if (intQuantity < 1) {
       removeFromCart(productId)
       return
     }
 
-    setCart(cart.map((item) => 
-      item.id === productId 
-        ? { ...item, quantity: intQuantity } 
-        : item
-    ))
+    setCart(
+      cart.map((item) =>
+        item.authentications && item.authentications.id === productId ? { ...item, quantity: intQuantity } : item,
+      ),
+    )
   }
 
   // Calculate cart total
   const cartTotal = cart.reduce((total, item) => {
-    return total + (item.price * item.quantity)
-  }, 0).toFixed(2)
+    const itemPrice = item.details && item.details.price && item.details.price.amount ? item.details.price.amount : 0
+    return total + itemPrice * item.quantity
+  }, 0)
 
   // Open product detail modal
   const openProductModal = (product) => {
@@ -443,6 +213,23 @@ const Market = (props) => {
   const closeProductModal = () => {
     setIsModalOpen(false)
     setSelectedProduct(null)
+  }
+
+  // Enhance the existing openImageModal function
+const openImageModal = (imageUrl, index) => {
+  setFullScreenImage(imageUrl);
+  setImageModalOpen(true);
+  setActiveImageIndex(index);
+  // Pause video if it's playing
+  if (showVideo) {
+    setShowVideo(false);
+  }
+
+};
+
+  // Close full screen image modal
+  const closeImageModal = () => {
+    setImageModalOpen(false)
   }
 
   // Function to change active image in the modal
@@ -468,10 +255,7 @@ const Market = (props) => {
 
   // Toggle cart sidebar
   const toggleCart = () => {
-    const cartSidebar = document.getElementById("cart-sidebar")
-    if (cartSidebar) {
-      cartSidebar.classList.toggle("open")
-    }
+    setIsCartOpen(!isCartOpen)
   }
 
   // Format price in Philippine Peso
@@ -481,22 +265,66 @@ const Market = (props) => {
       currency: "PHP",
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(price)
+    }).format(price || 0)
+  }
+
+  // Navigate to next image in full screen mode
+  const nextImage = () => {
+    if (!selectedProduct) return
+
+    const images = selectedProduct.images || []
+    const nextIndex = (activeImageIndex + 1) % images.length
+    setActiveImageIndex(nextIndex)
+    setFullScreenImage(images[nextIndex])
+  }
+
+  // Navigate to previous image in full screen mode
+  const prevImage = () => {
+    if (!selectedProduct) return
+
+    const images = selectedProduct.images || []
+    const prevIndex = (activeImageIndex - 1 + images.length) % images.length
+    setActiveImageIndex(prevIndex)
+    setFullScreenImage(images[prevIndex])
+  }
+
+  // Show loading skeleton if products are still loading
+  if (loadingState.products) {
+    return (
+      <div className="market-container">
+        <h2 className="market-title">Market</h2>
+        <div className="market-loading-grid">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="market-product-skeleton">
+              <div className="market-image-skeleton"></div>
+              <div className="market-title-skeleton"></div>
+              <div className="market-price-skeleton"></div>
+              <div className="market-button-skeleton"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="ecommerce-app">
+    <div className="market-container">
+
       {/* Marketing Carousel Header */}
-      <div className="carousel-container">
-        <div className="carousel-track" ref={carouselRef}>
+      <div className="market-carousel-container">
+        <div className="market-carousel-track" ref={carouselRef}>
           {carouselSlides.map((slide, index) => (
-            <div key={index} className="carousel-slide">
-              <div className="carousel-image-container">
-                <img src={slide.image || "/placeholder.svg"} alt={slide.title} className="carousel-image" />
-                <div className="carousel-content">
-                  <h2 className="carousel-title">{slide.title}</h2>
-                  <p className="carousel-description">{slide.description}</p>
-                  <a href={slide.buttonLink} className="carousel-button">
+            <div key={index} className="market-carousel-slide">
+              <div className="market-carousel-image-container">
+                <img
+                  src={slide.image || "/placeholder.svg?height=600&width=1200"}
+                  alt={slide.title}
+                  className="market-carousel-image"
+                />
+                <div className="market-carousel-content">
+                  <h2 className="market-carousel-title">{slide.title}</h2>
+                  <p className="market-carousel-description">{slide.description}</p>
+                  <a href={slide.buttonLink} className="market-carousel-button">
                     {slide.buttonText}
                   </a>
                 </div>
@@ -505,18 +333,22 @@ const Market = (props) => {
           ))}
         </div>
 
-        <button className="carousel-control carousel-prev" onClick={prevSlide} aria-label="Previous slide">
-          <ChevronLeft className="carousel-control-icon" />
+        <button
+          className="market-carousel-control market-carousel-prev"
+          onClick={prevSlide}
+          aria-label="Previous slide"
+        >
+          <ChevronLeft className="market-carousel-control-icon" />
         </button>
-        <button className="carousel-control carousel-next" onClick={nextSlide} aria-label="Next slide">
-          <ChevronRight className="carousel-control-icon" />
+        <button className="market-carousel-control market-carousel-next" onClick={nextSlide} aria-label="Next slide">
+          <ChevronRight className="market-carousel-control-icon" />
         </button>
 
-        <div className="carousel-indicators">
+        <div className="market-carousel-indicators">
           {carouselSlides.map((_, index) => (
             <button
               key={index}
-              className={`carousel-indicator ${currentSlide === index ? "active" : ""}`}
+              className={`market-carousel-indicator ${currentSlide === index ? "market-active" : ""}`}
               onClick={() => setCurrentSlide(index)}
               aria-label={`Go to slide ${index + 1}`}
             />
@@ -524,11 +356,11 @@ const Market = (props) => {
         </div>
       </div>
 
-      <header className="header">
-        <div className="logo">
+      <header className="market-header">
+        <div className="market-logo">
           <h1>ShopEase</h1>
         </div>
-        <div className="search-bar">
+        <div className="market-search-bar">
           <input
             type="text"
             placeholder="Search products..."
@@ -536,28 +368,31 @@ const Market = (props) => {
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search products"
           />
-          <Search className="search-icon" />
+          <Search className="market-search-icon" />
         </div>
-        <div className="cart-icon">
+        <div className="market-cart-icon">
           <button onClick={toggleCart} aria-label="Open cart">
             <ShoppingCart />
-            <span className="cart-count">{cart.reduce((total, item) => total + item.quantity, 0)}</span>
+            <span className="market-cart-count">{cart.reduce((total, item) => total + item.quantity, 0)}</span>
           </button>
         </div>
       </header>
 
-      <main className="main-content">
-        <aside className="filters-sidebar">
-          <div className="filter-section">
+      <main className="market-main-content">
+        <aside className="market-filters-sidebar">
+          <div className="market-filter-section">
             <h3>Categories</h3>
-            <div className="category-filters">
-              <button className={selectedCategory === "all" ? "active" : ""} onClick={() => setSelectedCategory("all")}>
+            <div className="market-category-filters">
+              <button
+                className={selectedCategory === "all" ? "market-active" : ""}
+                onClick={() => setSelectedCategory("all")}
+              >
                 All Products
               </button>
               {categories.map((category) => (
                 <button
                   key={category}
-                  className={selectedCategory === category ? "active" : ""}
+                  className={selectedCategory === category ? "market-active" : ""}
                   onClick={() => setSelectedCategory(category)}
                 >
                   {category.charAt(0).toUpperCase() + category.slice(1)}
@@ -566,9 +401,9 @@ const Market = (props) => {
             </div>
           </div>
 
-          <div className="filter-section">
+          <div className="market-filter-section">
             <h3>Price Range</h3>
-            <div className="price-filter">
+            <div className="market-price-filter">
               <span>{formatPrice(priceRange.min)}</span>
               <input
                 type="range"
@@ -583,43 +418,85 @@ const Market = (props) => {
           </div>
         </aside>
 
-        <section className="products-grid">
+        <section className="market-products-grid">
+
           {filteredProducts.length > 0 ? (
-            filteredProducts.map((product) => (
-              <div key={product.id} className="product-card">
-                <div className="product-image">
-                  <img src={product.images[0] || "/placeholder.svg"} alt={product.name} />
-                </div>
-                <div className="product-info">
-                  <h3>{product.name}</h3>
-                  <p className="product-price">{formatPrice(product.price)}</p>
-                  <p className="product-category">{product.category}</p>
-                  <div className="product-rating">
-                    <div className="stars">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`star ${i < Math.floor(product.rating) ? "filled" : ""} ${
-                            i === Math.floor(product.rating) && product.rating % 1 >= 0.5 ? "half-filled" : ""
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="review-count">({product.reviews})</span>
+            filteredProducts.map((product) => {
+              const productId = product.authentications && product.authentications.id ? product.authentications.id : ""
+              const productName =
+                product.details && product.details.productname ? product.details.productname : "Unnamed Product"
+              const productPrice =
+                product.details && product.details.price && product.details.price.amount
+                  ? product.details.price.amount
+                  : 0
+              const productCategory =
+                product.details && product.details.category ? product.details.category : "Uncategorized"
+              const productRating =
+                product.customerfeedback && product.customerfeedback.rating ? product.customerfeedback.rating : 0
+              const productReviews =
+                product.customerfeedback && product.customerfeedback.reviews ? product.customerfeedback.reviews : 0
+              const productImages =
+                product.images && product.images.length > 0
+                  ? product.images.map((img) => img.url)
+                  : ["/placeholder.svg?height=400&width=400"]
+
+              return (
+                <div key={productId} id={`product-${productId}`} className="market-product-card">
+                  <div className="market-product-image">
+                    <img
+                      src={productImages[0] || "/placeholder.svg?height=400&width=400"}
+                      alt={productName}
+                      onClick={() => openImageModal(productImages[0], 0)}
+                    />
+                    <button className="market-wishlist-button" aria-label="Add to wishlist">
+                      <Heart />
+                    </button>
                   </div>
+                  <div className="market-product-info">
+                    <h3>{productName}</h3>
+                    <p className="market-product-price">{formatPrice(productPrice)}</p>
+                    <p className="market-product-category">{productCategory}</p>
+                    <div className="market-product-rating">
+                      <div className="market-stars">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`market-star ${i < Math.floor(productRating) ? "market-filled" : ""} ${
+                              i === Math.floor(productRating) && productRating % 1 >= 0.5 ? "market-half-filled" : ""
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="market-review-count">({productReviews})</span>
+                    </div>
+                  </div>
+                  <div className="market-product-actions">
+
+                    <button onClick={() => openProductModal(product)} className="market-view-details">
+                      <Info size={16} />
+                      View Details
+                    </button>
+
+                   {/* 
+                    <button onClick={() => addToCart(product)} className="market-add-to-cart">
+                      <ShoppingBag size={16} />
+                      Add to Cart
+                    </button>
+                    */}
+
+                  </div>
+
+                  {/* Highlight if product has specifications */}
+                  {product.details && product.details.specifications && product.details.specifications.length > 0 && (
+                    <div className="market-product-badge">
+                      <span>Specifications Available</span>
+                    </div>
+                  )}
                 </div>
-                <div className="product-actions">
-                  <button onClick={() => openProductModal(product)} className="view-details">
-                    View Details
-                  </button>
-                  <button onClick={() => addToCart(product)} className="add-to-cart">
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            ))
+              )
+            })
           ) : (
-            <div className="no-products">
+            <div className="market-no-products">
               <p>No products match your current filters.</p>
               <button
                 onClick={() => {
@@ -627,238 +504,310 @@ const Market = (props) => {
                   setPriceRange({ min: 0, max: 50000 })
                   setSearchQuery("")
                 }}
-                className="reset-filters"
+                className="market-reset-filters"
               >
                 Reset Filters
               </button>
             </div>
           )}
+
         </section>
+
       </main>
 
-      <aside id="cart-sidebar" className="cart-sidebar">
-        <div className="cart-header">
+      {/* Cart Sidebar */}
+      <aside className={`market-cart-sidebar ${isCartOpen ? "market-open" : ""}`}>
+        <div className="market-cart-header">
           <h2>Your Cart</h2>
-          <button onClick={toggleCart} className="close-cart" aria-label="Close cart">
+          <button onClick={toggleCart} className="market-close-cart" aria-label="Close cart">
             <X />
           </button>
         </div>
 
         {cart.length > 0 ? (
           <>
-            <div className="cart-items">
-              {cart.map((item) => (
-                <div key={item.id} className="cart-item">
-                  <div className="cart-item-image">
-                    <img src={item.images[0] || "/placeholder.svg"} alt={item.name} />
-                  </div>
-                  <div className="cart-item-details">
-                    <h4>{item.name}</h4>
-                    <p>{formatPrice(item.price)}</p>
-                  </div>
-                  <div className="cart-item-quantity">
-                    <button 
-                      onClick={() => updateQuantity(item.id, item.quantity - 1)} 
-                      aria-label="Decrease quantity"
+            <div className="market-cart-items">
+              {cart.map((item) => {
+                const itemId = item.authentications && item.authentications.id ? item.authentications.id : ""
+                const itemName = item.details && item.details.productname ? item.details.productname : "Unnamed Product"
+                const itemPrice =
+                  item.details && item.details.price && item.details.price.amount ? item.details.price.amount : 0
+                const itemImages =
+                  item.images && item.images.length > 0
+                    ? item.images.map((img) => img.url)
+                    : ["/placeholder.svg?height=100&width=100"]
+
+                return (
+                  <div key={itemId} className="market-cart-item">
+                    <div className="market-cart-item-image">
+                      <img src={itemImages[0] || "/placeholder.svg?height=100&width=100"} alt={itemName} />
+                    </div>
+                    <div className="market-cart-item-details">
+                      <h4>{itemName}</h4>
+                      <p>{formatPrice(itemPrice)}</p>
+                    </div>
+                    <div className="market-cart-item-quantity">
+                      <button
+                        onClick={() => updateQuantity(itemId, item.quantity - 1)}
+                        aria-label="Decrease quantity"
+                        className="market-quantity-btn"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span>{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(itemId, item.quantity + 1)}
+                        aria-label="Increase quantity"
+                        className="market-quantity-btn"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(itemId)}
+                      className="market-remove-item"
+                      aria-label="Remove item"
                     >
-                      -
-                    </button>
-                    <span style={{color:"black"}}>{item.quantity}</span>
-                    <button 
-                      onClick={() => updateQuantity(item.id, item.quantity + 1)} 
-                      aria-label="Increase quantity"
-                    >
-                      +
+                      <X className="market-remove-icon" />
                     </button>
                   </div>
-                  <button onClick={() => removeFromCart(item.id)} className="remove-item" aria-label="Remove item">
-                    <X className="remove-icon" />
-                  </button>
-                </div>
-              ))}
+                )
+              })}
             </div>
-            <div className="cart-footer">
-              <div className="cart-total">
+            <div className="market-cart-footer">
+              <div className="market-cart-total">
                 <h3>Total: {formatPrice(cartTotal)}</h3>
               </div>
               <button
-                className="checkout-button"
+                className="market-checkout-button"
                 onClick={() => {
                   if (props.cartcb) {
                     props.cartcb(cart)
-                    navigate('/checkout', { state: { cart } });
+                    navigate("/placeorder", { state: { cart } })
                   }
                 }}
               >
-                Proceed to Checkout
+                <ShoppingBag size={16} />
+                Proceed Placing The Orders
               </button>
             </div>
           </>
         ) : (
-          <div className="empty-cart">
+          <div className="market-empty-cart">
+            <ShoppingCart size={48} />
             <p>Your cart is empty.</p>
-            <button onClick={toggleCart} className="continue-shopping">
+            <button onClick={toggleCart} className="market-continue-shopping">
               Continue Shopping
             </button>
           </div>
         )}
+
       </aside>
 
+      {/* Product Detail Modal */}
       {isModalOpen && selectedProduct && (
         <div className="market-product-modal">
-          <div className="modal-content">
+          <div className="market-modal-content">
             <button onClick={closeProductModal} className="market-close-modal" aria-label="Close modal">
-              <X color="black"/>
+              <X />
             </button>
-            <div className="modal-product-details">
-              <div className="modal-product-media">
-                <div className="modal-media-main">
+            <div className="market-modal-product-details">
+              <div className="market-modal-product-media">
+                <div className="market-modal-media-main">
                   {showVideo ? (
-                    <div className="product-video-container">
+                    <div className="market-product-video-container">
                       <video
-                        src={selectedProduct.videoUrl}
+                        src={
+                          selectedProduct.videos && selectedProduct.videos.length > 0
+                            ? selectedProduct.videos[0].url
+                            : "/placeholder.svg?height=400&width=400"
+                        }
                         controls
-                        poster={selectedProduct.images[0]}
-                        className="product-video"
+                        poster={
+                          selectedProduct.images && selectedProduct.images.length > 0
+                            ? selectedProduct.images[0].url
+                            : "/placeholder.svg?height=400&width=400"
+                        }
+                        className="market-product-video"
+                        onClick={() => setFullScreenVideo(true)}
                       >
                         Your browser does not support the video tag.
                       </video>
                     </div>
                   ) : (
                     <img
-                      src={selectedProduct.images[activeImageIndex] || "/placeholder.svg"}
-                      alt={`${selectedProduct.name} - view ${activeImageIndex + 1}`}
-                      className="modal-main-image"
+                      src={
+                        selectedProduct.images && selectedProduct.images.length > 0
+                          ? selectedProduct.images[activeImageIndex].url
+                          : "/placeholder.svg?height=400&width=400"
+                      }
+                      alt={`${selectedProduct.details ? selectedProduct.details.productname : "Product"} - view ${activeImageIndex + 1}`}
+                      className="market-modal-main-image"
+                      onClick={() =>
+                        openImageModal(
+                          selectedProduct.images && selectedProduct.images.length > 0
+                            ? selectedProduct.images[activeImageIndex].url
+                            : "/placeholder.svg?height=400&width=400",
+                          activeImageIndex,
+                        )
+                      }
                     />
                   )}
                 </div>
-                <div className="modal-media-thumbnails">
-                  {selectedProduct.images.map((image, index) => (
-                    <img
-                      key={index}
-                      src={image || "/placeholder.svg"}
-                      alt={`Thumbnail ${index + 1}`}
-                      className={!showVideo && activeImageIndex === index ? "active" : ""}
-                      onClick={() => changeActiveImage(index)}
-                    />
-                  ))}
-                  <button
-                    className={`video-thumbnail ${showVideo ? "active" : ""}`}
-                    onClick={toggleVideo}
-                    aria-label="Show video"
-                  >
-                    <Play className="video-icon" />
-                  </button>
+                <div className="market-modal-media-thumbnails">
+                  {selectedProduct.images &&
+                    selectedProduct.images.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image.url || "/placeholder.svg?height=100&width=100"}
+                        alt={`Thumbnail ${index + 1}`}
+                        className={!showVideo && activeImageIndex === index ? "market-active" : ""}
+                        onClick={() => changeActiveImage(index)}
+                      />
+                    ))}
+                  {selectedProduct.videos && selectedProduct.videos.length > 0 && (
+                    <button
+                      className={`market-video-thumbnail ${showVideo ? "market-active" : ""}`}
+                      onClick={toggleVideo}
+                      aria-label="Show video"
+                    >
+                      <Play className="market-video-icon" />
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="modal-product-info">
-                <h2>{selectedProduct.name}</h2>
-                <div className="modal-product-meta">
-                  <p className="modal-product-price">{formatPrice(selectedProduct.price)}</p>
-                  <div className="modal-product-rating">
-                    <div className="stars">
-                      {[...Array(5)].map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`star ${i < Math.floor(selectedProduct.rating) ? "filled" : ""} ${
-                            i === Math.floor(selectedProduct.rating) && selectedProduct.rating % 1 >= 0.5
-                              ? "half-filled"
-                              : ""
-                          }`}
-                        />
-                      ))}
+              <div className="market-modal-product-info">
+                <h2>{selectedProduct.details ? selectedProduct.details.productname : "Product"}</h2>
+                <div className="market-modal-product-meta">
+                  <p className="market-modal-product-price">
+                    {formatPrice(
+                      selectedProduct.details && selectedProduct.details.price
+                        ? selectedProduct.details.price.amount
+                        : 0,
+                    )}
+                  </p>
+                  <div className="market-modal-product-rating">
+                    <div className="market-stars">
+                      {[...Array(5)].map((_, i) => {
+                        const rating = selectedProduct.customerfeedback ? selectedProduct.customerfeedback.rating : 0
+                        return (
+                          <Star
+                            key={i}
+                            className={`market-star ${i < Math.floor(rating) ? "market-filled" : ""} ${
+                              i === Math.floor(rating) && rating % 1 >= 0.5 ? "market-half-filled" : ""
+                            }`}
+                          />
+                        )
+                      })}
                     </div>
-                    <span className="review-count">{selectedProduct.reviews} reviews</span>
+                    <span className="market-review-count">
+                      {selectedProduct.customerfeedback ? selectedProduct.customerfeedback.reviews : 0} reviews
+                    </span>
                   </div>
                 </div>
-                <div className="modal-product-description">
+                <div className="market-modal-product-description">
                   <h3>Description</h3>
-                  <p style={{color:"black"}}>{selectedProduct.description}</p>
+                  <p>{selectedProduct.details ? selectedProduct.details.description : ""}</p>
                 </div>
 
-                <div className="modal-product-features">
+                <div className="market-modal-product-features">
                   <h3>Key Features</h3>
                   <ul>
-                    {selectedProduct.features.map((feature, index) => (
-                      <li key={index} style={{color:"black"}}>{feature}</li>
-                    ))}
+                    {selectedProduct.details && selectedProduct.details.features ? (
+                      selectedProduct.details.features.map((feature, index) => <li key={index}>{feature.data}</li>)
+                    ) : (
+                      <li>No features available</li>
+                    )}
                   </ul>
                 </div>
 
-                <div className="modal-product-specs">
-                  <h3>Specifications</h3>
-                  <table>
-                    <tbody>
-                      {selectedProduct.specifications.map((spec, index) => (
-                        <tr key={index}>
-                          <td className="spec-name" style={{color:"black"}}>{spec.name}</td>
-                          <td className="spec-value" style={{color:"black"}}>{spec.value}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+               {/* Specifications Section - Highlighted */}
+                {selectedProduct.details &&
+                  selectedProduct.details.specifications &&
+                  selectedProduct.details.specifications.length > 0 && (
+                    <div className="market-modal-product-specs">
+                      <h3>Specifications</h3>
+                      <div className="market-specs-container">
+                        {selectedProduct.details.specifications.map((spec, index) => (
+                          <div key={index} className="market-spec-item">
+                            <div className="market-spec-header">
+                              <h4>{spec.details ? spec.details.productname : `Specification ${index + 1}`}</h4>
+                            </div>
+                            <br />
+                            {
+                              spec.system.stocks < 1 ?
+                              (
+                                <p>Cannot add to cart: <span style={{color: "tomato"}}>Out of stocks</span></p>
+                              )
+                              :
+                              (
+                              <button className="market-add-spec-to-cart" onClick={() => addToCart(spec)}>
+                                <Plus size={14} />
+                                Add to Cart
+                              </button>
+                              )
+                            }
+                            
+                            <br />
+                            <div className="market-spec-details">
+                              <p>{spec.details ? spec.details.description : ""}</p>
+                              <p>{spec.details.category}</p>
+                              
+                              <ul>
+                              {
+                                spec.details.features.map((features, featuresindx) => (
+                                  <li key={featuresindx}>{features.data}</li>
+                                ))
+                              }
+                              </ul>
 
-                <div className="modal-product-warranty">
+                              <p>Weight in grams: {spec.details.weightingrams} grams</p>
+
+                              <p>For age {spec.details.for.age}</p>
+                              <p>For {spec.details.for.part}</p>
+                              <p>For all {spec.details.for.gender} genders </p>
+                              <p>Reminder: {spec.details.for.reminder}</p>
+
+                              <p className="market-spec-price">
+                                {formatPrice(spec.details && spec.details.price ? spec.details.price.amount : 0)}
+                              </p>
+
+                              <p>Stocks: {spec.system.stocks}</p>
+
+                              <div className="market-spec-images">
+                                {
+                                  spec.images.map((specImage, specImageIndex) => {
+                                    return (
+                                      <img 
+                                        key={specImageIndex}
+                                        className="specimages"
+                                        src={specImage.url} 
+                                        alt="Product Specification Image"
+                                        onClick={() => openImageModal(specImage.url, 0)}
+                                        style={{ cursor: 'pointer' }}
+                                      />
+                                    )
+                                  })
+                                }
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                 )}
+
+                <div className="market-modal-product-warranty">
                   <h3>Warranty Information</h3>
-                  <p style={{color:"black"}}>{selectedProduct.warranty}</p>
-                </div>
-
-                <div className="modal-product-stock">
                   <p>
-                    <span className={selectedProduct.stock > 0 ? "in-stock" : "out-of-stock"}>
-                      {selectedProduct.stock > 0 ? "In Stock" : "Out of Stock"}
-                    </span>
-                    {selectedProduct.stock > 0 && `: ${selectedProduct.stock} units`}
+                    {selectedProduct.details ? selectedProduct.details.warranty : "No warranty information available"}
                   </p>
                 </div>
 
-                <div className="modal-product-actions">
-                  <div className="quantity-selector">
-                    <label htmlFor="product-quantity">Quantity:</label>
-                    <div className="quantity-controls">
-                      <button
-                        className="quantity-btn"
-                        onClick={() => setQuantity((prev) => Math.max(1, prev - 1))}
-                        aria-label="Decrease quantity"
-                      >
-                        -
-                      </button>
-                      <input
-                        id="product-quantity"
-                        type="number"
-                        min="1"
-                        step="1"
-                        max={selectedProduct.stock}
-                        value={quantity}
-                        onChange={(e) => {
-                          const inputValue = e.target.value === '' ? 1 : parseInt(e.target.value, 10);
-                          const newQuantity = Math.min(
-                            selectedProduct.stock, 
-                            Math.max(1, inputValue)
-                          );
-                          setQuantity(newQuantity);
-                        }}
-                        aria-label="Product quantity"
-                      />
-                      <button
-                        className="quantity-btn"
-                        onClick={() => setQuantity((prev) => Math.min(selectedProduct.stock, prev + 1))}
-                        aria-label="Increase quantity"
-                      >
-                        +
-                      </button>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => {
-                      addToCart(selectedProduct, quantity)
-                      closeProductModal()
-                    }}
-                    className="modal-add-to-cart"
-                    disabled={selectedProduct.stock <= 0}
-                  >
-                    {selectedProduct.stock > 0 ? "Add to Cart" : "Out of Stock"}
+                <div className="market-modal-product-actions">
+                  <button className="market-modal-wishlist">
+                    <Heart size={16} />
+                    Add to Wishlist
                   </button>
                 </div>
               </div>
@@ -867,24 +816,105 @@ const Market = (props) => {
         </div>
       )}
 
-      <footer className="site-footer">
-        <div className="footer-content">
-          <div className="footer-section">
+      {/* Enhanced Full Screen Image Modal */}
+      {imageModalOpen && (
+        <div className="market-fullscreen-modal">
+          <div className="market-fullscreen-modal-content">
+            <button onClick={closeImageModal} className="market-close-fullscreen-modal" aria-label="Close fullscreen view">
+              <X size={24} />
+            </button>
+            <div className="market-fullscreen-image-container">
+              <button onClick={prevImage} className="market-fullscreen-nav market-prev-image" aria-label="Previous image">
+                <ChevronLeft size={36} />
+              </button>
+              <img
+                src={fullScreenImage || "/placeholder.svg?height=800&width=800"}
+                alt="Full screen view"
+                className="market-fullscreen-image"
+              />
+              <button onClick={nextImage} className="market-fullscreen-nav market-next-image" aria-label="Next image">
+                <ChevronRight size={36} />
+              </button>
+            </div>
+            <div className="market-fullscreen-image-counter">
+              {selectedProduct && selectedProduct.images && (
+                <span>
+                  {activeImageIndex + 1} / {selectedProduct.images.length}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Screen Video Modal */}
+      {fullScreenVideo && selectedProduct && selectedProduct.videos && selectedProduct.videos.length > 0 && (
+        <div className="market-fullscreen-modal">
+          <div className="market-fullscreen-modal-content">
+            <button onClick={() => setFullScreenVideo(false)} className="market-close-fullscreen-modal" aria-label="Close fullscreen video">
+              <X size={24} />
+            </button>
+            <div className="market-fullscreen-video-container">
+              <video
+                src={selectedProduct.videos[0].url}
+                controls
+                autoPlay
+                className="market-fullscreen-video"
+              >
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Screen Image Modal */}
+      {imageModalOpen && (
+        <div className="market-image-modal">
+          <button onClick={closeImageModal} className="market-close-image-modal" aria-label="Close image">
+            <X />
+          </button>
+          <div className="market-fullscreen-image-container">
+            <button onClick={prevImage} className="market-image-nav market-prev-image" aria-label="Previous image">
+              <ChevronLeft />
+            </button>
+            <img
+              src={fullScreenImage || "/placeholder.svg?height=800&width=800"}
+              alt="Full screen view"
+              className="market-fullscreen-image"
+            />
+            <button onClick={nextImage} className="market-image-nav market-next-image" aria-label="Next image">
+              <ChevronRight />
+            </button>
+          </div>
+          <div className="market-image-counter">
+            {selectedProduct && selectedProduct.images && (
+              <span>
+                {activeImageIndex + 1} / {selectedProduct.images.length}
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      <footer className="market-site-footer">
+        <div className="market-footer-content">
+          <div className="market-footer-section">
             <h3>ShopEase</h3>
             <p>Your one-stop shop for premium products at competitive prices.</p>
-            <div className="social-links">
+            <div className="market-social-links">
               <a href="#" aria-label="Facebook">
-                Facebook
+                <Facebook />
               </a>
               <a href="#" aria-label="Twitter">
-                Twitter
+                <Twitter />
               </a>
               <a href="#" aria-label="Instagram">
-                Instagram
+                <Instagram />
               </a>
             </div>
           </div>
-          <div className="footer-section">
+          <div className="market-footer-section">
             <h3>Quick Links</h3>
             <ul>
               <li>
@@ -901,7 +931,7 @@ const Market = (props) => {
               </li>
             </ul>
           </div>
-          <div className="footer-section">
+          <div className="market-footer-section">
             <h3>Customer Service</h3>
             <ul>
               <li>
@@ -918,16 +948,16 @@ const Market = (props) => {
               </li>
             </ul>
           </div>
-          <div className="footer-section">
+          <div className="market-footer-section">
             <h3>Newsletter</h3>
             <p>Subscribe to receive updates on new arrivals and special offers.</p>
-            <form className="newsletter-form">
+            <form className="market-newsletter-form">
               <input type="email" placeholder="Your email address" aria-label="Email for newsletter" />
               <button type="submit">Subscribe</button>
             </form>
           </div>
         </div>
-        <div className="footer-bottom">
+        <div className="market-footer-bottom">
           <p>&copy; {new Date().getFullYear()} ShopEase. All rights reserved.</p>
         </div>
       </footer>
@@ -937,3 +967,11 @@ const Market = (props) => {
 }
 
 export default Market
+
+
+
+
+
+
+
+

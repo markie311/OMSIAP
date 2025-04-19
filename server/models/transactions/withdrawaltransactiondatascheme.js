@@ -173,8 +173,15 @@ amounts: {
   type: 'number',
   default: 0
  }
+},
+referrence: {
+  gcashphonenumber: {
+    type: 'string'
+  }
 }
 }
 });
 
-module.exports = withdrawaltransactiondatascheme;
+const WidthdrawalTransactionDataModel = mongoose.model("Widthdrawal", withdrawaltransactiondatascheme)
+
+module.exports = WidthdrawalTransactionDataModel;

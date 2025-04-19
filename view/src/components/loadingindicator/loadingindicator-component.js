@@ -1,79 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+
 import '../../styles/loadingindicator/loadingindicator.scss';
 
-const LoadingIndicator = (props, onLoadComplete) => {
+import { useLoading } from '../loadingcontext/loadingcontext.js';
 
+const LoadingIndicator = ({ isVisible, loadingindicatormodal, loadingindicatormodalcb }) => {
+  const { loadingState } = useLoading();
   const [progress, setProgress] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
   const [loadingText, setLoadingText] = useState('Loading resources');
-
+  const progressInterval = useRef(null);
+  
+  // Calculate overall progress based on loading states
+  const calculateProgress = () => {
+    const totalResources = Object.keys(loadingState).length;
+    const loadedResources = Object.values(loadingState).filter(state => state === false).length;
+    return Math.max(5, Math.min(100, (loadedResources / totalResources) * 100));
+  };
+  
   useEffect(() => {
-    // Simulate fetching resources and loading the site
-    const simulateLoading = () => {
-      const interval = setInterval(() => {
+    // If we're visible, start progress animation
+    if (isVisible) {
+      // Clear any existing interval
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+      
+      // Start a new progress animation
+      progressInterval.current = setInterval(() => {
+        const calculatedProgress = calculateProgress();
+        
         setProgress(prevProgress => {
+          // Don't go backwards, and don't jump too far ahead
+          const targetProgress = Math.max(prevProgress, 
+            Math.min(calculatedProgress, prevProgress + 2));
+          
           // Update loading text based on progress
-          if (prevProgress >= 30 && prevProgress < 60) {
+          if (targetProgress >= 30 && targetProgress < 60) {
             setLoadingText('Initializing application');
-          } else if (prevProgress >= 60 && prevProgress < 90) {
+          } else if (targetProgress >= 60 && targetProgress < 90) {
             setLoadingText('Preparing your experience');
-          } else if (prevProgress >= 90) {
+          } else if (targetProgress >= 90) {
             setLoadingText('Almost ready');
           }
-
-          const newProgress = prevProgress + Math.random() * 10;
           
-          // When loading completes
-          if (newProgress >= 100) {
-            clearInterval(interval);
+          // If we've reached 100%, hide the indicator after a short delay
+          if (targetProgress >= 100) {
             setTimeout(() => {
-              setIsLoading(false);
-              if (onLoadComplete) onLoadComplete();
+              loadingindicatormodalcb('none');
             }, 500);
-          //  props.userdashboardmodalcb("flex");
-            return 100;
+            clearInterval(progressInterval.current);
           }
           
-      
-          return newProgress;
+          return targetProgress;
         });
-      }, 400);
-
-      // Clean up interval on component unmount
-      return () => clearInterval(interval);
-    };
-
-    // Check if the document and all resources are fully loaded
-    if (document.readyState === 'complete') {
-      simulateLoading();
+      }, 100);
     } else {
-      window.addEventListener('load', simulateLoading);
-      return () => window.removeEventListener('load', simulateLoading);
+      // We're not visible, clear the interval
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
     }
-  }, [onLoadComplete]);
-
+    
+    // Clean up on component unmount
+    return () => {
+      if (progressInterval.current) {
+        clearInterval(progressInterval.current);
+      }
+    };
+  }, [isVisible, loadingState]);
+  
   // Format progress to display at most one decimal place
   const formattedProgress = Math.min(100, Math.floor(progress * 10) / 10);
-
-  if (!isLoading) {
+  
+  if (loadingindicatormodal === 'none') {
     return null;
   }
-
+  
   return (
-    <div className="loading-container"
-         style={{display: props.loadingindicatormodal}}>
+    <div className="loading-container" style={{ display: loadingindicatormodal }}>
       <div className="loading-content">
         <div className="logo-container">
           <div className="logo">
-            {/* You can replace this with your logo SVG or image */}
-            <span>YourLogo</span>
+            {/* Replace with your logo */}
+            <span>OMSIAP</span>
           </div>
         </div>
         
         <div className="progress-container">
           <div className="progress-bar">
-            <div 
-              className="progress-fill" 
+            <div
+              className="progress-fill"
               style={{ width: `${formattedProgress}%` }}
             ></div>
           </div>
