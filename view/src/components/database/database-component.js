@@ -7,6 +7,9 @@ import { useState, useEffect, useRef } from "react"
 import { Container, Row, Col, Button, Form, Spinner } from "react-bootstrap"
 
 import { FaEye, 
+         FaLayerGroup, 
+         FaSpinner,
+         FaHistory,
          FaEdit, 
          FaFileImage, 
          FaBoxOpen, 
@@ -439,71 +442,67 @@ function DatabaseComponent() {
     verifiedmfatipregistrantscb, pendingmfatipregistrantscb, mfatipregistrantsrejecteddocumentscb
   ]);
 
-  const fetchOmsiapData = async () => {
+ // Client-side fetchOmsiapData function
+const fetchOmsiapData = async () => {
+
+  try {
+    const response = await axiosCreatedInstance.get("/omsiap/getomsiapdata");
+    const omsiapdata = response.data;
     
-    try {
-      const response = await axiosCreatedInstance.get("/omsiap/getomsiapdata");
-      const omsiapdata = response.data;
-
-      // Process transactions data
-      if (omsiapdata && omsiapdata.transactions) {
-        const { orders, currencyexchange, withdrawals } = omsiapdata.transactions;
-
-        // Update orders data
-        if (orders) {
-          totalorderscb(orders.total || []);
-          pendingorderscb(orders.pending || []);
-          acceptedorderscb(orders.accepted || []);
-          rejectedorderscb(orders.rejected || []);
-        }
-
-        // Update deposits data
-        if (currencyexchange) {
-          totalcurrencyexchangecb(currencyexchange.total || []);
-          pendingcurrencyexchangecb(currencyexchange.pending || []);
-          successfulcurrencyexchangecb(currencyexchange.successful || []);
-          rejectedcurrencyexchangecb(currencyexchange.rejected || []);
-        }
-
-        // Update withdrawals data
-        if (withdrawals) {
-          totalwithdrawalscb(withdrawals.total || []);
-          pendingwithdrawalscb(withdrawals.pending || []);
-          successfulwithdrawalscb(withdrawals.successful || []);
-          rejectedwithdrawalscb(withdrawals.rejected || []);
-        }
+    // Process transactions data
+    if (omsiapdata && omsiapdata.transactions) {
+      // Update orders data
+      if (omsiapdata.transactions.orders) {
+        totalorderscb(omsiapdata.transactions.orders.total || []);
+        pendingorderscb(omsiapdata.transactions.orders.pending || []);
+        acceptedorderscb(omsiapdata.transactions.orders.accepted || []);
+        rejectedorderscb(omsiapdata.transactions.orders.rejected || []);
       }
-
-      // Process MFATIP registrants data
-      if (omsiapdata && omsiapdata.people) {
-        const verified = [];
-        const pending = [];
-        const rejected = [];
-
-        omsiapdata.people.forEach(person => {
-          if (person.status.type === "complete") {
-            verified.push(person);
-          } else if (
-            person.status.type === "incomplete" && 
-            person.status.indication === "pending documents"
-          ) {
-            pending.push(person);
-          } else if (
-            person.status.type === "incomplete" && 
-            person.status.indication === "rejected documents"
-          ) {
-            rejected.push(person);
-          }
-        });
-
-        verifiedmfatipregistrantscb(verified);
-        pendingmfatipregistrantscb(pending);
-        mfatipregistrantsrejecteddocumentscb(rejected);
+      
+      // Update currency exchange data
+      if (omsiapdata.transactions.currencyexchange) {
+        totalcurrencyexchangecb(omsiapdata.transactions.currencyexchange.total || []);
+        pendingcurrencyexchangecb(omsiapdata.transactions.currencyexchange.pending || []);
+        successfulcurrencyexchangecb(omsiapdata.transactions.currencyexchange.successful || []);
+        rejectedcurrencyexchangecb(omsiapdata.transactions.currencyexchange.rejected || []);
       }
-    } catch (err) {
-      console.error('Error fetching OMSIAP data:', err);
+      
+      // Update withdrawals data
+      if (omsiapdata.transactions.withdrawals) {
+        totalwithdrawalscb(omsiapdata.transactions.withdrawals.total || []);
+        pendingwithdrawalscb(omsiapdata.transactions.withdrawals.pending || []);
+        successfulwithdrawalscb(omsiapdata.transactions.withdrawals.successful || []);
+        rejectedwithdrawalscb(omsiapdata.transactions.withdrawals.rejected || []);
+      }
     }
-  };
+    
+    // Process MFATIP registrants data
+    if (omsiapdata && omsiapdata.people) {
+      const verified = omsiapdata.people.filter(person => 
+        person.status && person.status.type === "complete"
+      );
+      
+      const pending = omsiapdata.people.filter(person => 
+        person.status && 
+        person.status.type === "incomplete" && 
+        person.status.indication === "pending documents"
+      );
+      
+      const rejected = omsiapdata.people.filter(person => 
+        person.status && 
+        person.status.type === "incomplete" && 
+        person.status.indication === "rejected documents"
+      );
+      
+      verifiedmfatipregistrantscb(verified);
+      pendingmfatipregistrantscb(pending);
+      mfatipregistrantsrejecteddocumentscb(rejected);
+    }
+  } catch (err) {
+    console.error('Error fetching OMSIAP data:', err);
+  }
+};
+
 
   const transactions = [
   {
@@ -5105,11 +5104,11 @@ useEffect(() => {
                 onMouseLeave={() => setActiveRow(null)}
               >
                 <td className="order-id">{transaction.id}s</td>
-                <td>{transaction.date}</td>
-                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
-                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
-                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
-                <td>{transaction.details.orderSummary.totalItems}</td>
+                <td>{transaction.statusesandlogs.date}</td>
+                <td className="order-amount">${transaction.system.ordersummary.merchandisetotal}</td>
+                <td>{transaction.system.shippinginfo.street}, {transaction.system.shippinginfo.trademark}, {transaction.system.shippinginfo.baranggay}, {transaction.system.shippinginfo.city}, {transaction.system.shippinginfo.province}, {transaction.system.shippinginfo.zipcode}, {transaction.system.shippinginfo.country}</td>
+                <td>{transaction.system.ordersummary.totalweightkilos} kg</td>
+                <td>{transaction.system.ordersummary.totalitems}</td>
                 <td className="action-buttons">
                   <button 
                     className="view-btn" 
@@ -6402,34 +6401,23 @@ const RejectedOrders = ({
   );
 };
 
-const OrderDetailsModal = ({ setShowOrderDetails,
-                             transaction   }) => {
+const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
+  const [stockStatus, setStockStatus] = useState({});
+  const [isChecking, setIsChecking] = useState({});
   
   if (!transaction) return null;
-
-  const {
-    id,
-    date,
-    type,
-    amount,
-    status,
-    paymentmethod,
-    details
-  } = transaction;
-
-  const { products, shippingInfo, orderSummary } = details || {};
-  const { address, city, state, zipCode, country } = shippingInfo || {};
 
   // Format currency
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(value);
+    }).format(value || 0);
   };
 
   // Format date
   const formatDate = (dateString) => {
+    if (!dateString) return "No date available";
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -6437,30 +6425,17 @@ const OrderDetailsModal = ({ setShowOrderDetails,
     });
   };
 
-  {/*
-  // Handle escape key press to close modal
-  useEffect(() => {
-    const handleEscKey = (event) => {
-      if (event.key === 'Escape') {
-        handleClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscKey);
-    return () => {
-      document.removeEventListener('keydown', handleEscKey);
-    };
-  }, []);
-  */}
-
   // Handle click outside modal to close
   const handleOverlayClick = (e) => {
     if (e.target.className === 'modal-overlay') {
+      setShowOrderDetails(false);
     }
   };
 
   // Get status color
   const getStatusColor = (status) => {
+    if (!status) return 'var(--status-default)';
+    
     switch (status.toLowerCase()) {
       case 'pending':
         return 'var(--status-pending)';
@@ -6470,42 +6445,127 @@ const OrderDetailsModal = ({ setShowOrderDetails,
         return 'var(--status-shipped)';
       case 'delivered':
         return 'var(--status-delivered)';
+      case 'accepted':
+        return 'var(--status-delivered)';
+      case 'rejected':
       case 'cancelled':
         return 'var(--status-cancelled)';
       default:
         return 'var(--status-default)';
     }
   };
+  
+  // Check stock availability
+  const checkStock = (productId) => {
+    setIsChecking(prev => ({ ...prev, [productId]: true }));
+    
+    // Simulate API call to check stock
+    setTimeout(() => {
+      // Generate random stock status for demonstration
+      const available = Math.floor(Math.random() * 20);
+      setStockStatus(prev => ({ 
+        ...prev, 
+        [productId]: {
+          count: available,
+          status: available > 0 ? 'available' : 'out-of-stock'
+        }
+      }));
+      setIsChecking(prev => ({ ...prev, [productId]: false }));
+    }, 800);
+  };
+  
+  // Get stock status indicator color
+  const getStockStatusColor = (status) => {
+    switch(status) {
+      case 'available':
+        return 'var(--status-shipped)';
+      case 'out-of-stock':
+        return 'var(--status-cancelled)';
+      default:
+        return 'var(--status-default)';
+    }
+  };
+  
+  // Get fallback image when product image is not available
+  const getFallbackImage = (category) => {
+    switch(category?.toLowerCase()) {
+      case 'electronics':
+        return '/images/electronics-placeholder.jpg';
+      case 'clothing':
+        return '/images/clothing-placeholder.jpg';
+      case 'furniture':
+        return '/images/furniture-placeholder.jpg';
+      case 'food':
+        return '/images/food-placeholder.jpg';
+      default:
+        return '/images/product-placeholder.jpg';
+    }
+  };
+  
+  // Extract data from the merchandise transaction schema
+  const id = transaction.id || 'No ID';
+  const date = transaction.statusesandlogs?.date || 'No Date';
+  const status = transaction.statusesandlogs?.status || 'Unknown';
+  const paymentMethod = transaction.details?.paymentmethod || 'Unknown';
+  
+  // Extract shipping information
+  const shippingInfo = transaction.system?.shippinginfo || {};
+  const {
+    street = '',
+    trademark = '',
+    baranggay = '',
+    city = '',
+    province = '',
+    zipcode = '',
+    country = ''
+  } = shippingInfo;
+  
+  // Extract products from merchandise list
+  const products = transaction.details?.merchandise?.list || [];
+  
+  // Extract order summary
+  const orderSummary = transaction.system?.ordersummary || {};
+  const {
+    merchandisetotal = 0,
+    shippingtotal = 0,
+    totalcapital = 0,
+    totaltransactiongiveaway = 0,
+    totalprofit = 0,
+    totalitems = 0,
+    totalweightgrams = 0,
+    totalweightkilos = 0
+  } = orderSummary;
+  
+  // Calculate total amount
+  const totalAmount = Number(merchandisetotal || 0) + Number(shippingtotal || 0);
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="order-details-modal">
         <button className="close-button" 
-                onClick={()=> {
-                  setShowOrderDetails(false)   
-                }}>
+                onClick={() => setShowOrderDetails(false)}>
           <FaTimes />
         </button>
         <h2 className="modal-title">Order Details</h2>
         
         <div className="order-section">
           <h3><FaReceipt className="section-icon" /> Transaction Information</h3>
-          <div className="info-grid">
+          <div className="info-grid transaction-info">
             <div className="info-item">
               <span className="info-label">Order ID:</span>
               <span className="info-value highlight">{id}</span>
             </div>
             <div className="info-item">
               <span className="info-label"><FaCalendarAlt className="info-icon" /> Date:</span>
-              <span className="info-value">{formatDate(date)}</span>
+              <span className="info-value bright-text">{formatDate(date)}</span>
             </div>
             <div className="info-item">
-              <span className="info-label"><FaTag className="info-icon" /> Type:</span>
-              <span className="info-value">{type}</span>
+              <span className="info-label"><FaTag className="info-icon" /> Intent:</span>
+              <span className="info-value bright-text">{transaction.intent || 'N/A'}</span>
             </div>
             <div className="info-item">
-              <span className="info-label"><FaDollarSign className="info-icon" /> Amount:</span>
-              <span className="info-value highlight">{formatCurrency(amount)}</span>
+              <span className="info-label"><FaDollarSign className="info-icon" /> Total Amount:</span>
+              <span className="info-value highlight">{formatCurrency(totalAmount)}</span>
             </div>
             <div className="info-item">
               <span className="info-label">Status:</span>
@@ -6516,64 +6576,193 @@ const OrderDetailsModal = ({ setShowOrderDetails,
             </div>
             <div className="info-item">
               <span className="info-label"><FaCreditCard className="info-icon" /> Payment Method:</span>
-              <span className="info-value">{paymentmethod}</span>
+              <span className="info-value bright-text">{paymentMethod}</span>
             </div>
           </div>
         </div>
 
-        {shippingInfo && (
-          <div className="order-section">
-            <h3><FaShippingFast className="section-icon" /> Shipping Information</h3>
-            <div className="shipping-info">
-              <p className="address-line">{address}</p>
-              <p className="address-line">{city}, {state} {zipCode}</p>
-              <p className="address-line">{country}</p>
-            </div>
+        <div className="order-section">
+          <h3><FaShippingFast className="section-icon" /> Shipping Information</h3>
+          <div className="shipping-info">
+            {street && <p className="address-line">{street}</p>}
+            {trademark && <p className="address-line">{trademark}</p>}
+            {baranggay && <p className="address-line">{baranggay}</p>}
+            <p className="address-line">
+              {city}{city && province ? ', ' : ''}{province} {zipcode}
+            </p>
+            {country && <p className="address-line">{country}</p>}
           </div>
-        )}
+        </div>
 
         {products && products.length > 0 && (
           <div className="order-section">
             <h3><FaBox className="section-icon" /> Products</h3>
-            <div className="products-list">
-              {products.map((product, index) => (
-                <div key={index} className="product-item">
-                  <span className="product-name">{product.name}</span>
-                  <span className="product-price">{formatCurrency(product.price)}</span>
-                </div>
-              ))}
+            <div className="products-list enhanced">
+              {products.map((product, index) => {
+                const productId = product.authentications?.id || `product-${index}`;
+                const productStockStatus = stockStatus[productId];
+                const productImage = product.images && product.images.length > 0 
+                  ? product.images[0].url 
+                  : getFallbackImage(product.details?.category);
+                
+                return (
+                  <div key={index} className="product-item enhanced">
+                    <div className="product-image-container">
+                      <img 
+                        src={productImage} 
+                        alt={product.details?.productname || 'Product'} 
+                        className="product-image"
+                        onError={(e) => {
+                          e.target.onerror = null; 
+                          e.target.src = getFallbackImage();
+                        }}
+                      />
+                    </div>
+                    
+                    <div className="product-details">
+                      <div className="product-info-primary">
+                        <span className="product-name">{product.details?.productname || 'Unnamed Product'}</span>
+                        <span className="product-price">
+                          {formatCurrency(product.details?.price?.amount)}
+                        </span>
+                      </div>
+                      
+                      <div className="product-info-secondary">
+                        {product.details?.category && 
+                          <span className="product-category">
+                            <FaTag className="category-icon" /> {product.details.category}
+                          </span>
+                        }
+                        {product.details?.weightingrams && 
+                          <span className="product-weight">
+                            <FaWeight className="weight-icon" /> {product.details.weightingrams}g
+                          </span>
+                        }
+                        {product.quantity && 
+                          <span className="product-quantity">
+                            <FaLayerGroup className="quantity-icon" /> Qty: {product.quantity}
+                          </span>
+                        }
+                      </div>
+                      
+                      {product.details?.description && (
+                        <p className="product-description">{product.details.description}</p>
+                      )}
+                    </div>
+                    
+                    <div className="product-stock-check">
+                      {!productStockStatus && !isChecking[productId] ? (
+                        <button 
+                          className="check-stock-btn"
+                          onClick={() => checkStock(productId)}
+                        >
+                          <FaSearch className="check-icon" /> Check Stock
+                        </button>
+                      ) : isChecking[productId] ? (
+                        <div className="checking-status">
+                          <FaSpinner className="spin-icon" /> Checking...
+                        </div>
+                      ) : (
+                        <div className="stock-status" 
+                             style={{ backgroundColor: getStockStatusColor(productStockStatus.status) }}>
+                          {productStockStatus.status === 'available' ? (
+                            <>
+                              <FaCheckCircle className="status-icon" /> 
+                              In Stock ({productStockStatus.count} available)
+                            </>
+                          ) : (
+                            <>
+                              <FaTimesCircle className="status-icon" /> 
+                              Out of Stock
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
 
-        {orderSummary && (
-          <div className="order-section summary-section">
-            <h3><FaReceipt className="section-icon" /> Order Summary</h3>
-            <div className="summary-grid">
-              <div className="summary-item">
-                <span className="summary-label">Merchandise Total:</span>
-                <span className="summary-value">{formatCurrency(orderSummary.merchandiseTotal)}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Shipping Total:</span>
-                <span className="summary-value">{formatCurrency(orderSummary.shippingTotal)}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Total Items:</span>
-                <span className="summary-value">{orderSummary.totalItems}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Total Products:</span>
-                <span className="summary-value">{orderSummary.totalProducts}</span>
-              </div>
-              <div className="summary-item">
-                <span className="summary-label">Weight:</span>
-                <span className="summary-value">{orderSummary.totalWeightKilos} kg ({orderSummary.totalWeightGrams} g)</span>
-              </div>
-              <div className="summary-item highlight-row">
-                <span className="summary-label">Total:</span>
-                <span className="summary-value total-value">{formatCurrency(orderSummary.total)}</span>
-              </div>
+        <div className="order-section summary-section">
+          <h3><FaReceipt className="section-icon" /> Order Summary</h3>
+          <div className="summary-grid">
+            <div className="summary-item">
+              <span className="summary-label">Merchandise Total:</span>
+              <span className="summary-value">{formatCurrency(merchandisetotal)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Shipping Total:</span>
+              <span className="summary-value">{formatCurrency(shippingtotal)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Capital:</span>
+              <span className="summary-value">{formatCurrency(totalcapital)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Transaction Giveaway:</span>
+              <span className="summary-value">{formatCurrency(totaltransactiongiveaway)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Profit:</span>
+              <span className="summary-value">{formatCurrency(totalprofit)}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Total Items:</span>
+              <span className="summary-value">{totalitems}</span>
+            </div>
+            <div className="summary-item">
+              <span className="summary-label">Weight:</span>
+              <span className="summary-value">{totalweightkilos} kg ({totalweightgrams} g)</span>
+            </div>
+            <div className="summary-item highlight-row">
+              <span className="summary-label">Total:</span>
+              <span className="summary-value total-value">{formatCurrency(totalAmount)}</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Customer Information Section */}
+        {transaction.system?.thistransactionismadeby && (
+          <div className="order-section">
+            <h3><FaUser className="section-icon" /> Customer Information</h3>
+            <div className="customer-info">
+              {transaction.system.thistransactionismadeby.name && (
+                <p className="customer-name">
+                  {transaction.system.thistransactionismadeby.name.firstname || ''}{' '}
+                  {transaction.system.thistransactionismadeby.name.middlename || ''}{' '}
+                  {transaction.system.thistransactionismadeby.name.lastname || ''}
+                </p>
+              )}
+              {transaction.system.thistransactionismadeby.id && (
+                <p className="customer-id">Customer ID: {transaction.system.thistransactionismadeby.id}</p>
+              )}
+            </div>
+          </div>
+        )}
+        
+        {/* Transaction Status History */}
+        {transaction.statusesandlogs?.logs && transaction.statusesandlogs.logs.length > 0 && (
+          <div className="order-section">
+            <h3><FaHistory className="section-icon" /> Transaction History</h3>
+            <div className="status-history">
+              {transaction.statusesandlogs.logs.map((log, index) => (
+                <div key={index} className="status-log">
+                  <div className="log-date">Date: {log.date}</div>
+                  <div className="log-type">Type: {log.type}</div>
+                  <div className="log-indication">Indication: {log.indication}</div>
+                  <p>Messages:</p>
+                  {log.messages && log.messages.length > 0 && (
+                    <div className="log-messages">
+                      {log.messages.map((msg, msgIndex) => (
+                        <div key={msgIndex} className="log-message">{msg.message}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         )}

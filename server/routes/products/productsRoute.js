@@ -460,13 +460,20 @@ function createTransactionRecord(orderData, registrant) {
   
   // Process products from the order data
   const productList = orderData.products.map(product => {
-    // Find full product details for each product in the order
-    const fullProductDetails = findFullProductDetails(product.id);
-    
-    // Add quantity from the order
-    fullProductDetails.quantity = product.quantity || 1;
-    
-    return fullProductDetails;
+    // If the product already has full details, use them
+    if (product.authentications && product.details) {
+      // Ensure quantity is set
+      product.quantity = product.quantity || 1;
+      return product;
+    } else {
+      // Otherwise find full product details for each product in the order
+      const fullProductDetails = findFullProductDetails(product.id);
+      
+      // Add quantity from the order
+      fullProductDetails.quantity = product.quantity || 1;
+      
+      return fullProductDetails;
+    }
   });
   
   // Create the transaction record following the merchandisetransactiondatascheme
@@ -520,33 +527,33 @@ function createTransactionRecord(orderData, registrant) {
           lastname: orderData.personalInfo?.lastName || registrant.name?.lastname || ""
         },
         address: {
-          street: orderData.personalInfo?.address?.street || "",
-          trademark: orderData.personalInfo?.address?.trademark || "",
-          baranggay: orderData.personalInfo?.address?.baranggay || "",
-          city: orderData.personalInfo?.address?.city || "",
-          province: orderData.personalInfo?.address?.province || "",
-          postal_zip_code: orderData.personalInfo?.address?.zipCode || "",
-          country: orderData.personalInfo?.address?.country || ""
+          street: orderData.personalInfo?.street || "",
+          trademark: orderData.personalInfo?.trademark || "",
+          baranggay: orderData.personalInfo?.baranggay || "",
+          city: orderData.personalInfo?.city || "",
+          province: orderData.personalInfo?.province || "",
+          postal_zip_code: orderData.personalInfo?.zipCode || "",
+          country: orderData.personalInfo?.country || ""
         }
       },
       ordersummary: {
-        merchandisetotal: parseFloat(orderData.orderSummary?.total || 0),
-        shippingtotal: parseFloat(orderData.orderSummary?.shippingCost || 0),
+        merchandisetotal: parseFloat(orderData.orderSummary?.merchandiseTotal || 0),
+        shippingtotal: parseFloat(orderData.orderSummary?.shippingTotal || 0),
         totalcapital: parseFloat(orderData.orderSummary?.totalCapital || 0),
         totaltransactiongiveaway: parseFloat(orderData.orderSummary?.totalTransactionGiveaway || 0),
-        totalprofit: parseFloat(orderData.orderSummary?.totalProfit || 0),
-        totalitems: orderData.products?.reduce((total, product) => total + (product.quantity || 1), 0) || 0,
+        totalprofit: parseFloat(orderData.orderSummary?.totalOmsiaProfit || 0),
+        totalitems: orderData.orderSummary?.totalItems || orderData.products?.reduce((total, product) => total + (product.quantity || 1), 0) || 0,
         totalweightgrams: parseFloat(orderData.orderSummary?.totalWeightGrams || 0),
         totalweightkilos: parseFloat(orderData.orderSummary?.totalWeightKilos || 0)
       },
       shippinginfo: {
-        street: orderData.personalInfo?.address?.street || "",
-        trademark: orderData.personalInfo?.address?.trademark || "",
-        baranggay: orderData.personalInfo?.address?.baranggay || "",
-        city: orderData.personalInfo?.address?.city || "",
-        province: orderData.personalInfo?.address?.province || "",
-        zipcode: orderData.personalInfo?.address?.zipCode || "",
-        country: orderData.personalInfo?.address?.country || ""
+        street: orderData.personalInfo?.street || "",
+        trademark: orderData.personalInfo?.trademark || "",
+        baranggay: orderData.personalInfo?.baranggay || "",
+        city: orderData.personalInfo?.city || "",
+        province: orderData.personalInfo?.province || "",
+        zipcode: orderData.personalInfo?.zipCode || "",
+        country: orderData.personalInfo?.country || ""
       }
     }
   };

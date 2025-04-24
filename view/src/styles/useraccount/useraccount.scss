@@ -398,146 +398,434 @@
     background-color: var(--secondary-color);
   }
   
-  /* =========== Transactions Tab =========== */
-  .userdashboard-transactions-panel {
-    background-color: white;
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    box-shadow: var(--box-shadow);
+  /* Transaction Tab Styles */
+.userdashboard-transactions-panel {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.userdashboard-transactions-section {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.userdashboard-no-transactions {
+  text-align: center;
+  padding: 40px 0;
+  color: #666;
+}
+
+.userdashboard-transactions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.userdashboard-transaction-item {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.3s ease;
+  border-left: 4px solid #ddd;
+}
+
+.userdashboard-transaction-item:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Transaction type specific colors */
+.userdashboard-transaction-item.userdashboard-merchandise {
+  border-left-color: #4caf50;
+}
+
+.userdashboard-transaction-item.userdashboard-currency-exchange {
+  border-left-color: #2196f3;
+}
+
+.userdashboard-transaction-item.userdashboard-withdrawal {
+  border-left-color: #ff9800;
+}
+
+.userdashboard-transaction-item.userdashboard-omsiapawas-transfer {
+  border-left-color: #9c27b0;
+}
+
+.userdashboard-transaction-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.userdashboard-transaction-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.userdashboard-transaction-id {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.userdashboard-transaction-date {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.userdashboard-transaction-status {
+  display: flex;
+  align-items: center;
+}
+
+.userdashboard-status-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.userdashboard-completed,
+.userdashboard-success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.userdashboard-pending,
+.userdashboard-processing {
+  background-color: #fff8e1;
+  color: #f57f17;
+}
+
+.userdashboard-rejected,
+.userdashboard-failed {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.userdashboard-transaction-details {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.userdashboard-transaction-type {
+  display: flex;
+  align-items: center;
+}
+
+.userdashboard-type-badge {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.userdashboard-merchandise {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.userdashboard-currency-exchange {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.userdashboard-withdrawal {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.userdashboard-omsiapawas-transfer {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.userdashboard-transaction-amount {
+  font-weight: bold;
+  font-size: 1.1rem;
+}
+
+.userdashboard-amount-positive {
+  color: #2e7d32;
+}
+
+.userdashboard-amount-negative {
+  color: #c62828;
+}
+
+.userdashboard-view-details {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.userdashboard-view-details-btn {
+  background-color: transparent;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: #555;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.userdashboard-view-details-btn:hover {
+  background-color: #f0f0f0;
+  border-color: #ccc;
+}
+
+/* Modal Styles */
+.userdashboard-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.userdashboard-modal-content {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+}
+
+.userdashboard-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #eee;
+}
+
+.userdashboard-modal-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.userdashboard-close-modal-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #666;
+  cursor: pointer;
+}
+
+.userdashboard-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.userdashboard-transaction-summary {
+  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 10px;
+}
+
+.userdashboard-summary-row {
+  display: flex;
+  margin-bottom: 8px;
+}
+
+.userdashboard-label {
+  font-weight: 600;
+  color: #555;
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.userdashboard-value {
+  color: #333;
+}
+
+.userdashboard-receipt-image-container {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.userdashboard-receipt-image-container h4 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.userdashboard-receipt-image {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 4px;
+  background-color: #fff;
+  transition: transform 0.2s ease;
+}
+
+.userdashboard-receipt-image:hover {
+  transform: scale(1.02);
+}
+
+.userdashboard-image-hint {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 5px;
+}
+
+.userdashboard-product-details {
+  margin-top: 20px;
+}
+
+.userdashboard-product-details h4 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.userdashboard-product-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.userdashboard-product-table th,
+.userdashboard-product-table td {
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.userdashboard-product-table th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  color: #555;
+}
+
+.userdashboard-product-details span {
+  display: block;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.userdashboard-product-quantity,
+.userdashboard-product-price,
+.userdashboard-product-subtotal {
+  text-align: right;
+}
+
+.userdashboard-total-label {
+  text-align: right;
+  font-weight: 600;
+  color: #333;
+}
+
+.userdashboard-total-amount {
+  text-align: right;
+  font-weight: 700;
+  color: #333;
+}
+
+.userdashboard-modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.userdashboard-modal-btn {
+  background-color: #f0f0f0;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.userdashboard-modal-btn:hover {
+  background-color: #e0e0e0;
+}
+
+/* Full-size Image Modal */
+.userdashboard-full-size-modal .userdashboard-modal-content {
+  background-color: transparent;
+  box-shadow: none;
+  max-width: 90%;
+  max-height: 90%;
+  overflow: visible;
+}
+
+.userdashboard-image-modal-content {
+  position: relative;
+  padding: 0;
+}
+
+.userdashboard-image-modal-content .userdashboard-close-modal-btn {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  z-index: 10;
+}
+
+.userdashboard-full-size-image {
+  max-width: 100%;
+  max-height: 90vh;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .userdashboard-transaction-summary {
+    grid-template-columns: 1fr;
   }
-  
-  .userdashboard-transactions-section h2 {
-    color: var(--primary-color);
-    margin-bottom: 1.5rem;
-    font-size: 1.25rem;
-    border-bottom: 1px solid var(--medium-gray);
-    padding-bottom: 0.75rem;
-  }
-  
-  .userdashboard-transactions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .userdashboard-transaction-item {
-    background-color: #fff;
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--medium-gray);
-  }
-  
-  .userdashboard-transaction-header {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-    align-items: center;
-  }
-  
-  .userdashboard-transaction-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .userdashboard-transaction-id {
-    font-size: 0.8rem;
-    color: var(--dark-gray);
-  }
-  
-  .userdashboard-transaction-date {
-    font-size: 0.9rem;
-    color: var(--dark-gray);
-  }
-  
-  .userdashboard-status-badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 1rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--dark-gray);
-  }
-  
-  .userdashboard-status-completed {
-    background-color: rgba(46, 204, 113, 0.1);
-    color: var(--success-color);
-  }
-  
-  .userdashboard-status-pending {
-    background-color: rgba(243, 156, 18, 0.1);
-    color: var(--warning-color);
-  }
-  
-  .userdashboard-status-failed {
-    background-color: rgba(231, 76, 60, 0.1);
-    color: var(--danger-color);
-  }
-  
+
+  .userdashboard-transaction-header,
   .userdashboard-transaction-details {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
   }
-  
-  .userdashboard-type-badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-    color:#333;
-  }
-  
-  .userdashboard-type-deposit {
-    background-color: rgba(52, 152, 219, 0.1);
-    color: var(--primary-color);
-  }
-  
-  .userdashboard-type-withdrawal {
-    background-color: rgba(231, 76, 60, 0.1);
-    color: var(--danger-color);
-  }
-  
-  .userdashboard-type-purchase {
-    background-color: rgba(46, 204, 113, 0.1);
-    color: var(--success-color);
-  }
-  
+
+  .userdashboard-transaction-status,
   .userdashboard-transaction-amount {
-    font-weight: 700;
-    font-size: 1.1rem;
+    margin-top: 8px;
   }
-  
-  .userdashboard-amount-positive {
-    color: var(--success-color);
+
+  .userdashboard-product-table {
+    display: block;
+    overflow-x: auto;
   }
-  
-  .userdashboard-amount-negative {
-    color: var(--danger-color);
+
+  .userdashboard-image-modal-content .userdashboard-close-modal-btn {
+    top: -30px;
+    right: 0;
   }
-  
-  .userdashboard-view-details {
-    display: flex;
-    justify-content: flex-end;
-  }
-  
-  .userdashboard-view-details-btn {
-    background-color: transparent;
-    border: none;
-    color: var(--primary-color);
-    font-size: 0.9rem;
-    cursor: pointer;
-    padding: 0.25rem 0.5rem;
-    transition: var(--transition);
-  }
-  
-  .userdashboard-view-details-btn:hover {
-    text-decoration: underline;
-  }
-  
+}
+
+
   /* =========== Settings Tab =========== */
   .userdashboard-settings-panel {
     background-color: white;

@@ -6,8 +6,11 @@ const mongoose = require('mongoose');
 const mongodb = require('../../lib/mongodb/database.js');
 
 const RegistrantDataModel = require('../../models/people/registrantdatascheme.js')
+
+const MerchandiseTransactionDataModel = require('../../models/transactions/merchandisetransactiondatascheme.js')
 const CurrencyExchangeTransactionDataModel = require('../../models/transactions/currencyexchangetransactiondatascheme.js')
-const WidthdrawalTransactionDataModel = require('../../models/transactions/withdrawaltransactiondatascheme.js');
+const WidthdrawalTransactionDataModel = require('../../models/transactions/withdrawaltransactiondatascheme.js')
+
 
 const multer = require('multer');
 const path = require('path');
@@ -19,43 +22,78 @@ const timestamps = require('../../lib/timestamps/timestamps');
 
 const bcrypt = require('bcrypt');
 
+// Server-side route handler
+Router.route("/getomsiapdata").get(async (req, res) => {
+  try {
+    // Fetch registrants data
+    const registrants = await RegistrantDataModel.find({}, { 
+      'passwords.account.password': 0 // Exclude password fields
+    });
 
-Router.route("/getomsiapdata").get( async(req, res)=> {
-
-    try {
-        // Connect to MongoDB
-        await mongoose.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
-          useNewUrlParser: true,
-          useUnifiedTopology: true,
-          dbName: 'omsiap',
-          autoCreate: false
-        });
-    
-        // Define the model (assuming you have an existing schema)
-        const OmsiapData = mongoose.model('datas', omsiapdatascheme);
-    
-        // Fetch the specific document
-        const omsiapdata = await OmsiapData.findById("Code-113-1143");
-    
-        // Remove passwords from people data
-        if (omsiapdata && omsiapdata.people) {
-          omsiapdata.people = omsiapdata.people.map(person => {
-            const { password, ...personWithoutPassword } = person.toObject();
-            return personWithoutPassword;
-          });
+    // Process registrants for status categorization
+    const people = registrants.map(person => {
+      const personObj = person.toObject();
+      return {
+        ...personObj,
+        status: {
+          type: personObj.registrationstatusesandlogs?.type || 'unknown',
+          indication: personObj.registrationstatusesandlogs?.indication || 'unknown'
         }
+      };
+    });
+
+    // Fetch merchandise transactions
+    const merchandiseTransactions = await MerchandiseTransactionDataModel.find({});
     
-        // Send the processed data
-        res.status(200).json(omsiapdata);
+    // Categorize merchandise transactions by status
+    const orders = {
+      total: merchandiseTransactions,
+      pending: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'pending'),
+      accepted: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'accepted'),
+      rejected: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
+    };
+
+    // Fetch currency exchange transactions
+    const currencyExchangeTransactions = await CurrencyExchangeTransactionDataModel.find({});
     
-      } catch (err) {
-        console.error('Error fetching OMSIAP data:', err);
-        res.status(500).json({ 
-          message: 'Error retrieving OMSIAP data', 
-          error: err.message 
-        });
+    // Categorize currency exchange transactions
+    const currencyexchange = {
+      total: currencyExchangeTransactions,
+      pending: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'pending'),
+      successful: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'successful'),
+      rejected: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
+    };
+
+    // Fetch withdrawal transactions
+    const withdrawalTransactions = await WidthdrawalTransactionDataModel.find({});
+    
+    // Categorize withdrawal transactions
+    const withdrawals = {
+      total: withdrawalTransactions,
+      pending: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'pending'),
+      successful: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'successful'),
+      rejected: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
+    };
+
+    // Construct response object
+    const responseData = {
+      people,
+      transactions: {
+        orders,
+        currencyexchange,
+        withdrawals
       }
-})
+    };
+
+    res.status(200).json(responseData);
+  } catch (err) {
+    console.error('Error fetching OMSIAP data:', err);
+    res.status(500).json({
+      message: 'Error retrieving OMSIAP data',
+      error: err.message
+    });
+  }
+});
 
 
 Router.route('/acceptorder').post(async (req, res) => {
