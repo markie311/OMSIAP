@@ -26,10 +26,10 @@ const bcrypt = require('bcrypt');
 Router.route("/getomsiapdata").get(async (req, res) => {
   try {
     // Fetch registrants data
-    const registrants = await RegistrantDataModel.find({}, { 
+    const registrants = await RegistrantDataModel.find({}, {
       'passwords.account.password': 0 // Exclude password fields
     });
-
+    
     // Process registrants for status categorization
     const people = registrants.map(person => {
       const personObj = person.toObject();
@@ -41,7 +41,7 @@ Router.route("/getomsiapdata").get(async (req, res) => {
         }
       };
     });
-
+    
     // Fetch merchandise transactions
     const merchandiseTransactions = await MerchandiseTransactionDataModel.find({});
     
@@ -49,10 +49,14 @@ Router.route("/getomsiapdata").get(async (req, res) => {
     const orders = {
       total: merchandiseTransactions,
       pending: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'pending'),
-      accepted: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'accepted'),
-      rejected: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
+      confirmed: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'confirmed'),
+      rejected: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected'),
+      // Add new order categories
+      forshipping: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'forshipping'),
+      shipped: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'shipped'),
+      successful: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'successful')
     };
-
+    
     // Fetch currency exchange transactions
     const currencyExchangeTransactions = await CurrencyExchangeTransactionDataModel.find({});
     
@@ -63,7 +67,7 @@ Router.route("/getomsiapdata").get(async (req, res) => {
       successful: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'successful'),
       rejected: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
     };
-
+    
     // Fetch withdrawal transactions
     const withdrawalTransactions = await WidthdrawalTransactionDataModel.find({});
     
@@ -74,7 +78,7 @@ Router.route("/getomsiapdata").get(async (req, res) => {
       successful: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'successful'),
       rejected: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
     };
-
+    
     // Construct response object
     const responseData = {
       people,
@@ -84,13 +88,279 @@ Router.route("/getomsiapdata").get(async (req, res) => {
         withdrawals
       }
     };
-
+    
     res.status(200).json(responseData);
   } catch (err) {
     console.error('Error fetching OMSIAP data:', err);
     res.status(500).json({
       message: 'Error retrieving OMSIAP data',
       error: err.message
+    });
+  }
+});
+
+// Confirm Order Route
+Router.route('/confirmorder').post(async (req, res) => {
+  
+  try {
+    const { _id } = req.body;
+    
+    // Input validation
+    if (!_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order ID is required'
+      });
+    }
+
+    // Find the merchandise transaction by ID
+    const merchandiseTransaction = await MerchandiseTransactionDataModel.findById(_id);
+    
+    // Check if transaction exists
+    if (!merchandiseTransaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found. Please refresh and try again.'
+      });
+    }
+
+    // Check if transaction is already confirmed
+    if (merchandiseTransaction.statusesandlogs.status === 'confirmed') {
+      return res.status(400).json({
+        success: false,
+        message: 'This order has already been confirmed'
+      });
+    }
+
+    // Check if transaction is in pending status
+    if (merchandiseTransaction.statusesandlogs.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot confirm order in ${merchandiseTransaction.statusesandlogs.status} status`
+      });
+    }
+
+    // Generate timestamp for the confirmation
+    const formattedDate = timestamps.getFormattedDate();
+    
+    // Update the statusesandlogs
+    merchandiseTransaction.statusesandlogs.status = 'confirmed';
+    merchandiseTransaction.statusesandlogs.indication = 'confirmed and processing';
+    merchandiseTransaction.statusesandlogs.date = formattedDate;
+    
+    // Add a new log entry
+    merchandiseTransaction.statusesandlogs.logs.push({
+      date: formattedDate,
+      type: 'confirmed',
+      indication: 'Order has been confirmed and is now being processed',
+      messages: [
+        { message: 'Order has been confirmed by administrator' },
+        { message: 'Your order is being prepared for shipping' }
+      ]
+    });
+
+    // Save the updated transaction
+    await merchandiseTransaction.save();
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: `Order ${_id} has been confirmed successfully`,
+      updatedTransaction: merchandiseTransaction
+    });
+    
+  } catch (err) {
+    console.error('Error confirming order:', err);
+    
+    // Handle specific MongoDB errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID format'
+      });
+    }
+    
+    // Handle other errors
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while confirming order'
+    });
+  }
+});
+
+// Order For Shipping Route
+Router.route('/orderforshipping').post(async (req, res) => {
+  try {
+    const { _id } = req.body;
+    
+    // Input validation
+    if (!_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order ID is required'
+      });
+    }
+
+    // Find the merchandise transaction by ID
+    const merchandiseTransaction = await MerchandiseTransactionDataModel.findById(_id);
+    
+    // Check if transaction exists
+    if (!merchandiseTransaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found. Please refresh and try again.'
+      });
+    }
+    
+    // Check if transaction is already for shipping
+    if (merchandiseTransaction.statusesandlogs.status === 'forshipping') {
+      return res.status(400).json({
+        success: false,
+        message: 'This order is already marked for shipping'
+      });
+    }
+    
+    // Check if transaction is in confirmed status
+    if (merchandiseTransaction.statusesandlogs.status !== 'confirmed') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot mark order for shipping when in ${merchandiseTransaction.statusesandlogs.status} status. Order must be confirmed first.`
+      });
+    }
+    
+    // Generate timestamp for the status update
+    const formattedDate = timestamps.getFormattedDate();
+    
+    // Update the statusesandlogs
+    merchandiseTransaction.statusesandlogs.status = 'forshipping';
+    merchandiseTransaction.statusesandlogs.indication = 'ready for shipping';
+    merchandiseTransaction.statusesandlogs.date = formattedDate;
+    
+    // Add a new log entry
+    merchandiseTransaction.statusesandlogs.logs.push({
+      date: formattedDate,
+      type: 'forshipping',
+      indication: 'Order has been marked for shipping',
+      messages: [
+        { message: 'Order has been prepared and is ready for shipping' },
+        { message: 'Your order will be dispatched soon' }
+      ]
+    });
+
+    // Save the updated transaction
+    await merchandiseTransaction.save();
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: `Order ${_id} has been marked for shipping successfully`,
+      updatedTransaction: merchandiseTransaction
+    });
+    
+  } catch (err) {
+    console.error('Error marking order for shipping:', err);
+    
+    // Handle specific MongoDB errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID format'
+      });
+    }
+    
+    // Handle other errors
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while marking order for shipping'
+    });
+  }
+});
+
+// Order Shipped Route
+Router.route('/ordershipped').post(async (req, res) => {
+  try {
+    const { _id } = req.body;
+    
+    // Input validation
+    if (!_id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Order ID is required'
+      });
+    }
+
+    // Find the merchandise transaction by ID
+    const merchandiseTransaction = await MerchandiseTransactionDataModel.findById(_id);
+    
+    // Check if transaction exists
+    if (!merchandiseTransaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Order not found. Please refresh and try again.'
+      });
+    }
+    
+    // Check if transaction is already shipped
+    if (merchandiseTransaction.statusesandlogs.status === 'shipped') {
+      return res.status(400).json({
+        success: false,
+        message: 'This order has already been marked as shipped'
+      });
+    }
+    
+    // Check if transaction is in forshipping status
+    if (merchandiseTransaction.statusesandlogs.status !== 'forshipping') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot mark order as shipped when in ${merchandiseTransaction.statusesandlogs.status} status. Order must be prepared for shipping first.`
+      });
+    }
+    
+    // Generate timestamp for the status update
+    const formattedDate = timestamps.getFormattedDate();
+    
+    // Update the statusesandlogs
+    merchandiseTransaction.statusesandlogs.status = 'shipped';
+    merchandiseTransaction.statusesandlogs.indication = 'shipped to customer';
+    merchandiseTransaction.statusesandlogs.date = formattedDate;
+    
+    // Add a new log entry
+    merchandiseTransaction.statusesandlogs.logs.push({
+      date: formattedDate,
+      type: 'shipped',
+      indication: 'Order has been shipped',
+      messages: [
+        { message: 'Order has been dispatched to shipping carrier' },
+        { message: 'Your order is on its way to you' },
+        { message: "Don't forget to set your shipped order into accepted once order was recieved to update the status of the order into successful" }
+      ]
+    });
+
+    // Save the updated transaction
+    await merchandiseTransaction.save();
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: `Order ${_id} has been marked as shipped successfully`,
+      updatedTransaction: merchandiseTransaction
+    });
+    
+  } catch (err) {
+    console.error('Error marking order as shipped:', err);
+    
+    // Handle specific MongoDB errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid order ID format'
+      });
+    }
+    
+    // Handle other errors
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while marking order as shipped'
     });
   }
 });
@@ -207,6 +477,7 @@ Router.route('/acceptorder').post(async (req, res) => {
     });
   }
 });
+
 // Define path for transaction images
 const UPLOAD_PATH = path.join(__dirname, '../../../view/public/images/currencyexchange');
 

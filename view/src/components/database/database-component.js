@@ -7,6 +7,8 @@ import { useState, useEffect, useRef } from "react"
 import { Container, Row, Col, Button, Form, Spinner } from "react-bootstrap"
 
 import { FaEye, 
+         FaCoins,
+         FaQuestionCircle,
          FaLayerGroup, 
          FaSpinner,
          FaHistory,
@@ -132,7 +134,10 @@ function DatabaseComponent() {
 
   const [showTotalOrders, setShowTotalOrders] = useState(false)
   const [showPendingOrders, setShowPendingOrders] = useState(false)
-  const [showAcceptedOrders, setShowAcceptedOrders] = useState(false)
+  const [showConfirmedOrders, setShowConfirmedOrders] = useState(false)
+  const [showOrdersForShipping, setShowOrdersForShipping] = useState(false)
+  const [showShippedOrders, setShowShippedOrders] = useState(false)
+  const [showSuccessfulOrders, setShowSuccessfulOrders] = useState(false)
   const [showRejectedOrders, setShowRejectedOrders] = useState(false)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
 
@@ -379,7 +384,10 @@ function DatabaseComponent() {
 
   const [totalorders, totalorderscb] = useState([])
   const [pendingorders, pendingorderscb] = useState([])
-  const [acceptedorders, acceptedorderscb] = useState([])
+  const [confirmedorders, confirmedorderscb] = useState([])
+  const [ordersforshipping, ordersforshippingcb] = useState([])
+  const [shippedorders, shippedorderscb] = useState([])
+  const [successfulorders, successfulorderscb] = useState([])
   const [rejectedorders, rejectedorderscb] = useState([])
 
   const [totalcurrencyexchange, totalcurrencyexchangecb] = useState([])
@@ -436,14 +444,14 @@ function DatabaseComponent() {
     fetchOmsiapData();
 
   }, [
-    totalorderscb, pendingorderscb, acceptedorderscb, rejectedorderscb,
+    totalorderscb, pendingorderscb, confirmedorderscb,  ordersforshippingcb, shippedorderscb, successfulorderscb, rejectedorderscb,
     totalcurrencyexchangecb, pendingcurrencyexchangecb, successfulcurrencyexchangecb, rejectedcurrencyexchangecb,
     totalwithdrawalscb, pendingwithdrawalscb, successfulwithdrawalscb, rejectedwithdrawalscb,
     verifiedmfatipregistrantscb, pendingmfatipregistrantscb, mfatipregistrantsrejecteddocumentscb
   ]);
 
- // Client-side fetchOmsiapData function
-const fetchOmsiapData = async () => {
+  // Client-side fetchOmsiapData function 
+  const fetchOmsiapData = async () => {
 
   try {
     const response = await axiosCreatedInstance.get("/omsiap/getomsiapdata");
@@ -455,8 +463,12 @@ const fetchOmsiapData = async () => {
       if (omsiapdata.transactions.orders) {
         totalorderscb(omsiapdata.transactions.orders.total || []);
         pendingorderscb(omsiapdata.transactions.orders.pending || []);
-        acceptedorderscb(omsiapdata.transactions.orders.accepted || []);
+        confirmedorderscb(omsiapdata.transactions.orders.confirmed || []);
         rejectedorderscb(omsiapdata.transactions.orders.rejected || []);
+        // Add new order status categories
+        ordersforshippingcb(omsiapdata.transactions.orders.forshipping || []);
+        shippedorderscb(omsiapdata.transactions.orders.shipped || []);
+        successfulorderscb(omsiapdata.transactions.orders.successful || []);
       }
       
       // Update currency exchange data
@@ -483,14 +495,14 @@ const fetchOmsiapData = async () => {
       );
       
       const pending = omsiapdata.people.filter(person => 
-        person.status && 
-        person.status.type === "incomplete" && 
+        person.status &&
+        person.status.type === "incomplete" &&
         person.status.indication === "pending documents"
       );
       
       const rejected = omsiapdata.people.filter(person => 
-        person.status && 
-        person.status.type === "incomplete" && 
+        person.status &&
+        person.status.type === "incomplete" &&
         person.status.indication === "rejected documents"
       );
       
@@ -501,7 +513,7 @@ const fetchOmsiapData = async () => {
   } catch (err) {
     console.error('Error fetching OMSIAP data:', err);
   }
-};
+  };
 
 
   const transactions = [
@@ -1189,7 +1201,10 @@ const fetchOmsiapData = async () => {
 
                                      setShowTotalOrders={setShowTotalOrders}
                                      setShowPendingOrders={setShowPendingOrders}
-                                     setShowAcceptedOrders={setShowAcceptedOrders}
+                                     setShowConfirmedOrders={setShowConfirmedOrders}
+                                     setShowOrdersForShipping={setShowOrdersForShipping}
+                                     setShowShippedOrders={setShowShippedOrders}
+                                     setShowSuccessfulOrders={setShowSuccessfulOrders}
                                      setShowRejectedOrders={setShowRejectedOrders}
                                      setShowOrderDetails={setShowOrderDetails}
 
@@ -1210,7 +1225,10 @@ const fetchOmsiapData = async () => {
 
                                      totalorders={totalorders}
                                      pendingorders={pendingorders}
-                                     acceptedorders={acceptedorders}
+                                     confirmedorders={confirmedorders}
+                                     ordersforshipping={ordersforshipping}
+                                     shippedorders={shippedorders}
+                                     successfulorders={successfulorders}
                                      rejectedorders={rejectedorders}
 
                                      totalcurrencyexchange={totalcurrencyexchange}
@@ -1231,6 +1249,7 @@ const fetchOmsiapData = async () => {
                                      setShowPendingPrivateRegistrationModal={setShowPendingPrivateRegistrationModal}
                        />
 
+{/*
        <StatisticsCardOperationScope stats={customStats}
 
                                      setShowDatabaseConfiguration={setShowDatabaseConfiguration}
@@ -1331,7 +1350,7 @@ const fetchOmsiapData = async () => {
                                   setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
                                   setShowPendingWithdrawals={setShowPendingWithdrawals}
                        />
-
+*/}
          <StatisticsCardProductCRUD stats={customStats}
                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                     setShowCreateProduct={setShowCreateProduct}
@@ -1392,22 +1411,77 @@ const fetchOmsiapData = async () => {
                              acceptorderloadingindication={acceptorderloadingindication}
                              acceptorderloadingindicationcb={acceptorderloadingindicationcb}
 
+                             fetchOmsiapData={fetchOmsiapData}
+
                              />
             )
             }
 
             {
-            showAcceptedOrders && (
-              <AcceptedOrders acceptedorders={acceptedorders}
-                              setOrderDetailsObject={setOrderDetailsObject}
+            showConfirmedOrders && (
+              <ConfirmedOrders confirmedorders={confirmedorders}
+                               setOrderDetailsObject={setOrderDetailsObject}
 
-                              setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                               setShowDatabaseConfiguration={setShowDatabaseConfiguration}
 
-                              setShowTotalOrders={setShowTotalOrders}
-                              setShowAcceptedOrders={setShowAcceptedOrders}
-                              setShowOrderDetails={setShowOrderDetails}
+                               setShowTotalOrders={setShowTotalOrders}
+                               setShowConfirmedOrders={setShowConfirmedOrders}
+                               setShowOrderDetails={setShowOrderDetails}
+
+                               fetchOmsiapData={fetchOmsiapData}
 
                              />
+            )
+            }
+
+           {
+            showOrdersForShipping && (
+              <OrdersForShipping ordersforshipping={ordersforshipping}
+                                 setOrderDetailsObject={setOrderDetailsObject}
+
+                                 setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                 setShowOrdersForShipping={setShowOrdersForShipping}
+
+                                 setShowTotalOrders={setShowTotalOrders}
+                                 setShowConfirmedOrders={setShowConfirmedOrders}
+                                 setShowOrderDetails={setShowOrderDetails}
+
+                                 fetchOmsiapData={fetchOmsiapData}
+                                />
+            )
+            }
+
+            {
+            showShippedOrders && (
+              <ShippedOrders shippedorders={shippedorders}
+                             setOrderDetailsObject={setOrderDetailsObject}
+
+                             setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                             setShowShippedOrders={setShowShippedOrders}
+                             setShowOrdersForShipping={setShowOrdersForShipping}
+
+                             setShowTotalOrders={setShowTotalOrders}
+                             setShowConfirmedOrders={setShowConfirmedOrders}
+                             setShowOrderDetails={setShowOrderDetails}
+
+                                />
+            )
+            }
+
+            {
+            showSuccessfulOrders && (
+              <SuccessfulOrders successfulorders={successfulorders}
+                                setOrderDetailsObject={setOrderDetailsObject}
+   
+                                setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                setShowSuccessfulOrders={setShowSuccessfulOrders}
+                                setShowOrdersForShipping={setShowOrdersForShipping}
+
+                                setShowTotalOrders={setShowTotalOrders}
+                                setShowConfirmedOrders={setShowConfirmedOrders}
+                                setShowOrderDetails={setShowOrderDetails}
+
+                                />
             )
             }
 
@@ -1419,7 +1493,7 @@ const fetchOmsiapData = async () => {
                               setShowDatabaseConfiguration={setShowDatabaseConfiguration}
 
                               setShowTotalOrders={setShowTotalOrders}
-                              setShowAcceptedOrders={setShowAcceptedOrders}
+                              setShowConfirmedOrders={setShowConfirmedOrders}
                               setShowPendingOrders={setShowPendingOrders}
                               setShowRejectedOrders={setShowRejectedOrders}
                               setShowOrderDetails={setShowOrderDetails}
@@ -1956,7 +2030,10 @@ const StatisticsCardOperationBasis = ({
 
   setShowTotalOrders, 
   setShowPendingOrders, 
-  setShowAcceptedOrders, 
+  setShowConfirmedOrders, 
+  setShowOrdersForShipping,
+  setShowShippedOrders,
+  setShowSuccessfulOrders,
   setShowRejectedOrders,
   setShowOrderDetails,
 
@@ -1976,7 +2053,10 @@ const StatisticsCardOperationBasis = ({
 
   totalorders,
   pendingorders,
-  acceptedorders,
+  confirmedorders,
+  ordersforshipping,
+  shippedorders,
+  successfulorders,
   rejectedorders,
 
   totalcurrencyexchange,
@@ -2053,14 +2133,65 @@ const StatisticsCardOperationBasis = ({
                 }}>view</button>
               </div>
               <div className="detail-item">
-                <span>{acceptedorders.length} accepted orders</span>
+                <span>{confirmedorders.length} confirmed orders</span>
                 <button className="action-button" onClick={() => {
 
                   setShowDatabaseConfiguration(true);
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(true);
+                  setShowConfirmedOrders(true);
 
+                  
+                  setShowPendingOrders(false);
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{ordersforshipping.length} orders for shipping</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowConfirmedOrders(false)
+                  setShowOrdersForShipping(true)
+
+                  
+                  setShowPendingOrders(false);
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span>{shippedorders.length} shipped orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowConfirmedOrders(false)
+                  setShowOrdersForShipping(false)
+                  setShowShippedOrders(true)
+
+                  
+                  setShowPendingOrders(false);
+
+                }}>view</button>
+              </div>
+              <div className="detail-item">
+                <span onClick={()=> {
+                  console.log(rejectedorders.length)
+                  console.log(rejectedorders)
+                }}>{successfulorders.length} successful orders</span>
+                <button className="action-button" onClick={() => {
+
+                  setShowDatabaseConfiguration(true);
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowConfirmedOrders(false);
+                  setShowSuccessfulOrders(true)
+
+                  setShowRejectedOrders(false)
+                  
                   
                   setShowPendingOrders(false);
 
@@ -2076,7 +2207,7 @@ const StatisticsCardOperationBasis = ({
                   setShowDatabaseConfiguration(true);
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false);
+                  setShowConfirmedOrders(false);
 
                   setShowRejectedOrders(true)
                   
@@ -2135,7 +2266,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
                   setShowTotalCurrencyExchange(true)
@@ -2157,7 +2288,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
 
                   setShowTotalCurrencyExchange(false)
@@ -2178,7 +2309,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
 
                   setShowTotalCurrencyExchange(false)
@@ -2200,7 +2331,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
 
                   setShowTotalCurrencyExchange(false)
@@ -2259,7 +2390,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
                   setShowTotalCurrencyExchange(false)
@@ -2284,7 +2415,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
                   setShowTotalCurrencyExchange(false)
@@ -2308,7 +2439,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
                   setShowTotalCurrencyExchange(true)
@@ -2331,9 +2462,9 @@ const StatisticsCardOperationBasis = ({
 
                   setShowDatabaseConfiguration(true)
 
-                 setShowTotalOrders(false)
+                  setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
                   setShowTotalCurrencyExchange(true)
@@ -2397,7 +2528,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
                   setShowTotalCurrencyExchange(false)
@@ -2426,7 +2557,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
                   setShowTotalCurrencyExchange(false)
@@ -2455,7 +2586,7 @@ const StatisticsCardOperationBasis = ({
 
                   setShowTotalOrders(false)
                   setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
+                  setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
                   setShowTotalCurrencyExchange(false)
@@ -2500,1550 +2631,6 @@ const StatisticsCardOperationBasis = ({
   );
 
 };
-
-const StatisticsCardOperationScope = ({ 
-  stats, 
-
-  setShowDatabaseConfiguration, 
-  setShowTotalOrders, 
-  setShowPendingOrders, 
-  setShowAcceptedOrders, 
-  setShowRejectedOrders,
-  setShowOrderDetails,
-
-  setShowTotalCurrencyExchange,
-  setShowPendingCurrencyExchange,
-  setShowSuccessfulCurrencyExchange,
-  setShowRejectedCurrencyExchange,
-
-  setShowTotalWithdrawals,
-  setShowPendingWithdrawals,
-  setShowSuccessfulWithdrawals,
-  setShowRejectedWithdrawals, 
-
-  setShowRegisteredRegistrantsWithVerifiedDocuments,
-  setShowRegisteredRegistrantsWithPendingDocuments,
-  setShowRegisteredRegistrantsWithRejectedDocuments,
-
-  totalorders,
-  pendingorders,
-  acceptedorders,
-  rejectedorders,
-
-  totalcurrencyexchange,
-  pendingcurrencyexchange,
-  successfulcurrencyexchange,
-  rejectedcurrencyexchange,
-
-  totalwithdrawals,
-  pendingwithdrawals,
-  successfulwithdrawals,
-  rejectedwithdrawals,
-
-  verifiedmfatipregistrants,
-  pendingmfatipregistrants,
-  mfatipregistrantsrejecteddocuments
-
-
-}) => {
-  // Sample stats data if not provided
-  const defaultStats = {
-    pendingOrders: { count: 24, change: 1200 },
-    pendingDeposits: { count: 18, change: 3500 },
-    pendingWithdrawals: { count: 9, change: -850 },
-    pendingRegistrations: { count: 32, change: 6400 }
-  };
-
-  // Use provided stats or default
-  const statsData = stats || defaultStats;
-
-  // Format the change value as a peso currency
-  const formatPeso = (amount) => {
-    // Make sure amount is a number
-    const numAmount = Number(amount);
-    
-    // Check if it's a valid number
-    if (isNaN(numAmount)) {
-      return '₱0';
-    }
-    
-    const sign = numAmount > 0 ? '+' : '';
-    return `${sign}₱${Math.abs(numAmount).toLocaleString()}`;
-  };
-
-  return (
-    <div className="statistics-container">
-      <h1 className="dashboard-title">Operation Scope</h1>
-      <div className="statistics-grid">
-
-        {/* PENDING ORDERS */}
-        <div className="statistics-card orders-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>PENDING ORDERS</span>
-              <div className="card-icon orders-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <path d="M16 10a4 4 0 0 1-8 0"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{pendingorders.length} pending orders</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{pendingorders.length} pending orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(true)
-                  setShowAcceptedOrders(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{totalorders.length} total orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true);
-                  setShowTotalOrders(true);
-                  setShowPendingOrders(false);
-                  setShowAcceptedOrders(false);
-
-                }}>view</button>
-              </div>
-
-              <div className="detail-item">
-                <span>{acceptedorders.length} accepted orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true);
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false);
-                  setShowAcceptedOrders(true);
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedorders.length} rejected orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true);
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false);
-
-                  setShowRejectedOrders(true)
-
-                  
-                  setShowPendingOrders(false);
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID"/>
-              </div>
-              <button className="search-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-      
-        {/* PENDING CURRENCY EXCHANGE */}
-        <div className="statistics-card deposits-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>PENDING CURRENCY EXCHANGE</span>
-              <div className="card-icon deposits-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                  <line x1="2" y1="10" x2="22" y2="10"></line>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{pendingcurrencyexchange.length} pending currency exchange</div>
-            </div>
-            <div className="card-details">
-             <div className="detail-item">
-                <span>{pendingcurrencyexchange.length} pending currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(true)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{totalcurrencyexchange.length} total currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                   e.stopPropagation()
-
-                   setShowDatabaseConfiguration(true);
-
-                   setShowTotalOrders(false)
-                   setShowPendingOrders(false)
-                   setShowAcceptedOrders(false)
-
-                   setShowTotalCurrencyExchange(true)
-                   setShowPendingCurrencyExchange(false)
-                   setShowSuccessfulCurrencyExchange(false)
-                   setShowRejectedCurrencyExchange(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{successfulcurrencyexchange.length} successful currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(true)
-                  setShowRejectedCurrencyExchange(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedcurrencyexchange.length} rejected currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(true)
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-        {/* PENDING WITHDRAWALS */}
-        <div className="statistics-card withdrawals-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>PENDING WITHDRAWALS</span>
-              <div className="card-icon withdrawals-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 10 4 15 9 20"></polyline>
-                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{pendingwithdrawals.length} pending withdrawals</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{pendingwithdrawals.length} pending withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(true)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{totalwithdrawals.length} total withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                   setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(true)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{successfulwithdrawals.length} successful withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(true)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedwithdrawals.length} rejected withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(true)
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
- 
-         {/*  REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS */}
-         <div className="statistics-card withdrawals-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>REGISTERED MFATIP REGISTRANTS WITH PENDING DOCUMENTS</span>
-              <div className="card-icon withdrawals-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{pendingmfatipregistrants.length} total registrants with pending documents status</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{verifiedmfatipregistrants.length} total MFATIP registered registrants with pending documents verified</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(true)
-                  setShowRegisteredRegistrantsWithPendingDocuments(false)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingmfatipregistrants.length} total MRATIP registered registrants with pending documents status</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
-                  setShowRegisteredRegistrantsWithPendingDocuments(true)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{mfatipregistrantsrejecteddocuments.length} total MFRATIP registered registrants pending documents rejected</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                 setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(true)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(true)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
-                  setShowRegisteredRegistrantsWithPendingDocuments(false)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(true)
-
-                  
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-
-};
-
-const StatisticsCardDailyTasks = ({ 
-  stats, 
-
-
-  setShowDatabaseConfiguration,
-  setShowTotalOrders, 
-  setShowPendingOrders, 
-  setShowAcceptedOrders, 
-  setShowRejectedOrders,
-  setShowOrderDetails, 
-
-  setShowTotalCurrencyExchange,
-  setShowPendingCurrencyExchange,
-  setShowSuccessfulCurrencyExchange,
-  setShowRejectedCurrencyExchange,
-
-  setShowTotalWithdrawals,
-  setShowPendingWithdrawals,
-  setShowSuccessfulWithdrawals,
-  setShowRejectedWithdrawals,
-
-  setShowRegisteredRegistrantsWithVerifiedDocuments,
-  setShowRegisteredRegistrantsWithPendingDocuments,
-  setShowRegisteredRegistrantsWithRejectedDocuments,
-
-  totalorders,
-  pendingorders,
-  acceptedorders,
-  rejectedorders,
-
-  totalcurrencyexchange,
-  pendingcurrencyexchange,
-  successfulcurrencyexchange,
-  rejectedcurrencyexchange,
-
-  totalwithdrawals,
-  pendingwithdrawals,
-  successfulwithdrawals,
-  rejectedwithdrawals,
-
-  verifiedmfatipregistrants,
-  pendingmfatipregistrants,
-  mfatipregistrantsrejecteddocuments
-
-
-}) => {
-  // Sample stats data if not provided
-  const defaultStats = {
-    pendingOrders: { count: 24, change: 1200 },
-    pendingDeposits: { count: 18, change: 3500 },
-    pendingWithdrawals: { count: 9, change: -850 },
-    pendingRegistrations: { count: 32, change: 6400 }
-  };
-
-  // Use provided stats or default
-  const statsData = stats || defaultStats;
-
-  // Format the change value as a peso currency
-  const formatPeso = (amount) => {
-    // Make sure amount is a number
-    const numAmount = Number(amount);
-    
-    // Check if it's a valid number
-    if (isNaN(numAmount)) {
-      return '₱0';
-    }
-    
-    const sign = numAmount > 0 ? '+' : '';
-    return `${sign}₱${Math.abs(numAmount).toLocaleString()}`;
-  };
-
-  return (
-    <div className="statistics-container">
-      <h1 className="dashboard-title">Daily tasks</h1>
-      <div className="statistics-grid">
-
-        {/* ACCEPTED ORDERS */}
-        <div className="statistics-card orders-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>ACCEPTED ORDERS</span>
-              <div className="card-icon orders-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <path d="M16 10a4 4 0 0 1-8 0"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{acceptedorders.length} accepted orders</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{totalorders.length} total orders</span>
-                <button className="action-button" onClick={() => {
-
-
-                  setShowDatabaseConfiguration(true)
-                  
-                  setShowTotalOrders(true)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-
-
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingorders.length} pending orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(true)
-                  setShowAcceptedOrders(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{acceptedorders.length} accepted orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(true)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedorders.length} rejected orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true)
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-
-                  setShowRejectedOrders(true)
-
-                  
-                  setShowPendingOrders(false);
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID"/>
-              </div>
-              <button className="search-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-          {/* REJECTED ORDERS */}
-          <div className="statistics-card orders-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>REJECTED ORDERS</span>
-              <div className="card-icon orders-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                  <line x1="3" y1="6" x2="21" y2="6"></line>
-                  <path d="M16 10a4 4 0 0 1-8 0"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{rejectedorders.length} rejected orders</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>42 total orders</span>
-                <button className="action-button" onClick={() => {
-
-
-                  setShowDatabaseConfiguration(true)
-                  
-                  setShowTotalOrders(true)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-
-
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingorders.length} pending orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(true)
-                  setShowAcceptedOrders(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{acceptedorders.length} accepted orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(true)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedorders.length} rejected orders</span>
-                <button className="action-button" onClick={() => {
-
-                  setShowDatabaseConfiguration(true);
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-
-                  setShowRejectedOrders(true)
-
-                  
-                  setShowPendingOrders(false);
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID"/>
-              </div>
-              <button className="search-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-        {/* SUCCESSFUL CURRENCY EXCHANGE */}
-        <div className="statistics-card deposits-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>TOTAL CURRENCY EXCHANGE</span>
-              <div className="card-icon deposits-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                  <line x1="2" y1="10" x2="22" y2="10"></line>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{successfulcurrencyexchange.length} successful currency exchange</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{totalcurrencyexchange.length} total currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation();
-                  setShowDatabaseConfiguration(true);
-
-                  setShowTotalCurrencyExchange(true)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingcurrencyexchange.length} pending currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(true)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{successfulcurrencyexchange.length} successful currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(true)
-                  setShowRejectedCurrencyExchange(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedcurrencyexchange.length} rejected currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(true)
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-         {/* REJECTED CURRENCY EXCHANGE */}
-         <div className="statistics-card deposits-card" onClick={() => {
-          setShowDatabaseConfiguration(true);
-          setShowPendingCurrencyExchange(true);
-        }}>
-          <div className="card-inner">
-            <div className="card-header">
-              <span>TOTAL DEPOSITS</span>
-              <div className="card-icon deposits-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="5" width="20" height="14" rx="2"></rect>
-                  <line x1="2" y1="10" x2="22" y2="10"></line>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{rejectedcurrencyexchange.length} rejected currency exchange</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{totalcurrencyexchange.length} total currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalCurrencyExchange(true)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingcurrencyexchange.length} pending currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(true)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{successfulcurrencyexchange.length} successful currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(true)
-                  setShowRejectedCurrencyExchange(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedcurrencyexchange.length} rejected currency exchange</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(true)
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-        {/* SUCCESSFUL WITHDRAWALS */}
-        <div className="statistics-card withdrawals-card" onClick={() => {
-          setShowDatabaseConfiguration(true);
-          setShowPendingWithdrawals(true);
-        }}>
-          <div className="card-inner">
-            <div className="card-header">
-              <span>SUCCESSFUL WITHDRAWALS</span>
-              <div className="card-icon withdrawals-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 10 4 15 9 20"></polyline>
-                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{successfulwithdrawals.length} successful withdrawals</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>13 total withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(true)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingwithdrawals.length} pending withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(true)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{successfulwithdrawals.length} successful withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(true)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedwithdrawals.length} rejected withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(true)
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-        {/* REJECTED WITHDRAWALS */}
-        <div className="statistics-card withdrawals-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>REJECTED WITHDRAWALS</span>
-              <div className="card-icon withdrawals-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="9 10 4 15 9 20"></polyline>
-                  <path d="M20 4v7a4 4 0 0 1-4 4H4"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{rejectedwithdrawals.length} rejected withdrawals</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{totalwithdrawals.length} total withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(true)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingwithdrawals.length} pending withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(true)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{successfulwithdrawals.length} successful withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(true)
-                  setShowRejectedWithdrawals(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{rejectedwithdrawals.length} rejected withdrawals</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(true)
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-         {/*  REGISTERED MFATIP REGISTRANTS WITH VERIFIED DOCUMENTS */}
-         <div className="statistics-card withdrawals-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>REGISTERED MFATIP REGISTRANTS WITH VERIFIED DOCUMENTS</span>
-              <div className="card-icon withdrawals-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{verifiedmfatipregistrants.length} total registrants with verified documents</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{verifiedmfatipregistrants.length} total MFATIP regitered registrants pending documents verified</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(true)
-                  setShowRegisteredRegistrantsWithPendingDocuments(false)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingmfatipregistrants.length} total MRATIP registered registrants with pending documents</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
-                  setShowRegisteredRegistrantsWithPendingDocuments(true)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{mfatipregistrantsrejecteddocuments.length} total MFRATIP registered registrants pending documents rejected</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(true)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
-                  setShowRegisteredRegistrantsWithPendingDocuments(false)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(true)
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-          {/*  REGISTERED MFATIP REGISTRANTS WITH REJECTED DOCUMENTS */}
-          <div className="statistics-card withdrawals-card">
-          <div className="card-inner">
-            <div className="card-header">
-              <span>REGISTERED MFATIP REGISTRANTS WITH REJECTED DOCUMENTS</span>
-              <div className="card-icon withdrawals-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-              </div>
-            </div>
-            <div className="card-content">
-              <div className="stat-value">{mfatipregistrantsrejecteddocuments.length} total registrants with rejected documents</div>
-            </div>
-            <div className="card-details">
-              <div className="detail-item">
-                <span>{verifiedmfatipregistrants.length} total MFATIP registered registrants pending documents verified</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(true)
-                  setShowRegisteredRegistrantsWithPendingDocuments(false)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{pendingmfatipregistrants.length} total MFATIP registered registrants with pending documents</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(false)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
-                  setShowRegisteredRegistrantsWithPendingDocuments(true)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
-
-                }}>view</button>
-              </div>
-              <div className="detail-item">
-                <span>{mfatipregistrantsrejecteddocuments.length} total MFATIP registered registrants pending documents rejected</span>
-                <button className="action-button" onClick={(e) => {
-
-                  e.stopPropagation()
-
-                  setShowDatabaseConfiguration(true)
-
-                  setShowTotalOrders(false)
-                  setShowPendingOrders(false)
-                  setShowAcceptedOrders(false)
-                  setShowOrderDetails(false)
- 
-                  setShowTotalCurrencyExchange(true)
-                  setShowPendingCurrencyExchange(false)
-                  setShowSuccessfulCurrencyExchange(false)
-                  setShowRejectedCurrencyExchange(false)
-                  
-                  setShowTotalWithdrawals(false)
-                  setShowPendingWithdrawals(false)
-                  setShowSuccessfulWithdrawals(false)
-                  setShowRejectedWithdrawals(false)
-
-                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
-                  setShowRegisteredRegistrantsWithPendingDocuments(false)
-                  setShowRegisteredRegistrantsWithRejectedDocuments(true)
-
-
-                }}>view</button>
-              </div>
-            </div>
-            <div className="search-container">
-              <div className="search-field">
-                <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID" onClick={(e) => e.stopPropagation()}/>
-              </div>
-              <button className="search-button" onClick={(e) => e.stopPropagation()}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
-            </div>
-            <div className="transaction-info">
-              <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  );
-};
-
-
-
-
-
-
-
 
 const StatisticsCardProductCRUD = ({ 
   setShowDatabaseConfiguration, 
@@ -4673,6 +3260,94 @@ const OrderAcceptButton = ({ order, onAccept }) => {
   );
 };
 
+const ConfirmOrderButton = ({ order, onConfirm }) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleConfirmOrder = async () => {
+    setIsLoading(true);
+    try {
+      await onConfirm(order._id);
+    } catch (error) {
+      console.error('Error accepting order:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    isLoading ? (
+      <Spinner animation="border" variant="light" />
+    ) : (
+      <button 
+        className="accept-btn" 
+        onClick={handleConfirmOrder}
+        disabled={isLoading}
+      >
+        Confirm order
+      </button>
+    )
+  );
+};
+
+const OrderForShippingButton = ({ order, onOrderForShipping }) => {
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleOrderForShipping = async () => {
+    setIsLoading(true);
+    try {
+      await onOrderForShipping(order._id);
+    } catch (error) {
+      console.error('Error accepting order:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    isLoading ? (
+      <Spinner animation="border" variant="light" />
+    ) : (
+      <button 
+        className="accept-btn" 
+        onClick={handleOrderForShipping}
+        disabled={isLoading}
+      >
+        Order for shipping
+      </button>
+    )
+  );
+};
+
+const OrderShippedButton = ({ order, onOrderShipped }) => {
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleOrderShipped = async () => {
+    setIsLoading(true);
+    try {
+      await onOrderShipped(order._id);
+    } catch (error) {
+      console.error('Error accepting order:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    isLoading ? (
+      <Spinner animation="border" variant="light" />
+    ) : (
+      <button 
+        className="accept-btn" 
+        onClick={handleOrderShipped}
+        disabled={isLoading}
+      >
+        Order shipped
+      </button>
+    )
+  );
+};
 
 const TotalOrders = ({ 
   totalorders,
@@ -4724,210 +3399,6 @@ const TotalOrders = ({
 
   }) => {
 
- {/*
-  // Sample transaction data
-  const sampleTransactions = [
-    {
-      id: "ORD-12345",
-      date: "2025-03-12",
-      type: "Online",
-      amount: 278.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "Organic Coffee", price: 89.50, quantity: 3 },
-          { name: "Herbal Tea", price: 10.00, quantity: 1 }
-        ],
-        shippingInfo: {
-          address: "123 Main Street",
-          city: "Austin",
-          state: "TX",
-          zipCode: "78701",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 278.50,
-          shippingTotal: 15.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 48.75,
-          totalCapital: 214.75,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 1250,
-          totalWeightKilos: 1.25,
-          total: 293.50
-        }
-      }
-    },
-    {
-      id: "ORD-54321",
-      date: "2025-03-11",
-      type: "In-Store",
-      amount: 156.75,
-      status: "Pending",
-      paymentmethod: "Cash",
-      details: {
-        products: [
-          { name: "Green Tea", price: 45.25, quantity: 2 },
-          { name: "Black Tea", price: 33.00, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "456 Elm Street",
-          city: "Seattle",
-          state: "WA",
-          zipCode: "98101",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 156.75,
-          shippingTotal: 10.00,
-          totalTransactionGiveaway: 5.00,
-          totalOmsiaProfit: 32.75,
-          totalCapital: 129.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 750,
-          totalWeightKilos: 0.75,
-          total: 166.75
-        }
-      }
-    },
-    {
-      id: "ORD-67890",
-      date: "2025-03-10",
-      type: "Online",
-      amount: 455.25,
-      status: "Pending",
-      paymentmethod: "PayPal",
-      details: {
-        products: [
-          { name: "Oolong Tea", price: 120.75, quantity: 3 },
-          { name: "Chai Spices", price: 46.50, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "789 Oak Drive",
-          city: "Portland",
-          state: "OR",
-          zipCode: "97201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 455.25,
-          shippingTotal: 20.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 89.25,
-          totalCapital: 366.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1850,
-          totalWeightKilos: 1.85,
-          total: 475.25
-        }
-      }
-    },
-    {
-      id: "ORD-98765",
-      date: "2025-03-09",
-      type: "Online",
-      amount: 323.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "White Tea", price: 78.50, quantity: 2 },
-          { name: "Matcha Powder", price: 55.50, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "321 Pine Lane",
-          city: "Denver",
-          state: "CO",
-          zipCode: "80201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 323.50,
-          shippingTotal: 12.50,
-          totalTransactionGiveaway: 10.00,
-          totalOmsiaProfit: 61.00,
-          totalCapital: 265.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1100,
-          totalWeightKilos: 1.10,
-          total: 336.00
-        }
-      }
-    },
-    {
-      id: "ORD-24680",
-      date: "2025-03-08",
-      type: "In-Store",
-      amount: 189.25,
-      status: "Pending",
-      paymentmethod: "Debit Card",
-      details: {
-        products: [
-          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
-          { name: "Earl Grey", price: 28.75, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "654 Maple Avenue",
-          city: "Chicago",
-          state: "IL",
-          zipCode: "60601",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 189.25,
-          shippingTotal: 8.75,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 40.00,
-          totalCapital: 158.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 900,
-          totalWeightKilos: 0.90,
-          total: 198.00
-        }
-      }
-    },
-    {
-      id: "ORD-13579",
-      date: "2025-03-07",
-      type: "Online",
-      amount: 512.75,
-      status: "Pending",
-      paymentmethod: "Bitcoin",
-      details: {
-        products: [
-          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
-          { name: "Tea Accessories", price: 40.75, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "987 Birch Street",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 512.75,
-          shippingTotal: 25.00,
-          totalTransactionGiveaway: 15.00,
-          totalOmsiaProfit: 98.75,
-          totalCapital: 424.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 2200,
-          totalWeightKilos: 2.20,
-          total: 537.75
-        }
-      }
-    }
-  ];
-*/}
-
   const [transactions, setTransactions] = useState(totalorders);
   const [filteredTransactions, setFilteredTransactions] = useState(totalorders);
   const [searchQuery, setSearchQuery] = useState('');
@@ -4936,6 +3407,7 @@ const TotalOrders = ({
 
  // Filter transactions based on search query
 useEffect(() => {
+
   if (!searchQuery.trim()) {
     setFilteredTransactions(transactions);
     return;
@@ -5052,7 +3524,7 @@ useEffect(() => {
         <div className="close-button" 
             onClick={()=>{
               setShowDatabaseConfiguration(false);
-              setShowPendingOrders(false);
+              setShowTotalOrders(false);
             }}>
           <span className="close-icon">✕</span>
         </div>
@@ -5149,6 +3621,7 @@ useEffect(() => {
                 </td>
               </tr>
             ))}
+
           </tbody>
         </table>
       </div>
@@ -5160,6 +3633,7 @@ useEffect(() => {
       )}
     </div>
   );
+
 };
 
 const PendingOrders = ({ 
@@ -5173,208 +3647,9 @@ const PendingOrders = ({
   acceptorderloadingindication,
   acceptorderloadingindicationcb,
   
-  setShowPendingOrderDetails }) => {
-  // Sample transaction data
-  const sampleTransactions = [
-    {
-      id: "ORD-12345",
-      date: "2025-03-12",
-      type: "Online",
-      amount: 278.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "Organic Coffee", price: 89.50, quantity: 3 },
-          { name: "Herbal Tea", price: 10.00, quantity: 1 }
-        ],
-        shippingInfo: {
-          address: "123 Main Street",
-          city: "Austin",
-          state: "TX",
-          zipCode: "78701",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 278.50,
-          shippingTotal: 15.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 48.75,
-          totalCapital: 214.75,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 1250,
-          totalWeightKilos: 1.25,
-          total: 293.50
-        }
-      }
-    },
-    {
-      id: "ORD-54321",
-      date: "2025-03-11",
-      type: "In-Store",
-      amount: 156.75,
-      status: "Pending",
-      paymentmethod: "Cash",
-      details: {
-        products: [
-          { name: "Green Tea", price: 45.25, quantity: 2 },
-          { name: "Black Tea", price: 33.00, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "456 Elm Street",
-          city: "Seattle",
-          state: "WA",
-          zipCode: "98101",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 156.75,
-          shippingTotal: 10.00,
-          totalTransactionGiveaway: 5.00,
-          totalOmsiaProfit: 32.75,
-          totalCapital: 129.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 750,
-          totalWeightKilos: 0.75,
-          total: 166.75
-        }
-      }
-    },
-    {
-      id: "ORD-67890",
-      date: "2025-03-10",
-      type: "Online",
-      amount: 455.25,
-      status: "Pending",
-      paymentmethod: "PayPal",
-      details: {
-        products: [
-          { name: "Oolong Tea", price: 120.75, quantity: 3 },
-          { name: "Chai Spices", price: 46.50, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "789 Oak Drive",
-          city: "Portland",
-          state: "OR",
-          zipCode: "97201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 455.25,
-          shippingTotal: 20.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 89.25,
-          totalCapital: 366.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1850,
-          totalWeightKilos: 1.85,
-          total: 475.25
-        }
-      }
-    },
-    {
-      id: "ORD-98765",
-      date: "2025-03-09",
-      type: "Online",
-      amount: 323.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "White Tea", price: 78.50, quantity: 2 },
-          { name: "Matcha Powder", price: 55.50, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "321 Pine Lane",
-          city: "Denver",
-          state: "CO",
-          zipCode: "80201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 323.50,
-          shippingTotal: 12.50,
-          totalTransactionGiveaway: 10.00,
-          totalOmsiaProfit: 61.00,
-          totalCapital: 265.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1100,
-          totalWeightKilos: 1.10,
-          total: 336.00
-        }
-      }
-    },
-    {
-      id: "ORD-24680",
-      date: "2025-03-08",
-      type: "In-Store",
-      amount: 189.25,
-      status: "Pending",
-      paymentmethod: "Debit Card",
-      details: {
-        products: [
-          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
-          { name: "Earl Grey", price: 28.75, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "654 Maple Avenue",
-          city: "Chicago",
-          state: "IL",
-          zipCode: "60601",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 189.25,
-          shippingTotal: 8.75,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 40.00,
-          totalCapital: 158.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 900,
-          totalWeightKilos: 0.90,
-          total: 198.00
-        }
-      }
-    },
-    {
-      id: "ORD-13579",
-      date: "2025-03-07",
-      type: "Online",
-      amount: 512.75,
-      status: "Pending",
-      paymentmethod: "Bitcoin",
-      details: {
-        products: [
-          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
-          { name: "Tea Accessories", price: 40.75, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "987 Birch Street",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 512.75,
-          shippingTotal: 25.00,
-          totalTransactionGiveaway: 15.00,
-          totalOmsiaProfit: 98.75,
-          totalCapital: 424.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 2200,
-          totalWeightKilos: 2.20,
-          total: 537.75
-        }
-      }
-    }
-  ];
+  setShowPendingOrderDetails,
+
+  fetchOmsiapData }) => {
 
   const [transactions, setTransactions] = useState(pendingorders);
   const [filteredTransactions, setFilteredTransactions] = useState(pendingorders);
@@ -5420,57 +3695,90 @@ const PendingOrders = ({
     */}
   };
 
-  // Button action handlers with visual feedback
-  const handleAcceptOrder = async (id) => {
-
-    // Prevent multiple simultaneous requests
-    if (acceptorderloadingindicationcb) {
-      acceptorderloadingindicationcb(true);
-    }
+// Improved handleConfirmOrder function with robust error handling
+const handleConfirmOrder = async (_id) => {
+  // Prevent multiple simultaneous requests
+  if (acceptorderloadingindicationcb) {
+    acceptorderloadingindicationcb(true);
+  }
   
-    try {
-      // Send request to backend to accept the order
-      const response = await axiosCreatedInstance.post("/omsiap/acceptorder", { id });
-      
-      // Show success status message based on backend response
-      showStatusMessage(response.data.message || `Order ${id} has been accepted successfully`);
-
-
-    } catch (error) {
-      // Handle different types of backend errors
-      if (error.response) {
-
-        // The request was made and the server responded with a status code
-        // that falls out of the range of 2xx
-        const errorMessage = error.response.data.message || 
-                             `Failed to accept Order ${id}. Server responded with an error.`;
-        showStatusMessage(errorMessage, 'error');
-
-        console.error('Backend error response:', error.response.data);
-
-
-      } else if (error.request) {
-
-        // The request was made but no response was received
-        showStatusMessage(`No response received when trying to accept Order ${id}. Please check your network connection.`, 'error');
-        console.error('No response received:', error.request);
-
-      } else {
-
-        // Something happened in setting up the request that triggered an Error
-        showStatusMessage(`Error in processing Order ${id}. Please try again.`, 'error');
-        console.error('Error setting up request:', error.message);
-
-      }
-    } finally {
-
-      // Ensure loading indication is set to false
-      if (acceptorderloadingindicationcb) {
-        acceptorderloadingindicationcb(false);
-      }
-
+  try {
+    // Validate input
+    if (!_id) {
+      showStatusMessage('Order ID is missing', 'error');
+      return;
     }
-  };
+    
+    // Send request to backend to accept the order
+    const response = await axiosCreatedInstance.post("/omsiap/confirmorder", { _id });
+    
+    // Show success status message based on backend response
+    showStatusMessage(
+      response.data.message || `Order ${_id} has been confirmed successfully`,
+      'success'
+    );
+    
+    // Update the UI with fresh data
+    await fetchOmsiapData();
+    
+  } catch (error) {
+    // Handle different types of backend errors
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const errorMessage = error.response.data.message || 
+                           `Failed to confirm Order ${_id}. Server responded with an error.`;
+      
+      showStatusMessage(errorMessage, 'error');
+      console.error('Backend error response:', error.response.data);
+      
+      // Handle specific error status codes
+      switch(error.response.status) {
+        case 404:
+          showStatusMessage(`Order ${_id} could not be found. It may have been deleted or moved.`, 'error');
+          break;
+        case 400:
+          // The message from the server should already be descriptive
+          break;
+        case 401:
+          showStatusMessage('You are not authorized to confirm this order. Please log in again.', 'error');
+          break;
+        case 403:
+          showStatusMessage('You do not have permission to confirm orders.', 'error');
+          break;
+        case 500:
+          showStatusMessage('The server encountered an error. Please try again later.', 'error');
+          break;
+      }
+      
+    } else if (error.request) {
+      // The request was made but no response was received
+      showStatusMessage(
+        `No response received when trying to confirm Order ${_id}. Please check your network connection.`, 
+        'error'
+      );
+      console.error('No response received:', error.request);
+      
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      showStatusMessage(`Error in processing Order ${_id}. Please try again.`, 'error');
+      console.error('Error setting up request:', error.message);
+    }
+  } finally {
+    // Ensure loading indication is set to false regardless of outcome
+    if (acceptorderloadingindicationcb) {
+      acceptorderloadingindicationcb(false);
+    }
+    
+    // Refresh the data even if there was an error, as the operation might have succeeded
+    // despite the client receiving an error
+    try {
+      await fetchOmsiapData();
+    } catch (refreshError) {
+      console.error('Failed to refresh data after order confirmation:', refreshError);
+    }
+  }
+};
 
   const handleRejectOrder = (id) => {
     showStatusMessage(`Order ${id} has been rejected`);
@@ -5544,12 +3852,12 @@ const PendingOrders = ({
                 onMouseEnter={() => setActiveRow(transaction.id)}
                 onMouseLeave={() => setActiveRow(null)}
               >
-                <td className="order-id">{transaction.id}</td>
-                <td>{transaction.date}</td>
-                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
-                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
-                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
-                <td>{transaction.details.orderSummary.totalItems}</td>
+                <td className="order-id">{transaction.id}s</td>
+                <td>{transaction.statusesandlogs.date}</td>
+                <td className="order-amount">${transaction.system.ordersummary.merchandisetotal}</td>
+                <td>{transaction.system.shippinginfo.street}, {transaction.system.shippinginfo.trademark}, {transaction.system.shippinginfo.baranggay}, {transaction.system.shippinginfo.city}, {transaction.system.shippinginfo.province}, {transaction.system.shippinginfo.zipcode}, {transaction.system.shippinginfo.country}</td>
+                <td>{transaction.system.ordersummary.totalweightkilos} kg</td>
+                <td>{transaction.system.ordersummary.totalitems}</td>
                 <td className="action-buttons">
                   <button 
                     className="view-btn" 
@@ -5571,9 +3879,9 @@ const PendingOrders = ({
                     Edit
                   </button>
 
-                  <OrderAcceptButton key={transaction.id}
-                                     order={transaction}
-                                     onAccept={handleAcceptOrder}/>
+                  <ConfirmOrderButton key={transaction._id}
+                                      order={transaction}
+                                      onConfirm={handleConfirmOrder}/>
 
                   <button 
                     className="reject-btn" 
@@ -5603,227 +3911,599 @@ const PendingOrders = ({
   );
 };
 
-const AcceptedOrders = ({ 
-  acceptedorders,
+const ConfirmedOrders = ({ 
+  confirmedorders,
   setOrderDetailsObject,
 
   setShowDatabaseConfiguration, 
+  setShowConfirmedOrders,
+
+  setShowOrderDetails,
+
+  setShowPendingOrders, 
+  setShowPendingOrderDetails,
+
+  fetchOmsiapData
+
+}) => {
+
+  const [transactions, setTransactions] = useState(confirmedorders);
+  const [filteredTransactions, setFilteredTransactions] = useState(confirmedorders);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+  const [activeRow, setActiveRow] = useState(null);
+
+  const [onorderforshippingloadingindication, onorderforshippingloadingindicationcb] = useState(false)
+
+ // Filter transactions based on search query
+ useEffect(() => {
+
+  if (!searchQuery.trim()) {
+    setFilteredTransactions(transactions);
+    return;
+  }
+
+  const query = searchQuery.toLowerCase();
+  const filtered = transactions.filter(transaction => {
+    // Check if the property exists before accessing its toLowerCase method
+    const idMatch = transaction.id?.toLowerCase().includes(query) || false;
+    const dateMatch = transaction.date?.toLowerCase().includes(query) || false;
+    
+    // Safely access nested properties
+    const addressMatch = transaction.details?.shippingInfo?.address?.toLowerCase().includes(query) || false;
+    const cityMatch = transaction.details?.shippingInfo?.city?.toLowerCase().includes(query) || false;
+    
+    return idMatch || dateMatch || addressMatch || cityMatch;
+  });
+  
+  setFilteredTransactions(filtered);
+}, [searchQuery, transactions]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Show status message with animation
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+
+    {/*
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 3000);
+    */}
+
+  };
+
+// Improved handleOrderForShipping function with shipping-specific messaging
+const handleOrderForShipping = async (_id) => {
+  // Prevent multiple simultaneous requests
+  if (onorderforshippingloadingindicationcb) {
+    onorderforshippingloadingindicationcb(true);
+  }
+  
+  try {
+    // Validate input
+    if (!_id) {
+      showStatusMessage('Order ID is missing', 'error');
+      return;
+    }
+    
+    // Send request to backend to mark the order for shipping
+    const response = await axiosCreatedInstance.post("/omsiap/orderforshipping", { _id });
+    
+    // Show success status message based on backend response
+    showStatusMessage(
+      response.data.message || `Order ${_id} has been marked for shipping successfully`,
+      'success'
+    );
+    
+    // Update the UI with fresh data
+    await fetchOmsiapData();
+    
+  } catch (error) {
+    // Handle different types of backend errors
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const errorMessage = error.response.data.message ||
+                           `Failed to mark Order ${_id} for shipping. Server responded with an error.`;
+      
+      showStatusMessage(errorMessage, 'error');
+      console.error('Backend error response:', error.response.data);
+      
+      // Handle specific error status codes
+      switch(error.response.status) {
+        case 404:
+          showStatusMessage(`Order ${_id} could not be found. It may have been deleted or moved.`, 'error');
+          break;
+        case 400:
+          // The message from the server should already be descriptive
+          // Check for specific shipping-related errors
+          if (error.response.data.message && error.response.data.message.includes('status')) {
+            showStatusMessage('This order cannot be marked for shipping. It may need to be confirmed first.', 'error');
+          }
+          break;
+        case 401:
+          showStatusMessage('You are not authorized to mark this order for shipping. Please log in again.', 'error');
+          break;
+        case 403:
+          showStatusMessage('You do not have permission to update order shipping status.', 'error');
+          break;
+        case 500:
+          showStatusMessage('The server encountered an error while preparing the order for shipping. Please try again later.', 'error');
+          break;
+      }
+      
+    } else if (error.request) {
+      // The request was made but no response was received
+      showStatusMessage(
+        `No response received when trying to mark Order ${_id} for shipping. Please check your network connection.`,
+        'error'
+      );
+      console.error('No response received:', error.request);
+      
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      showStatusMessage(`Error processing shipping request for Order ${_id}. Please try again.`, 'error');
+      console.error('Error setting up request:', error.message);
+    }
+  } finally {
+    // Ensure loading indication is set to false regardless of outcome
+    if (onorderforshippingloadingindicationcb) {
+      onorderforshippingloadingindicationcb(false);
+    }
+    
+    // Refresh the data even if there was an error, as the operation might have succeeded
+    // despite the client receiving an error
+    try {
+      await fetchOmsiapData();
+    } catch (refreshError) {
+      console.error('Failed to refresh data after updating shipping status:', refreshError);
+    }
+  }
+};
+
+  const handleRejectOrder = (id) => {
+    showStatusMessage(`Order ${id} has been rejected`);
+    // Update the table UI to reflect rejection
+    setTransactions(prevTransactions => 
+      prevTransactions.filter(t => t.id !== id)
+    );
+  };
+
+  const handleMessageOrder = (id) => {
+    showStatusMessage(`Sending message regarding order ${id}`);
+  };
+
+  const handleEditOrder = (id) => {
+    showStatusMessage(`Editing order ${id}`);
+  };
+
+  return (
+    <div className="pending-orders-container">
+      <div className="header-section">
+        <h1 className="page-title">Accepted Orders</h1>
+        <div className="close-button" 
+            onClick={()=>{
+              setShowDatabaseConfiguration(false);
+              setShowConfirmedOrders(false);
+            }}>
+          <span className="close-icon">✕</span>
+        </div>
+      </div>
+
+      <div className="search-header">
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by ID, Date, Location or Address..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+          {searchQuery && (
+            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
+          )}
+        </div>
+      </div>
+
+      {statusMessage && (
+        <div className="status-message">
+          {statusMessage}
+        </div>
+      )}
+
+      <div className="orders-table-container">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Location</th>
+              <th>Total Kilos</th>
+              <th>Items</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.map((transaction) => (
+              <tr 
+                key={transaction.id} 
+                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
+                onMouseEnter={() => setActiveRow(transaction.id)}
+                onMouseLeave={() => setActiveRow(null)}
+              >
+                <td className="order-id">{transaction.id}s</td>
+                <td>{transaction.statusesandlogs.date}</td>
+                <td className="order-amount">${transaction.system.ordersummary.merchandisetotal}</td>
+                <td>{transaction.system.shippinginfo.street}, {transaction.system.shippinginfo.trademark}, {transaction.system.shippinginfo.baranggay}, {transaction.system.shippinginfo.city}, {transaction.system.shippinginfo.province}, {transaction.system.shippinginfo.zipcode}, {transaction.system.shippinginfo.country}</td>
+                <td>{transaction.system.ordersummary.totalweightkilos} kg</td>
+                <td>{transaction.system.ordersummary.totalitems}</td>
+                <td className="action-buttons">
+                  <button 
+                    className="view-btn" 
+                    onClick={() => {
+
+                      setShowOrderDetails(true)
+
+                      setOrderDetailsObject(transaction)
+
+                    }}
+                  >
+                    View
+                  </button>
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => handleEditOrder(transaction.id)}
+                  >
+                    Edit
+                  </button>
+                  <OrderForShippingButton key={transaction._id}
+                                          order={transaction}
+                                          onOrderForShipping={handleOrderForShipping}/>
+                  <button 
+                    className="reject-btn" 
+                    onClick={() => handleRejectOrder(transaction.id)}
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    className="message-btn" 
+                    onClick={() => handleMessageOrder(transaction.id)}
+                  >
+                    Message
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredTransactions.length === 0 && (
+        <div className="no-results">
+          <p>No orders found matching your search</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const OrdersForShipping = ({ 
+  ordersforshipping,
+  setOrderDetailsObject,
+
+  setShowDatabaseConfiguration,
+  setShowOrdersForShipping,
+
+  setShowConfirmedOrders,
+
+  setShowOrderDetails,
+
+  setShowPendingOrders, 
+  setShowPendingOrderDetails,
+  
+  fetchOmsiapData
+
+}) => {
+
+  const [transactions, setTransactions] = useState(ordersforshipping)
+  const [filteredTransactions, setFilteredTransactions] = useState(ordersforshipping)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
+  const [activeRow, setActiveRow] = useState(null)
+
+  const [ordershippedloadingindication, ordershippedloadingindicationcb] = useState(false)
+
+ // Filter transactions based on search query
+ useEffect(() => {
+
+  if (!searchQuery.trim()) {
+    setFilteredTransactions(transactions);
+    return;
+  }
+
+  const query = searchQuery.toLowerCase();
+  const filtered = transactions.filter(transaction => {
+    // Check if the property exists before accessing its toLowerCase method
+    const idMatch = transaction.id?.toLowerCase().includes(query) || false;
+    const dateMatch = transaction.date?.toLowerCase().includes(query) || false;
+    
+    // Safely access nested properties
+    const addressMatch = transaction.details?.shippingInfo?.address?.toLowerCase().includes(query) || false;
+    const cityMatch = transaction.details?.shippingInfo?.city?.toLowerCase().includes(query) || false;
+    
+    return idMatch || dateMatch || addressMatch || cityMatch;
+  });
+  
+  setFilteredTransactions(filtered);
+}, [searchQuery, transactions]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Show status message with animation
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+
+    {/*
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 3000);
+    */}
+
+  };
+
+  // Improved handleOrderShipped function with shipping-specific messaging
+const handleOrderShipped = async (_id) => {
+  // Prevent multiple simultaneous requests
+  if (ordershippedloadingindicationcb) {
+    ordershippedloadingindicationcb(true);
+  }
+  
+  try {
+    // Validate input
+    if (!_id) {
+      showStatusMessage('Order ID is missing', 'error');
+      return;
+    }
+    
+    // Send request to backend to mark the order as shipped
+    const response = await axiosCreatedInstance.post("/omsiap/ordershipped", { _id });
+    
+    // Show success status message based on backend response
+    showStatusMessage(
+      response.data.message || `Order ${_id} has been marked as shipped successfully`,
+      'success'
+    );
+    
+    // Update the UI with fresh data
+    await fetchOmsiapData();
+    
+  } catch (error) {
+    // Handle different types of backend errors
+    if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      const errorMessage = error.response.data.message ||
+                           `Failed to mark Order ${_id} as shipped. Server responded with an error.`;
+      
+      showStatusMessage(errorMessage, 'error');
+      console.error('Backend error response:', error.response.data);
+      
+      // Handle specific error status codes
+      switch(error.response.status) {
+        case 404:
+          showStatusMessage(`Order ${_id} could not be found. It may have been deleted or moved.`, 'error');
+          break;
+        case 400:
+          // The message from the server should already be descriptive
+          // Check for specific shipping-related errors
+          if (error.response.data.message && error.response.data.message.includes('status')) {
+            showStatusMessage('This order cannot be marked as shipped. It may need to be prepared for shipping first.', 'error');
+          }
+          break;
+        case 401:
+          showStatusMessage('You are not authorized to mark this order as shipped. Please log in again.', 'error');
+          break;
+        case 403:
+          showStatusMessage('You do not have permission to update order shipping status.', 'error');
+          break;
+        case 500:
+          showStatusMessage('The server encountered an error while marking the order as shipped. Please try again later.', 'error');
+          break;
+      }
+      
+    } else if (error.request) {
+      // The request was made but no response was received
+      showStatusMessage(
+        `No response received when trying to mark Order ${_id} as shipped. Please check your network connection.`,
+        'error'
+      );
+      console.error('No response received:', error.request);
+      
+    } else {
+      // Something happened in setting up the request that triggered an Error
+      showStatusMessage(`Error processing shipment update for Order ${_id}. Please try again.`, 'error');
+      console.error('Error setting up request:', error.message);
+    }
+  } finally {
+    // Ensure loading indication is set to false regardless of outcome
+    if (ordershippedloadingindicationcb) {
+      ordershippedloadingindicationcb(false);
+    }
+    
+    // Refresh the data even if there was an error, as the operation might have succeeded
+    // despite the client receiving an error
+    try {
+      await fetchOmsiapData();
+    } catch (refreshError) {
+      console.error('Failed to refresh data after marking order as shipped:', refreshError);
+    }
+  }
+};
+
+  const handleRejectOrder = (id) => {
+    showStatusMessage(`Order ${id} has been rejected`);
+    // Update the table UI to reflect rejection
+    setTransactions(prevTransactions => 
+      prevTransactions.filter(t => t.id !== id)
+    );
+  };
+
+  const handleMessageOrder = (id) => {
+    showStatusMessage(`Sending message regarding order ${id}`);
+  };
+
+  const handleEditOrder = (id) => {
+    showStatusMessage(`Editing order ${id}`);
+  };
+
+  return (
+    <div className="pending-orders-container">
+      <div className="header-section">
+        <h1 className="page-title">Orders For Shipping</h1>
+        <div className="close-button" 
+            onClick={()=>{
+              setShowDatabaseConfiguration(false);
+              setShowOrdersForShipping(false);
+            }}>
+          <span className="close-icon">✕</span>
+        </div>
+      </div>
+
+      <div className="search-header">
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by ID, Date, Location or Address..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+          {searchQuery && (
+            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
+          )}
+        </div>
+      </div>
+
+      {statusMessage && (
+        <div className="status-message">
+          {statusMessage}
+        </div>
+      )}
+
+      <div className="orders-table-container">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Location</th>
+              <th>Total Kilos</th>
+              <th>Items</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.map((transaction) => (
+              <tr 
+                key={transaction.id} 
+                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
+                onMouseEnter={() => setActiveRow(transaction.id)}
+                onMouseLeave={() => setActiveRow(null)}
+              >
+                 <td className="order-id">{transaction.id}s</td>
+                <td>{transaction.statusesandlogs.date}</td>
+                <td className="order-amount">${transaction.system.ordersummary.merchandisetotal}</td>
+                <td>{transaction.system.shippinginfo.street}, {transaction.system.shippinginfo.trademark}, {transaction.system.shippinginfo.baranggay}, {transaction.system.shippinginfo.city}, {transaction.system.shippinginfo.province}, {transaction.system.shippinginfo.zipcode}, {transaction.system.shippinginfo.country}</td>
+                <td>{transaction.system.ordersummary.totalweightkilos} kg</td>
+                <td>{transaction.system.ordersummary.totalitems}</td>
+                <td className="action-buttons">
+                  <button 
+                    className="view-btn" 
+                    onClick={() => {
+
+                      setShowOrderDetails(true)
+
+                      setOrderDetailsObject(transaction)
+
+                    }}
+                  >
+                    View
+                  </button>
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => handleEditOrder(transaction.id)}
+                  >
+                    Edit
+                  </button>
+                  <OrderShippedButton key={transaction._id}
+                                      order={transaction}
+                                      onOrderShipped={handleOrderShipped}/>
+                  <button 
+                    className="reject-btn" 
+                    onClick={() => handleRejectOrder(transaction.id)}
+                  >
+                    Reject
+                  </button>
+                  <button 
+                    className="message-btn" 
+                    onClick={() => handleMessageOrder(transaction.id)}
+                  >
+                    Message
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredTransactions.length === 0 && (
+        <div className="no-results">
+          <p>No orders found matching your search</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const ShippedOrders = ({ 
+  shippedorders,
+  setOrderDetailsObject,
+
+  setShowDatabaseConfiguration,
+  setShowShippedOrders,
+
+  setShowOrdersForShipping,
+
+  setShowConfirmedOrders,
+
   setShowOrderDetails,
 
   setShowPendingOrders, 
   setShowPendingOrderDetails 
 
 }) => {
-  // Sample transaction data
-  const sampleTransactions = [
-    {
-      id: "ORD-12345",
-      date: "2025-03-12",
-      type: "Online",
-      amount: 278.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "Organic Coffee", price: 89.50, quantity: 3 },
-          { name: "Herbal Tea", price: 10.00, quantity: 1 }
-        ],
-        shippingInfo: {
-          address: "123 Main Street",
-          city: "Austin",
-          state: "TX",
-          zipCode: "78701",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 278.50,
-          shippingTotal: 15.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 48.75,
-          totalCapital: 214.75,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 1250,
-          totalWeightKilos: 1.25,
-          total: 293.50
-        }
-      }
-    },
-    {
-      id: "ORD-54321",
-      date: "2025-03-11",
-      type: "In-Store",
-      amount: 156.75,
-      status: "Pending",
-      paymentmethod: "Cash",
-      details: {
-        products: [
-          { name: "Green Tea", price: 45.25, quantity: 2 },
-          { name: "Black Tea", price: 33.00, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "456 Elm Street",
-          city: "Seattle",
-          state: "WA",
-          zipCode: "98101",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 156.75,
-          shippingTotal: 10.00,
-          totalTransactionGiveaway: 5.00,
-          totalOmsiaProfit: 32.75,
-          totalCapital: 129.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 750,
-          totalWeightKilos: 0.75,
-          total: 166.75
-        }
-      }
-    },
-    {
-      id: "ORD-67890",
-      date: "2025-03-10",
-      type: "Online",
-      amount: 455.25,
-      status: "Pending",
-      paymentmethod: "PayPal",
-      details: {
-        products: [
-          { name: "Oolong Tea", price: 120.75, quantity: 3 },
-          { name: "Chai Spices", price: 46.50, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "789 Oak Drive",
-          city: "Portland",
-          state: "OR",
-          zipCode: "97201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 455.25,
-          shippingTotal: 20.00,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 89.25,
-          totalCapital: 366.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1850,
-          totalWeightKilos: 1.85,
-          total: 475.25
-        }
-      }
-    },
-    {
-      id: "ORD-98765",
-      date: "2025-03-09",
-      type: "Online",
-      amount: 323.50,
-      status: "Pending",
-      paymentmethod: "Credit Card",
-      details: {
-        products: [
-          { name: "White Tea", price: 78.50, quantity: 2 },
-          { name: "Matcha Powder", price: 55.50, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "321 Pine Lane",
-          city: "Denver",
-          state: "CO",
-          zipCode: "80201",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 323.50,
-          shippingTotal: 12.50,
-          totalTransactionGiveaway: 10.00,
-          totalOmsiaProfit: 61.00,
-          totalCapital: 265.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 1100,
-          totalWeightKilos: 1.10,
-          total: 336.00
-        }
-      }
-    },
-    {
-      id: "ORD-24680",
-      date: "2025-03-08",
-      type: "In-Store",
-      amount: 189.25,
-      status: "Pending",
-      paymentmethod: "Debit Card",
-      details: {
-        products: [
-          { name: "Jasmine Tea", price: 65.75, quantity: 2 },
-          { name: "Earl Grey", price: 28.75, quantity: 2 }
-        ],
-        shippingInfo: {
-          address: "654 Maple Avenue",
-          city: "Chicago",
-          state: "IL",
-          zipCode: "60601",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 189.25,
-          shippingTotal: 8.75,
-          totalTransactionGiveaway: 0,
-          totalOmsiaProfit: 40.00,
-          totalCapital: 158.00,
-          totalItems: 4,
-          totalProducts: 2,
-          totalWeightGrams: 900,
-          totalWeightKilos: 0.90,
-          total: 198.00
-        }
-      }
-    },
-    {
-      id: "ORD-13579",
-      date: "2025-03-07",
-      type: "Online",
-      amount: 512.75,
-      status: "Pending",
-      paymentmethod: "Bitcoin",
-      details: {
-        products: [
-          { name: "Pu-erh Tea", price: 195.50, quantity: 2 },
-          { name: "Tea Accessories", price: 40.75, quantity: 3 }
-        ],
-        shippingInfo: {
-          address: "987 Birch Street",
-          city: "New York",
-          state: "NY",
-          zipCode: "10001",
-          country: "USA"
-        },
-        orderSummary: {
-          merchandiseTotal: 512.75,
-          shippingTotal: 25.00,
-          totalTransactionGiveaway: 15.00,
-          totalOmsiaProfit: 98.75,
-          totalCapital: 424.00,
-          totalItems: 5,
-          totalProducts: 2,
-          totalWeightGrams: 2200,
-          totalWeightKilos: 2.20,
-          total: 537.75
-        }
-      }
-    }
-  ];
 
-  const [transactions, setTransactions] = useState(acceptedorders);
-  const [filteredTransactions, setFilteredTransactions] = useState(acceptedorders);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusMessage, setStatusMessage] = useState('');
-  const [activeRow, setActiveRow] = useState(null);
+  const [transactions, setTransactions] = useState(shippedorders)
+  const [filteredTransactions, setFilteredTransactions] = useState(shippedorders)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
+  const [activeRow, setActiveRow] = useState(null)
 
  // Filter transactions based on search query
  useEffect(() => {
+
   if (!searchQuery.trim()) {
     setFilteredTransactions(transactions);
     return;
@@ -5892,11 +4572,11 @@ const AcceptedOrders = ({
   return (
     <div className="pending-orders-container">
       <div className="header-section">
-        <h1 className="page-title">Accepted Orders</h1>
+        <h1 className="page-title">Shipped Orders</h1>
         <div className="close-button" 
             onClick={()=>{
-              setShowDatabaseConfiguration(false);
-              setShowPendingOrders(false);
+              setShowDatabaseConfiguration(false)
+              setShowShippedOrders(false)
             }}>
           <span className="close-icon">✕</span>
         </div>
@@ -5945,12 +4625,222 @@ const AcceptedOrders = ({
                 onMouseEnter={() => setActiveRow(transaction.id)}
                 onMouseLeave={() => setActiveRow(null)}
               >
-                <td className="order-id">{transaction.id}</td>
-                <td>{transaction.date}</td>
-                <td className="order-amount">${transaction.amount.toFixed(2)}</td>
-                <td>{transaction.details.shippingInfo.city}, {transaction.details.shippingInfo.state}</td>
-                <td>{transaction.details.orderSummary.totalWeightKilos} kg</td>
-                <td>{transaction.details.orderSummary.totalItems}</td>
+                <td className="order-id">{transaction.id}s</td>
+                <td>{transaction.statusesandlogs.date}</td>
+                <td className="order-amount">${transaction.system.ordersummary.merchandisetotal}</td>
+                <td>{transaction.system.shippinginfo.street}, {transaction.system.shippinginfo.trademark}, {transaction.system.shippinginfo.baranggay}, {transaction.system.shippinginfo.city}, {transaction.system.shippinginfo.province}, {transaction.system.shippinginfo.zipcode}, {transaction.system.shippinginfo.country}</td>
+                <td>{transaction.system.ordersummary.totalweightkilos} kg</td>
+                <td>{transaction.system.ordersummary.totalitems}</td>
+                <td className="action-buttons">
+                  <button 
+                    className="view-btn" 
+                    onClick={() => {
+
+                      setShowOrderDetails(true)
+
+                      setOrderDetailsObject(transaction)
+
+                    }}
+                  >
+                    View
+                  </button>
+
+                  <button 
+                    className="message-btn" 
+                    onClick={() => handleMessageOrder(transaction.id)}
+                  >
+                    Message
+                  </button>
+
+                  {/*
+                  <button 
+                    className="edit-btn" 
+                    onClick={() => handleEditOrder(transaction.id)}
+                  >
+                    Edit
+                  </button>
+                  <button 
+                    className="accept-btn" 
+                    onClick={() => handleAcceptOrder(transaction.id)}
+                  >
+                    Accept
+                  </button>
+                  <button 
+                    className="reject-btn" 
+                    onClick={() => handleRejectOrder(transaction.id)}
+                  >
+                    Reject
+                  </button>
+                  */}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {filteredTransactions.length === 0 && (
+        <div className="no-results">
+          <p>No orders found matching your search</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const SuccessfulOrders = ({ 
+  successfulorders,
+  setOrderDetailsObject,
+
+  setShowDatabaseConfiguration,
+  setShowSuccessfulOrders,
+  setShowOrdersForShipping,
+
+  setShowConfirmedOrders,
+
+  setShowOrderDetails,
+
+  setShowPendingOrders, 
+  setShowPendingOrderDetails 
+
+}) => {
+
+  const [transactions, setTransactions] = useState(successfulorders)
+  const [filteredTransactions, setFilteredTransactions] = useState(successfulorders)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusMessage, setStatusMessage] = useState('')
+  const [activeRow, setActiveRow] = useState(null)
+
+ // Filter transactions based on search query
+ useEffect(() => {
+
+  if (!searchQuery.trim()) {
+    setFilteredTransactions(transactions);
+    return;
+  }
+
+  const query = searchQuery.toLowerCase();
+  const filtered = transactions.filter(transaction => {
+    // Check if the property exists before accessing its toLowerCase method
+    const idMatch = transaction.id?.toLowerCase().includes(query) || false;
+    const dateMatch = transaction.date?.toLowerCase().includes(query) || false;
+    
+    // Safely access nested properties
+    const addressMatch = transaction.details?.shippingInfo?.address?.toLowerCase().includes(query) || false;
+    const cityMatch = transaction.details?.shippingInfo?.city?.toLowerCase().includes(query) || false;
+    
+    return idMatch || dateMatch || addressMatch || cityMatch;
+  });
+  
+  setFilteredTransactions(filtered);
+}, [searchQuery, transactions]);
+
+  // Handle search input change
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Show status message with animation
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+
+    {/*
+    setTimeout(() => {
+      setStatusMessage('');
+    }, 3000);
+    */}
+
+  };
+
+  // Button action handlers with visual feedback
+  const handleAcceptOrder = (id) => {
+    showStatusMessage(`Order ${id} has been accepted`);
+    // Update the table UI to reflect acceptance
+    setTransactions(prevTransactions => 
+      prevTransactions.map(t => 
+        t.id === id ? {...t, status: 'Processing'} : t
+      )
+    );
+  };
+
+  const handleRejectOrder = (id) => {
+    showStatusMessage(`Order ${id} has been rejected`);
+    // Update the table UI to reflect rejection
+    setTransactions(prevTransactions => 
+      prevTransactions.filter(t => t.id !== id)
+    );
+  };
+
+  const handleMessageOrder = (id) => {
+    showStatusMessage(`Sending message regarding order ${id}`);
+  };
+
+  const handleEditOrder = (id) => {
+    showStatusMessage(`Editing order ${id}`);
+  };
+
+  return (
+    <div className="pending-orders-container">
+      <div className="header-section">
+        <h1 className="page-title">Successful Orders</h1>
+        <div className="close-button" 
+            onClick={()=>{
+              setShowDatabaseConfiguration(false);
+              setShowSuccessfulOrders(false);
+            }}>
+          <span className="close-icon">✕</span>
+        </div>
+      </div>
+
+      <div className="search-header">
+        <div className="search-bar">
+          <span className="search-icon">🔍</span>
+          <input
+            type="text"
+            placeholder="Search by ID, Date, Location or Address..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="search-input"
+          />
+          {searchQuery && (
+            <span className="clear-search" onClick={() => setSearchQuery('')}>✕</span>
+          )}
+        </div>
+      </div>
+
+      {statusMessage && (
+        <div className="status-message">
+          {statusMessage}
+        </div>
+      )}
+
+      <div className="orders-table-container">
+        <table className="orders-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Location</th>
+              <th>Total Kilos</th>
+              <th>Items</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredTransactions.map((transaction) => (
+              <tr 
+                key={transaction.id} 
+                className={`order-row ${activeRow === transaction.id ? 'active-row' : ''}`}
+                onMouseEnter={() => setActiveRow(transaction.id)}
+                onMouseLeave={() => setActiveRow(null)}
+              >
+                <td className="order-id">{transaction.id}s</td>
+                <td>{transaction.statusesandlogs.date}</td>
+                <td className="order-amount">${transaction.system.ordersummary.merchandisetotal}</td>
+                <td>{transaction.system.shippinginfo.street}, {transaction.system.shippinginfo.trademark}, {transaction.system.shippinginfo.baranggay}, {transaction.system.shippinginfo.city}, {transaction.system.shippinginfo.province}, {transaction.system.shippinginfo.zipcode}, {transaction.system.shippinginfo.country}</td>
+                <td>{transaction.system.ordersummary.totalweightkilos} kg</td>
+                <td>{transaction.system.ordersummary.totalitems}</td>
                 <td className="action-buttons">
                   <button 
                     className="view-btn" 
@@ -6750,6 +5640,7 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
             <div className="status-history">
               {transaction.statusesandlogs.logs.map((log, index) => (
                 <div key={index} className="status-log">
+                  <br/>
                   <div className="log-date">Date: {log.date}</div>
                   <div className="log-type">Type: {log.type}</div>
                   <div className="log-indication">Indication: {log.indication}</div>
@@ -6802,34 +5693,30 @@ const CurrencyExchangeAcceptButton = ({ order, onAccept }) => {
 };
 
 const TotalCurrencyExchange = ({ 
-
   setShowDatabaseConfiguration, 
   setShowTotalCurrencyExchange, 
   setShowCreditTransaction,
-
   totalcurrencyexchange,
   credittransactionobjectcb,
-
   onClose, 
   onView, 
   onEdit 
-
- }) => {
-
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [animateRow, setAnimateRow] = useState(null);
+  const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
     
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = totalcurrencyexchange.filter(
-      transaction => transaction.type === 'currency exchange' 
+    // Initial filtering of only currency exchange transactions
+    const currencyExchanges = totalcurrencyexchange.filter(
+      transaction => transaction.intent === 'currency exchange' 
     );
-    setFilteredTransactions(pendingDeposits);
+    setFilteredTransactions(currencyExchanges);
   }, [totalcurrencyexchange]);
 
   useEffect(() => {
@@ -6837,25 +5724,30 @@ const TotalCurrencyExchange = ({
       const results = totalcurrencyexchange.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+        // Search by name
+        (transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Search by contact info
+        (transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Search by payment method
+        (transaction.details?.paymentmethod && 
+         transaction.details.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Search by reference number
+        (transaction.details?.referrence?.number && 
+         transaction.details.referrence.number.toLowerCase().includes(searchQuery.toLowerCase()))
       );
       setFilteredTransactions(results);
     } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = totalcurrencyexchange.filter(
-        transaction => transaction.type === 'currency exchange' 
+      // Reset to show only currency exchanges when search is cleared
+      const currencyExchanges = totalcurrencyexchange.filter(
+        transaction => transaction.intent === 'currency exchange' 
       );
-      setFilteredTransactions(pendingDeposits);
+      setFilteredTransactions(currencyExchanges);
     }
   }, [searchQuery, totalcurrencyexchange]);
 
   const handleAcceptCurrencyExchange = async (id) => {
-
     try {
       // Initialize status message
       showStatusMessage("Processing request...");
@@ -6871,12 +5763,8 @@ const TotalCurrencyExchange = ({
       // Handle different response statuses
       switch(response.data.status) {
         case 'EXCHANGE_APPROVED':
-          // Success case
           showStatusMessage("Exchange approved successfully!");
           document.querySelectorAll(".status-message")[0].style.backgroundColor = "#10b981"; // Green
-          
-          // Update UI to reflect changes
-          // You might want to refresh the transaction list or update the specific row
           break;
           
         case 'TRANSACTION_NOT_FOUND':
@@ -6893,71 +5781,36 @@ const TotalCurrencyExchange = ({
           showStatusMessage("Request processed with status: " + response.data.status);
           document.querySelectorAll(".status-message")[0].style.backgroundColor = "#f59e0b"; // Amber
       }
-      
     } catch (error) {
-      // Handle errors from the API call
       console.error("Error accepting currency exchange:", error);
       
-      // Check if it's a response error with status and message
       if (error.response && error.response.data) {
-        showStatusMessage(error.response.data.message || "Error processing request", "error");
+        showStatusMessage(error.response.data.message || "Error processing request");
       } else {
-        showStatusMessage("Network error or server unavailable", "error");
+        showStatusMessage("Network error or server unavailable");
       }
       
       document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
       document.querySelectorAll(".status-message")[0].style.color = "white";
     } finally {
-      // Clean up animation after a delay regardless of success or failure
       setTimeout(() => {
         setAnimateRow(null);
       }, 800);
     }
   };
-  
-  {/*
-  // Helper function to show status messages
-  const showStatusMessage = (message, type = "info") => {
 
-    const statusElement = document.querySelectorAll(".status-message")[0];
-    if (!statusElement) return;
-    
-    statusElement.textContent = message;
-    
-    // Set styling based on message type
-    switch(type) {
-      case "success":
-        statusElement.style.backgroundColor = "#10b981"; // Green
-        break;
-      case "error":
-        statusElement.style.backgroundColor = "#ef4444"; // Red
-        break;
-      case "warning":
-        statusElement.style.backgroundColor = "#f59e0b"; // Amber
-        break;
-      case "info":
-      default:
-        statusElement.style.backgroundColor = "#3b82f6"; // Blue
-    }
-    
-    statusElement.style.color = "white";
-    statusElement.style.display = "block";
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
     
     // Optionally auto-hide the message after some time
     setTimeout(() => {
-      statusElement.style.opacity = "0";
-      setTimeout(() => {
-        statusElement.style.display = "none";
-        statusElement.style.opacity = "1";
-      }, 300);
+      setStatusMessage("");
     }, 5000);
-
   };
-  */}
-
 
   const handleReject = (id) => {
     setAnimateRow(id);
+    showStatusMessage("Rejecting transaction...");
     // Additional reject logic would go here
     setTimeout(() => {
       setAnimateRow(null);
@@ -6966,6 +5819,7 @@ const TotalCurrencyExchange = ({
   };
 
   const handleMessage = (id) => {
+    showStatusMessage("Opening message interface...");
     // Message sending logic would go here
   };
 
@@ -6980,7 +5834,27 @@ const TotalCurrencyExchange = ({
     });
   };
 
-  const [statusMessage, showStatusMessage] = useState("")
+  // Helper function to get customer full name
+  const getCustomerName = (transaction) => {
+    if (!transaction.details?.thistransactionismadeby?.name) return "Unknown";
+    
+    const { firstname, middlename, lastname } = transaction.details.thistransactionismadeby.name;
+    let fullName = firstname || "";
+    
+    if (middlename) fullName += ` ${middlename}`;
+    if (lastname) fullName += ` ${lastname}`;
+    
+    return fullName.trim() || "Unknown";
+  };
+
+  // Helper function to get transaction status with proper formatting
+  const getTransactionStatus = (transaction) => {
+    if (!transaction.statusesandlogs) return { status: "Unknown", indication: "" };
+    return {
+      status: transaction.statusesandlogs.status || "Unknown",
+      indication: transaction.statusesandlogs.indication || ""
+    };
+  };
 
   return (
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
@@ -7000,7 +5874,7 @@ const TotalCurrencyExchange = ({
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by ID, name, email, or phone number..."
+              placeholder="Search by ID, name, email, phone, or reference number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -7014,6 +5888,7 @@ const TotalCurrencyExchange = ({
             {statusMessage}
           </div>
         )}
+        
         <div className="pending-deposits-container">
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
@@ -7026,79 +5901,110 @@ const TotalCurrencyExchange = ({
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Customer</th>
                     <th>Date</th>
-                    <th>Amount</th>
+                    <th>Amount (PHP)</th>
+                    <th>Amount (OMSIAP)</th>
                     <th>Status</th>
                     <th>Payment Method</th>
+                    <th>Reference</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr 
-                      key={transaction.id} 
-                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
-                    >
-                      <td className="transaction-id">{transaction.id}</td>
-                      <td className="date-cell">{formatDate(transaction.date)}</td>
-                      <td className="amount">
-                        <div className="amount-wrapper">
-                          <FaMoneyBillWave className="amount-icon" />
-                          <span>₱{transaction.amount.toFixed(2)}</span>
-                        </div>
-                      </td>
-                      <td className="status">
-                        <div className="status-indicator">
-                          <FaClock className="status-icon pulse" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td className="payment-method">{transaction.paymentmethod}</td>
-                      <td className="actions">
-                        <div className="action-buttons">
-                          <button 
-                            className="view-button" 
-                            onClick={() => {
-                              setShowCreditTransaction(true)
-                              credittransactionobjectcb(transaction)
-                            }}
-                            aria-label="View transaction details"
-                          >
-                            <FaEye />
-                            <span className="button-text">View</span>
-                          </button>
-                          <button 
-                            className="edit-button" 
-                            onClick={() => onEdit(transaction.id)}
-                            aria-label="Edit transaction"
-                          >
-                            <FaEdit />
-                            <span className="button-text">Edit</span>
-                          </button>
-
-                          <CurrencyExchangeAcceptButton key={transaction.id}
-                                                        order={transaction}
-                                                        onAccept={handleAcceptCurrencyExchange}/>
-                          <button 
-                            className="reject-button" 
-                            onClick={() => handleReject(transaction.id)}
-                            aria-label="Reject transaction"
-                          >
-                            <FaTimesCircle />
-                            <span className="button-text">Reject</span>
-                          </button>
-                          <button 
-                            className="message-button" 
-                            onClick={() => handleMessage(transaction.id)}
-                            aria-label="Message about transaction"
-                          >
-                            <FaEnvelope />
-                            <span className="button-text">Message</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((transaction) => {
+                    const statusInfo = getTransactionStatus(transaction);
+                    const customerName = getCustomerName(transaction);
+                    const logDate = transaction.statusesandlogs?.logs?.[0]?.date || transaction.date;
+                    
+                    return (
+                      <tr 
+                        key={transaction.id} 
+                        className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                      >
+                        <td className="transaction-id" title={transaction.id}>
+                          {transaction.id.substring(0, 8)}...
+                        </td>
+                        <td className="customer-name">{customerName}</td>
+                        <td className="date-cell">{formatDate(logDate)}</td>
+                        <td className="amount">
+                          <div className="amount-wrapper">
+                            <FaMoneyBillWave className="amount-icon" />
+                            <span>₱{transaction.details?.amounts?.phppurchaseorexchangeamount?.toFixed(2) || '0.00'}</span>
+                          </div>
+                        </td>
+                        <td className="omsiap-amount">
+                          <div className="amount-wrapper">
+                            <FaCoins className="amount-icon" />
+                            <span>{transaction.details?.amounts?.omsiapawasamounttorecieve?.toFixed(2) || '0.00'}</span>
+                          </div>
+                        </td>
+                        <td className="status">
+                          <div className={`status-indicator ${statusInfo.status}`}>
+                            {statusInfo.status === 'pending' ? (
+                              <FaClock className="status-icon pulse" />
+                            ) : statusInfo.status === 'completed' ? (
+                              <FaCheckCircle className="status-icon success" />
+                            ) : statusInfo.status === 'rejected' ? (
+                              <FaTimesCircle className="status-icon error" />
+                            ) : (
+                              <FaQuestionCircle className="status-icon" />
+                            )}
+                            <span>{statusInfo.status}</span>
+                            {statusInfo.indication && (
+                              <span className="status-indication">{statusInfo.indication}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="payment-method">{transaction.details?.paymentmethod || 'N/A'}</td>
+                        <td className="reference-number">{transaction.details?.referrence?.number || 'N/A'}</td>
+                        <td className="actions">
+                          <div className="action-buttons">
+                            <button 
+                              className="view-button" 
+                              onClick={() => {
+                                setShowCreditTransaction(true)
+                                credittransactionobjectcb(transaction)
+                              }}
+                              aria-label="View transaction details"
+                            >
+                              <FaEye />
+                              <span className="button-text">View</span>
+                            </button>
+                            <button 
+                              className="edit-button" 
+                              onClick={() => onEdit(transaction.id)}
+                              aria-label="Edit transaction"
+                            >
+                              <FaEdit />
+                              <span className="button-text">Edit</span>
+                            </button>
+                            <CurrencyExchangeAcceptButton 
+                              key={transaction.id}
+                              order={transaction}
+                              onAccept={handleAcceptCurrencyExchange}
+                            />
+                            <button 
+                              className="reject-button" 
+                              onClick={() => handleReject(transaction.id)}
+                              aria-label="Reject transaction"
+                            >
+                              <FaTimesCircle />
+                              <span className="button-text">Reject</span>
+                            </button>
+                            <button 
+                              className="message-button" 
+                              onClick={() => handleMessage(transaction.id)}
+                              aria-label="Message about transaction"
+                            >
+                              <FaEnvelope />
+                              <span className="button-text">Message</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -7762,7 +6668,6 @@ const RejectedCurrencyExchange = ({
     </div>
   );
 };
-
 
 
 
