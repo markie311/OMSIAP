@@ -177,6 +177,9 @@ amounts: {
 referrence: {
   gcashphonenumber: {
     type: 'string'
+  },
+  referencenumber: {
+    type: 'string'
   }
 }
 }

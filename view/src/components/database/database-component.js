@@ -7,6 +7,8 @@ import { useState, useEffect, useRef } from "react"
 import { Container, Row, Col, Button, Form, Spinner } from "react-bootstrap"
 
 import { FaEye, 
+         FaRecycle,
+         FaRedoAlt,
          FaCoins,
          FaQuestionCircle,
          FaLayerGroup, 
@@ -6016,52 +6018,64 @@ const TotalCurrencyExchange = ({
 };
 
 const PendingCurrencyExchange = ({ 
-
   setShowDatabaseConfiguration,
   setShowPendingCurrencyExchange, 
   setShowCreditTransaction, 
-
   pendingcurrencyexchange,
   credittransactionobjectcb, 
-
   onClose, 
   onView, 
   onEdit 
 }) => {
-
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [animateRow, setAnimateRow] = useState(null);
+  const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
-  }, []);
-
-  // Combined useEffect for filtering transactions
-  useEffect(() => {
-    // Get only pending deposit transactions first
-    const pendingDepositsOnly = pendingcurrencyexchange.filter(
-      transaction => transaction.type === 'currency exchange' && transaction.status === 'pending'
-    );
     
-    // Then apply search filter if there's a search query
+    // Initial filtering of only pending currency exchange transactions
+    const pendingExchanges = pendingcurrencyexchange.filter(
+      transaction => transaction.intent === 'currency exchange' && 
+      transaction.statusesandlogs?.status === 'pending'
+    );
+    setFilteredTransactions(pendingExchanges);
+  }, [pendingcurrencyexchange]);
+
+  useEffect(() => {
     if (searchQuery) {
-      const results = pendingDepositsOnly.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+      const results = pendingcurrencyexchange.filter(transaction => 
+        // Only include pending currency exchanges
+        transaction.intent === 'currency exchange' && 
+        transaction.statusesandlogs?.status === 'pending' &&
+        (
+          // Search by transaction ID
+          transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          // Search by name
+          (transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by contact info
+          (transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by payment method
+          (transaction.details?.paymentmethod && 
+           transaction.details.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by reference number
+          (transaction.details?.referrence?.number && 
+           transaction.details.referrence.number.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
       );
       setFilteredTransactions(results);
     } else {
-      // No search query, just show pending deposits
-      setFilteredTransactions(pendingDepositsOnly);
+      // Reset to show only pending currency exchanges when search is cleared
+      const pendingExchanges = pendingcurrencyexchange.filter(
+        transaction => transaction.intent === 'currency exchange' && 
+        transaction.statusesandlogs?.status === 'pending'
+      );
+      setFilteredTransactions(pendingExchanges);
     }
   }, [searchQuery, pendingcurrencyexchange]);
 
@@ -6074,17 +6088,70 @@ const PendingCurrencyExchange = ({
     }, 300);
   };
 
-  const handleAccept = (id) => {
-    setAnimateRow(id);
-    // Additional accept logic would go here
+  const handleAcceptCurrencyExchange = async (id) => {
+    try {
+      // Initialize status message
+      showStatusMessage("Processing request...");
+      document.querySelectorAll(".status-message")[0].style.color = "white";
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#3b82f6";
+      
+      // Show animation for the affected row
+      setAnimateRow(id);
+      
+      // Make API call to accept the currency exchange
+      const response = await axiosCreatedInstance.post("/omsiap/acceptcurrencyexchange/accept", { id });
+      
+      // Handle different response statuses
+      switch(response.data.status) {
+        case 'EXCHANGE_APPROVED':
+          showStatusMessage("Exchange approved successfully!");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#10b981"; // Green
+          break;
+          
+        case 'TRANSACTION_NOT_FOUND':
+          showStatusMessage("Transaction not found. Please refresh the page.");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+          break;
+          
+        case 'NOT_FOUND':
+          showStatusMessage("System data not found. Please contact administrator.");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+          break;
+          
+        default:
+          showStatusMessage("Request processed with status: " + response.data.status);
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#f59e0b"; // Amber
+      }
+    } catch (error) {
+      console.error("Error accepting currency exchange:", error);
+      
+      if (error.response && error.response.data) {
+        showStatusMessage(error.response.data.message || "Error processing request");
+      } else {
+        showStatusMessage("Network error or server unavailable");
+      }
+      
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+      document.querySelectorAll(".status-message")[0].style.color = "white";
+    } finally {
+      setTimeout(() => {
+        setAnimateRow(null);
+      }, 800);
+    }
+  };
+
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+    
+    // Optionally auto-hide the message after some time
     setTimeout(() => {
-      setAnimateRow(null);
-      // Here you'd update the transaction status
-    }, 800);
+      setStatusMessage("");
+    }, 5000);
   };
 
   const handleReject = (id) => {
     setAnimateRow(id);
+    showStatusMessage("Rejecting transaction...");
     // Additional reject logic would go here
     setTimeout(() => {
       setAnimateRow(null);
@@ -6093,6 +6160,7 @@ const PendingCurrencyExchange = ({
   };
 
   const handleMessage = (id) => {
+    showStatusMessage("Opening message interface...");
     // Message sending logic would go here
   };
 
@@ -6105,6 +6173,28 @@ const PendingCurrencyExchange = ({
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Helper function to get customer full name
+  const getCustomerName = (transaction) => {
+    if (!transaction.details?.thistransactionismadeby?.name) return "Unknown";
+    
+    const { firstname, middlename, lastname } = transaction.details.thistransactionismadeby.name;
+    let fullName = firstname || "";
+    
+    if (middlename) fullName += ` ${middlename}`;
+    if (lastname) fullName += ` ${lastname}`;
+    
+    return fullName.trim() || "Unknown";
+  };
+
+  // Helper function to get transaction status with proper formatting
+  const getTransactionStatus = (transaction) => {
+    if (!transaction.statusesandlogs) return { status: "Unknown", indication: "" };
+    return {
+      status: transaction.statusesandlogs.status || "Unknown",
+      indication: transaction.statusesandlogs.indication || ""
+    };
   };
 
   return (
@@ -6122,13 +6212,20 @@ const PendingCurrencyExchange = ({
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by ID, name, email, or phone number..."
+              placeholder="Search by ID, name, email, phone, or reference number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
           </div>
         </div>
+        
+        {statusMessage && (
+          <div style={{position:"relative", top: "2vh"}}
+               className="status-message">
+            {statusMessage}
+          </div>
+        )}
         
         <div className="pending-deposits-container">
           {filteredTransactions.length === 0 ? (
@@ -6142,83 +6239,113 @@ const PendingCurrencyExchange = ({
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Customer</th>
                     <th>Date</th>
-                    <th>Amount</th>
+                    <th>Amount (PHP)</th>
+                    <th>Amount (OMSIAP)</th>
                     <th>Status</th>
                     <th>Payment Method</th>
+                    <th>Reference</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr 
-                      key={transaction.id} 
-                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
-                    >
-                      <td className="transaction-id">{transaction.id}</td>
-                      <td className="date-cell">{formatDate(transaction.date)}</td>
-                      <td className="amount">
-                        <div className="amount-wrapper">
-                          <FaMoneyBillWave className="amount-icon" />
-                          <span>₱{transaction.amount.toFixed(2)}</span>
-                        </div>
-                      </td>
-                      <td className="status">
-                        <div className="status-indicator">
-                          <FaClock className="status-icon pulse" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td className="payment-method">{transaction.paymentmethod}</td>
-                      <td className="actions">
-                        <div className="action-buttons">
-                          <button 
-                            className="view-button" 
-                            onClick={() => {
-                              setShowCreditTransaction(true)
-                              credittransactionobjectcb(transaction)
-                            }}
-                            aria-label="View transaction details"
-                          >
-                            <FaEye />
-                            <span className="button-text">View</span>
-                          </button>
-                          <button 
-                            className="edit-button" 
-                            onClick={() => onEdit(transaction.id)}
-                            aria-label="Edit transaction"
-                          >
-                            <FaEdit />
-                            <span className="button-text">Edit</span>
-                          </button>
-                          <button 
-                            className="accept-button" 
-                            onClick={() => handleAccept(transaction.id)}
-                            aria-label="Accept transaction"
-                          >
-                            <FaCheckCircle />
-                            <span className="button-text">Accept</span>
-                          </button>
-                          <button 
-                            className="reject-button" 
-                            onClick={() => handleReject(transaction.id)}
-                            aria-label="Reject transaction"
-                          >
-                            <FaTimesCircle />
-                            <span className="button-text">Reject</span>
-                          </button>
-                          <button 
-                            className="message-button" 
-                            onClick={() => handleMessage(transaction.id)}
-                            aria-label="Message about transaction"
-                          >
-                            <FaEnvelope />
-                            <span className="button-text">Message</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((transaction) => {
+                    const statusInfo = getTransactionStatus(transaction);
+                    const customerName = getCustomerName(transaction);
+                    const logDate = transaction.statusesandlogs?.logs?.[0]?.date || transaction.date;
+                    
+                    return (
+                      <tr 
+                        key={transaction.id} 
+                        className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                      >
+                        <td className="transaction-id" title={transaction.id}>
+                          {transaction.id.substring(0, 8)}...
+                        </td>
+                        <td className="customer-name">{customerName}</td>
+                        <td className="date-cell">{formatDate(logDate)}</td>
+                        <td className="amount">
+                          <div className="amount-wrapper">
+                            <FaMoneyBillWave className="amount-icon" />
+                            <span>₱{transaction.details?.amounts?.phppurchaseorexchangeamount?.toFixed(2) || '0.00'}</span>
+                          </div>
+                        </td>
+                        <td className="omsiap-amount">
+                          <div className="amount-wrapper">
+                            <FaCoins className="amount-icon" />
+                            <span>{transaction.details?.amounts?.omsiapawasamounttorecieve?.toFixed(2) || '0.00'}</span>
+                          </div>
+                        </td>
+                        <td className="status">
+                          <div className={`status-indicator ${statusInfo.status}`}>
+                            {statusInfo.status === 'pending' ? (
+                              <FaClock className="status-icon pulse" />
+                            ) : statusInfo.status === 'completed' ? (
+                              <FaCheckCircle className="status-icon success" />
+                            ) : statusInfo.status === 'rejected' ? (
+                              <FaTimesCircle className="status-icon error" />
+                            ) : (
+                              <FaQuestionCircle className="status-icon" />
+                            )}
+                            <span>{statusInfo.status}</span>
+                            {statusInfo.indication && (
+                              <span className="status-indication">{statusInfo.indication}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="payment-method">{transaction.details?.paymentmethod || 'N/A'}</td>
+                        <td className="reference-number">{transaction.details?.referrence?.number || 'N/A'}</td>
+                        <td className="actions">
+                          <div className="action-buttons">
+                            <button 
+                              className="view-button" 
+                              onClick={() => {
+                                setShowCreditTransaction(true)
+                                credittransactionobjectcb(transaction)
+                              }}
+                              aria-label="View transaction details"
+                            >
+                              <FaEye />
+                              <span className="button-text">View</span>
+                            </button>
+                            <button 
+                              className="edit-button" 
+                              onClick={() => onEdit(transaction.id)}
+                              aria-label="Edit transaction"
+                            >
+                              <FaEdit />
+                              <span className="button-text">Edit</span>
+                            </button>
+                            <button 
+                              className="accept-button" 
+                              onClick={() => handleAcceptCurrencyExchange(transaction.id)}
+                              aria-label="Accept transaction"
+                            >
+                              <FaCheckCircle />
+                              <span className="button-text">Accept</span>
+                            </button>
+                            <button 
+                              className="reject-button" 
+                              onClick={() => handleReject(transaction.id)}
+                              aria-label="Reject transaction"
+                            >
+                              <FaTimesCircle />
+                              <span className="button-text">Reject</span>
+                            </button>
+                            <button 
+                              className="message-button" 
+                              onClick={() => handleMessage(transaction.id)}
+                              aria-label="Message about transaction"
+                            >
+                              <FaEnvelope />
+                              <span className="button-text">Message</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -6449,35 +6576,32 @@ const SuccessfulCurrencyExchange = ({
 };
 
 const RejectedCurrencyExchange = ({ 
-
   setShowDatabaseConfiguration, 
   setShowRejectedCurrencyExchange, 
   setShowCreditTransaction, 
   setShowPendingCurrencyExchange, 
-
   rejectedcurrencyexchange, 
   credittransactionobjectcb,
-
   onClose, 
   onView, 
   onEdit 
-
-  }) => {
-
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [animateRow, setAnimateRow] = useState(null);
+  const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
     
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = rejectedcurrencyexchange.filter(
-      transaction => transaction.type === 'currency exchange' && transaction.status === 'rejected'
+    // Initial filtering of only rejected currency exchange transactions
+    const rejectedExchanges = rejectedcurrencyexchange.filter(
+      transaction => transaction.intent === 'currency exchange' && 
+      transaction.statusesandlogs?.status === 'rejected'
     );
-    setFilteredTransactions(pendingDeposits);
+    setFilteredTransactions(rejectedExchanges);
   }, [rejectedcurrencyexchange]);
 
   useEffect(() => {
@@ -6485,51 +6609,73 @@ const RejectedCurrencyExchange = ({
       const results = rejectedcurrencyexchange.filter(transaction => 
         // Search by transaction ID
         transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+        // Search by name
+        (transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Search by contact info
+        (transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+         transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Search by payment method
+        (transaction.details?.paymentmethod && 
+         transaction.details.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        // Search by reference number
+        (transaction.details?.referrence?.number && 
+         transaction.details.referrence.number.toLowerCase().includes(searchQuery.toLowerCase()))
       );
       setFilteredTransactions(results);
     } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = rejectedcurrencyexchange.filter(
-        transaction => transaction.type === 'currency exchange' && transaction.status === 'rejected'
+      // Reset to show only rejected currency exchanges when search is cleared
+      const rejectedExchanges = rejectedcurrencyexchange.filter(
+        transaction => transaction.intent === 'currency exchange' && 
+        transaction.statusesandlogs?.status === 'rejected'
       );
-      setFilteredTransactions(pendingDeposits);
+      setFilteredTransactions(rejectedExchanges);
     }
   }, [searchQuery, rejectedcurrencyexchange]);
 
-  const handleClose = () => {
-    setIsVisible(false);
-    // Delay actual closing to allow for animation
-    setTimeout(() => {
-      setShowDatabaseConfiguration(false);
-      setShowPendingCurrencyExchange(false);
-    }, 300);
+  const handleReactivate = async (id) => {
+    try {
+      // Initialize status message
+      showStatusMessage("Processing reactivation request...");
+      document.querySelectorAll(".status-message")[0].style.color = "white";
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#3b82f6";
+      
+      // Show animation for the affected row
+      setAnimateRow(id);
+      
+      // Make API call to reactivate the currency exchange (you'll need to implement this)
+      // const response = await axiosCreatedInstance.post("/omsiap/reactivatecurrencyexchange", { id });
+      
+      // For now, just show a status message
+      showStatusMessage("Reactivation request sent. Awaiting processing.");
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#f59e0b"; // Amber
+      
+      // Here you would handle the actual status update after API call
+      
+    } catch (error) {
+      console.error("Error reactivating currency exchange:", error);
+      
+      showStatusMessage("Error processing reactivation request");
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+      document.querySelectorAll(".status-message")[0].style.color = "white";
+    } finally {
+      setTimeout(() => {
+        setAnimateRow(null);
+      }, 800);
+    }
   };
 
-  const handleAccept = (id) => {
-    setAnimateRow(id);
-    // Additional accept logic would go here
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+    
+    // Auto-hide the message after some time
     setTimeout(() => {
-      setAnimateRow(null);
-      // Here you'd update the transaction status
-    }, 800);
-  };
-
-  const handleReject = (id) => {
-    setAnimateRow(id);
-    // Additional reject logic would go here
-    setTimeout(() => {
-      setAnimateRow(null);
-      // Here you'd update the transaction status
-    }, 800);
+      setStatusMessage("");
+    }, 5000);
   };
 
   const handleMessage = (id) => {
+    showStatusMessage("Opening message interface...");
     // Message sending logic would go here
   };
 
@@ -6542,6 +6688,40 @@ const RejectedCurrencyExchange = ({
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Helper function to get customer full name
+  const getCustomerName = (transaction) => {
+    if (!transaction.details?.thistransactionismadeby?.name) return "Unknown";
+    
+    const { firstname, middlename, lastname } = transaction.details.thistransactionismadeby.name;
+    let fullName = firstname || "";
+    
+    if (middlename) fullName += ` ${middlename}`;
+    if (lastname) fullName += ` ${lastname}`;
+    
+    return fullName.trim() || "Unknown";
+  };
+
+  // Helper function to get transaction status with proper formatting
+  const getTransactionStatus = (transaction) => {
+    if (!transaction.statusesandlogs) return { status: "Unknown", indication: "" };
+    return {
+      status: transaction.statusesandlogs.status || "Unknown",
+      indication: transaction.statusesandlogs.indication || ""
+    };
+  };
+
+  // Helper function to get rejection reason if available
+  const getRejectionReason = (transaction) => {
+    if (!transaction.statusesandlogs?.logs) return "No reason provided";
+    
+    // Find the rejection log entry
+    const rejectionLog = transaction.statusesandlogs.logs.find(log => 
+      log.status === 'rejected' || log.action === 'reject'
+    );
+    
+    return rejectionLog?.reason || rejectionLog?.message || "No reason provided";
   };
 
   return (
@@ -6562,7 +6742,7 @@ const RejectedCurrencyExchange = ({
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by ID, name, email, or phone number..."
+              placeholder="Search by ID, name, email, phone, or reference number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -6570,11 +6750,18 @@ const RejectedCurrencyExchange = ({
           </div>
         </div>
         
+        {statusMessage && (
+          <div style={{position:"relative", top: "2vh"}}
+               className="status-message">
+            {statusMessage}
+          </div>
+        )}
+        
         <div className="pending-deposits-container">
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No rejected currency exchange found</p>
+              <p>No rejected currency exchange transactions found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -6582,83 +6769,95 @@ const RejectedCurrencyExchange = ({
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Customer</th>
                     <th>Date</th>
-                    <th>Amount</th>
-                    <th>Status</th>
+                    <th>Amount (PHP)</th>
+                    <th>Amount (OMSIAP)</th>
+                    <th>Rejection Reason</th>
                     <th>Payment Method</th>
+                    <th>Reference</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr 
-                      key={transaction.id} 
-                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
-                    >
-                      <td className="transaction-id">{transaction.id}</td>
-                      <td className="date-cell">{formatDate(transaction.date)}</td>
-                      <td className="amount">
-                        <div className="amount-wrapper">
-                          <FaMoneyBillWave className="amount-icon" />
-                          <span>₱{transaction.amount.toFixed(2)}</span>
-                        </div>
-                      </td>
-                      <td className="status">
-                        <div className="status-indicator">
-                          <FaClock className="status-icon pulse" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td className="payment-method">{transaction.paymentmethod}</td>
-                      <td className="actions">
-                        <div className="action-buttons">
-                          <button 
-                            className="view-button" 
-                            onClick={() => {
-                              setShowCreditTransaction(true)
-                              credittransactionobjectcb(transaction)
-                            }}
-                            aria-label="View transaction details"
-                          >
-                            <FaEye />
-                            <span className="button-text">View</span>
-                          </button>
-                          <button 
-                            className="edit-button" 
-                            onClick={() => onEdit(transaction.id)}
-                            aria-label="Edit transaction"
-                          >
-                            <FaEdit />
-                            <span className="button-text">Edit</span>
-                          </button>
-                          <button 
-                            className="accept-button" 
-                            onClick={() => handleAccept(transaction.id)}
-                            aria-label="Accept transaction"
-                          >
-                            <FaCheckCircle />
-                            <span className="button-text">Accept</span>
-                          </button>
-                          <button 
-                            className="reject-button" 
-                            onClick={() => handleReject(transaction.id)}
-                            aria-label="Reject transaction"
-                          >
-                            <FaTimesCircle />
-                            <span className="button-text">Reject</span>
-                          </button>
-                          <button 
-                            className="message-button" 
-                            onClick={() => handleMessage(transaction.id)}
-                            aria-label="Message about transaction"
-                          >
-                            <FaEnvelope />
-                            <span className="button-text">Message</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((transaction) => {
+                    const statusInfo = getTransactionStatus(transaction);
+                    const customerName = getCustomerName(transaction);
+                    const logDate = transaction.statusesandlogs?.logs?.[0]?.date || transaction.date;
+                    const rejectionReason = getRejectionReason(transaction);
+                    
+                    return (
+                      <tr 
+                        key={transaction.id} 
+                        className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                      >
+                        <td className="transaction-id" title={transaction.id}>
+                          {transaction.id.substring(0, 8)}...
+                        </td>
+                        <td className="customer-name">{customerName}</td>
+                        <td className="date-cell">{formatDate(logDate)}</td>
+                        <td className="amount">
+                          <div className="amount-wrapper">
+                            <FaMoneyBillWave className="amount-icon" />
+                            <span>₱{transaction.details?.amounts?.phppurchaseorexchangeamount?.toFixed(2) || '0.00'}</span>
+                          </div>
+                        </td>
+                        <td className="omsiap-amount">
+                          <div className="amount-wrapper">
+                            <FaCoins className="amount-icon" />
+                            <span>{transaction.details?.amounts?.omsiapawasamounttorecieve?.toFixed(2) || '0.00'}</span>
+                          </div>
+                        </td>
+                        <td className="rejection-reason">
+                          <div className="reason-wrapper" title={rejectionReason}>
+                            <FaInfoCircle className="reason-icon" />
+                            <span>{rejectionReason.substring(0, 20)}{rejectionReason.length > 20 ? '...' : ''}</span>
+                          </div>
+                        </td>
+                        <td className="payment-method">{transaction.details?.paymentmethod || 'N/A'}</td>
+                        <td className="reference-number">{transaction.details?.referrence?.number || 'N/A'}</td>
+                        <td className="actions">
+                          <div className="action-buttons">
+                            <button 
+                              className="view-button" 
+                              onClick={() => {
+                                setShowCreditTransaction(true)
+                                credittransactionobjectcb(transaction)
+                              }}
+                              aria-label="View transaction details"
+                            >
+                              <FaEye />
+                              <span className="button-text">View</span>
+                            </button>
+                            <button 
+                              className="edit-button" 
+                              onClick={() => onEdit(transaction.id)}
+                              aria-label="Edit transaction"
+                            >
+                              <FaEdit />
+                              <span className="button-text">Edit</span>
+                            </button>
+                            <button 
+                              className="reactivate-button" 
+                              onClick={() => handleReactivate(transaction.id)}
+                              aria-label="Reactivate transaction"
+                            >
+                              <FaRedoAlt />
+                              <span className="button-text">Reactivate</span>
+                            </button>
+                            <button 
+                              className="message-button" 
+                              onClick={() => handleMessage(transaction.id)}
+                              aria-label="Message about transaction"
+                            >
+                              <FaEnvelope />
+                              <span className="button-text">Message</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -6672,7 +6871,6 @@ const RejectedCurrencyExchange = ({
 
 
 const TotalWithdrawals = ({
-
   setShowDatabaseConfiguration, 
   setShowTotalWithdrawals,  
   setShowCreditTransaction,
@@ -6683,44 +6881,58 @@ const TotalWithdrawals = ({
   onClose, 
   onView, 
   onEdit 
-
-  }) => {
+}) => {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [animateRow, setAnimateRow] = useState(null);
+  const [expandedTransaction, setExpandedTransaction] = useState(null);
 
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
     
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = totalwithdrawals.filter(
-      transaction => transaction.type === 'withdrawal' 
+    // Initial filtering of only withdrawal transactions
+    const withdrawalTransactions = totalwithdrawals.filter(
+      transaction => transaction.intent === 'withdrawal' 
     );
-    setFilteredTransactions(pendingDeposits);
+    setFilteredTransactions(withdrawalTransactions);
   }, [totalwithdrawals]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = totalwithdrawals.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+      const results = totalwithdrawals.filter(transaction => {
+        // Base transaction ID search
+        const idMatch = transaction.id.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Sender information search
+        const senderMatch = transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Recipient information search
+        const recipientMatch = transaction.details?.thistransactionismainlyintendedto?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              transaction.details?.thistransactionismainlyintendedto?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              transaction.details?.thistransactionismainlyintendedto?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Payment method search
+        const paymentMethodMatch = transaction.details?.paymentmethod?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Reference number search
+        const referenceMatch = transaction.details?.referrence?.referencenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        return idMatch || senderMatch || recipientMatch || paymentMethodMatch || referenceMatch;
+      });
+      
       setFilteredTransactions(results);
     } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = totalwithdrawals.filter(
-        transaction => transaction.type === 'withdrawal'  
+      // Reset to show only withdrawal transactions when search is cleared
+      const withdrawalTransactions = totalwithdrawals.filter(
+        transaction => transaction.intent === 'withdrawal'
       );
-      setFilteredTransactions(pendingDeposits);
+      setFilteredTransactions(withdrawalTransactions);
     }
   }, [searchQuery, totalwithdrawals]);
 
@@ -6747,6 +6959,7 @@ const TotalWithdrawals = ({
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -6757,14 +6970,71 @@ const TotalWithdrawals = ({
     });
   };
 
+  const getTransactionStatus = (transaction) => {
+    // Check the current status from the statusesandlogs
+    if (transaction.statusesandlogs && transaction.statusesandlogs.status) {
+      return transaction.statusesandlogs.status;
+    }
+    return 'Pending'; // Default status if none found
+  };
+
+  const toggleExpandTransaction = (id) => {
+    if (expandedTransaction === id) {
+      setExpandedTransaction(null);
+    } else {
+      setExpandedTransaction(id);
+    }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'status-completed';
+      case 'pending':
+        return 'status-pending';
+      case 'rejected':
+        return 'status-rejected';
+      case 'processing':
+        return 'status-processing';
+      default:
+        return 'status-pending';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return <FaCheckCircle className="status-icon success" />;
+      case 'pending':
+        return <FaClock className="status-icon pulse" />;
+      case 'rejected':
+        return <FaTimesCircle className="status-icon error" />;
+      case 'processing':
+        return <FaMoneyBillWave className="status-icon" />;
+      default:
+        return <FaClock className="status-icon pulse" />;
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount === undefined || amount === null) return '₱0.00';
+    return `₱${Number(amount).toFixed(2)}`;
+  };
+
+  const formatName = (nameObj) => {
+    if (!nameObj) return 'N/A';
+    const { firstname = '', middlename = '', lastname = '' } = nameObj;
+    return `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`.trim();
+  };
+
   return (
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
-      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in' : ''}`}>
         <div className="modal-header">
           <h2>Total Withdrawals</h2>
-          <button className="close-button" onClick={()=> {
-             setShowDatabaseConfiguration(false)
-             setShowTotalWithdrawals(false)
+          <button className="close-button" onClick={() => {
+            setShowDatabaseConfiguration(false);
+            setShowTotalWithdrawals(false);
           }}>
             <FaTimes />
           </button>
@@ -6775,7 +7045,7 @@ const TotalWithdrawals = ({
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by ID, name, email, or phone number..."
+              placeholder="Search by ID, name, email, phone number, or reference..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -6787,7 +7057,7 @@ const TotalWithdrawals = ({
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
+              <p>No withdrawal transactions found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -6796,6 +7066,8 @@ const TotalWithdrawals = ({
                   <tr>
                     <th>ID</th>
                     <th>Date</th>
+                    <th>From</th>
+                    <th>To</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Payment Method</th>
@@ -6803,75 +7075,231 @@ const TotalWithdrawals = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr 
-                      key={transaction.id} 
-                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
-                    >
-                      <td className="transaction-id">{transaction.id}</td>
-                      <td className="date-cell">{formatDate(transaction.date)}</td>
-                      <td className="amount">
-                        <div className="amount-wrapper">
-                          <FaMoneyBillWave className="amount-icon" />
-                          <span>₱{transaction.amount.toFixed(2)}</span>
-                        </div>
-                      </td>
-                      <td className="status">
-                        <div className="status-indicator">
-                          <FaClock className="status-icon pulse" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td className="payment-method">{transaction.paymentmethod}</td>
-                      <td className="actions">
-                        <div className="action-buttons">
-                          <button 
-                            className="view-button" 
-                            onClick={() => {
-                              setShowCreditTransaction(true)
-                              credittransactionobjectcb(transaction)
-                            }}
-                            aria-label="View transaction details"
-                          >
-                            <FaEye />
-                            <span className="button-text">View</span>
-                          </button>
-                          <button 
-                            className="edit-button" 
-                            onClick={() => onEdit(transaction.id)}
-                            aria-label="Edit transaction"
-                          >
-                            <FaEdit />
-                            <span className="button-text">Edit</span>
-                          </button>
-                          <button 
-                            className="accept-button" 
-                            onClick={() => handleAccept(transaction.id)}
-                            aria-label="Accept transaction"
-                          >
-                            <FaCheckCircle />
-                            <span className="button-text">Accept</span>
-                          </button>
-                          <button 
-                            className="reject-button" 
-                            onClick={() => handleReject(transaction.id)}
-                            aria-label="Reject transaction"
-                          >
-                            <FaTimesCircle />
-                            <span className="button-text">Reject</span>
-                          </button>
-                          <button 
-                            className="message-button" 
-                            onClick={() => handleMessage(transaction.id)}
-                            aria-label="Message about transaction"
-                          >
-                            <FaEnvelope />
-                            <span className="button-text">Message</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((transaction) => {
+                    const transactionStatus = getTransactionStatus(transaction);
+                    const statusClass = getStatusClass(transactionStatus);
+                    const statusIcon = getStatusIcon(transactionStatus);
+                    
+                    // Get the latest log entry date if available
+                    const latestLogDate = transaction.statusesandlogs?.logs?.length > 0 
+                      ? transaction.statusesandlogs.logs[transaction.statusesandlogs.logs.length - 1].date 
+                      : transaction.date;
+                    
+                    return (
+                      <>
+                        <tr 
+                          key={transaction.id}
+                          className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''} ${expandedTransaction === transaction.id ? 'expanded' : ''}`}
+                          onClick={() => toggleExpandTransaction(transaction.id)}
+                        >
+                          <td className="transaction-id">{transaction.id}</td>
+                          <td className="date-cell">{formatDate(latestLogDate)}</td>
+                          <td className="sender-cell">
+                            {formatName(transaction.details?.thistransactionismadeby?.name)}
+                          </td>
+                          <td className="recipient-cell">
+                            {formatName(transaction.details?.thistransactionismainlyintendedto?.name)}
+                          </td>
+                          <td className="amount">
+                            <div className="amount-wrapper">
+                              <FaMoneyBillWave className="amount-icon" />
+                              <span>{formatCurrency(transaction.details?.amounts?.phpamounttorecieve)}</span>
+                            </div>
+                          </td>
+                          <td className="status">
+                            <div className={`status-indicator ${statusClass}`}>
+                              {statusIcon}
+                              <span>{transactionStatus}</span>
+                            </div>
+                          </td>
+                          <td className="payment-method">{transaction.details?.paymentmethod || 'N/A'}</td>
+                          <td className="actions">
+                            <div className="action-buttons">
+                              <button 
+                                className="view-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowCreditTransaction(true);
+                                  credittransactionobjectcb(transaction);
+                                }}
+                                aria-label="View transaction details"
+                              >
+                                <FaEye />
+                                <span className="button-text">View</span>
+                              </button>
+                              <button 
+                                className="edit-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEdit(transaction.id);
+                                }}
+                                aria-label="Edit transaction"
+                              >
+                                <FaEdit />
+                                <span className="button-text">Edit</span>
+                              </button>
+                              <button 
+                                className="accept-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAccept(transaction.id);
+                                }}
+                                aria-label="Accept transaction"
+                              >
+                                <FaCheckCircle />
+                                <span className="button-text">Accept</span>
+                              </button>
+                              <button 
+                                className="reject-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleReject(transaction.id);
+                                }}
+                                aria-label="Reject transaction"
+                              >
+                                <FaTimesCircle />
+                                <span className="button-text">Reject</span>
+                              </button>
+                              <button 
+                                className="message-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMessage(transaction.id);
+                                }}
+                                aria-label="Message about transaction"
+                              >
+                                <FaEnvelope />
+                                <span className="button-text">Message</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {expandedTransaction === transaction.id && (
+                          <tr className="expanded-details-row">
+                            <td colSpan="8">
+                              <div className="expanded-details">
+                                <div className="detail-section">
+                                  <h3><FaIdCard /> Transaction Details</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Reference Number:</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.referencenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">GCash Phone Number:</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.gcashphonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Intent Amount:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.intent)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Deductions:</span>
+                                      <span className="detail-value">
+                                        {formatCurrency(
+                                          (transaction.details?.amounts?.deductions?.successfulprocessing?.amount || 0) + 
+                                          (transaction.details?.amounts?.deductions?.rejectionprocessing?.amount || 0)
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Profit:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.profit)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Final Amount:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.phpamounttorecieve)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaUser /> Sender Information</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Name:</span>
+                                      <span className="detail-value">{formatName(transaction.details?.thistransactionismadeby?.name)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Phone:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismadeby?.contact?.phonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Email:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismadeby?.contact?.emailaddress || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Address:</span>
+                                      <span className="detail-value">
+                                        {transaction.details?.thistransactionismadeby?.contact?.address ? 
+                                          `${transaction.details.thistransactionismadeby.contact.address.street || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.baranggay || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.city || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.province || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.postal_zip_code || ''}` 
+                                          : 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaUser /> Recipient Information</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Name:</span>
+                                      <span className="detail-value">{formatName(transaction.details?.thistransactionismainlyintendedto?.name)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Phone:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismainlyintendedto?.contact?.phonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Email:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismainlyintendedto?.contact?.emailaddress || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Address:</span>
+                                      <span className="detail-value">
+                                        {transaction.details?.thistransactionismainlyintendedto?.contact?.address ? 
+                                          `${transaction.details.thistransactionismainlyintendedto.contact.address.street || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.baranggay || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.city || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.province || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.postal_zip_code || ''}` 
+                                          : 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaHistory /> Transaction History</h3>
+                                  <div className="status-timeline">
+                                    {transaction.statusesandlogs?.logs?.map((log, index) => (
+                                      <div key={index} className="status-log-item">
+                                        <div className="status-log-date">{formatDate(log.date)}</div>
+                                        <div className="status-log-content">
+                                          <div className="status-log-type">{log.type}</div>
+                                          <div className="status-log-indication">{log.indication}</div>
+                                          {log.messages?.map((msgObj, msgIndex) => (
+                                            <div key={msgIndex} className="status-log-message">{msgObj.message}</div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {(!transaction.statusesandlogs?.logs || transaction.statusesandlogs.logs.length === 0) && 
+                                      <div className="no-logs">No status logs available</div>
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -6882,24 +7310,24 @@ const TotalWithdrawals = ({
   );
 };
 
-const PendingWithdrawals = ({ 
 
+const PendingWithdrawals = ({ 
   setShowDatabaseConfiguration, 
   setShowPendingWithdrawals, 
   setShowCreditTransaction, 
 
-  pendingwithdrawals, // Add default empty array
+  pendingwithdrawals = [], // Default empty array
   credittransactionobjectcb, 
 
   onClose, 
   onView, 
   onEdit 
-
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(true);
   const [animateRow, setAnimateRow] = useState(null);
+  const [expandedTransaction, setExpandedTransaction] = useState(null);
 
   // Combined useEffect for initial load and animations
   useEffect(() => {
@@ -6909,10 +7337,13 @@ const PendingWithdrawals = ({
     // Check if pendingwithdrawals exists before filtering
     if (pendingwithdrawals && pendingwithdrawals.length > 0) {
       // Initial filtering of only pending withdrawal transactions
-      const pendingDeposits = pendingwithdrawals.filter(
-        transaction => transaction.type === 'withdrawal' && transaction.status === 'pending'
+      const pendingWithdrawalsList = pendingwithdrawals.filter(
+        transaction => transaction.intent === 'withdrawal' && 
+        transaction.statusesandlogs && 
+        transaction.statusesandlogs.status && 
+        transaction.statusesandlogs.status.toLowerCase() === 'pending'
       );
-      setFilteredTransactions(pendingDeposits);
+      setFilteredTransactions(pendingWithdrawalsList);
     } else {
       // Initialize with empty array if pendingwithdrawals is undefined or empty
       setFilteredTransactions([]);
@@ -6922,26 +7353,51 @@ const PendingWithdrawals = ({
   // Separate useEffect for search functionality
   useEffect(() => {
     // Only proceed if pendingwithdrawals exists
-    if (!pendingwithdrawals) return;
+    if (!pendingwithdrawals || pendingwithdrawals.length === 0) return;
     
     if (searchQuery) {
-      const results = pendingwithdrawals.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+      const results = pendingwithdrawals.filter(transaction => {
+        // Only include pending withdrawals
+        const isPendingWithdrawal = transaction.intent === 'withdrawal' && 
+                                  transaction.statusesandlogs && 
+                                  transaction.statusesandlogs.status && 
+                                  transaction.statusesandlogs.status.toLowerCase() === 'pending';
+        
+        if (!isPendingWithdrawal) return false;
+        
+        // Base transaction ID search
+        const idMatch = transaction.id.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Sender information search
+        const senderMatch = transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Recipient information search
+        const recipientMatch = transaction.details?.thistransactionismainlyintendedto?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              transaction.details?.thistransactionismainlyintendedto?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              transaction.details?.thistransactionismainlyintendedto?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Payment method search
+        const paymentMethodMatch = transaction.details?.paymentmethod?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Reference number search
+        const referenceMatch = transaction.details?.referrence?.referencenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        return idMatch || senderMatch || recipientMatch || paymentMethodMatch || referenceMatch;
+      });
+      
       setFilteredTransactions(results);
     } else {
       // Reset to show only pending withdrawals when search is cleared
-      const pendingDeposits = pendingwithdrawals.filter(
-        transaction => transaction.type === 'withdrawal' && transaction.status === 'pending'
+      const pendingWithdrawalsList = pendingwithdrawals.filter(
+        transaction => transaction.intent === 'withdrawal' && 
+        transaction.statusesandlogs && 
+        transaction.statusesandlogs.status && 
+        transaction.statusesandlogs.status.toLowerCase() === 'pending'
       );
-      setFilteredTransactions(pendingDeposits);
+      setFilteredTransactions(pendingWithdrawalsList);
     }
   }, [searchQuery, pendingwithdrawals]);
 
@@ -6977,6 +7433,7 @@ const PendingWithdrawals = ({
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -6985,6 +7442,25 @@ const PendingWithdrawals = ({
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount === undefined || amount === null) return '₱0.00';
+    return `₱${Number(amount).toFixed(2)}`;
+  };
+
+  const formatName = (nameObj) => {
+    if (!nameObj) return 'N/A';
+    const { firstname = '', middlename = '', lastname = '' } = nameObj;
+    return `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`.trim();
+  };
+
+  const toggleExpandTransaction = (id) => {
+    if (expandedTransaction === id) {
+      setExpandedTransaction(null);
+    } else {
+      setExpandedTransaction(id);
+    }
   };
 
   return (
@@ -7002,7 +7478,7 @@ const PendingWithdrawals = ({
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by ID, name, email, or phone number..."
+              placeholder="Search by ID, name, email, phone number, or reference..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -7023,82 +7499,229 @@ const PendingWithdrawals = ({
                   <tr>
                     <th>ID</th>
                     <th>Date</th>
+                    <th>From</th>
+                    <th>To</th>
                     <th>Amount</th>
-                    <th>Status</th>
                     <th>Payment Method</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr 
-                      key={transaction.id} 
-                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
-                    >
-                      <td className="transaction-id">{transaction.id}</td>
-                      <td className="date-cell">{formatDate(transaction.date)}</td>
-                      <td className="amount">
-                        <div className="amount-wrapper">
-                          <FaMoneyBillWave className="amount-icon" />
-                          <span>₱{transaction.amount.toFixed(2)}</span>
-                        </div>
-                      </td>
-                      <td className="status">
-                        <div className="status-indicator">
-                          <FaClock className="status-icon pulse" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td className="payment-method">{transaction.paymentmethod}</td>
-                      <td className="actions">
-                        <div className="action-buttons">
-                          <button 
-                            className="view-button" 
-                            onClick={() => {
-                              setShowCreditTransaction(true)
-                              credittransactionobjectcb(transaction)
-                            }}
-                            aria-label="View transaction details"
-                          >
-                            <FaEye />
-                            <span className="button-text">View</span>
-                          </button>
-                          <button 
-                            className="edit-button" 
-                            onClick={() => onEdit(transaction.id)}
-                            aria-label="Edit transaction"
-                          >
-                            <FaEdit />
-                            <span className="button-text">Edit</span>
-                          </button>
-                          <button 
-                            className="accept-button" 
-                            onClick={() => handleAccept(transaction.id)}
-                            aria-label="Accept transaction"
-                          >
-                            <FaCheckCircle />
-                            <span className="button-text">Accept</span>
-                          </button>
-                          <button 
-                            className="reject-button" 
-                            onClick={() => handleReject(transaction.id)}
-                            aria-label="Reject transaction"
-                          >
-                            <FaTimesCircle />
-                            <span className="button-text">Reject</span>
-                          </button>
-                          <button 
-                            className="message-button" 
-                            onClick={() => handleMessage(transaction.id)}
-                            aria-label="Message about transaction"
-                          >
-                            <FaEnvelope />
-                            <span className="button-text">Message</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((transaction) => {
+                    // Get the latest log entry date if available
+                    const latestLogDate = transaction.statusesandlogs?.logs?.length > 0 
+                      ? transaction.statusesandlogs.logs[transaction.statusesandlogs.logs.length - 1].date 
+                      : transaction.date;
+                    
+                    return (
+                      <>
+                        <tr 
+                          key={transaction.id} 
+                          className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''} ${expandedTransaction === transaction.id ? 'expanded' : ''}`}
+                          onClick={() => toggleExpandTransaction(transaction.id)}
+                        >
+                          <td className="transaction-id">{transaction.id}</td>
+                          <td className="date-cell">{formatDate(latestLogDate)}</td>
+                          <td className="sender-cell">
+                            {formatName(transaction.details?.thistransactionismadeby?.name)}
+                          </td>
+                          <td className="recipient-cell">
+                            {formatName(transaction.details?.thistransactionismainlyintendedto?.name)}
+                          </td>
+                          <td className="amount">
+                            <div className="amount-wrapper">
+                              <FaMoneyBillWave className="amount-icon" />
+                              <span>{formatCurrency(transaction.details?.amounts?.phpamounttorecieve)}</span>
+                            </div>
+                          </td>
+                          <td className="payment-method">{transaction.details?.paymentmethod || 'N/A'}</td>
+                          <td className="actions">
+                            <div className="action-buttons">
+                              <button 
+                                className="view-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowCreditTransaction(true);
+                                  credittransactionobjectcb(transaction);
+                                }}
+                                aria-label="View transaction details"
+                              >
+                                <FaEye />
+                                <span className="button-text">View</span>
+                              </button>
+                              <button 
+                                className="edit-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEdit(transaction.id);
+                                }}
+                                aria-label="Edit transaction"
+                              >
+                                <FaEdit />
+                                <span className="button-text">Edit</span>
+                              </button>
+                              <button 
+                                className="accept-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAccept(transaction.id);
+                                }}
+                                aria-label="Accept transaction"
+                              >
+                                <FaCheckCircle />
+                                <span className="button-text">Accept</span>
+                              </button>
+                              <button 
+                                className="reject-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleReject(transaction.id);
+                                }}
+                                aria-label="Reject transaction"
+                              >
+                                <FaTimesCircle />
+                                <span className="button-text">Reject</span>
+                              </button>
+                              <button 
+                                className="message-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMessage(transaction.id);
+                                }}
+                                aria-label="Message about transaction"
+                              >
+                                <FaEnvelope />
+                                <span className="button-text">Message</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {expandedTransaction === transaction.id && (
+                          <tr className="expanded-details-row">
+                            <td colSpan="7">
+                              <div className="expanded-details">
+                                <div className="detail-section">
+                                  <h3><FaIdCard /> Transaction Details</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Reference Number:</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.referencenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">GCash Phone Number:</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.gcashphonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Intent Amount:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.intent)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Deductions:</span>
+                                      <span className="detail-value">
+                                        {formatCurrency(
+                                          (transaction.details?.amounts?.deductions?.successfulprocessing?.amount || 0) + 
+                                          (transaction.details?.amounts?.deductions?.rejectionprocessing?.amount || 0)
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Profit:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.profit)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Final Amount:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.phpamounttorecieve)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaUser /> Sender Information</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Name:</span>
+                                      <span className="detail-value">{formatName(transaction.details?.thistransactionismadeby?.name)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Phone:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismadeby?.contact?.phonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Email:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismadeby?.contact?.emailaddress || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Address:</span>
+                                      <span className="detail-value">
+                                        {transaction.details?.thistransactionismadeby?.contact?.address ? 
+                                          `${transaction.details.thistransactionismadeby.contact.address.street || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.baranggay || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.city || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.province || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.postal_zip_code || ''}` 
+                                          : 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaUser /> Recipient Information</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Name:</span>
+                                      <span className="detail-value">{formatName(transaction.details?.thistransactionismainlyintendedto?.name)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Phone:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismainlyintendedto?.contact?.phonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Email:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismainlyintendedto?.contact?.emailaddress || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Address:</span>
+                                      <span className="detail-value">
+                                        {transaction.details?.thistransactionismainlyintendedto?.contact?.address ? 
+                                          `${transaction.details.thistransactionismainlyintendedto.contact.address.street || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.baranggay || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.city || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.province || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.postal_zip_code || ''}` 
+                                          : 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaHistory /> Transaction History</h3>
+                                  <div className="status-timeline">
+                                    {transaction.statusesandlogs?.logs?.map((log, index) => (
+                                      <div key={index} className="status-log-item">
+                                        <div className="status-log-date">{formatDate(log.date)}</div>
+                                        <div className="status-log-content">
+                                          <div className="status-log-type">{log.type}</div>
+                                          <div className="status-log-indication">{log.indication}</div>
+                                          {log.messages?.map((msgObj, msgIndex) => (
+                                            <div key={msgIndex} className="status-log-message">{msgObj.message}</div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {(!transaction.statusesandlogs?.logs || transaction.statusesandlogs.logs.length === 0) && 
+                                      <div className="no-logs">No status logs available</div>
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -7110,10 +7733,9 @@ const PendingWithdrawals = ({
 };
 
 const SuccessfulWithdrawals = ({
-
   setShowDatabaseConfiguration, 
   setShowSuccessfulWithdrawals, 
-  setShowCreditTransaction, 
+  setShowCreditTransaction,
   setShowPendingDeposits,
 
   successfulwithdrawals,
@@ -7122,54 +7744,61 @@ const SuccessfulWithdrawals = ({
   onClose, 
   onView, 
   onEdit 
-  
-  }) => {
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [animateRow, setAnimateRow] = useState(null);
+  const [expandedTransaction, setExpandedTransaction] = useState(null);
 
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
     
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = successfulwithdrawals.filter(
-      transaction => transaction.type === 'withdrawal' && transaction.status === 'successful'
+    // Initial filtering of only successful withdrawal transactions
+    const successfulWithdrawalsData = successfulwithdrawals.filter(
+      transaction => transaction.intent === 'withdrawal' && 
+      (transaction.statusesandlogs?.status === 'completed' || transaction.status === 'successful')
     );
-    setFilteredTransactions(pendingDeposits);
+    setFilteredTransactions(successfulWithdrawalsData);
   }, [successfulwithdrawals]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = successfulwithdrawals.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+      const results = successfulwithdrawals.filter(transaction => {
+        // Base transaction ID search
+        const idMatch = transaction.id.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Sender information search
+        const senderMatch = transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Recipient information search
+        const recipientMatch = transaction.details?.thistransactionismainlyintendedto?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              transaction.details?.thistransactionismainlyintendedto?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              transaction.details?.thistransactionismainlyintendedto?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Payment method search
+        const paymentMethodMatch = transaction.details?.paymentmethod?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Reference number search
+        const referenceMatch = transaction.details?.referrence?.referencenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        return idMatch || senderMatch || recipientMatch || paymentMethodMatch || referenceMatch;
+      });
+      
       setFilteredTransactions(results);
     } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = successfulwithdrawals.filter(
-        transaction => transaction.type === 'withdrawal' && transaction.status === 'successful'
+      // Reset to show only successful withdrawals when search is cleared
+      const successfulWithdrawalsData = successfulwithdrawals.filter(
+        transaction => transaction.intent === 'withdrawal' && 
+        (transaction.statusesandlogs?.status === 'completed' || transaction.status === 'successful')
       );
-      setFilteredTransactions(pendingDeposits);
+      setFilteredTransactions(successfulWithdrawalsData);
     }
   }, [searchQuery, successfulwithdrawals]);
-
-  const handleClose = () => {
-    setIsVisible(false);
-    // Delay actual closing to allow for animation
-    setTimeout(() => {
-      setShowDatabaseConfiguration(false);
-      setShowPendingDeposits(false);
-    }, 300);
-  };
 
   const handleAccept = (id) => {
     setAnimateRow(id);
@@ -7194,6 +7823,7 @@ const SuccessfulWithdrawals = ({
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -7204,14 +7834,73 @@ const SuccessfulWithdrawals = ({
     });
   };
 
+  const getTransactionStatus = (transaction) => {
+    // Check the current status from the statusesandlogs
+    if (transaction.statusesandlogs && transaction.statusesandlogs.status) {
+      return transaction.statusesandlogs.status;
+    }
+    return transaction.status || 'Completed'; // Default status if none found
+  };
+
+  const toggleExpandTransaction = (id) => {
+    if (expandedTransaction === id) {
+      setExpandedTransaction(null);
+    } else {
+      setExpandedTransaction(id);
+    }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'successful':
+        return 'status-completed';
+      case 'pending':
+        return 'status-pending';
+      case 'rejected':
+        return 'status-rejected';
+      case 'processing':
+        return 'status-processing';
+      default:
+        return 'status-completed';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'successful':
+        return <FaCheckCircle className="status-icon success" />;
+      case 'pending':
+        return <FaClock className="status-icon pulse" />;
+      case 'rejected':
+        return <FaTimesCircle className="status-icon error" />;
+      case 'processing':
+        return <FaMoneyBillWave className="status-icon" />;
+      default:
+        return <FaCheckCircle className="status-icon success" />;
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount === undefined || amount === null) return '₱0.00';
+    return `₱${Number(amount).toFixed(2)}`;
+  };
+
+  const formatName = (nameObj) => {
+    if (!nameObj) return 'N/A';
+    const { firstname = '', middlename = '', lastname = '' } = nameObj;
+    return `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`.trim();
+  };
+
   return (
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
-      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in' : ''}`}>
         <div className="modal-header">
           <h2>Successful Withdrawals</h2>
-          <button className="close-button" onClick={()=> {
-            setShowDatabaseConfiguration(false)
-            setShowSuccessfulWithdrawals(false)
+          <button className="close-button" onClick={() => {
+            setShowDatabaseConfiguration(false);
+            setShowSuccessfulWithdrawals(false);
           }}>
             <FaTimes />
           </button>
@@ -7222,7 +7911,7 @@ const SuccessfulWithdrawals = ({
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by ID, name, email, or phone number..."
+              placeholder="Search by ID, name, email, phone number, or reference..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -7234,7 +7923,7 @@ const SuccessfulWithdrawals = ({
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
+              <p>No successful withdrawal transactions found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -7243,6 +7932,8 @@ const SuccessfulWithdrawals = ({
                   <tr>
                     <th>ID</th>
                     <th>Date</th>
+                    <th>From</th>
+                    <th>To</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Payment Method</th>
@@ -7250,75 +7941,209 @@ const SuccessfulWithdrawals = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr 
-                      key={transaction.id} 
-                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
-                    >
-                      <td className="transaction-id">{transaction.id}</td>
-                      <td className="date-cell">{formatDate(transaction.date)}</td>
-                      <td className="amount">
-                        <div className="amount-wrapper">
-                          <FaMoneyBillWave className="amount-icon" />
-                          <span>₱{transaction.amount.toFixed(2)}</span>
-                        </div>
-                      </td>
-                      <td className="status">
-                        <div className="status-indicator">
-                          <FaClock className="status-icon pulse" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td className="payment-method">{transaction.paymentmethod}</td>
-                      <td className="actions">
-                        <div className="action-buttons">
-                          <button 
-                            className="view-button" 
-                            onClick={() => {
-                              setShowCreditTransaction(true)
-                              credittransactionobjectcb(transaction)
-                            }}
-                            aria-label="View transaction details"
-                          >
-                            <FaEye />
-                            <span className="button-text">View</span>
-                          </button>
-                          <button 
-                            className="edit-button" 
-                            onClick={() => onEdit(transaction.id)}
-                            aria-label="Edit transaction"
-                          >
-                            <FaEdit />
-                            <span className="button-text">Edit</span>
-                          </button>
-                          <button 
-                            className="accept-button" 
-                            onClick={() => handleAccept(transaction.id)}
-                            aria-label="Accept transaction"
-                          >
-                            <FaCheckCircle />
-                            <span className="button-text">Accept</span>
-                          </button>
-                          <button 
-                            className="reject-button" 
-                            onClick={() => handleReject(transaction.id)}
-                            aria-label="Reject transaction"
-                          >
-                            <FaTimesCircle />
-                            <span className="button-text">Reject</span>
-                          </button>
-                          <button 
-                            className="message-button" 
-                            onClick={() => handleMessage(transaction.id)}
-                            aria-label="Message about transaction"
-                          >
-                            <FaEnvelope />
-                            <span className="button-text">Message</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((transaction) => {
+                    const transactionStatus = getTransactionStatus(transaction);
+                    const statusClass = getStatusClass(transactionStatus);
+                    const statusIcon = getStatusIcon(transactionStatus);
+                    
+                    // Get the latest log entry date if available
+                    const latestLogDate = transaction.statusesandlogs?.logs?.length > 0 
+                      ? transaction.statusesandlogs.logs[transaction.statusesandlogs.logs.length - 1].date 
+                      : transaction.date;
+                    
+                    return (
+                      <>
+                        <tr 
+                          key={transaction.id}
+                          className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''} ${expandedTransaction === transaction.id ? 'expanded' : ''}`}
+                          onClick={() => toggleExpandTransaction(transaction.id)}
+                        >
+                          <td className="transaction-id">{transaction.id}</td>
+                          <td className="date-cell">{formatDate(latestLogDate)}</td>
+                          <td className="sender-cell">
+                            {formatName(transaction.details?.thistransactionismadeby?.name)}
+                          </td>
+                          <td className="recipient-cell">
+                            {formatName(transaction.details?.thistransactionismainlyintendedto?.name)}
+                          </td>
+                          <td className="amount">
+                            <div className="amount-wrapper">
+                              <FaMoneyBillWave className="amount-icon" />
+                              <span>{formatCurrency(transaction.details?.amounts?.phpamounttorecieve || transaction.amount)}</span>
+                            </div>
+                          </td>
+                          <td className="status">
+                            <div className={`status-indicator ${statusClass}`}>
+                              {statusIcon}
+                              <span>{transactionStatus}</span>
+                            </div>
+                          </td>
+                          <td className="payment-method">{transaction.details?.paymentmethod || transaction.paymentmethod || 'N/A'}</td>
+                          <td className="actions">
+                            <div className="action-buttons">
+                              <button 
+                                className="view-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowCreditTransaction(true);
+                                  credittransactionobjectcb(transaction);
+                                }}
+                                aria-label="View transaction details"
+                              >
+                                <FaEye />
+                                <span className="button-text">View</span>
+                              </button>
+                              <button 
+                                className="edit-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEdit(transaction.id);
+                                }}
+                                aria-label="Edit transaction"
+                              >
+                                <FaEdit />
+                                <span className="button-text">Edit</span>
+                              </button>
+                              <button 
+                                className="message-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMessage(transaction.id);
+                                }}
+                                aria-label="Message about transaction"
+                              >
+                                <FaEnvelope />
+                                <span className="button-text">Message</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {expandedTransaction === transaction.id && (
+                          <tr className="expanded-details-row">
+                            <td colSpan="8">
+                              <div className="expanded-details">
+                                <div className="detail-section">
+                                  <h3><FaIdCard /> Transaction Details</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Reference Number:</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.referencenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">GCash Phone Number:</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.gcashphonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Intent Amount:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.intent)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Deductions:</span>
+                                      <span className="detail-value">
+                                        {formatCurrency(
+                                          (transaction.details?.amounts?.deductions?.successfulprocessing?.amount || 0) + 
+                                          (transaction.details?.amounts?.deductions?.rejectionprocessing?.amount || 0)
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Profit:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.profit)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Final Amount:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.phpamounttorecieve || transaction.amount)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaUser /> Sender Information</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Name:</span>
+                                      <span className="detail-value">{formatName(transaction.details?.thistransactionismadeby?.name)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Phone:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismadeby?.contact?.phonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Email:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismadeby?.contact?.emailaddress || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Address:</span>
+                                      <span className="detail-value">
+                                        {transaction.details?.thistransactionismadeby?.contact?.address ? 
+                                          `${transaction.details.thistransactionismadeby.contact.address.street || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.baranggay || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.city || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.province || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.postal_zip_code || ''}` 
+                                          : 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaUser /> Recipient Information</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Name:</span>
+                                      <span className="detail-value">{formatName(transaction.details?.thistransactionismainlyintendedto?.name)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Phone:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismainlyintendedto?.contact?.phonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Email:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismainlyintendedto?.contact?.emailaddress || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Address:</span>
+                                      <span className="detail-value">
+                                        {transaction.details?.thistransactionismainlyintendedto?.contact?.address ? 
+                                          `${transaction.details.thistransactionismainlyintendedto.contact.address.street || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.baranggay || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.city || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.province || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.postal_zip_code || ''}` 
+                                          : 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaHistory /> Transaction History</h3>
+                                  <div className="status-timeline">
+                                    {transaction.statusesandlogs?.logs?.map((log, index) => (
+                                      <div key={index} className="status-log-item">
+                                        <div className="status-log-date">{formatDate(log.date)}</div>
+                                        <div className="status-log-content">
+                                          <div className="status-log-type">{log.type}</div>
+                                          <div className="status-log-indication">{log.indication}</div>
+                                          {log.messages?.map((msgObj, msgIndex) => (
+                                            <div key={msgIndex} className="status-log-message">{msgObj.message}</div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {(!transaction.statusesandlogs?.logs || transaction.statusesandlogs.logs.length === 0) && 
+                                      <div className="no-logs">No status logs available</div>
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -7329,68 +8154,74 @@ const SuccessfulWithdrawals = ({
   );
 };
 
-const RejectedWithdrawals = ({ 
-
+const RejectedWithdrawals = ({
   setShowDatabaseConfiguration, 
   setShowRejectedWithdrawals, 
   setShowCreditTransaction, 
-  setShowPendingDeposits, 
- 
+  setShowPendingDeposits,
+
   rejectedwithdrawals,
   credittransactionobjectcb,
 
   onClose, 
   onView, 
   onEdit 
-
-  }) => {
-
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [animateRow, setAnimateRow] = useState(null);
+  const [expandedTransaction, setExpandedTransaction] = useState(null);
 
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
     
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = rejectedwithdrawals.filter(
-      transaction => transaction.type === 'withdrawal' && transaction.status === 'rejected'
+    // Initial filtering of only rejected withdrawal transactions
+    const rejectedWithdrawalsData = rejectedwithdrawals.filter(
+      transaction => transaction.intent === 'withdrawal' && 
+      (transaction.statusesandlogs?.status === 'rejected' || transaction.status === 'rejected')
     );
-    setFilteredTransactions(pendingDeposits);
+    setFilteredTransactions(rejectedWithdrawalsData);
   }, [rejectedwithdrawals]);
 
   useEffect(() => {
     if (searchQuery) {
-      const results = rejectedwithdrawals.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
-      );
+      const results = rejectedwithdrawals.filter(transaction => {
+        // Base transaction ID search
+        const idMatch = transaction.id.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Sender information search
+        const senderMatch = transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Recipient information search
+        const recipientMatch = transaction.details?.thistransactionismainlyintendedto?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              transaction.details?.thistransactionismainlyintendedto?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              transaction.details?.thistransactionismainlyintendedto?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Payment method search
+        const paymentMethodMatch = transaction.details?.paymentmethod?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                  (transaction.paymentmethod && transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()));
+        
+        // Reference number search
+        const referenceMatch = transaction.details?.referrence?.referencenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        return idMatch || senderMatch || recipientMatch || paymentMethodMatch || referenceMatch;
+      });
+      
       setFilteredTransactions(results);
     } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = rejectedwithdrawals.filter(
-        transaction => transaction.type === 'withdrawal' && transaction.status === 'rejected'
+      // Reset to show only rejected withdrawals when search is cleared
+      const rejectedWithdrawalsData = rejectedwithdrawals.filter(
+        transaction => transaction.intent === 'withdrawal' && 
+        (transaction.statusesandlogs?.status === 'rejected' || transaction.status === 'rejected')
       );
-      setFilteredTransactions(pendingDeposits);
+      setFilteredTransactions(rejectedWithdrawalsData);
     }
   }, [searchQuery, rejectedwithdrawals]);
-
-  const handleClose = () => {
-    setIsVisible(false);
-    // Delay actual closing to allow for animation
-    setTimeout(() => {
-      setShowDatabaseConfiguration(false);
-      setShowPendingDeposits(false);
-    }, 300);
-  };
 
   const handleAccept = (id) => {
     setAnimateRow(id);
@@ -7415,6 +8246,7 @@ const RejectedWithdrawals = ({
   };
 
   const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -7425,14 +8257,90 @@ const RejectedWithdrawals = ({
     });
   };
 
+  const getTransactionStatus = (transaction) => {
+    // Check the current status from the statusesandlogs
+    if (transaction.statusesandlogs && transaction.statusesandlogs.status) {
+      return transaction.statusesandlogs.status;
+    }
+    return transaction.status || 'Rejected'; // Default status if none found
+  };
+
+  const toggleExpandTransaction = (id) => {
+    if (expandedTransaction === id) {
+      setExpandedTransaction(null);
+    } else {
+      setExpandedTransaction(id);
+    }
+  };
+
+  const getStatusClass = (status) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'successful':
+        return 'status-completed';
+      case 'pending':
+        return 'status-pending';
+      case 'rejected':
+        return 'status-rejected';
+      case 'processing':
+        return 'status-processing';
+      default:
+        return 'status-rejected';
+    }
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+      case 'successful':
+        return <FaCheckCircle className="status-icon success" />;
+      case 'pending':
+        return <FaClock className="status-icon pulse" />;
+      case 'rejected':
+        return <FaTimesCircle className="status-icon error" />;
+      case 'processing':
+        return <FaMoneyBillWave className="status-icon" />;
+      default:
+        return <FaTimesCircle className="status-icon error" />;
+    }
+  };
+
+  const formatCurrency = (amount) => {
+    if (amount === undefined || amount === null) return '₱0.00';
+    return `₱${Number(amount).toFixed(2)}`;
+  };
+
+  const formatName = (nameObj) => {
+    if (!nameObj) return 'N/A';
+    const { firstname = '', middlename = '', lastname = '' } = nameObj;
+    return `${firstname} ${middlename ? middlename + ' ' : ''}${lastname}`.trim();
+  };
+
+  const getRejectionReason = (transaction) => {
+    // Try to find rejection reason in logs
+    if (transaction.statusesandlogs?.logs) {
+      const rejectionLog = transaction.statusesandlogs.logs.find(log => 
+        log.type === 'Rejection' || log.type === 'rejection' ||
+        log.indication?.toLowerCase().includes('reject')
+      );
+      
+      if (rejectionLog && rejectionLog.messages && rejectionLog.messages.length > 0) {
+        return rejectionLog.messages[0].message;
+      }
+    }
+    
+    // If no specific rejection reason found
+    return "Transaction was rejected";
+  };
+
   return (
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
-      <div className={`pending-deposits-modal ${isVisible ? 'slide-in': ''}`}>
+      <div className={`pending-deposits-modal ${isVisible ? 'slide-in' : ''}`}>
         <div className="modal-header">
           <h2>Rejected Withdrawals</h2>
-          <button className="close-button" onClick={()=> {
-            setShowDatabaseConfiguration(false)
-            setShowRejectedWithdrawals(false)
+          <button className="close-button" onClick={() => {
+            setShowDatabaseConfiguration(false);
+            setShowRejectedWithdrawals(false);
           }}>
             <FaTimes />
           </button>
@@ -7443,7 +8351,7 @@ const RejectedWithdrawals = ({
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by ID, name, email, or phone number..."
+              placeholder="Search by ID, name, email, phone number, or reference..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
@@ -7455,7 +8363,7 @@ const RejectedWithdrawals = ({
           {filteredTransactions.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No pending deposits found</p>
+              <p>No rejected withdrawal transactions found</p>
             </div>
           ) : (
             <div className="table-responsive">
@@ -7464,6 +8372,8 @@ const RejectedWithdrawals = ({
                   <tr>
                     <th>ID</th>
                     <th>Date</th>
+                    <th>From</th>
+                    <th>To</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Payment Method</th>
@@ -7471,75 +8381,220 @@ const RejectedWithdrawals = ({
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr 
-                      key={transaction.id} 
-                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
-                    >
-                      <td className="transaction-id">{transaction.id}</td>
-                      <td className="date-cell">{formatDate(transaction.date)}</td>
-                      <td className="amount">
-                        <div className="amount-wrapper">
-                          <FaMoneyBillWave className="amount-icon" />
-                          <span>₱{transaction.amount.toFixed(2)}</span>
-                        </div>
-                      </td>
-                      <td className="status">
-                        <div className="status-indicator">
-                          <FaClock className="status-icon pulse" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td className="payment-method">{transaction.paymentmethod}</td>
-                      <td className="actions">
-                        <div className="action-buttons">
-                          <button 
-                            className="view-button" 
-                            onClick={() => {
-                              setShowCreditTransaction(true)
-                              credittransactionobjectcb(transaction)
-                            }}
-                            aria-label="View transaction details"
-                          >
-                            <FaEye />
-                            <span className="button-text">View</span>
-                          </button>
-                          <button 
-                            className="edit-button" 
-                            onClick={() => onEdit(transaction.id)}
-                            aria-label="Edit transaction"
-                          >
-                            <FaEdit />
-                            <span className="button-text">Edit</span>
-                          </button>
-                          <button 
-                            className="accept-button" 
-                            onClick={() => handleAccept(transaction.id)}
-                            aria-label="Accept transaction"
-                          >
-                            <FaCheckCircle />
-                            <span className="button-text">Accept</span>
-                          </button>
-                          <button 
-                            className="reject-button" 
-                            onClick={() => handleReject(transaction.id)}
-                            aria-label="Reject transaction"
-                          >
-                            <FaTimesCircle />
-                            <span className="button-text">Reject</span>
-                          </button>
-                          <button 
-                            className="message-button" 
-                            onClick={() => handleMessage(transaction.id)}
-                            aria-label="Message about transaction"
-                          >
-                            <FaEnvelope />
-                            <span className="button-text">Message</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((transaction) => {
+                    const transactionStatus = getTransactionStatus(transaction);
+                    const statusClass = getStatusClass(transactionStatus);
+                    const statusIcon = getStatusIcon(transactionStatus);
+                    
+                    // Get the latest log entry date if available
+                    const latestLogDate = transaction.statusesandlogs?.logs?.length > 0 
+                      ? transaction.statusesandlogs.logs[transaction.statusesandlogs.logs.length - 1].date 
+                      : transaction.date;
+                    
+                    return (
+                      <>
+                        <tr 
+                          key={transaction.id}
+                          className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''} ${expandedTransaction === transaction.id ? 'expanded' : ''}`}
+                          onClick={() => toggleExpandTransaction(transaction.id)}
+                        >
+                          <td className="transaction-id">{transaction.id}</td>
+                          <td className="date-cell">{formatDate(latestLogDate)}</td>
+                          <td className="sender-cell">
+                            {formatName(transaction.details?.thistransactionismadeby?.name)}
+                          </td>
+                          <td className="recipient-cell">
+                            {formatName(transaction.details?.thistransactionismainlyintendedto?.name)}
+                          </td>
+                          <td className="amount">
+                            <div className="amount-wrapper">
+                              <FaMoneyBillWave className="amount-icon" />
+                              <span>{formatCurrency(transaction.details?.amounts?.phpamounttorecieve || transaction.amount)}</span>
+                            </div>
+                          </td>
+                          <td className="status">
+                            <div className={`status-indicator ${statusClass}`}>
+                              {statusIcon}
+                              <span>{transactionStatus}</span>
+                            </div>
+                          </td>
+                          <td className="payment-method">{transaction.details?.paymentmethod || transaction.paymentmethod || 'N/A'}</td>
+                          <td className="actions">
+                            <div className="action-buttons">
+                              <button 
+                                className="view-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setShowCreditTransaction(true);
+                                  credittransactionobjectcb(transaction);
+                                }}
+                                aria-label="View transaction details"
+                              >
+                                <FaEye />
+                                <span className="button-text">View</span>
+                              </button>
+                              <button 
+                                className="edit-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onEdit(transaction.id);
+                                }}
+                                aria-label="Edit transaction"
+                              >
+                                <FaEdit />
+                                <span className="button-text">Edit</span>
+                              </button>
+                              <button 
+                                className="accept-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleAccept(transaction.id);
+                                }}
+                                aria-label="Reprocess transaction"
+                              >
+                                <FaRecycle />
+                                <span className="button-text">Reprocess</span>
+                              </button>
+                              <button 
+                                className="message-button" 
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleMessage(transaction.id);
+                                }}
+                                aria-label="Message about transaction"
+                              >
+                                <FaEnvelope />
+                                <span className="button-text">Message</span>
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                        {expandedTransaction === transaction.id && (
+                          <tr className="expanded-details-row">
+                            <td colSpan="8">
+                              <div className="expanded-details">
+                                <div className="detail-section">
+                                  <h3><FaIdCard /> Transaction Details</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Reference Number:</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.referencenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">GCash Phone Number:</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.gcashphonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Intent Amount:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.intent)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Deductions:</span>
+                                      <span className="detail-value">
+                                        {formatCurrency(
+                                          (transaction.details?.amounts?.deductions?.successfulprocessing?.amount || 0) + 
+                                          (transaction.details?.amounts?.deductions?.rejectionprocessing?.amount || 0)
+                                        )}
+                                      </span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Rejection Reason:</span>
+                                      <span className="detail-value rejection-reason">{getRejectionReason(transaction)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Final Amount:</span>
+                                      <span className="detail-value">{formatCurrency(transaction.details?.amounts?.phpamounttorecieve || transaction.amount)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaUser /> Sender Information</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Name:</span>
+                                      <span className="detail-value">{formatName(transaction.details?.thistransactionismadeby?.name)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Phone:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismadeby?.contact?.phonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Email:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismadeby?.contact?.emailaddress || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Address:</span>
+                                      <span className="detail-value">
+                                        {transaction.details?.thistransactionismadeby?.contact?.address ? 
+                                          `${transaction.details.thistransactionismadeby.contact.address.street || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.baranggay || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.city || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.province || ''}, 
+                                           ${transaction.details.thistransactionismadeby.contact.address.postal_zip_code || ''}` 
+                                          : 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaUser /> Recipient Information</h3>
+                                  <div className="detail-grid">
+                                    <div className="detail-item">
+                                      <span className="detail-label">Name:</span>
+                                      <span className="detail-value">{formatName(transaction.details?.thistransactionismainlyintendedto?.name)}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Phone:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismainlyintendedto?.contact?.phonenumber || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Email:</span>
+                                      <span className="detail-value">{transaction.details?.thistransactionismainlyintendedto?.contact?.emailaddress || 'N/A'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                      <span className="detail-label">Address:</span>
+                                      <span className="detail-value">
+                                        {transaction.details?.thistransactionismainlyintendedto?.contact?.address ? 
+                                          `${transaction.details.thistransactionismainlyintendedto.contact.address.street || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.baranggay || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.city || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.province || ''}, 
+                                           ${transaction.details.thistransactionismainlyintendedto.contact.address.postal_zip_code || ''}` 
+                                          : 'N/A'}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="detail-section">
+                                  <h3><FaHistory /> Transaction History</h3>
+                                  <div className="status-timeline">
+                                    {transaction.statusesandlogs?.logs?.map((log, index) => (
+                                      <div key={index} className="status-log-item">
+                                        <div className="status-log-date">{formatDate(log.date)}</div>
+                                        <div className="status-log-content">
+                                          <div className="status-log-type">{log.type}</div>
+                                          <div className="status-log-indication">{log.indication}</div>
+                                          {log.messages?.map((msgObj, msgIndex) => (
+                                            <div key={msgIndex} className="status-log-message">{msgObj.message}</div>
+                                          ))}
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {(!transaction.statusesandlogs?.logs || transaction.statusesandlogs.logs.length === 0) && 
+                                      <div className="no-logs">No status logs available</div>
+                                    }
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -7551,25 +8606,34 @@ const RejectedWithdrawals = ({
 };
 
 
-
-
-
-
-
 const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransaction }) => {
   // Destructure the transaction data for easier access
   const {
-    id,
-    date,
-    type,
-    amount,
-    status,
-    paymentmethod,
+    _id, // Using _id as id per request
+    intent,
+    statusesandlogs,
     details
-  } = credittransactionobject;
+  } = credittransactionobject || {};
 
+  // Get current status from statusesandlogs
+  const currentStatus = statusesandlogs?.status || 'Pending';
+  
+  // Get transaction type from intent
+  const type = intent || 'Transaction';
+  
+  // Get relevant transaction data
+  const paymentmethod = details?.paymentmethod || 'N/A';
+  const amount = details?.amounts?.intent || 0;
+  const date = statusesandlogs?.logs?.[0]?.date || new Date().toISOString();
+  
+  // Determine transaction type
+  const isCurrencyExchange = type?.toLowerCase().includes('exchange');
+  const isWithdrawal = type?.toLowerCase().includes('withdrawal');
+  const isDeposit = type?.toLowerCase().includes('deposit');
+  
   // Get transaction image from the correct path in the schema
-  const transactionImage = details?.reference?.transactionimage;
+  // Currency exchange has gcashtransactionrecieptimage while withdrawal does not
+  const transactionImage = details?.referrence?.gcashtransactionrecieptimage;
   
   // State to control image modal visibility
   const [showImageModal, setShowImageModal] = useState(false);
@@ -7581,13 +8645,9 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD'
-    }).format(value);
+      currency: 'PHP' // Using PHP as the currency based on field names
+    }).format(value || 0);
   };
-
-  // Determine if transaction is a deposit or withdrawal
-  const isDeposit = type?.toLowerCase() === 'deposit';
-  const isWithdrawal = type?.toLowerCase() === 'withdrawal';
 
   // Handle image click to open the image modal
   const handleImageClick = (e) => {
@@ -7608,8 +8668,62 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
     e.stopPropagation(); // Prevent event from reaching the overlay
   };
 
-  // Reference number from the schema
-  const referenceNumber = details?.reference?.referencenumber;
+  // Get reference numbers based on transaction type
+  // Withdrawal uses referencenumber, currency exchange uses number
+  const referenceNumber = isCurrencyExchange 
+    ? details?.referrence?.number 
+    : details?.referrence?.referencenumber;
+    
+  // Get GCash phone number for withdrawal
+  const gcashPhoneNumber = details?.referrence?.gcashphonenumber;
+
+  // Get sender and recipient info
+  const sender = details?.thistransactionismadeby || {};
+  const recipient = details?.thistransactionismainlyintendedto || {};
+
+  // Function to format name
+  const formatName = (nameObj) => {
+    if (!nameObj) return 'N/A';
+    const { firstname, middlename, lastname, nickname } = nameObj;
+    let fullName = [firstname, middlename, lastname].filter(Boolean).join(' ');
+    return fullName || nickname || 'N/A';
+  };
+
+  // Function to format address
+  const formatAddress = (addressObj) => {
+    if (!addressObj) return [];
+    
+    const addressLines = [];
+    
+    if (addressObj.trademark) {
+      addressLines.push(addressObj.trademark);
+    }
+    
+    const streetBarangay = [
+      addressObj.street,
+      addressObj.baranggay
+    ].filter(Boolean).join(', ');
+    
+    if (streetBarangay) {
+      addressLines.push(streetBarangay);
+    }
+    
+    const cityProvZip = [
+      addressObj.city,
+      addressObj.province,
+      addressObj.postal_zip_code || addressObj.zipcode
+    ].filter(Boolean).join(', ');
+    
+    if (cityProvZip) {
+      addressLines.push(cityProvZip);
+    }
+    
+    if (addressObj.country) {
+      addressLines.push(addressObj.country);
+    }
+    
+    return addressLines;
+  };
 
   // Create portal for the image modal to render at the document body level
   const imageModal = showImageModal && transactionImage && (
@@ -7619,7 +8733,7 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
     >
       <div 
         className="transaction-image-modal-container"
-        onClick={handleModalContainerClick} // Add click handler here
+        onClick={handleModalContainerClick}
       >
         <button 
           className="transaction-image-modal-close-button" 
@@ -7637,12 +8751,20 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
     </div>
   );
 
+  // Get appropriate transaction title based on type
+  const getTransactionTitle = () => {
+    if (isCurrencyExchange) return "Currency Exchange Transaction Details";
+    if (isWithdrawal) return "Withdrawal Transaction Details";
+    if (isDeposit) return "Deposit Transaction Details";
+    return "Transaction Details";
+  };
+
   return (
     <>
       <div className="credit-transaction-modal-overlay">
         <div className="credit-transaction-modal-container">
           <div className="credit-transaction-modal-header">
-            <h2>Currency Exchange Transaction Details</h2>
+            <h2>{getTransactionTitle()}</h2>
             <button 
               className="credit-transaction-modal-close-button" 
               onClick={() => setShowCreditTransaction(false)}
@@ -7650,13 +8772,11 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
             >×</button>
           </div>
           
-         
-
           <div className="credit-transaction-modal-content">
             <div className="credit-transaction-modal-main-info">
               <div className="credit-transaction-modal-info-item">
                 <span className="credit-transaction-modal-label">Transaction ID:</span>
-                <span className="credit-transaction-modal-value">{id}</span>
+                <span className="credit-transaction-modal-value">{_id}</span>
               </div>
               
               <div className="credit-transaction-modal-info-item">
@@ -7680,8 +8800,8 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
               
               <div className="credit-transaction-modal-info-item">
                 <span className="credit-transaction-modal-label">Status:</span>
-                <span className={`credit-transaction-modal-value credit-transaction-modal-status credit-transaction-modal-status-${status?.toLowerCase()}`}>
-                  {status}
+                <span className={`credit-transaction-modal-value credit-transaction-modal-status credit-transaction-modal-status-${currentStatus?.toLowerCase()}`}>
+                  {currentStatus}
                 </span>
               </div>
               
@@ -7696,9 +8816,16 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
                   <span className="credit-transaction-modal-value">{referenceNumber}</span>
                 </div>
               )}
+              
+              {gcashPhoneNumber && (
+                <div className="credit-transaction-modal-info-item">
+                  <span className="credit-transaction-modal-label">GCash Phone Number:</span>
+                  <span className="credit-transaction-modal-value">{gcashPhoneNumber}</span>
+                </div>
+              )}
             </div>
             
-            {/* Transaction Image Thumbnail */}
+            {/* Transaction Image Thumbnail - Only for currency exchange */}
             {transactionImage && (
               <div className="credit-transaction-modal-section">
                 <h3>Transaction Receipt</h3>
@@ -7718,41 +8845,78 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
             
             {details && (
               <>
-                {/* Show appropriate details based on transaction type */}
-                {isDeposit && (
+                {/* Currency Exchange Details */}
+                {isCurrencyExchange && (
                   <div className="credit-transaction-modal-section">
-                    <h3>Deposit Details</h3>
+                    <h3>Currency Exchange Details</h3>
                     <div className="credit-transaction-modal-details-grid">
-                      {details.orderSummary && (
-                        <>
-                          <div className="credit-transaction-modal-details-item">
-                            <span className="credit-transaction-modal-label">Deposit Amount:</span>
-                            <span className="credit-transaction-modal-value credit-transaction-modal-highlight-amount">
-                              {formatCurrency(details.orderSummary.total || amount)}
-                            </span>
-                          </div>
-                          
-                          {details.orderSummary.totalOmsiaProfit !== undefined && (
-                            <div className="credit-transaction-modal-details-item">
-                              <span className="credit-transaction-modal-label">Processing Fee:</span>
-                              <span className="credit-transaction-modal-value">
-                                {formatCurrency(details.orderSummary.totalOmsiaProfit)}
-                              </span>
-                            </div>
-                          )}
-                        </>
+                      <div className="credit-transaction-modal-details-item">
+                        <span className="credit-transaction-modal-label">Exchange Amount:</span>
+                        <span className="credit-transaction-modal-value credit-transaction-modal-highlight-amount">
+                          {formatCurrency(details.amounts?.phppurchaseorexchangeamount || amount)}
+                        </span>
+                      </div>
+                      
+                      {details.amounts?.deductions?.successfulprocessing?.amount > 0 && (
+                        <div className="credit-transaction-modal-details-item">
+                          <span className="credit-transaction-modal-label">Processing Fee:</span>
+                          <span className="credit-transaction-modal-value">
+                            {formatCurrency(details.amounts.deductions.successfulprocessing.amount)}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {details.amounts?.profit > 0 && (
+                        <div className="credit-transaction-modal-details-item">
+                          <span className="credit-transaction-modal-label">Exchange Fee:</span>
+                          <span className="credit-transaction-modal-value">
+                            {formatCurrency(details.amounts.profit)}
+                          </span>
+                        </div>
                       )}
                       
                       <div className="credit-transaction-modal-details-item credit-transaction-modal-total">
-                        <span className="credit-transaction-modal-label">Total Added to Balance:</span>
+                        <span className="credit-transaction-modal-label">Total Amount to Receive:</span>
                         <span className="credit-transaction-modal-value credit-transaction-modal-highlight-total">
-                          {formatCurrency(amount)}
+                          {formatCurrency(details.amounts?.omsiapawasamounttorecieve || amount)}
                         </span>
                       </div>
                     </div>
                   </div>
                 )}
                 
+                {/* Deposit Details */}
+                {isDeposit && (
+                  <div className="credit-transaction-modal-section">
+                    <h3>Deposit Details</h3>
+                    <div className="credit-transaction-modal-details-grid">
+                      <div className="credit-transaction-modal-details-item">
+                        <span className="credit-transaction-modal-label">Deposit Amount:</span>
+                        <span className="credit-transaction-modal-value credit-transaction-modal-highlight-amount">
+                          {formatCurrency(details.amounts?.phppurchaseorexchangeamount || amount)}
+                        </span>
+                      </div>
+                      
+                      {details.amounts?.deductions?.successfulprocessing?.amount > 0 && (
+                        <div className="credit-transaction-modal-details-item">
+                          <span className="credit-transaction-modal-label">Processing Fee:</span>
+                          <span className="credit-transaction-modal-value">
+                            {formatCurrency(details.amounts.deductions.successfulprocessing.amount)}
+                          </span>
+                        </div>
+                      )}
+                      
+                      <div className="credit-transaction-modal-details-item credit-transaction-modal-total">
+                        <span className="credit-transaction-modal-label">Total Added to Balance:</span>
+                        <span className="credit-transaction-modal-value credit-transaction-modal-highlight-total">
+                          {formatCurrency(details.amounts?.omsiapawasamounttorecieve || amount)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Withdrawal Details */}
                 {isWithdrawal && (
                   <div className="credit-transaction-modal-section">
                     <h3>Withdrawal Details</h3>
@@ -7764,59 +8928,110 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
                         </span>
                       </div>
                       
-                      {details.orderSummary && details.orderSummary.totalOmsiaProfit !== undefined && (
+                      {details.amounts?.deductions?.successfulprocessing?.amount > 0 && (
                         <div className="credit-transaction-modal-details-item">
                           <span className="credit-transaction-modal-label">Processing Fee:</span>
                           <span className="credit-transaction-modal-value">
-                            {formatCurrency(details.orderSummary.totalOmsiaProfit)}
+                            {formatCurrency(details.amounts.deductions.successfulprocessing.amount)}
                           </span>
                         </div>
                       )}
                       
-                      {details.orderSummary && details.orderSummary.total !== undefined && (
-                        <div className="credit-transaction-modal-details-item credit-transaction-modal-total">
-                          <span className="credit-transaction-modal-label">Total Withdrawn:</span>
-                          <span className="credit-transaction-modal-value credit-transaction-modal-highlight-total">
-                            {formatCurrency(details.orderSummary.total)}
+                      {details.amounts?.profit > 0 && (
+                        <div className="credit-transaction-modal-details-item">
+                          <span className="credit-transaction-modal-label">Service Fee:</span>
+                          <span className="credit-transaction-modal-value">
+                            {formatCurrency(details.amounts.profit)}
                           </span>
                         </div>
                       )}
+                      
+                      <div className="credit-transaction-modal-details-item credit-transaction-modal-total">
+                        <span className="credit-transaction-modal-label">Total Amount to Receive:</span>
+                        <span className="credit-transaction-modal-value credit-transaction-modal-highlight-total">
+                          {formatCurrency(details.amounts?.phpamounttorecieve || amount)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {/* Display rejection details if applicable */}
+                {details.amounts?.deductions?.rejectionprocessing?.amount > 0 && (
+                  <div className="credit-transaction-modal-section">
+                    <h3>Rejection Details</h3>
+                    <div className="credit-transaction-modal-details-grid">
+                      <div className="credit-transaction-modal-details-item">
+                        <span className="credit-transaction-modal-label">Rejection Fee:</span>
+                        <span className="credit-transaction-modal-value credit-transaction-modal-rejection-fee">
+                          {formatCurrency(details.amounts.deductions.rejectionprocessing.amount)}
+                        </span>
+                      </div>
+                      
+                      {details.amounts?.deductions?.rejectionprocessing?.reasons && (
+                        <div className="credit-transaction-modal-details-item credit-transaction-modal-full-width">
+                          <span className="credit-transaction-modal-label">Rejection Reason:</span>
+                          <span className="credit-transaction-modal-value">
+                            {details.amounts.deductions.rejectionprocessing.reasons}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Display sender information if available */}
+                {sender?.contact?.address && (
+                  <div className="credit-transaction-modal-section">
+                    <h3>Sender Information</h3>
+                    <div className="credit-transaction-modal-address-info">
+                      {formatName(sender.name) !== 'N/A' && <p><strong>{formatName(sender.name)}</strong></p>}
+                      {formatAddress(sender.contact.address).map((line, index) => (
+                        <p key={index}>{line}</p>
+                      ))}
+                      {sender.contact.phonenumber && <p>Phone: {sender.contact.phonenumber}</p>}
+                      {sender.contact.emailaddress && <p>Email: {sender.contact.emailaddress}</p>}
                     </div>
                   </div>
                 )}
                 
                 {/* Display recipient information if available */}
-                {details.shippingInfo && (
+                {recipient?.contact?.address && (
                   <div className="credit-transaction-modal-section">
-                    <h3>{isWithdrawal ? 'Recipient Information' : 'Sender Information'}</h3>
+                    <h3>Recipient Information</h3>
                     <div className="credit-transaction-modal-address-info">
-                      {details.shippingInfo.trademark && <p>{details.shippingInfo.trademark}</p>}
-                      <p>
-                        {details.shippingInfo.street}
-                        {details.shippingInfo.baranggay && `, ${details.shippingInfo.baranggay}`}
-                      </p>
-                      <p>
-                        {details.shippingInfo.city}
-                        {details.shippingInfo.province && `, ${details.shippingInfo.province}`} 
-                        {details.shippingInfo.zipcode && ` ${details.shippingInfo.zipcode}`}
-                      </p>
-                      {details.shippingInfo.country && <p>{details.shippingInfo.country}</p>}
+                      {formatName(recipient.name) !== 'N/A' && <p><strong>{formatName(recipient.name)}</strong></p>}
+                      {formatAddress(recipient.contact.address).map((line, index) => (
+                        <p key={index}>{line}</p>
+                      ))}
+                      {recipient.contact.phonenumber && <p>Phone: {recipient.contact.phonenumber}</p>}
+                      {recipient.contact.emailaddress && <p>Email: {recipient.contact.emailaddress}</p>}
                     </div>
                   </div>
                 )}
                 
-                {/* If there are associated products, display them, but this is less common for credit transactions */}
-                {details.products?.length > 0 && (
+                {/* Transaction Status Log */}
+                {statusesandlogs?.logs?.length > 0 && (
                   <div className="credit-transaction-modal-section">
-                    <h3>Related Items</h3>
-                    <div className="credit-transaction-modal-items-list">
-                      {details.products.map((product, index) => (
-                        <div key={index} className="credit-transaction-modal-item">
-                          <div className="credit-transaction-modal-item-name">{product.name}</div>
-                          <div className="credit-transaction-modal-item-info">
-                            <span>Qty: {product.quantity}</span>
-                            <span>Price: {formatCurrency(product.price)}</span>
+                    <h3>Transaction History</h3>
+                    <div className="credit-transaction-modal-status-timeline">
+                      {statusesandlogs.logs.map((log, index) => (
+                        <div key={index} className="credit-transaction-modal-status-item">
+                          <div className="credit-transaction-modal-status-date">
+                            {new Date(log.date).toLocaleString()}
                           </div>
+                          <div className={`credit-transaction-modal-status-badge credit-transaction-modal-status-${log.indication?.toLowerCase() || 'neutral'}`}>
+                            {log.type}
+                          </div>
+                          {log.messages && log.messages.length > 0 && (
+                            <div className="credit-transaction-modal-status-messages">
+                              {log.messages.map((msgItem, msgIndex) => (
+                                <p key={msgIndex} className="credit-transaction-modal-status-message">
+                                  {msgItem.message}
+                                </p>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -8852,14 +10067,6 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
     </div>
   );
 };
-
-
-
-
-
-
-
-
 
 const PendingPublicRegistrationsModal = ({ onClose, setShowDatabaseConfiguration, setShowPendingPublicRegistrationModal, onViewDetails, onEdit }) => {
   // This would typically come from props, but we're using sample data here
