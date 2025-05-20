@@ -22,14 +22,14 @@ const timestamps = require('../../lib/timestamps/timestamps');
 
 const bcrypt = require('bcrypt');
 
-// Server-side route handler
+// Server-side route handler 
 Router.route("/getomsiapdata").get(async (req, res) => {
   try {
     // Fetch registrants data
     const registrants = await RegistrantDataModel.find({}, {
       'passwords.account.password': 0 // Exclude password fields
     });
-    
+        
     // Process registrants for status categorization
     const people = registrants.map(person => {
       const personObj = person.toObject();
@@ -41,10 +41,10 @@ Router.route("/getomsiapdata").get(async (req, res) => {
         }
       };
     });
-    
+        
     // Fetch merchandise transactions
     const merchandiseTransactions = await MerchandiseTransactionDataModel.find({});
-    
+        
     // Categorize merchandise transactions by status
     const orders = {
       total: merchandiseTransactions,
@@ -56,10 +56,10 @@ Router.route("/getomsiapdata").get(async (req, res) => {
       shipped: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'shipped'),
       successful: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'successful')
     };
-    
+        
     // Fetch currency exchange transactions
     const currencyExchangeTransactions = await CurrencyExchangeTransactionDataModel.find({});
-    
+        
     // Categorize currency exchange transactions
     const currencyexchange = {
       total: currencyExchangeTransactions,
@@ -67,10 +67,10 @@ Router.route("/getomsiapdata").get(async (req, res) => {
       successful: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'successful'),
       rejected: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
     };
-    
+        
     // Fetch withdrawal transactions
     const withdrawalTransactions = await WidthdrawalTransactionDataModel.find({});
-    
+        
     // Categorize withdrawal transactions
     const withdrawals = {
       total: withdrawalTransactions,
@@ -78,7 +78,7 @@ Router.route("/getomsiapdata").get(async (req, res) => {
       successful: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'successful'),
       rejected: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
     };
-    
+        
     // Construct response object
     const responseData = {
       people,
@@ -88,7 +88,7 @@ Router.route("/getomsiapdata").get(async (req, res) => {
         withdrawals
       }
     };
-    
+        
     res.status(200).json(responseData);
   } catch (err) {
     console.error('Error fetching OMSIAP data:', err);
@@ -914,6 +914,222 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
   }
 });
 
+// Route for approving currency exchange
+Router.post('/approvecurrencyexchange', async (req, res) => {
+  try {
+    const {
+      id,
+      phpAmountVerification,
+      omsiapAmountVerification,
+      successfulDeductionAmount,
+      rejectedDeductionAmount
+    } = req.body;
+
+    // Validate request data
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Transaction ID is required' });
+    }
+
+    if (!phpAmountVerification || !omsiapAmountVerification || !successfulDeductionAmount) {
+      return res.status(400).json({ success: false, message: 'All verification amounts are required' });
+    }
+
+    // Find the transaction
+    const transaction = await CurrencyExchangeTransactionDataModel.findOne({ _id: id });
+    
+    // Check if transaction exists
+    if (!transaction) {
+      return res.status(404).json({ success: false, message: 'Transaction not found' });
+    }
+
+    // Check if transaction is already approved
+    if (transaction.statusesandlogs.status === 'approved') {
+      return res.status(409).json({ success: false, message: 'Transaction has already been approved' });
+    }
+    
+    // Update transaction status and details
+    const newStatusLog = {
+      date: timestamps.getFormattedDate(),
+      type: 'approval',
+      indication: 'positive',
+      messages: [{ message: 'Transaction approved by administrator' }]
+    };
+
+    // Update the transaction
+    const updatedTransaction = await CurrencyExchangeTransactionDataModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          'statusesandlogs.status': 'successful',
+          'statusesandlogs.indication': 'The currency exchange has been approved and converted the sent PHP currency into OMSIAPAWASTO',
+          'details.amounts.deductions.successfulprocessing.amount': successfulDeductionAmount,
+          'details.amounts.deductions.rejectionprocessing.amount': rejectedDeductionAmount || 0,
+          'details.amounts.phppurchaseorexchangeamount': phpAmountVerification,
+          'details.amounts.omsiapawasamounttorecieve': omsiapAmountVerification
+        },
+        $push: {
+          'statusesandlogs.logs': newStatusLog
+        }
+      },
+      { new: true }
+    );
+
+    if (!updatedTransaction) {
+      return res.status(500).json({ success: false, message: 'Failed to update transaction' });
+    }
+
+    // Return success response with formatted date
+    return res.status(200).json({
+      success: true,
+      message: 'Currency exchange transaction approved successfully',
+      approvedAt: timestamps.getFormattedDate(),
+      transaction: {
+        id: updatedTransaction._id,
+        status: updatedTransaction.statusesandlogs.status,
+        indication: updatedTransaction.statusesandlogs.indication
+      }
+    });
+  } catch (error) {
+    console.error('Error approving currency exchange:', error);
+    
+    // Handle specific error types
+    if (error instanceof mongoose.Error.CastError) {
+      return res.status(400).json({ success: false, message: 'Invalid transaction ID format' });
+    }
+    
+    if (error instanceof mongoose.Error.ValidationError) {
+      return res.status(400).json({ success: false, message: 'Validation error', errors: error.errors });
+    }
+    
+    return res.status(500).json({ success: false, message: 'Server error while processing approval' });
+  }
+});
+
+// Route for rejecting currency exchange
+Router.post('/rejectcurrencyexchange', async (req, res) => {
+  try {
+    const {
+      id,
+      phpAmountVerification,
+      omsiapAmountVerification,
+      successfulDeductionAmount,
+      rejectedDeductionAmount,
+      reason
+    } = req.body;
+
+    // Validate request data
+    if (!id) {
+      return res.status(400).json({ success: false, message: 'Transaction ID is required' });
+    }
+
+    if (!rejectedDeductionAmount) {
+      return res.status(400).json({ success: false, message: 'Rejected deduction amount is required' });
+    }
+    
+    if (!reason || reason.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Rejection reason is required' });
+    }
+
+    // Find the transaction
+    const transaction = await CurrencyExchangeTransactionDataModel.findOne({ _id: id });
+    
+    // Check if transaction exists
+    if (!transaction) {
+      return res.status(404).json({ 
+        success: false, 
+        message: 'Transaction not found' 
+      });
+    }
+
+    // Check if transaction is already processed
+    if (transaction.statusesandlogs.status === 'approved') {
+      return res.status(409).json({ 
+        success: false, 
+        message: 'Transaction has already been approved and cannot be rejected',
+        status: 'approved'
+      });
+    }
+    
+    if (transaction.statusesandlogs.status === 'rejected') {
+      return res.status(409).json({ 
+        success: false, 
+        message: 'Transaction has already been rejected',
+        status: 'rejected'
+      });
+    }
+
+    // Create new status log entry
+    const newStatusLog = {
+      date: timestamps.getFormattedDate(),
+      type: 'rejection',
+      indication: 'negative',
+      messages: [{ message: `Transaction rejected: ${reason}` }]
+    };
+
+    // Update the transaction with all verification fields and rejection info
+    const updatedTransaction = await CurrencyExchangeTransactionDataModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          'statusesandlogs.status': 'rejected',
+          'statusesandlogs.indication': reason, // Using the rejection reason for the status indication
+          'details.amounts.deductions.successfulprocessing.amount': successfulDeductionAmount || 0,
+          'details.amounts.deductions.rejectionprocessing.amount': rejectedDeductionAmount,
+          'details.amounts.deductions.rejectionprocessing.reasons': reason,
+          // Update verification fields if provided
+          ...(phpAmountVerification !== undefined ? { 'details.amounts.phppurchaseorexchangeamount': phpAmountVerification } : {}),
+          ...(omsiapAmountVerification !== undefined ? { 'details.amounts.omsiapawasamounttorecieve': omsiapAmountVerification } : {})
+        },
+        $push: {
+          'statusesandlogs.logs': newStatusLog
+        }
+      },
+      { new: true }
+    );
+
+    if (!updatedTransaction) {
+      return res.status(500).json({ success: false, message: 'Failed to update transaction' });
+    }
+
+    // Return success response with formatted date and transaction details
+    return res.status(200).json({
+      success: true,
+      message: 'Currency exchange transaction has been rejected',
+      rejectedAt: timestamps.getFormattedDate(),
+      transaction: {
+        id: updatedTransaction._id,
+        status: updatedTransaction.statusesandlogs.status,
+        indication: updatedTransaction.statusesandlogs.indication,
+        reason: reason
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error rejecting currency exchange:', error);
+    
+    // Handle specific error types
+    if (error instanceof mongoose.Error.CastError) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Invalid transaction ID format' 
+      });
+    }
+    
+    if (error instanceof mongoose.Error.ValidationError) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Validation error', 
+        errors: error.errors 
+      });
+    }
+    
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Server error while processing rejection' 
+    });
+  }
+});
+
 Router.route('/widthdrawal').post(async(req, res) => {
   try {
     const { firstName, middleName, lastName, phoneNumber, amount, password, userId } = req.body;
@@ -1123,6 +1339,461 @@ Router.route('/widthdrawal').post(async(req, res) => {
     }
   }
 });
+
+// Define path for withdrawal receipt images
+const WITHDRAWALS_UPLOAD_PATH = path.join(__dirname, '../../../view/public/images/withdrawals');
+
+// Ensure directory exists for withdrawal images
+if (!fs.existsSync(WITHDRAWALS_UPLOAD_PATH)) {
+  fs.mkdirSync(WITHDRAWALS_UPLOAD_PATH, { recursive: true });
+}
+
+// Withdrawal cleanup function - using the same pattern as currency exchange cleanup
+function cleanupWithdrawalFiles(monthsOld = 1) {
+  console.log(`Running cleanup of withdrawal receipt images older than ${monthsOld} month(s)...`);
+  
+  return new Promise((resolve, reject) => {
+    fs.readdir(WITHDRAWALS_UPLOAD_PATH, (err, files) => {
+      if (err) {
+        console.error('Error reading withdrawal images directory for cleanup:', err);
+        reject(`Error reading directory: ${err.message}`);
+        return;
+      }
+      
+      if (files.length === 0) {
+        console.log('No withdrawal image files found in directory');
+        resolve({ message: 'No withdrawal files found to clean up', deletedCount: 0 });
+        return;
+      }
+      
+      const currentDate = new Date();
+      const cutoffDate = new Date();
+      cutoffDate.setMonth(cutoffDate.getMonth() - monthsOld);
+      
+      let processedCount = 0;
+      let deletedCount = 0;
+      let errors = [];
+      
+      files.forEach(file => {
+        const filePath = path.join(WITHDRAWALS_UPLOAD_PATH, file);
+        
+        // Get file stats to check last modified date
+        fs.stat(filePath, (err, stats) => {
+          if (err) {
+            console.error(`Error getting stats for file ${file}:`, err);
+            errors.push(`Error getting stats for file ${file}: ${err.message}`);
+            processedCount++;
+            
+            if (processedCount === files.length) {
+              finishCleanup();
+            }
+            return;
+          }
+          
+          // Check if file is older than specified months based on filename date prefix
+          const dateMatch = file.match(/^(\d{8})-/);
+          let fileDate;
+          let shouldDelete = false;
+          
+          if (dateMatch) {
+            const fileYear = parseInt(dateMatch[1].substring(0, 4));
+            const fileMonth = parseInt(dateMatch[1].substring(4, 6)) - 1;
+            const fileDay = parseInt(dateMatch[1].substring(6, 8));
+            fileDate = new Date(fileYear, fileMonth, fileDay);
+            shouldDelete = fileDate < cutoffDate;
+          } 
+          // Fallback to file modification time
+          else {
+            fileDate = stats.mtime;
+            shouldDelete = fileDate < cutoffDate;
+          }
+          
+          if (shouldDelete) {
+            fs.unlink(filePath, err => {
+              if (err) {
+                console.error(`Error deleting old withdrawal image file ${file}:`, err);
+                errors.push(`Error deleting file ${file}: ${err.message}`);
+              } else {
+                console.log(`Deleted old withdrawal image file ${file} (from ${fileDate.toDateString()})`);
+                deletedCount++;
+              }
+              
+              processedCount++;
+              if (processedCount === files.length) {
+                finishCleanup();
+              }
+            });
+          } else {
+            processedCount++;
+            if (processedCount === files.length) {
+              finishCleanup();
+            }
+          }
+        });
+      });
+      
+      function finishCleanup() {
+        const result = {
+          message: `Withdrawal images cleanup completed. Deleted ${deletedCount} of ${files.length} files.`,
+          deletedCount,
+          totalFiles: files.length,
+          errors: errors.length > 0 ? errors : undefined
+        };
+        
+        console.log(result.message);
+        resolve(result);
+      }
+    });
+  });
+}
+
+// Expose a route to manually trigger withdrawal images cleanup
+Router.route('/withdrawals/cleanup').post(async (req, res) => {
+  try {
+    // Get months parameter - default to 1 month if not specified
+    const months = req.body.months ? parseInt(req.body.months) : 1;
+    
+    if (isNaN(months) || months < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid months parameter. Must be a positive number.'
+      });
+    }
+    
+    // Run the cleanup
+    const result = await cleanupWithdrawalFiles(months);
+    
+    return res.status(200).json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error('Error during withdrawal images cleanup:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error during cleanup process',
+      error: error.message
+    });
+  }
+});
+
+// Configure multer for withdrawal receipts - using the existing multer configuration pattern
+const withdrawalStorage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, WITHDRAWALS_UPLOAD_PATH);
+  },
+  filename: function(req, file, cb) {
+    // Create filename with date prefix for easier management
+    const now = new Date();
+    const datePrefix = now.getFullYear() + 
+                      ('0' + (now.getMonth() + 1)).slice(-2) + 
+                      ('0' + now.getDate()).slice(-2);
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `${datePrefix}-${uniqueSuffix}${path.extname(file.originalname)}`);
+  }
+});
+
+// File filter for withdrawal receipts - reusing the same one from currency exchange
+const withdrawalFileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed for receipts!'), false);
+  }
+};
+
+// Initialize multer for withdrawal receipts
+const uploadWithdrawalReceipt = multer({
+  storage: withdrawalStorage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: withdrawalFileFilter
+});
+
+// Approve withdrawal route
+Router.route("/approvewithdrawal").post(uploadWithdrawalReceipt.single('receipt'), async (req, res) => {
+  try {
+    const { transactionId, successfulProcessingDeduction, intent, phpAmountToReceive } = req.body;
+    
+    // Validate required fields
+    if (!transactionId || !successfulProcessingDeduction) {
+      // Delete uploaded file if validation fails
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields'
+      });
+    }
+    
+    // Find the withdrawal transaction
+    const withdrawalTransaction = await WidthdrawalTransactionDataModel.findById(transactionId);
+    
+    if (!withdrawalTransaction) {
+      // Delete uploaded file if transaction not found
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Withdrawal transaction not found'
+      });
+    }
+    
+    // Check if already processed
+    if (withdrawalTransaction.statusesandlogs.status === 'successful' || 
+        withdrawalTransaction.statusesandlogs.status === 'rejected') {
+      // Delete uploaded file if transaction already processed
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(409).json({
+        success: false,
+        message: 'This withdrawal has already been processed'
+      });
+    }
+    
+    // Create new log entry
+    const formattedDate = timestamps.getFormattedDate();
+    const newLogEntry = {
+      date: formattedDate,
+      type: 'approval',
+      indication: 'success',
+      messages: [{ message: 'Withdrawal approved and processed' }]
+    };
+    
+    // Update transaction data
+    withdrawalTransaction.statusesandlogs.status = 'successful';
+    withdrawalTransaction.statusesandlogs.indication = 'The withdrawal has been approved and processed';
+    withdrawalTransaction.statusesandlogs.date = formattedDate;
+    
+    // Add new log entry
+    if (!withdrawalTransaction.statusesandlogs.logs) {
+      withdrawalTransaction.statusesandlogs.logs = [];
+    }
+    withdrawalTransaction.statusesandlogs.logs.push(newLogEntry);
+    
+    // Update deduction amount
+    if (!withdrawalTransaction.details.amounts.deductions) {
+      withdrawalTransaction.details.amounts.deductions = {};
+    }
+    
+    withdrawalTransaction.details.amounts.deductions.successfulprocessing = {
+      amount: parseFloat(successfulProcessingDeduction),
+      reasons: 'Withdrawal processing fee'
+    };
+    
+    // Calculate profit
+    withdrawalTransaction.details.amounts.profit = parseFloat(successfulProcessingDeduction);
+    
+    // Update receipt image path if uploaded
+    if (req.file) {
+      const imageFilename = req.file.filename;
+      const relativePath = `/images/withdrawals/${imageFilename}`;
+      
+      if (!withdrawalTransaction.details.referrence) {
+        withdrawalTransaction.details.referrence = {};
+      }
+      
+      withdrawalTransaction.details.referrence.gcashtransactionrecieptimage = relativePath;
+    }
+    
+    // Find the user who made the withdrawal
+    const userId = withdrawalTransaction.details.thistransactionismadeby.id;
+    const user = await RegistrantDataModel.findById(userId);
+    
+    if (!user) {
+      console.warn(`User with ID ${userId} not found when approving withdrawal ${transactionId}`);
+    } else {
+      // Update user's withdrawal transactions
+      const userWithdrawalIndex = user.credits?.omsiapawas?.transactions?.widthdrawals?.findIndex(
+        tx => tx._id.toString() === transactionId.toString() || tx.id === transactionId
+      );
+      
+      if (userWithdrawalIndex !== -1 && userWithdrawalIndex !== undefined) {
+        user.credits.omsiapawas.transactions.widthdrawals[userWithdrawalIndex] = withdrawalTransaction;
+        await user.save();
+      }
+    }
+    
+    // Save the updated transaction
+    await withdrawalTransaction.save();
+    
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: 'Withdrawal approved successfully',
+      transactionId: withdrawalTransaction._id,
+      processingDate: formattedDate
+    });
+    
+  } catch (error) {
+    console.error('Error approving withdrawal:', error);
+    
+    // Delete uploaded file if error occurs
+    if (req.file && req.file.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (unlinkError) {
+        console.error('Error deleting file after approval failure:', unlinkError);
+      }
+    }
+    
+    // Handle specific error types
+    if (error instanceof mongoose.Error.CastError) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid transaction ID format'
+      });
+    }
+    
+    // Return error response
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while approving withdrawal',
+      error: error.message
+    });
+  }
+});
+
+/// Reject withdrawal route
+Router.route("/rejectwithdrawal").post(async (req, res) => {
+  try {
+    // Extract data from request body
+    const { 
+      transactionId, 
+      rejectionProcessingDeduction, 
+      rejectionReason, 
+      intent 
+    } = req.body;
+
+    console.log("Transaction ID:", transactionId);
+    console.log("Rejection Deduction:", rejectionProcessingDeduction);
+    console.log("Rejection Reason:", rejectionReason);
+
+    // Validate required fields
+    if (!transactionId || !rejectionProcessingDeduction || !rejectionReason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: transactionId, rejectionProcessingDeduction, and rejectionReason are required'
+      });
+    }
+    
+    // Validate that rejection processing deduction is a number
+    const deductionAmount = parseFloat(rejectionProcessingDeduction);
+    if (isNaN(deductionAmount) || deductionAmount < 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection processing deduction must be a valid positive number'
+      });
+    }
+
+    // Find the withdrawal transaction
+    const withdrawalTransaction = await WidthdrawalTransactionDataModel.findById(transactionId);
+    
+    if (!withdrawalTransaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Withdrawal transaction not found'
+      });
+    }
+
+    // Check if already processed
+    if (withdrawalTransaction.statusesandlogs.status === 'successful' || 
+        withdrawalTransaction.statusesandlogs.status === 'rejected') {
+      return res.status(409).json({
+        success: false,
+        message: 'This withdrawal has already been processed'
+      });
+    }
+
+    // Get formatted date for logs
+    const formattedDate = timestamps.getFormattedDate();
+    
+    // Create new log entry
+    const newLogEntry = {
+      date: formattedDate,
+      type: 'rejection',
+      indication: 'rejected',
+      messages: [{ message: rejectionReason }]
+    };
+    
+    // Update transaction data
+    withdrawalTransaction.statusesandlogs.status = 'rejected';
+    withdrawalTransaction.statusesandlogs.indication = rejectionReason;
+    withdrawalTransaction.statusesandlogs.date = formattedDate;
+    
+    // Add new log entry
+    if (!withdrawalTransaction.statusesandlogs.logs) {
+      withdrawalTransaction.statusesandlogs.logs = [];
+    }
+    withdrawalTransaction.statusesandlogs.logs.push(newLogEntry);
+    
+    // Update deduction amount
+    if (!withdrawalTransaction.details.amounts.deductions) {
+      withdrawalTransaction.details.amounts.deductions = {};
+    }
+    
+    withdrawalTransaction.details.amounts.deductions.rejectionprocessing = {
+      amount: deductionAmount,
+      reasons: rejectionReason
+    };
+    
+    // Find the user who made the withdrawal
+    const userId = withdrawalTransaction.details.thistransactionismadeby.id;
+    const user = await RegistrantDataModel.findById(userId);
+    
+    if (!user) {
+      console.warn(`User with ID ${userId} not found when rejecting withdrawal ${transactionId}`);
+    } else {
+      // Update user's withdrawal transactions
+      const userWithdrawalIndex = user.credits?.omsiapawas?.transactions?.widthdrawals?.findIndex(
+        tx => tx._id.toString() === transactionId.toString() || tx.id === transactionId
+      );
+      
+      if (userWithdrawalIndex !== -1 && userWithdrawalIndex !== undefined) {
+        user.credits.omsiapawas.transactions.widthdrawals[userWithdrawalIndex] = withdrawalTransaction;
+        await user.save();
+      }
+    }
+    
+    // Save the updated transaction
+    await withdrawalTransaction.save();
+    
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: 'Withdrawal rejected successfully',
+      transactionId: withdrawalTransaction._id,
+      processingDate: formattedDate
+    });
+    
+  } catch (error) {
+    console.error('Error rejecting withdrawal:', error);
+    
+    // Handle specific error types
+    if (error instanceof mongoose.Error.CastError) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid transaction ID format'
+      });
+    }
+    
+    // Return error response
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while rejecting withdrawal',
+      error: error.message
+    });
+  }
+});
+
+
 
 // Export the cleanupOldFiles function so it can be used elsewhere in your application
 module.exports = Router;

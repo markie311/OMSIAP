@@ -130,7 +130,7 @@ Router.route("/registration").post(async (req, res) => {
       req.body.$registrant.credits.omsiapawas = req.body.$registrant.credits.omsiapawas || {};
       req.body.$registrant.credits.omsiapawas.id = omsiapawasId;
       req.body.$registrant.credits.omsiapawas.amount = 0;
-      req.body.$registrant.registrationstatusesandlogs.indication = "pending documents";
+      req.body.$registrant.registrationstatusesandlogs.indication = "unverified";
       
       // Create registration detail with proper structure
       req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
@@ -204,7 +204,7 @@ Router.route("/registration").post(async (req, res) => {
         req.body.$registrant.credits.omsiapawas = req.body.$registrant.credits.omsiapawas || {};
         req.body.$registrant.credits.omsiapawas.id = omsiapawasId;
         req.body.$registrant.credits.omsiapawas.amount = 0;
-        req.body.$registrant.registrationstatusesandlogs.indication = "pending documents";
+        req.body.$registrant.registrationstatusesandlogs.indication = "unverified";
                          
         // Create registration detail with proper structure
         req.body.$registrant.registrationstatusesandlogs.registrationlog.push({

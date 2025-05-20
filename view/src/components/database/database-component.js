@@ -1,12 +1,15 @@
-"use client"
+import React, {
+          useState, 
+          useEffect, 
+          useRef
+        } from 'react'
 
 import "../../styles/database/database.scss"
 
-import { useState, useEffect, useRef } from "react"
-
-import { Container, Row, Col, Button, Form, Spinner } from "react-bootstrap"
+import { Container, Row, Col, Button, Form, Spinner, Modal, Image } from "react-bootstrap"
 
 import { FaEye, 
+         FaClipboardCheck,
          FaRecycle,
          FaRedoAlt,
          FaCoins,
@@ -155,6 +158,7 @@ function DatabaseComponent() {
 
   const [showCreditTransaction, setShowCreditTransaction] = useState(false)
   
+  const [showRegisteredRegistrants, setShowRegisteredRegistrants] = useState(false)
   const [showRegisteredRegistrantsWithVerifiedDocuments, setShowRegisteredRegistrantsWithVerifiedDocuments] = useState(false)
   const [showRegisteredRegistrantsWithPendingDocuments, setShowRegisteredRegistrantsWithPendingDocuments] = useState(false)
   const [showRegisteredRegistrantsWithRejectedDocuments, setShowRegisteredRegistrantsWithRejectedDocuments] = useState(false)
@@ -173,6 +177,11 @@ function DatabaseComponent() {
   const [showCreateRegistrantForm, setShowCreateRegistrantForm] = useState(false)
   const [showRegistrantDetailsDisplay, setShowRegistrantDetailsDisplay] = useState(false)
   const [showUpdateRegistrantFormDisplay, setShowUpdateRegistrantFormDisplay] = useState(false)
+
+  const [showCurrencyExchangeApprovalModal, setShowCurrencyExchangeApprovalModal] = useState(false)
+  const [showCurrencyExchangeRejectionModal, setShowCurrencyExchangeRejectionModal] = useState(false)
+  const [showWithdrawalApproval, setShowWithdrawalApproval] = useState(false)
+  const [showWithdrawalRejectionModal, setShowWithdrawalRejectionModal] = useState(false)
 
   const [deleteproductfield, deleteproductfieldcb] = useState("")
    
@@ -402,6 +411,7 @@ function DatabaseComponent() {
   const [successfulwithdrawals, successfulwithdrawalscb] = useState([])
   const [rejectedwithdrawals, rejectedwithdrawalscb] = useState([])
  
+  const [totalregisteredregistrants, totalregisteredregistrantscb] = useState([])
   const [verifiedmfatipregistrants, verifiedmfatipregistrantscb] = useState([])
   const [pendingmfatipregistrants, pendingmfatipregistrantscb] = useState([])
   const [mfatipregistrantsrejecteddocuments, mfatipregistrantsrejecteddocumentscb] = useState([])
@@ -452,13 +462,13 @@ function DatabaseComponent() {
     verifiedmfatipregistrantscb, pendingmfatipregistrantscb, mfatipregistrantsrejecteddocumentscb
   ]);
 
-  // Client-side fetchOmsiapData function 
-  const fetchOmsiapData = async () => {
+// Client-side fetchOmsiapData function    
+const fetchOmsiapData = async () => {
 
   try {
     const response = await axiosCreatedInstance.get("/omsiap/getomsiapdata");
     const omsiapdata = response.data;
-    
+        
     // Process transactions data
     if (omsiapdata && omsiapdata.transactions) {
       // Update orders data
@@ -472,7 +482,7 @@ function DatabaseComponent() {
         shippedorderscb(omsiapdata.transactions.orders.shipped || []);
         successfulorderscb(omsiapdata.transactions.orders.successful || []);
       }
-      
+            
       // Update currency exchange data
       if (omsiapdata.transactions.currencyexchange) {
         totalcurrencyexchangecb(omsiapdata.transactions.currencyexchange.total || []);
@@ -480,7 +490,7 @@ function DatabaseComponent() {
         successfulcurrencyexchangecb(omsiapdata.transactions.currencyexchange.successful || []);
         rejectedcurrencyexchangecb(omsiapdata.transactions.currencyexchange.rejected || []);
       }
-      
+            
       // Update withdrawals data
       if (omsiapdata.transactions.withdrawals) {
         totalwithdrawalscb(omsiapdata.transactions.withdrawals.total || []);
@@ -489,33 +499,40 @@ function DatabaseComponent() {
         rejectedwithdrawalscb(omsiapdata.transactions.withdrawals.rejected || []);
       }
     }
-    
+        
     // Process MFATIP registrants data
     if (omsiapdata && omsiapdata.people) {
+      // Pass the total registrants to the callback
+      totalregisteredregistrantscb(omsiapdata.people || []);
+        
       const verified = omsiapdata.people.filter(person => 
         person.status && person.status.type === "complete"
       );
-      
+            
       const pending = omsiapdata.people.filter(person => 
-        person.status &&
-        person.status.type === "incomplete" &&
+        person.status && 
+        person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
         person.status.indication === "pending documents"
       );
-      
+            
       const rejected = omsiapdata.people.filter(person => 
-        person.status &&
-        person.status.type === "incomplete" &&
+        person.status && 
+        person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
         person.status.indication === "rejected documents"
       );
-      
+            
       verifiedmfatipregistrantscb(verified);
       pendingmfatipregistrantscb(pending);
       mfatipregistrantsrejecteddocumentscb(rejected);
+
     }
+
   } catch (err) {
+
     console.error('Error fetching OMSIAP data:', err);
+
   }
-  };
+}; 
 
 
   const transactions = [
@@ -1188,6 +1205,316 @@ function DatabaseComponent() {
   transactions: []
   })
 
+  const [currencyexchangeapprovaltransactiondata, currencyexchangeapprovaltransactiondatacb] = useState({
+  id: "Sampleid123123",
+  _id: 'Sampleid!231232',
+  intent: "Sample intent",
+  statusesandlogs: {
+  status: "status",
+  indication: "status indication",
+  logs: []
+  },
+  details: {
+  paymentmethod: "payment method",
+  thistransactionismadeby: {
+  id: "Thistransactionismadebyid",
+  name: {
+  firstname: "thistransactionismadebyfirstname",
+  middlename: "thistransactionismadebymiddlename",
+  lastname: "thistransactionismadebylastname",
+  nickname: "thistransactionismadebynickname",
+  },
+  contact: {
+  phonenumber: "thistransactionismadebyphonenumber",
+  emailaddress: "thistransactionismadebyemailaddress",
+  address: {
+  street: "thistransactionismadebystreetaddress",
+  trademark: "thistransactionismadebystreetaddress",
+  baranggay: "thistransactionismadebystreetaddress",
+  city: "thistransactionismadebystreetaddress",
+  province: "thistransactionismadebystreetaddress",
+  postal_zip_code: "thistransactionismadebystreetaddress",
+  country: "thistransactionismadebystreetaddress",
+  }
+  }
+  },
+  thistransactionismainlyintendedto: {
+  id: "thistransactionismainlyintendedtoid",
+  name: {
+  firstname: "thistransactionismainlyintendedtofirstname",
+  middlename: "thistransactionismainlyintendedtomiddlename",
+  lastname: "thistransactionismainlyintendedtolastname",
+  nickname: "thistransactionismainlyintendedtonickname",
+  },
+  contact: {
+  phonenumber: "thistransactionismainlyintendedtophonenumber",
+  emailaddress: "thistransactionismainlyintendedtoemailaddress",
+  address: {
+  street: "thistransactionismainlyintendedtostreet",
+  trademark: "thistransactionismainlyintendedtotrademark",
+  baranggay: "thistransactionismainlyintendedtobaranggay",
+  city: "thistransactionismainlyintendedtocity",
+  province: "thistransactionismainlyintendedtoprovince",
+  postal_zip_code: "thistransactionismainlyintendedtopostalzipcode",
+  country: "thistransactionismainlyintendedtocountry",
+  }
+  }
+  },
+  amounts: {
+  intent: 0,
+  phppurchaseorexchangeamount: 0,
+  deductions: {
+  successfulprocessing: {
+  amount: 0,
+  reasons: ""
+  },
+  rejectionprocessing: {
+  amount: 0,
+  reasons: ""
+  }
+  },
+  profit: 0,
+  omsiapawasamounttorecieve: 0
+  },
+  referrence: {
+  number: "referencenumber",
+  gcashtransactionrecieptimage: "../images/currencyexchange/20250418-1744959906797-67799542.jpg",
+  }
+  }
+  })
+
+  const [currencyexchangerejectiontransactiondata, currencyexchangerejectiontransactiondatacb] = useState({
+    id: "Sampleid123123",
+    _id: 'Sampleid!231232',
+    intent: "Sample intent",
+    statusesandlogs: {
+    status: "status",
+    indication: "status indication",
+    logs: []
+    },
+    details: {
+    paymentmethod: "payment method",
+    thistransactionismadeby: {
+    id: "Thistransactionismadebyid",
+    name: {
+    firstname: "thistransactionismadebyfirstname",
+    middlename: "thistransactionismadebymiddlename",
+    lastname: "thistransactionismadebylastname",
+    nickname: "thistransactionismadebynickname",
+    },
+    contact: {
+    phonenumber: "thistransactionismadebyphonenumber",
+    emailaddress: "thistransactionismadebyemailaddress",
+    address: {
+    street: "thistransactionismadebystreetaddress",
+    trademark: "thistransactionismadebystreetaddress",
+    baranggay: "thistransactionismadebystreetaddress",
+    city: "thistransactionismadebystreetaddress",
+    province: "thistransactionismadebystreetaddress",
+    postal_zip_code: "thistransactionismadebystreetaddress",
+    country: "thistransactionismadebystreetaddress",
+    }
+    }
+    },
+    thistransactionismainlyintendedto: {
+    id: "thistransactionismainlyintendedtoid",
+    name: {
+    firstname: "thistransactionismainlyintendedtofirstname",
+    middlename: "thistransactionismainlyintendedtomiddlename",
+    lastname: "thistransactionismainlyintendedtolastname",
+    nickname: "thistransactionismainlyintendedtonickname",
+    },
+    contact: {
+    phonenumber: "thistransactionismainlyintendedtophonenumber",
+    emailaddress: "thistransactionismainlyintendedtoemailaddress",
+    address: {
+    street: "thistransactionismainlyintendedtostreet",
+    trademark: "thistransactionismainlyintendedtotrademark",
+    baranggay: "thistransactionismainlyintendedtobaranggay",
+    city: "thistransactionismainlyintendedtocity",
+    province: "thistransactionismainlyintendedtoprovince",
+    postal_zip_code: "thistransactionismainlyintendedtopostalzipcode",
+    country: "thistransactionismainlyintendedtocountry",
+    }
+    }
+    },
+    amounts: {
+    intent: 0,
+    phppurchaseorexchangeamount: 0,
+    deductions: {
+    successfulprocessing: {
+    amount: 0,
+    reasons: ""
+    },
+    rejectionprocessing: {
+    amount: 0,
+    reasons: ""
+    }
+    },
+    profit: 0,
+    omsiapawasamounttorecieve: 0
+    },
+    referrence: {
+    number: "referencenumber",
+    gcashtransactionrecieptimage: "../images/currencyexchange/20250418-1744959906797-67799542.jpg",
+    }
+    }
+  })
+
+  const [withdrawalapprovaltransactiondata, withdrawalapprovaltransactiondatacb] = useState({
+    id: "",
+    _id: "",
+    intent: "",
+    statusesandlogs: {
+    status: "",
+    indication: "",
+    logs: []
+    },
+    details: {
+    paymentmethod: "",
+    thistransactionismadeby: {
+    id: "",
+    name: {
+    firstname: "",
+    middlename: "",
+    lastname:"",
+    nickname: "",
+    },
+    contact: {
+    phonenumber: "",
+    emailaddress: "",
+    address: {
+    street: "",
+    trademark: "",
+    baranggay: "",
+    city: "",
+    province: "",
+    postal_zip_code: "",
+    country: "",
+    }
+    }
+    },
+    thistransactionismainlyintendedto: {
+    id: "",
+    name: {
+    firstname: "",
+    middlename: "",
+    lastname: "",
+    nickname: "",
+    },
+    contact: {
+    phonenumber: "",
+    emailaddress: "",
+    address: {
+    street: "",
+    trademark: "",
+    baranggay: "",
+    city: "",
+    province: "",
+    postal_zip_code: "",
+    country: "",
+    }
+    }
+    },
+    amounts: {
+    intent: 0,
+    deductions: {
+      successfulprocessing: {
+        amount: 0,
+        reasons: 0
+      },
+      rejectionprocessing: {
+        amount: 0,
+        reasons: 0
+      }
+    },
+    profit: 0,
+    phpamounttorecieve: 0
+    },
+    referrence: {
+      number: "",
+      gcashtransactionrecieptimage: "",
+    }
+    }
+  });
+
+  const [withdrawalrejectiontransactiondata, withdrawalrejectiontransactiondatacb] = useState({
+    id: "",
+    _id: "",
+    intent: "",
+    statusesandlogs: {
+    status: "",
+    indication: "",
+    logs: []
+    },
+    details: {
+    paymentmethod: "",
+    thistransactionismadeby: {
+    id: "",
+    name: {
+    firstname: "",
+    middlename: "",
+    lastname:"",
+    nickname: "",
+    },
+    contact: {
+    phonenumber: "",
+    emailaddress: "",
+    address: {
+    street: "",
+    trademark: "",
+    baranggay: "",
+    city: "",
+    province: "",
+    postal_zip_code: "",
+    country: "",
+    }
+    }
+    },
+    thistransactionismainlyintendedto: {
+    id: "",
+    name: {
+    firstname: "",
+    middlename: "",
+    lastname: "",
+    nickname: "",
+    },
+    contact: {
+    phonenumber: "",
+    emailaddress: "",
+    address: {
+    street: "",
+    trademark: "",
+    baranggay: "",
+    city: "",
+    province: "",
+    postal_zip_code: "",
+    country: "",
+    }
+    }
+    },
+    amounts: {
+    intent: 0,
+    deductions: {
+      successfulprocessing: {
+        amount: 0,
+        reasons: 0
+      },
+      rejectionprocessing: {
+        amount: 0,
+        reasons: 0
+      }
+    },
+    profit: 0,
+    phpamounttorecieve: 0
+    },
+    referrence: {
+      number: "",
+      gcashtransactionrecieptimage: "",
+    }
+    }
+  });
+
  return (
    <div id="database-container">
      <div id="database-container-viewcontainer">
@@ -1220,7 +1547,7 @@ function DatabaseComponent() {
                                      setShowSuccessfulWithdrawals={setShowSuccessfulWithdrawals}
                                      setShowRejectedWithdrawals={setShowRejectedWithdrawals}
 
-                                     
+                                     setShowRegisteredRegistrants={setShowRegisteredRegistrants}
                                      setShowRegisteredRegistrantsWithVerifiedDocuments={setShowRegisteredRegistrantsWithVerifiedDocuments}
                                      setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
                                      setShowRegisteredRegistrantsWithRejectedDocuments={setShowRegisteredRegistrantsWithRejectedDocuments}
@@ -1243,6 +1570,7 @@ function DatabaseComponent() {
                                      successfulwithdrawals={successfulwithdrawals}
                                      rejectedwithdrawals={rejectedwithdrawals}
 
+                                     totalregisteredregistrants={totalregisteredregistrants}
                                      verifiedmfatipregistrants={verifiedmfatipregistrants}
                                      pendingmfatipregistrants={pendingmfatipregistrants}
                                      mfatipregistrantsrejecteddocuments={mfatipregistrantsrejecteddocuments}
@@ -1518,8 +1846,15 @@ function DatabaseComponent() {
 
                                      setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                      setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
+                                     setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
+                                     setShowCurrencyExchangeApprovalModal={setShowCurrencyExchangeApprovalModal}
+                                     setShowCurrencyExchangeRejectionModal={setShowCurrencyExchangeRejectionModal}
 
                                      setShowCreditTransaction={setShowCreditTransaction}
+
+                                     currencyexchangeapprovaltransactiondatacb={currencyexchangeapprovaltransactiondatacb}
+                                     currencyexchangerejectiontransactiondatacb={currencyexchangerejectiontransactiondatacb}
+                                     
 
                              />
             )
@@ -1531,9 +1866,13 @@ function DatabaseComponent() {
                                        credittransactionobjectcb={credittransactionobjectcb}
 
                                        setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                       setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
                                        setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
+                                       setShowCurrencyExchangeApprovalModal={setShowCurrencyExchangeApprovalModal}
 
                                        setShowCreditTransaction={setShowCreditTransaction}
+
+                                       currencyexchangeapprovaltransactiondatacb={currencyexchangeapprovaltransactiondatacb}
 
                              />
             )
@@ -1568,14 +1907,47 @@ function DatabaseComponent() {
             }
 
             {
+              showCurrencyExchangeApprovalModal && (
+                <CurrencyExchangeApprovalModal setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+
+                                               showCurrencyExchangeApprovalModal={showCurrencyExchangeApprovalModal}
+                                               setShowCurrencyExchangeApprovalModal={setShowCurrencyExchangeApprovalModal}
+                                               setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
+                                               setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
+
+                                               currencyexchangeapprovaltransactiondata={currencyexchangeapprovaltransactiondata}
+                                               
+                                               fetchOmsiapData={fetchOmsiapData}/>
+              )
+            }
+
+            {
+              showCurrencyExchangeRejectionModal && (
+                 <CurrencyExchangeRejectionModal setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+
+                                                 setShowCurrencyExchangeRejectionModal={setShowCurrencyExchangeRejectionModal}
+                                                 setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
+                                                 setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
+                                                 currencyexchangerejectiontransactiondata={currencyexchangerejectiontransactiondata}
+                                                 fetchOmsiapData={fetchOmsiapData}/>
+              )
+            }
+
+            {
               showTotalWithdrawals && (
                 <TotalWithdrawals totalwithdrawals={totalwithdrawals}
                                   credittransactionobjectcb={credittransactionobjectcb}
 
                                   setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                   setShowTotalWithdrawals={setShowTotalWithdrawals}
+                                  setShowPendingWithdrawals={setShowPendingWithdrawals}
+                                  setShowWithdrawalApproval={setShowWithdrawalApproval}
+                                  setShowWithdrawalRejectionModal={setShowWithdrawalRejectionModal}
+
+                                  setShowCreditTransaction={setShowCreditTransaction}
                                   
-                                  setShowCreditTransaction={setShowCreditTransaction}/>
+                                  withdrawalapprovaltransactiondatacb={withdrawalapprovaltransactiondatacb}
+                                  withdrawalrejectiontransactiondatacb={withdrawalrejectiontransactiondatacb}/>
               )
             }
 
@@ -1585,9 +1957,15 @@ function DatabaseComponent() {
                                     credittransactionobjectcb={credittransactionobjectcb}
 
                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                    setShowTotalWithdrawals={setShowTotalWithdrawals}
                                     setShowPendingWithdrawals={setShowPendingWithdrawals}
+                                    setShowWithdrawalApproval={setShowWithdrawalApproval}
+                                    setShowWithdrawalRejectionModal={setShowWithdrawalRejectionModal}
                                     
-                                    setShowCreditTransaction={setShowCreditTransaction}/>
+                                    setShowCreditTransaction={setShowCreditTransaction}
+                                    
+                                    withdrawalapprovaltransactiondatacb={withdrawalapprovaltransactiondatacb}
+                                    withdrawalrejectiontransactiondatacb={withdrawalrejectiontransactiondatacb}/>
               )
             }
 
@@ -1606,7 +1984,7 @@ function DatabaseComponent() {
             {
               showRejectedWithdrawals && (
                 <RejectedWithdrawals rejectedwithdrawals={rejectedwithdrawals}
-                                     credittransactionobjectcb={credittransactionobjectcb}       
+                                     credittransactionobjectcb={credittransactionobjectcb}      
 
                                      setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                      setShowRejectedWithdrawals={setShowRejectedWithdrawals}
@@ -1616,12 +1994,47 @@ function DatabaseComponent() {
             }
 
             {
+              showWithdrawalApproval && (
+                <WithdrawalApprovalModal setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                         setShowWithdrawalApproval={setShowWithdrawalApproval}
+                                         setShowTotalWithdrawals={setShowTotalWithdrawals}
+                                         withdrawalapprovaltransactiondata={withdrawalapprovaltransactiondata}
+
+                                         fetchOmsiapData={fetchOmsiapData}
+                                        />
+              )
+            }
+
+            {
+              showWithdrawalRejectionModal && (
+                <WithdrawalRejectionModal setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                          setShowWithdrawalRejectionModal={setShowWithdrawalRejectionModal}
+                                          setShowTotalWithdrawals={setShowTotalWithdrawals}
+                                          withdrawalrejectiontransactiondata={withdrawalrejectiontransactiondata}
+
+                                          fetchOmsiapData={fetchOmsiapData}
+                                        />
+              )
+            }
+
+            {
               showCreditTransaction && (
                 <CreditTransactionModal credittransactionobject={credittransactionobject}
                                         setShowCreditTransaction={setShowCreditTransaction}/>
               )
             }
+ 
+            {
+              showRegisteredRegistrants && (
+                 <MfatipRegisteredRegistrants totalregisteredregistrants={totalregisteredregistrants}
+                                              setregistrantdata={setregistrantdata}
 
+                                              setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                              setShowRegisteredRegistrants={setShowRegisteredRegistrants}
+                                              setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
+                             />
+              )
+            }
 
             {
             showRegisteredRegistrantsWithVerifiedDocuments && (
@@ -2049,6 +2462,7 @@ const StatisticsCardOperationBasis = ({
   setShowSuccessfulWithdrawals,
   setShowRejectedWithdrawals,
 
+  setShowRegisteredRegistrants,
   setShowRegisteredRegistrantsWithVerifiedDocuments,
   setShowRegisteredRegistrantsWithPendingDocuments,
   setShowRegisteredRegistrantsWithRejectedDocuments,
@@ -2071,6 +2485,7 @@ const StatisticsCardOperationBasis = ({
   successfulwithdrawals,
   rejectedwithdrawals,
 
+  totalregisteredregistrants,
   verifiedmfatipregistrants,
   pendingmfatipregistrants,
   mfatipregistrantsrejecteddocuments
@@ -2444,7 +2859,7 @@ const StatisticsCardOperationBasis = ({
                   setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalCurrencyExchange(true)
+                  setShowTotalCurrencyExchange(false)
                   setShowPendingCurrencyExchange(false)
                   setShowSuccessfulCurrencyExchange(false)
                   setShowRejectedCurrencyExchange(false)
@@ -2469,7 +2884,7 @@ const StatisticsCardOperationBasis = ({
                   setShowConfirmedOrders(false)
                   setShowOrderDetails(false)
  
-                  setShowTotalCurrencyExchange(true)
+                  setShowTotalCurrencyExchange(false)
                   setShowPendingCurrencyExchange(false)
                   setShowSuccessfulCurrencyExchange(false)
                   setShowRejectedCurrencyExchange(false)
@@ -2520,6 +2935,36 @@ const StatisticsCardOperationBasis = ({
               <div className="stat-value">{pendingmfatipregistrants.length} total registrants with pending documents status</div>
             </div>
             <div className="card-details">
+              <div className="detail-item">
+                <span>{totalregisteredregistrants.length} total MFATIP registered registrants</span>
+                <button className="action-button" onClick={(e) => {
+
+                  e.stopPropagation()
+
+                  setShowDatabaseConfiguration(true)
+
+                  setShowTotalOrders(false)
+                  setShowPendingOrders(false)
+                  setShowConfirmedOrders(false)
+                  setShowOrderDetails(false)
+ 
+                  setShowTotalCurrencyExchange(false)
+                  setShowPendingCurrencyExchange(false)
+                  setShowSuccessfulCurrencyExchange(false)
+                  setShowRejectedCurrencyExchange(false)
+                  
+                  setShowTotalWithdrawals(false)
+                  setShowPendingWithdrawals(false)
+                  setShowSuccessfulWithdrawals(false)
+                  setShowRejectedWithdrawals(false)
+
+                  setShowRegisteredRegistrants(true)
+                  setShowRegisteredRegistrantsWithVerifiedDocuments(false)
+                  setShowRegisteredRegistrantsWithPendingDocuments(false)
+                  setShowRegisteredRegistrantsWithRejectedDocuments(false)
+
+                }}>view</button>
+              </div>
               <div className="detail-item">
                 <span>{verifiedmfatipregistrants.length} total MFATIP registered registrants pending documents verified</span>
                 <button className="action-button" onClick={(e) => {
@@ -5671,7 +6116,7 @@ const CurrencyExchangeAcceptButton = ({ order, onAccept }) => {
   const handleAccept = async () => {
     setIsLoading(true);
     try {
-      await onAccept(order.id);
+      await onAccept(order._id);
     } catch (error) {
       console.error('Error accepting order:', error);
     } finally {
@@ -5688,7 +6133,7 @@ const CurrencyExchangeAcceptButton = ({ order, onAccept }) => {
         onClick={handleAccept}
         disabled={isLoading}
       >
-        Accept
+        Approved
       </button>
     )
   );
@@ -5697,9 +6142,14 @@ const CurrencyExchangeAcceptButton = ({ order, onAccept }) => {
 const TotalCurrencyExchange = ({ 
   setShowDatabaseConfiguration, 
   setShowTotalCurrencyExchange, 
+  setShowPendingCurrencyExchange,
+  setShowCurrencyExchangeApprovalModal,
+  setShowCurrencyExchangeRejectionModal,
   setShowCreditTransaction,
   totalcurrencyexchange,
   credittransactionobjectcb,
+  currencyexchangeapprovaltransactiondatacb,
+  currencyexchangerejectiontransactiondatacb,
   onClose, 
   onView, 
   onEdit 
@@ -5928,7 +6378,7 @@ const TotalCurrencyExchange = ({
                           {transaction.id.substring(0, 8)}...
                         </td>
                         <td className="customer-name">{customerName}</td>
-                        <td className="date-cell">{formatDate(logDate)}</td>
+                        <td className="date-cell">{logDate}</td>
                         <td className="amount">
                           <div className="amount-wrapper">
                             <FaMoneyBillWave className="amount-icon" />
@@ -5981,14 +6431,32 @@ const TotalCurrencyExchange = ({
                               <FaEdit />
                               <span className="button-text">Edit</span>
                             </button>
-                            <CurrencyExchangeAcceptButton 
-                              key={transaction.id}
-                              order={transaction}
-                              onAccept={handleAcceptCurrencyExchange}
+                            <button 
+                              className="accept-button" 
+                              onClick={() => {
+                                currencyexchangeapprovaltransactiondatacb(transaction)
+                                setShowTotalCurrencyExchange(false)
+                                setShowPendingCurrencyExchange(false)
+                                setShowCurrencyExchangeApprovalModal(true)
+                              }}
+                              aria-label="Edit transaction"
+                            >
+                              <FaEdit />
+                              <span className="button-text">Approval</span>
+                            </button>
+                            {/*
+                            <CurrencyExchangeAcceptButton key={transaction.id}
+                                                          order={transaction}
+                                                          onAccept={handleAcceptCurrencyExchange}
                             />
+                            */}
                             <button 
                               className="reject-button" 
-                              onClick={() => handleReject(transaction.id)}
+                              onClick={() => {
+                                currencyexchangerejectiontransactiondatacb(transaction)
+                                setShowTotalCurrencyExchange(false)
+                                setShowCurrencyExchangeRejectionModal(true)
+                              }}
                               aria-label="Reject transaction"
                             >
                               <FaTimesCircle />
@@ -6019,10 +6487,13 @@ const TotalCurrencyExchange = ({
 
 const PendingCurrencyExchange = ({ 
   setShowDatabaseConfiguration,
+  setShowTotalCurrencyExchange,
   setShowPendingCurrencyExchange, 
+  setShowCurrencyExchangeApprovalModal,
   setShowCreditTransaction, 
   pendingcurrencyexchange,
   credittransactionobjectcb, 
+  currencyexchangeapprovaltransactiondatacb,
   onClose, 
   onView, 
   onEdit 
@@ -6264,7 +6735,7 @@ const PendingCurrencyExchange = ({
                           {transaction.id.substring(0, 8)}...
                         </td>
                         <td className="customer-name">{customerName}</td>
-                        <td className="date-cell">{formatDate(logDate)}</td>
+                        <td className="date-cell">{logDate}</td>
                         <td className="amount">
                           <div className="amount-wrapper">
                             <FaMoneyBillWave className="amount-icon" />
@@ -6319,11 +6790,16 @@ const PendingCurrencyExchange = ({
                             </button>
                             <button 
                               className="accept-button" 
-                              onClick={() => handleAcceptCurrencyExchange(transaction.id)}
+                              onClick={() => {
+                                setShowTotalCurrencyExchange(false)
+                                setShowPendingCurrencyExchange(false)
+                                setShowCurrencyExchangeApprovalModal(true)
+                                currencyexchangeapprovaltransactiondatacb(transaction)
+                              }}
                               aria-label="Accept transaction"
                             >
                               <FaCheckCircle />
-                              <span className="button-text">Accept</span>
+                              <span className="button-text">Approval</span>
                             </button>
                             <button 
                               className="reject-button" 
@@ -6357,77 +6833,134 @@ const PendingCurrencyExchange = ({
 };
 
 const SuccessfulCurrencyExchange = ({ 
-
   setShowDatabaseConfiguration, 
   setShowSuccessfulCurrencyExchange, 
-  setShowCreditTransaction, 
-  setShowPendingCurrencyExchange, 
-
-  successfulcurrencyexchange, 
+  setShowPendingCurrencyExchange,
+  setShowCurrencyExchangeApprovalModal,
+  setShowCreditTransaction,
+  successfulcurrencyexchange,
   credittransactionobjectcb,
-
+  currencyexchangeapprovaltransactiondatacb,
   onClose, 
   onView, 
-  onEdit
-  }) => {
+  onEdit 
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredTransactions, setFilteredTransactions] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
   const [animateRow, setAnimateRow] = useState(null);
+  const [statusMessage, setStatusMessage] = useState("");
 
   useEffect(() => {
     // Animation effect on mount
     setIsVisible(true);
     
-    // Initial filtering of only pending deposit transactions
-    const pendingDeposits = successfulcurrencyexchange.filter(
-      transaction => transaction.type === 'currency exchange' && transaction.status === 'successful'
+    // Initial filtering of only successful currency exchange transactions
+    const successfulExchanges = successfulcurrencyexchange.filter(
+      transaction => transaction.intent === 'currency exchange' && 
+      transaction.statusesandlogs?.status === 'completed'
     );
-    setFilteredTransactions(pendingDeposits);
+    setFilteredTransactions(successfulExchanges);
   }, [successfulcurrencyexchange]);
 
   useEffect(() => {
     if (searchQuery) {
       const results = successfulcurrencyexchange.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name or contact info (assuming these would be in details)
-        (transaction.details?.shippingInfo?.address && 
-         transaction.details.shippingInfo.address.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Add other search fields as needed based on your data structure
-        (transaction.paymentmethod && 
-         transaction.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase()))
+        // First ensure it's a currency exchange transaction with completed status
+        (transaction.intent === 'currency exchange' && 
+         transaction.statusesandlogs?.status === 'successful') &&
+        (
+          // Then apply search filters
+          transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          // Search by name
+          (transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by contact info
+          (transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by payment method
+          (transaction.details?.paymentmethod && 
+           transaction.details.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by reference number
+          (transaction.details?.referrence?.number && 
+           transaction.details.referrence.number.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
       );
       setFilteredTransactions(results);
     } else {
-      // Reset to show only pending deposits when search is cleared
-      const pendingDeposits = successfulcurrencyexchange.filter(
-        transaction => transaction.type === 'currency exchange' && transaction.status === 'successful'
+      // Reset to show only successful currency exchanges when search is cleared
+      const successfulExchanges = successfulcurrencyexchange.filter(
+        transaction => transaction.intent === 'currency exchange' && 
+        transaction.statusesandlogs?.status === 'successful'
       );
-      setFilteredTransactions(pendingDeposits);
+      setFilteredTransactions(successfulExchanges);
     }
   }, [searchQuery, successfulcurrencyexchange]);
 
-  const handleClose = () => {
-    setIsVisible(false);
-    // Delay actual closing to allow for animation
-    setTimeout(() => {
-      setShowDatabaseConfiguration(false);
-      setShowPendingCurrencyExchange(false);
-    }, 300);
+  const handleAcceptCurrencyExchange = async (id) => {
+    try {
+      // Initialize status message
+      showStatusMessage("Processing request...");
+      document.querySelectorAll(".status-message")[0].style.color = "white";
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#3b82f6";
+      
+      // Show animation for the affected row
+      setAnimateRow(id);
+      
+      // Make API call to accept the currency exchange
+      const response = await axiosCreatedInstance.post("/omsiap/acceptcurrencyexchange/accept", { id });
+      
+      // Handle different response statuses
+      switch(response.data.status) {
+        case 'EXCHANGE_APPROVED':
+          showStatusMessage("Exchange approved successfully!");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#10b981"; // Green
+          break;
+          
+        case 'TRANSACTION_NOT_FOUND':
+          showStatusMessage("Transaction not found. Please refresh the page.");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+          break;
+          
+        case 'NOT_FOUND':
+          showStatusMessage("System data not found. Please contact administrator.");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+          break;
+          
+        default:
+          showStatusMessage("Request processed with status: " + response.data.status);
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#f59e0b"; // Amber
+      }
+    } catch (error) {
+      console.error("Error accepting currency exchange:", error);
+      
+      if (error.response && error.response.data) {
+        showStatusMessage(error.response.data.message || "Error processing request");
+      } else {
+        showStatusMessage("Network error or server unavailable");
+      }
+      
+      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+      document.querySelectorAll(".status-message")[0].style.color = "white";
+    } finally {
+      setTimeout(() => {
+        setAnimateRow(null);
+      }, 800);
+    }
   };
 
-  const handleAccept = (id) => {
-    setAnimateRow(id);
-    // Additional accept logic would go here
+  const showStatusMessage = (message) => {
+    setStatusMessage(message);
+    
+    // Optionally auto-hide the message after some time
     setTimeout(() => {
-      setAnimateRow(null);
-      // Here you'd update the transaction status
-    }, 800);
+      setStatusMessage("");
+    }, 5000);
   };
 
   const handleReject = (id) => {
     setAnimateRow(id);
+    showStatusMessage("Rejecting transaction...");
     // Additional reject logic would go here
     setTimeout(() => {
       setAnimateRow(null);
@@ -6436,6 +6969,7 @@ const SuccessfulCurrencyExchange = ({
   };
 
   const handleMessage = (id) => {
+    showStatusMessage("Opening message interface...");
     // Message sending logic would go here
   };
 
@@ -6448,6 +6982,28 @@ const SuccessfulCurrencyExchange = ({
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  // Helper function to get customer full name
+  const getCustomerName = (transaction) => {
+    if (!transaction.details?.thistransactionismadeby?.name) return "Unknown";
+    
+    const { firstname, middlename, lastname } = transaction.details.thistransactionismadeby.name;
+    let fullName = firstname || "";
+    
+    if (middlename) fullName += ` ${middlename}`;
+    if (lastname) fullName += ` ${lastname}`;
+    
+    return fullName.trim() || "Unknown";
+  };
+
+  // Helper function to get transaction status with proper formatting
+  const getTransactionStatus = (transaction) => {
+    if (!transaction.statusesandlogs) return { status: "Unknown", indication: "" };
+    return {
+      status: transaction.statusesandlogs.status || "Unknown",
+      indication: transaction.statusesandlogs.indication || ""
+    };
   };
 
   return (
@@ -6468,13 +7024,20 @@ const SuccessfulCurrencyExchange = ({
             <FaSearch className="search-icon" />
             <input
               type="text"
-              placeholder="Search by ID, name, email, or phone number..."
+              placeholder="Search by ID, name, email, phone, or reference number..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="search-input"
             />
           </div>
         </div>
+
+        {statusMessage && (
+          <div style={{position:"relative", top: "2vh"}}
+               className="status-message">
+            {statusMessage}
+          </div>
+        )}
         
         <div className="pending-deposits-container">
           {filteredTransactions.length === 0 ? (
@@ -6488,83 +7051,124 @@ const SuccessfulCurrencyExchange = ({
                 <thead>
                   <tr>
                     <th>ID</th>
+                    <th>Customer</th>
                     <th>Date</th>
-                    <th>Amount</th>
+                    <th>Amount (PHP)</th>
+                    <th>Amount (OMSIAP)</th>
                     <th>Status</th>
                     <th>Payment Method</th>
+                    <th>Reference</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredTransactions.map((transaction) => (
-                    <tr 
-                      key={transaction.id} 
-                      className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
-                    >
-                      <td className="transaction-id">{transaction.id}</td>
-                      <td className="date-cell">{formatDate(transaction.date)}</td>
-                      <td className="amount">
-                        <div className="amount-wrapper">
-                          <FaMoneyBillWave className="amount-icon" />
-                          <span>₱{transaction.amount.toFixed(2)}</span>
-                        </div>
-                      </td>
-                      <td className="status">
-                        <div className="status-indicator">
-                          <FaClock className="status-icon pulse" />
-                          <span>Pending</span>
-                        </div>
-                      </td>
-                      <td className="payment-method">{transaction.paymentmethod}</td>
-                      <td className="actions">
-                        <div className="action-buttons">
-                          <button 
-                            className="view-button" 
-                            onClick={() => {
-                              setShowCreditTransaction(true)
-                              credittransactionobjectcb(transaction)
-                            }}
-                            aria-label="View transaction details"
-                          >
-                            <FaEye />
-                            <span className="button-text">View</span>
-                          </button>
-                          <button 
-                            className="edit-button" 
-                            onClick={() => onEdit(transaction.id)}
-                            aria-label="Edit transaction"
-                          >
-                            <FaEdit />
-                            <span className="button-text">Edit</span>
-                          </button>
-                          <button 
-                            className="accept-button" 
-                            onClick={() => handleAccept(transaction.id)}
-                            aria-label="Accept transaction"
-                          >
-                            <FaCheckCircle />
-                            <span className="button-text">Accept</span>
-                          </button>
-                          <button 
-                            className="reject-button" 
-                            onClick={() => handleReject(transaction.id)}
-                            aria-label="Reject transaction"
-                          >
-                            <FaTimesCircle />
-                            <span className="button-text">Reject</span>
-                          </button>
-                          <button 
-                            className="message-button" 
-                            onClick={() => handleMessage(transaction.id)}
-                            aria-label="Message about transaction"
-                          >
-                            <FaEnvelope />
-                            <span className="button-text">Message</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredTransactions.map((transaction) => {
+                    const statusInfo = getTransactionStatus(transaction);
+                    const customerName = getCustomerName(transaction);
+                    const logDate = transaction.statusesandlogs?.logs?.[0]?.date || transaction.date;
+                    
+                    return (
+                      <tr 
+                        key={transaction.id} 
+                        className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''}`}
+                      >
+                        <td className="transaction-id" title={transaction.id}>
+                          {transaction.id.substring(0, 8)}...
+                        </td>
+                        <td className="customer-name">{customerName}</td>
+                        <td className="date-cell">{logDate}</td>
+                        <td className="amount">
+                          <div className="amount-wrapper">
+                            <FaMoneyBillWave className="amount-icon" />
+                            <span>₱{transaction.details?.amounts?.phppurchaseorexchangeamount?.toFixed(2) || '0.00'}</span>
+                          </div>
+                        </td>
+                        <td className="omsiap-amount">
+                          <div className="amount-wrapper">
+                            <FaCoins className="amount-icon" />
+                            <span>{transaction.details?.amounts?.omsiapawasamounttorecieve?.toFixed(2) || '0.00'}</span>
+                          </div>
+                        </td>
+                        <td className="status">
+                          <div className={`status-indicator ${statusInfo.status}`}>
+                            {statusInfo.status === 'pending' ? (
+                              <FaClock className="status-icon pulse" />
+                            ) : statusInfo.status === 'completed' ? (
+                              <FaCheckCircle className="status-icon success" />
+                            ) : statusInfo.status === 'rejected' ? (
+                              <FaTimesCircle className="status-icon error" />
+                            ) : (
+                              <FaQuestionCircle className="status-icon" />
+                            )}
+                            <span>{statusInfo.status}</span>
+                            {statusInfo.indication && (
+                              <span className="status-indication">{statusInfo.indication}</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="payment-method">{transaction.details?.paymentmethod || 'N/A'}</td>
+                        <td className="reference-number">{transaction.details?.referrence?.number || 'N/A'}</td>
+                        <td className="actions">
+                          <div className="action-buttons">
+                            <button 
+                              className="view-button" 
+                              onClick={() => {
+                                setShowCreditTransaction(true)
+                                credittransactionobjectcb(transaction)
+                              }}
+                              aria-label="View transaction details"
+                            >
+                              <FaEye />
+                              <span className="button-text">View</span>
+                            </button>
+                            {/*
+                            <button 
+                              className="edit-button" 
+                              onClick={() => onEdit(transaction.id)}
+                              aria-label="Edit transaction"
+                            >
+                              <FaEdit />
+                              <span className="button-text">Edit</span>
+                            </button>
+                            */}
+                            {/*
+                            <button 
+                              className="accept-button" 
+                              onClick={() => {
+                                setShowSuccessfulCurrencyExchange(false)
+                                setShowPendingCurrencyExchange(false)
+                                setShowCurrencyExchangeApprovalModal(true)
+                                currencyexchangeapprovaltransactiondatacb(transaction)
+                              }}
+                              aria-label="Approval for transaction"
+                            >
+                              <FaEdit />
+                              <span className="button-text">Approval</span>
+                            </button>
+                            */}
+                            {/*
+                            <button 
+                              className="reject-button" 
+                              onClick={() => handleReject(transaction.id)}
+                              aria-label="Reject transaction"
+                            >
+                              <FaTimesCircle />
+                              <span className="button-text">Reject</span>
+                            </button>
+                            */}
+                            <button 
+                              className="message-button" 
+                              onClick={() => handleMessage(transaction.id)}
+                              aria-label="Message about transaction"
+                            >
+                              <FaEnvelope />
+                              <span className="button-text">Message</span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -6578,10 +7182,12 @@ const SuccessfulCurrencyExchange = ({
 const RejectedCurrencyExchange = ({ 
   setShowDatabaseConfiguration, 
   setShowRejectedCurrencyExchange, 
-  setShowCreditTransaction, 
-  setShowPendingCurrencyExchange, 
-  rejectedcurrencyexchange, 
+  setShowCreditTransaction,
+  setShowPendingCurrencyExchange,
+  setShowCurrencyExchangeApprovalModal,
+  rejectedcurrencyexchange,
   credittransactionobjectcb,
+  currencyexchangeapprovaltransactiondatacb,
   onClose, 
   onView, 
   onEdit 
@@ -6607,20 +7213,25 @@ const RejectedCurrencyExchange = ({
   useEffect(() => {
     if (searchQuery) {
       const results = rejectedcurrencyexchange.filter(transaction => 
-        // Search by transaction ID
-        transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        // Search by name
-        (transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-         transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Search by contact info
-        (transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-         transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Search by payment method
-        (transaction.details?.paymentmethod && 
-         transaction.details.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        // Search by reference number
-        (transaction.details?.referrence?.number && 
-         transaction.details.referrence.number.toLowerCase().includes(searchQuery.toLowerCase()))
+        // Only include rejected currency exchanges
+        transaction.intent === 'currency exchange' &&
+        transaction.statusesandlogs?.status === 'rejected' &&
+        (
+          // Search by transaction ID
+          transaction.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          // Search by name
+          (transaction.details?.thistransactionismadeby?.name?.firstname?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           transaction.details?.thistransactionismadeby?.name?.lastname?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by contact info
+          (transaction.details?.thistransactionismadeby?.contact?.phonenumber?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+           transaction.details?.thistransactionismadeby?.contact?.emailaddress?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by payment method
+          (transaction.details?.paymentmethod && 
+           transaction.details.paymentmethod.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          // Search by reference number
+          (transaction.details?.referrence?.number && 
+           transaction.details.referrence.number.toLowerCase().includes(searchQuery.toLowerCase()))
+        )
       );
       setFilteredTransactions(results);
     } else {
@@ -6633,7 +7244,7 @@ const RejectedCurrencyExchange = ({
     }
   }, [searchQuery, rejectedcurrencyexchange]);
 
-  const handleReactivate = async (id) => {
+  const handleReactivateCurrencyExchange = async (id) => {
     try {
       // Initialize status message
       showStatusMessage("Processing reactivation request...");
@@ -6643,19 +7254,39 @@ const RejectedCurrencyExchange = ({
       // Show animation for the affected row
       setAnimateRow(id);
       
-      // Make API call to reactivate the currency exchange (you'll need to implement this)
-      // const response = await axiosCreatedInstance.post("/omsiap/reactivatecurrencyexchange", { id });
+      // Make API call to reactivate the currency exchange
+      const response = await axiosCreatedInstance.post("/omsiap/reactivatecurrencyexchange", { id });
       
-      // For now, just show a status message
-      showStatusMessage("Reactivation request sent. Awaiting processing.");
-      document.querySelectorAll(".status-message")[0].style.backgroundColor = "#f59e0b"; // Amber
-      
-      // Here you would handle the actual status update after API call
-      
+      // Handle different response statuses
+      switch(response.data.status) {
+        case 'EXCHANGE_REACTIVATED':
+          showStatusMessage("Exchange reactivated successfully!");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#10b981"; // Green
+          break;
+          
+        case 'TRANSACTION_NOT_FOUND':
+          showStatusMessage("Transaction not found. Please refresh the page.");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+          break;
+          
+        case 'NOT_FOUND':
+          showStatusMessage("System data not found. Please contact administrator.");
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
+          break;
+          
+        default:
+          showStatusMessage("Request processed with status: " + response.data.status);
+          document.querySelectorAll(".status-message")[0].style.backgroundColor = "#f59e0b"; // Amber
+      }
     } catch (error) {
       console.error("Error reactivating currency exchange:", error);
       
-      showStatusMessage("Error processing reactivation request");
+      if (error.response && error.response.data) {
+        showStatusMessage(error.response.data.message || "Error processing request");
+      } else {
+        showStatusMessage("Network error or server unavailable");
+      }
+      
       document.querySelectorAll(".status-message")[0].style.backgroundColor = "#ef4444"; // Red
       document.querySelectorAll(".status-message")[0].style.color = "white";
     } finally {
@@ -6668,7 +7299,7 @@ const RejectedCurrencyExchange = ({
   const showStatusMessage = (message) => {
     setStatusMessage(message);
     
-    // Auto-hide the message after some time
+    // Optionally auto-hide the message after some time
     setTimeout(() => {
       setStatusMessage("");
     }, 5000);
@@ -6773,7 +7404,7 @@ const RejectedCurrencyExchange = ({
                     <th>Date</th>
                     <th>Amount (PHP)</th>
                     <th>Amount (OMSIAP)</th>
-                    <th>Rejection Reason</th>
+                    <th>Status</th>
                     <th>Payment Method</th>
                     <th>Reference</th>
                     <th>Actions</th>
@@ -6795,7 +7426,7 @@ const RejectedCurrencyExchange = ({
                           {transaction.id.substring(0, 8)}...
                         </td>
                         <td className="customer-name">{customerName}</td>
-                        <td className="date-cell">{formatDate(logDate)}</td>
+                        <td className="date-cell">{logDate}</td>
                         <td className="amount">
                           <div className="amount-wrapper">
                             <FaMoneyBillWave className="amount-icon" />
@@ -6808,10 +7439,13 @@ const RejectedCurrencyExchange = ({
                             <span>{transaction.details?.amounts?.omsiapawasamounttorecieve?.toFixed(2) || '0.00'}</span>
                           </div>
                         </td>
-                        <td className="rejection-reason">
-                          <div className="reason-wrapper" title={rejectionReason}>
-                            <FaInfoCircle className="reason-icon" />
-                            <span>{rejectionReason.substring(0, 20)}{rejectionReason.length > 20 ? '...' : ''}</span>
+                        <td className="status">
+                          <div className={`status-indicator ${statusInfo.status}`}>
+                            <FaTimesCircle className="status-icon error" />
+                            <span>{statusInfo.status}</span>
+                            <span className="status-indication" title={rejectionReason}>
+                              {rejectionReason.substring(0, 20)}{rejectionReason.length > 20 ? '...' : ''}
+                            </span>
                           </div>
                         </td>
                         <td className="payment-method">{transaction.details?.paymentmethod || 'N/A'}</td>
@@ -6838,8 +7472,21 @@ const RejectedCurrencyExchange = ({
                               <span className="button-text">Edit</span>
                             </button>
                             <button 
+                              className="approval-button" 
+                              onClick={() => {
+                                setShowRejectedCurrencyExchange(false)
+                                setShowPendingCurrencyExchange(false)
+                                setShowCurrencyExchangeApprovalModal(true)
+                                currencyexchangeapprovaltransactiondatacb(transaction)
+                              }}
+                              aria-label="Review transaction"
+                            >
+                              <FaClipboardCheck />
+                              <span className="button-text">Review</span>
+                            </button>
+                            <button 
                               className="reactivate-button" 
-                              onClick={() => handleReactivate(transaction.id)}
+                              onClick={() => handleReactivateCurrencyExchange(transaction.id)}
                               aria-label="Reactivate transaction"
                             >
                               <FaRedoAlt />
@@ -6868,15 +7515,835 @@ const RejectedCurrencyExchange = ({
   );
 };
 
+const CurrencyExchangeApprovalModal = ({
+  setShowDatabaseConfiguration,
+  setShowCurrencyExchangeApprovalModal,
+  setShowTotalCurrencyExchange,
+  currencyexchangeapprovaltransactiondata,
+  fetchOmsiapData
+}) => {
+  // State variables
+  const [currencyexchangeapprovalphpamountvalidationfield, setCurrencyExchangeApprovalPhpAmount] = useState("");
+  const [currencyexchangeapprovalomsiapamounttorecievevalidationfield, setCurrencyExchangeApprovalOmsiapAmount] = useState("");
+  const [successfulDeductionField, setSuccessfulDeductionField] = useState("");
+  const [rejectedDeductionField, setRejectedDeductionField] = useState("");
+  const [currencyexchangeapprovalloadingindication, setCurrencyExchangeApprovalLoadingIndication] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [responseMessage, setResponseMessage] = useState("");
+
+  // Extract relevant data from transaction data with fallbacks
+  const id = currencyexchangeapprovaltransactiondata?.id || '';
+  const _id = currencyexchangeapprovaltransactiondata?._id || '';
+  const sender = currencyexchangeapprovaltransactiondata?.details?.thistransactionismadeby || {
+    name: { firstname: '', middlename: '', lastname: '' },
+    contact: { phonenumber: '' }
+  };
+  const recipient = currencyexchangeapprovaltransactiondata?.details?.thistransactionismainlyintendedto || {
+    name: { firstname: '', middlename: '', lastname: '' },
+    contact: { phonenumber: '' }
+  };
+  const amounts = currencyexchangeapprovaltransactiondata?.details?.amounts || {
+    phppurchaseorexchangeamount: 0,
+    omsiapawasamounttorecieve: 0
+  };
+  
+  // Get receipt image path with fallback
+  const receiptImagePath = currencyexchangeapprovaltransactiondata?.referrence?.gcashtransactionrecieptimage || 
+    currencyexchangeapprovaltransactiondata?.details?.referrence?.gcashtransactionrecieptimage || 
+    '/placeholder-receipt.jpg';
+
+  // Format full names
+  const senderFullName = `${sender.name.firstname} ${sender.name.middlename} ${sender.name.lastname}`;
+  const recipientFullName = `${recipient.name.firstname} ${recipient.name.middlename} ${recipient.name.lastname}`;
+
+  // Enhanced handleApprove function with proper error handling
+  const handleApprove = async (_id) => {
+    // Validate inputs
+    if (!currencyexchangeapprovalphpamountvalidationfield || 
+        !currencyexchangeapprovalomsiapamounttorecievevalidationfield || 
+        !successfulDeductionField) {
+      setResponseMessage("Please fill in all required fields");
+      return;
+    }
+    
+    // Set loading state
+    setCurrencyExchangeApprovalLoadingIndication(true);
+    
+    try {
+      // Prepare data for API request
+      const approvalData = {
+        id: _id, // Use _id as it appears to be the MongoDB document ID
+        phpAmountVerification: Number(currencyexchangeapprovalphpamountvalidationfield),
+        omsiapAmountVerification: Number(currencyexchangeapprovalomsiapamounttorecievevalidationfield),
+        successfulDeductionAmount: Number(successfulDeductionField),
+        rejectedDeductionAmount: rejectedDeductionField ? Number(rejectedDeductionField) : 0
+      };
+      
+      // Send API request
+      const response = await axiosCreatedInstance.post("/omsiap/approvecurrencyexchange", approvalData);
+      
+      // Handle success
+      if (response.data.success) {
+        setResponseMessage("Transaction approved successfully!");
+        
+        // Reset form fields
+        setCurrencyExchangeApprovalPhpAmount("");
+        setCurrencyExchangeApprovalOmsiapAmount("");
+        setSuccessfulDeductionField("");
+        setRejectedDeductionField("");
+        
+        fetchOmsiapData()
+      
+        {/*
+        // Optional: Close modal after short delay
+        setTimeout(() => {
+          setShowCurrencyExchangeApprovalModal(false);
+          setShowTotalCurrencyExchange(true);
+        }, 3000);
+         */}
+
+      } else {
+        setResponseMessage(response.data.message || "Approval process failed");
+      }
+    } catch (error) {
+      // Handle different error scenarios
+      if (!navigator.onLine) {
+        setResponseMessage("No internet connection. Please check your network and try again.");
+      } else if (error.response) {
+        // Server returned an error response
+        if (error.response.status === 409) {
+          setResponseMessage("This transaction has already been approved or processed.");
+        } else if (error.response.status === 400) {
+          setResponseMessage(error.response.data.message || "Invalid request data.");
+        } else {
+          setResponseMessage(`Server error: ${error.response.data.message || "Unknown error"}`);
+        }
+      } else if (error.request) {
+        // Request made but no response received
+        setResponseMessage("Unable to connect to the server. Please try again later.");
+      } else {
+        // Something else caused the error
+        setResponseMessage("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setCurrencyExchangeApprovalLoadingIndication(false);
+    }
+  };
+
+
+  // Similarly enhanced handleReject function
+  const handleReject = async () => {
+    // Validate reject inputs
+    if (!rejectedDeductionField) {
+      setResponseMessage("Please enter a rejected deduction amount");
+      return;
+    }
+
+    setCurrencyExchangeApprovalLoadingIndication(true);
+    
+    try {
+      // Prepare data for API request
+      const rejectionData = {
+        id: _id,
+        rejectedDeductionAmount: Number(rejectedDeductionField),
+        reason: "Transaction rejected by administrator" // You might want to add a reason field to your form
+      };
+      
+      // Send API request
+      const response = await axiosCreatedInstance.post("/omsiap/rejectcurrencyexchange", rejectionData);
+      
+      // Handle success
+      if (response.data.success) {
+        setResponseMessage("Transaction rejected successfully!");
+        
+        // Reset form fields
+        setCurrencyExchangeApprovalPhpAmount("");
+        setCurrencyExchangeApprovalOmsiapAmount("");
+        setSuccessfulDeductionField("");
+        setRejectedDeductionField("");
+        
+        // Optional: Close modal after short delay
+        setTimeout(() => {
+          setShowCurrencyExchangeApprovalModal(false);
+          setShowTotalCurrencyExchange(true);
+        }, 3000);
+
+      } else {
+        setResponseMessage(response.data.message || "Rejection process failed");
+      }
+    } catch (error) {
+      // Handle different error scenarios
+      if (!navigator.onLine) {
+        setResponseMessage("No internet connection. Please check your network and try again.");
+      } else if (error.response) {
+        // Server returned an error response
+        if (error.response.status === 409) {
+          setResponseMessage("This transaction has already been processed.");
+        } else {
+          setResponseMessage(`Server error: ${error.response.data.message || "Unknown error"}`);
+        }
+      } else if (error.request) {
+        // Request made but no response received
+        setResponseMessage("Unable to connect to the server. Please try again later.");
+      } else {
+        // Something else caused the error
+        setResponseMessage("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setCurrencyExchangeApprovalLoadingIndication(false);
+    }
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="ce-modal-container"
+    >
+      <Col id="ce-approval-modal">
+        <motion.div 
+          className="ce-modal-header"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2>Currency Exchange Approval</h2>
+          <button 
+            className="ce-close-button"
+            onClick={() => {
+              setShowCurrencyExchangeApprovalModal(false)
+              setShowDatabaseConfiguration(false)
+            }}
+          >
+            &times;
+          </button>
+        </motion.div>
+
+        <Col id="ce-approval-modal-viewcontainer">
+          <Row className="transaction-info-container">
+            <Col xs={12} md={8} className="transaction-details">
+              <motion.div 
+                className="info-card"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <h3>Transaction Details</h3>
+                <div className="info-grid">
+                 <div className="info-item">
+                    <span className="label">Transaction ID:</span>
+                    <span className="value">{_id}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Reference ID:</span>
+                    <span className="value">{currencyexchangeapprovaltransactiondata.details.referrence.number}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Sender:</span>
+                    <span className="value">{senderFullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Sender Phone:</span>
+                    <span className="value">{sender.contact.phonenumber}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Recipient:</span>
+                    <span className="value">{recipientFullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Recipient Phone:</span>
+                    <span className="value">{recipient.contact.phonenumber}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">PHP Amount:</span>
+                    <span className="value">{amounts.phppurchaseorexchangeamount} PHP</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">OMSIAP Amount:</span>
+                    <span className="value">{amounts.omsiapawasamounttorecieve} OMSIAP</span>
+                  </div>
+                </div>
+              </motion.div>
+            </Col>
+
+            <Col xs={12} md={4} className="transaction-image-container">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="receipt-image-card"
+              >
+                <h4>Transaction Receipt</h4>
+                <div className="image-container" onClick={() => setShowImageModal(true)}>
+                  <img 
+                    src={receiptImagePath} 
+                    alt="Transaction Receipt" 
+                    className="transaction-receipt-image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/api/placeholder/300/400";
+                    }}
+                  />
+                  <div className="image-overlay">
+                    <span>Click to view</span>
+                  </div>
+                </div>
+              </motion.div>
+            </Col>
+          </Row>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="ce-validation-section"
+          >
+            <h3>Verification</h3>
+            <Row className="ce-validation-inputs">
+              <Col xs={12} md={6} className="ce-input-group">
+                <label>PHP Amount Verification:</label>
+                <input 
+                  type="number"
+                  value={currencyexchangeapprovalphpamountvalidationfield}
+                  onChange={(e) => setCurrencyExchangeApprovalPhpAmount(e.target.value)}
+                  placeholder="Enter PHP amount to verify"
+                  className="ce-form-control"
+                />
+              </Col>
+              <Col xs={12} md={6} className="ce-input-group">
+                <label>OMSIAP Amount Verification:</label>
+                <input 
+                  type="number"
+                  value={currencyexchangeapprovalomsiapamounttorecievevalidationfield}
+                  onChange={(e) => setCurrencyExchangeApprovalOmsiapAmount(e.target.value)}
+                  placeholder="Enter OMSIAP amount to verify"
+                  className="ce-form-control"
+                />
+              </Col>
+            </Row>
+
+            <Row className="ce-deduction-inputs">
+              <Col xs={12} md={6} className="ce-input-group">
+                <label>Successful Deduction Amount:</label>
+                <input 
+                  type="number"
+                  value={successfulDeductionField}
+                  onChange={(e) => setSuccessfulDeductionField(e.target.value)}
+                  placeholder="Enter successful deduction amount"
+                  className="ce-form-control successful-deduction"
+                />
+                <small className="ce-input-help">Enter the amount to be deducted upon approval</small>
+              </Col>
+              <Col xs={12} md={6} className="ce-input-group">
+                <label>Rejected Deduction Amount:</label>
+                <input 
+                  type="number"
+                  value={rejectedDeductionField}
+                  onChange={(e) => setRejectedDeductionField(e.target.value)}
+                  placeholder="Enter rejected deduction amount"
+                  className="ce-form-control rejected-deduction"
+                />
+                <small className="ce-input-help">Enter deduction amount if transaction is rejected</small>
+              </Col>
+            </Row>
+          </motion.div>
+
+          {responseMessage && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`ce-response-message ${responseMessage.includes("success") ? "ce-success" : "ce-error"}`}
+            >
+              {responseMessage}
+            </motion.div>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="ce-action-buttons"
+          >
+            {currencyexchangeapprovalloadingindication ? (
+              <div className="ce-loading-spinner">
+                <Spinner animation="border" variant="primary" />
+                <span>Processing...</span>
+              </div>
+            ) : (
+              <div className="ce-button-group">
+                <button 
+                  className="ce-reject-button"
+                  onClick={handleReject}
+                >
+                  Reject
+                </button>
+                <button 
+                  className="ce-approve-button"
+                  onClick={()=> handleApprove(currencyexchangeapprovaltransactiondata._id)}
+                >
+                  Approve
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </Col>
+      </Col>
+
+      {/* Image Modal */}
+      <Modal 
+        show={showImageModal} 
+        onHide={() => setShowImageModal(false)}
+        centered
+        dialogClassName="ce-receipt-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Transaction Receipt</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="ce-full-image-container">
+            <Image 
+              src={receiptImagePath} 
+              alt="Transaction Receipt" 
+              fluid 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/api/placeholder/300/400";
+              }}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <button onClick={() => setShowImageModal(false)} className="ce-close-modal-button">
+            Close
+          </button>
+        </Modal.Footer>
+      </Modal>
+    </motion.div>
+  );
+};
+
+const CurrencyExchangeRejectionModal = ({
+  setShowDatabaseConfiguration,
+  setShowCurrencyExchangeRejectionModal,
+  setShowTotalCurrencyExchange,
+  currencyexchangerejectiontransactiondata,
+  fetchOmsiapData
+}) => {
+  // State variables
+  const [currencyexchangerejectionphpamountvalidationfield, setCurrencyExchangeRejectionPhpAmount] = useState("");
+  const [currencyexchangerejectionomsiapamounttorecievevalidationfield, setCurrencyExchangeRejectionOmsiapAmount] = useState("");
+  const [successfulDeductionField, setSuccessfulDeductionField] = useState("");
+  const [rejectedDeductionField, setRejectedDeductionField] = useState("");
+  const [rejectionReasonField, setRejectionReasonField] = useState(""); // New field for rejection reason
+  const [currencyexchangerejectionloadingindication, setCurrencyExchangeRejectionLoadingIndication] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [responseMessage, setResponseMessage] = useState("");
+
+  // Extract relevant data from transaction data with fallbacks
+  const id = currencyexchangerejectiontransactiondata?.id || '';
+  const _id = currencyexchangerejectiontransactiondata?._id || '';
+  const sender = currencyexchangerejectiontransactiondata?.details?.thistransactionismadeby || {
+    name: { firstname: '', middlename: '', lastname: '' },
+    contact: { phonenumber: '' }
+  };
+  const recipient = currencyexchangerejectiontransactiondata?.details?.thistransactionismainlyintendedto || {
+    name: { firstname: '', middlename: '', lastname: '' },
+    contact: { phonenumber: '' }
+  };
+  const amounts = currencyexchangerejectiontransactiondata?.details?.amounts || {
+    phppurchaseorexchangeamount: 0,
+    omsiapawasamounttorecieve: 0
+  };
+  
+  // Get receipt image path with fallback
+  const receiptImagePath = currencyexchangerejectiontransactiondata?.referrence?.gcashtransactionrecieptimage || 
+    currencyexchangerejectiontransactiondata?.details?.referrence?.gcashtransactionrecieptimage || 
+    '/placeholder-receipt.jpg';
+
+  // Format full names
+  const senderFullName = `${sender.name.firstname} ${sender.name.middlename} ${sender.name.lastname}`;
+  const recipientFullName = `${recipient.name.firstname} ${recipient.name.middlename} ${recipient.name.lastname}`;
+
+  // Enhanced handleReject function with comprehensive validation and error handling
+  const handleReject = async (_id) => {
+    // Reset response message
+    setResponseMessage("");
+    
+    // Comprehensive validation
+    if (!currencyexchangerejectionphpamountvalidationfield) {
+      setResponseMessage("Please enter PHP amount for verification");
+      return;
+    }
+    
+    if (!currencyexchangerejectionomsiapamounttorecievevalidationfield) {
+      setResponseMessage("Please enter OMSIAP amount for verification");
+      return;
+    }
+    
+    if (!rejectedDeductionField) {
+      setResponseMessage("Please enter a rejected deduction amount");
+      return;
+    }
+
+    if (!rejectionReasonField.trim()) {
+      setResponseMessage("Please provide a reason for rejection");
+      return;
+    }
+
+    setCurrencyExchangeRejectionLoadingIndication(true);
+    
+    try {
+      // Prepare comprehensive data for API request
+      const rejectionData = {
+        id: _id,
+        phpAmountVerification: Number(currencyexchangerejectionphpamountvalidationfield),
+        omsiapAmountVerification: Number(currencyexchangerejectionomsiapamounttorecievevalidationfield),
+        successfulDeductionAmount: Number(successfulDeductionField) || 0,
+        rejectedDeductionAmount: Number(rejectedDeductionField),
+        reason: rejectionReasonField // Rejection reason for updating statusesandlogs.indication
+      };
+      
+      // Check internet connectivity before sending request
+      if (!navigator.onLine) {
+        throw new Error("offline");
+      }
+      
+      // Send API request
+      const response = await axiosCreatedInstance.post("/omsiap/rejectcurrencyexchange", rejectionData);
+      
+      // Handle success
+      if (response.data.success) {
+        setResponseMessage("Transaction rejected successfully!");
+        
+        // Reset form fields
+        setCurrencyExchangeRejectionPhpAmount("");
+        setCurrencyExchangeRejectionOmsiapAmount("");
+        setSuccessfulDeductionField("");
+        setRejectedDeductionField("");
+        setRejectionReasonField("");
+        
+        // Refresh data
+        fetchOmsiapData();
+        
+        // Close modal after short delay
+        setTimeout(() => {
+          setShowCurrencyExchangeRejectionModal(false);
+          setShowTotalCurrencyExchange(true);
+        }, 3000);
+      } else {
+        // Handle unsuccessful response but server returned 200
+        setResponseMessage(response.data.message || "Rejection process failed");
+      }
+    } catch (error) {
+      console.error("Error rejecting currency exchange:", error);
+      
+      // Handle different error scenarios
+      if (error.message === "offline" || !navigator.onLine) {
+        setResponseMessage("No internet connection. Please check your network and try again.");
+      } else if (error.response) {
+        // Server returned an error response with status code
+        switch (error.response.status) {
+          case 400:
+            setResponseMessage(`Validation error: ${error.response.data.message}`);
+            break;
+          case 404:
+            setResponseMessage("Transaction not found. It may have been deleted or processed.");
+            break;
+          case 409:
+            if (error.response.data.status === "approved") {
+              setResponseMessage("This transaction has already been approved and cannot be rejected.");
+            } else if (error.response.data.status === "rejected") {
+              setResponseMessage("This transaction has already been rejected.");
+            } else {
+              setResponseMessage("This transaction has already been processed and cannot be modified.");
+            }
+            break;
+          case 500:
+            setResponseMessage("Server error. Please try again later or contact support.");
+            break;
+          default:
+            setResponseMessage(`Error: ${error.response.data.message || "Unknown error"}`);
+        }
+      } else if (error.request) {
+        // Request made but no response received
+        setResponseMessage("Unable to connect to the server. Please try again later.");
+      } else {
+        // Something else caused the error
+        setResponseMessage("An unexpected error occurred. Please try again.");
+      }
+    } finally {
+      setCurrencyExchangeRejectionLoadingIndication(false);
+    }
+  };
+
+  // Function to cancel rejection and return to main view
+  const handleCancel = () => {
+    setShowCurrencyExchangeRejectionModal(false);
+    setShowTotalCurrencyExchange(true);
+  };
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3 }}
+      className="ce-modal-container"
+    >
+      <Col id="ce-rejection-modal">
+        <motion.div 
+          className="ce-modal-header"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2>Currency Exchange Rejection</h2>
+          <button 
+            className="ce-close-button"
+            onClick={()=> {
+              setShowCurrencyExchangeRejectionModal(false)
+              setShowDatabaseConfiguration(false)
+            }}
+          >
+            &times;
+          </button>
+        </motion.div>
+
+        <Col id="ce-rejection-modal-viewcontainer">
+          <Row className="transaction-info-container">
+            <Col xs={12} md={8} className="transaction-details">
+              <motion.div 
+                className="info-card"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <h3>Transaction Details</h3>
+                <div className="info-grid">
+                 <div className="info-item">
+                    <span className="label">Transaction ID:</span>
+                    <span className="value">{_id}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Reference ID:</span>
+                    <span className="value">{currencyexchangerejectiontransactiondata.details?.referrence?.number || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Sender:</span>
+                    <span className="value">{senderFullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Sender Phone:</span>
+                    <span className="value">{sender.contact.phonenumber}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Recipient:</span>
+                    <span className="value">{recipientFullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Recipient Phone:</span>
+                    <span className="value">{recipient.contact.phonenumber}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">PHP Amount:</span>
+                    <span className="value">{amounts.phppurchaseorexchangeamount} PHP</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">OMSIAP Amount:</span>
+                    <span className="value">{amounts.omsiapawasamounttorecieve} OMSIAP</span>
+                  </div>
+                </div>
+              </motion.div>
+            </Col>
+
+            <Col xs={12} md={4} className="transaction-image-container">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="receipt-image-card"
+              >
+                <h4>Transaction Receipt</h4>
+                <div className="image-container" onClick={() => setShowImageModal(true)}>
+                  <img 
+                    src={receiptImagePath} 
+                    alt="Transaction Receipt" 
+                    className="transaction-receipt-image"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/api/placeholder/300/400";
+                    }}
+                  />
+                  <div className="image-overlay">
+                    <span>Click to view</span>
+                  </div>
+                </div>
+              </motion.div>
+            </Col>
+          </Row>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="ce-validation-section"
+          >
+            <h3>Verification</h3>
+            <Row className="ce-validation-inputs">
+              <Col xs={12} md={6} className="ce-input-group">
+                <label>PHP Amount Verification:</label>
+                <input 
+                  type="number"
+                  value={currencyexchangerejectionphpamountvalidationfield}
+                  onChange={(e) => setCurrencyExchangeRejectionPhpAmount(e.target.value)}
+                  placeholder="Enter PHP amount to verify"
+                  className="ce-form-control"
+                />
+              </Col>
+              <Col xs={12} md={6} className="ce-input-group">
+                <label>OMSIAP Amount Verification:</label>
+                <input 
+                  type="number"
+                  value={currencyexchangerejectionomsiapamounttorecievevalidationfield}
+                  onChange={(e) => setCurrencyExchangeRejectionOmsiapAmount(e.target.value)}
+                  placeholder="Enter OMSIAP amount to verify"
+                  className="ce-form-control"
+                />
+              </Col>
+            </Row>
+
+            <Row className="ce-deduction-inputs">
+              <Col xs={12} md={6} className="ce-input-group">
+                <label>Successful Deduction Amount:</label>
+                <input 
+                  type="number"
+                  value={successfulDeductionField}
+                  onChange={(e) => setSuccessfulDeductionField(e.target.value)}
+                  placeholder="Enter successful deduction amount"
+                  className="ce-form-control successful-deduction"
+                />
+                <small className="ce-input-help">Enter the amount to be deducted upon approval</small>
+              </Col>
+              <Col xs={12} md={6} className="ce-input-group">
+                <label>Rejected Deduction Amount:</label>
+                <input 
+                  type="number"
+                  value={rejectedDeductionField}
+                  onChange={(e) => setRejectedDeductionField(e.target.value)}
+                  placeholder="Enter rejected deduction amount"
+                  className="ce-form-control rejected-deduction"
+                />
+                <small className="ce-input-help">Enter deduction amount if transaction is rejected</small>
+              </Col>
+            </Row>
+
+            {/* New Rejection Reason Textarea */}
+            <Row className="ce-rejection-reason">
+              <Col xs={12} className="ce-input-group">
+                <label>Rejection Reason:</label>
+                <textarea 
+                  value={rejectionReasonField}
+                  onChange={(e) => setRejectionReasonField(e.target.value)}
+                  placeholder="Enter detailed reason for rejection"
+                  className="ce-form-control rejection-reason"
+                  rows={4}
+                />
+                <small className="ce-input-help">Please provide a clear explanation for rejecting this transaction</small>
+              </Col>
+            </Row>
+          </motion.div>
+
+          {responseMessage && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`ce-response-message ${responseMessage.includes("success") ? "ce-success" : "ce-error"}`}
+            >
+              {responseMessage}
+            </motion.div>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="ce-action-buttons"
+          >
+            {currencyexchangerejectionloadingindication ? (
+              <div className="ce-loading-spinner">
+                <Spinner animation="border" variant="primary" />
+                <span>Processing...</span>
+              </div>
+            ) : (
+              <div className="ce-button-group">
+                <button 
+                  className="ce-cancel-button"
+                  onClick={handleCancel}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="ce-confirm-rejection-button"
+                  onClick={()=> handleReject(_id)
+                  }
+                >
+                  Confirm Rejection
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </Col>
+      </Col>
+
+      {/* Image Modal */}
+      <Modal 
+        show={showImageModal} 
+        onHide={() => setShowImageModal(false)}
+        centered
+        dialogClassName="ce-receipt-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Transaction Receipt</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="ce-full-image-container">
+            <Image 
+              src={receiptImagePath} 
+              alt="Transaction Receipt" 
+              fluid 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/api/placeholder/300/400";
+              }}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <button onClick={() => setShowImageModal(false)} className="ce-close-modal-button">
+            Close
+          </button>
+        </Modal.Footer>
+      </Modal>
+    </motion.div>
+  );
+};
+
+
 
 
 const TotalWithdrawals = ({
   setShowDatabaseConfiguration, 
   setShowTotalWithdrawals,  
+  setShowPendingWithdrawals, 
+  setShowWithdrawalApproval,
+  setShowWithdrawalRejectionModal,
   setShowCreditTransaction,
-
   totalwithdrawals,
   credittransactionobjectcb,
+  withdrawalapprovaltransactiondatacb,
+  withdrawalrejectiontransactiondatacb,
 
   onClose, 
   onView, 
@@ -7082,7 +8549,7 @@ const TotalWithdrawals = ({
                     
                     // Get the latest log entry date if available
                     const latestLogDate = transaction.statusesandlogs?.logs?.length > 0 
-                      ? transaction.statusesandlogs.logs[transaction.statusesandlogs.logs.length - 1].date 
+                      ? transaction.statusesandlogs.logs[0].date 
                       : transaction.date;
                     
                     return (
@@ -7093,7 +8560,7 @@ const TotalWithdrawals = ({
                           onClick={() => toggleExpandTransaction(transaction.id)}
                         >
                           <td className="transaction-id">{transaction.id}</td>
-                          <td className="date-cell">{formatDate(latestLogDate)}</td>
+                          <td className="date-cell">{latestLogDate}</td>
                           <td className="sender-cell">
                             {formatName(transaction.details?.thistransactionismadeby?.name)}
                           </td>
@@ -7118,9 +8585,9 @@ const TotalWithdrawals = ({
                               <button 
                                 className="view-button" 
                                 onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowCreditTransaction(true);
-                                  credittransactionobjectcb(transaction);
+                                  e.stopPropagation()
+                                  setShowCreditTransaction(true)
+                                  credittransactionobjectcb(transaction)
                                 }}
                                 aria-label="View transaction details"
                               >
@@ -7142,18 +8609,23 @@ const TotalWithdrawals = ({
                                 className="accept-button" 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleAccept(transaction.id);
+                                 setShowTotalWithdrawals(false)
+                                 setShowPendingWithdrawals(false)
+                                 setShowWithdrawalApproval(true)
+                                 withdrawalapprovaltransactiondatacb(transaction)
                                 }}
                                 aria-label="Accept transaction"
                               >
                                 <FaCheckCircle />
-                                <span className="button-text">Accept</span>
+                                <span className="button-text">Approval</span>
                               </button>
                               <button 
                                 className="reject-button" 
                                 onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleReject(transaction.id);
+                                  e.stopPropagation()
+                                  setShowTotalWithdrawals(false)
+                                  setShowWithdrawalRejectionModal(true)
+                                  withdrawalrejectiontransactiondatacb(transaction)
                                 }}
                                 aria-label="Reject transaction"
                               >
@@ -7310,14 +8782,18 @@ const TotalWithdrawals = ({
   );
 };
 
-
 const PendingWithdrawals = ({ 
   setShowDatabaseConfiguration, 
+  setShowTotalWithdrawals,
   setShowPendingWithdrawals, 
+  setShowWithdrawalApproval,  
+  setShowWithdrawalRejectionModal,  
   setShowCreditTransaction, 
 
-  pendingwithdrawals = [], // Default empty array
+  pendingwithdrawals,
   credittransactionobjectcb, 
+  withdrawalapprovaltransactiondatacb,
+  withdrawalrejectiontransactiondatacb,
 
   onClose, 
   onView, 
@@ -7510,7 +8986,7 @@ const PendingWithdrawals = ({
                   {filteredTransactions.map((transaction) => {
                     // Get the latest log entry date if available
                     const latestLogDate = transaction.statusesandlogs?.logs?.length > 0 
-                      ? transaction.statusesandlogs.logs[transaction.statusesandlogs.logs.length - 1].date 
+                      ? transaction.statusesandlogs.logs[0].date 
                       : transaction.date;
                     
                     return (
@@ -7521,7 +8997,7 @@ const PendingWithdrawals = ({
                           onClick={() => toggleExpandTransaction(transaction.id)}
                         >
                           <td className="transaction-id">{transaction.id}</td>
-                          <td className="date-cell">{formatDate(latestLogDate)}</td>
+                          <td className="date-cell">{latestLogDate}</td>
                           <td className="sender-cell">
                             {formatName(transaction.details?.thistransactionismadeby?.name)}
                           </td>
@@ -7563,19 +9039,23 @@ const PendingWithdrawals = ({
                               <button 
                                 className="accept-button" 
                                 onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleAccept(transaction.id);
+                                  withdrawalapprovaltransactiondatacb(transaction)
+                                  setShowTotalWithdrawals(false)
+                                  setShowPendingWithdrawals(false)
+                                  setShowWithdrawalApproval(true)
                                 }}
                                 aria-label="Accept transaction"
                               >
                                 <FaCheckCircle />
-                                <span className="button-text">Accept</span>
+                                <span className="button-text">Approval</span>
                               </button>
                               <button 
                                 className="reject-button" 
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleReject(transaction.id);
+                                  withdrawalrejectiontransactiondatacb(transaction)
+                                  setShowPendingWithdrawals(false)
+                                  setShowWithdrawalRejectionModal(true)
                                 }}
                                 aria-label="Reject transaction"
                               >
@@ -7756,9 +9236,13 @@ const SuccessfulWithdrawals = ({
     setIsVisible(true);
     
     // Initial filtering of only successful withdrawal transactions
+    // Match the filtering logic from TotalWithdrawals but add status check
     const successfulWithdrawalsData = successfulwithdrawals.filter(
       transaction => transaction.intent === 'withdrawal' && 
-      (transaction.statusesandlogs?.status === 'completed' || transaction.status === 'successful')
+      (transaction.statusesandlogs?.status === 'completed' || 
+       transaction.statusesandlogs?.status === 'successful' ||
+       transaction.status === 'completed' ||
+       transaction.status === 'successful')
     );
     setFilteredTransactions(successfulWithdrawalsData);
   }, [successfulwithdrawals]);
@@ -7766,6 +9250,15 @@ const SuccessfulWithdrawals = ({
   useEffect(() => {
     if (searchQuery) {
       const results = successfulwithdrawals.filter(transaction => {
+        // First filter by withdrawal intent and successful status
+        const isSuccessfulWithdrawal = transaction.intent === 'withdrawal' && 
+          (transaction.statusesandlogs?.status === 'completed' || 
+           transaction.statusesandlogs?.status === 'successful' ||
+           transaction.status === 'completed' ||
+           transaction.status === 'successful');
+        
+        if (!isSuccessfulWithdrawal) return false;
+        
         // Base transaction ID search
         const idMatch = transaction.id.toLowerCase().includes(searchQuery.toLowerCase());
         
@@ -7783,8 +9276,8 @@ const SuccessfulWithdrawals = ({
         // Payment method search
         const paymentMethodMatch = transaction.details?.paymentmethod?.toLowerCase().includes(searchQuery.toLowerCase());
         
-        // Reference number search
-        const referenceMatch = transaction.details?.referrence?.referencenumber?.toLowerCase().includes(searchQuery.toLowerCase());
+        // Reference number search (adjusted for your schema)
+        const referenceMatch = transaction.details?.referrence?.number?.toLowerCase().includes(searchQuery.toLowerCase());
         
         return idMatch || senderMatch || recipientMatch || paymentMethodMatch || referenceMatch;
       });
@@ -7794,29 +9287,14 @@ const SuccessfulWithdrawals = ({
       // Reset to show only successful withdrawals when search is cleared
       const successfulWithdrawalsData = successfulwithdrawals.filter(
         transaction => transaction.intent === 'withdrawal' && 
-        (transaction.statusesandlogs?.status === 'completed' || transaction.status === 'successful')
+        (transaction.statusesandlogs?.status === 'completed' || 
+         transaction.statusesandlogs?.status === 'successful' ||
+         transaction.status === 'completed' ||
+         transaction.status === 'successful')
       );
       setFilteredTransactions(successfulWithdrawalsData);
     }
   }, [searchQuery, successfulwithdrawals]);
-
-  const handleAccept = (id) => {
-    setAnimateRow(id);
-    // Additional accept logic would go here
-    setTimeout(() => {
-      setAnimateRow(null);
-      // Here you'd update the transaction status
-    }, 800);
-  };
-
-  const handleReject = (id) => {
-    setAnimateRow(id);
-    // Additional reject logic would go here
-    setTimeout(() => {
-      setAnimateRow(null);
-      // Here you'd update the transaction status
-    }, 800);
-  };
 
   const handleMessage = (id) => {
     // Message sending logic would go here
@@ -7851,7 +9329,7 @@ const SuccessfulWithdrawals = ({
   };
 
   const getStatusClass = (status) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'completed':
       case 'successful':
         return 'status-completed';
@@ -7867,7 +9345,7 @@ const SuccessfulWithdrawals = ({
   };
 
   const getStatusIcon = (status) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case 'completed':
       case 'successful':
         return <FaCheckCircle className="status-icon success" />;
@@ -7948,18 +9426,17 @@ const SuccessfulWithdrawals = ({
                     
                     // Get the latest log entry date if available
                     const latestLogDate = transaction.statusesandlogs?.logs?.length > 0 
-                      ? transaction.statusesandlogs.logs[transaction.statusesandlogs.logs.length - 1].date 
+                      ? transaction.statusesandlogs.logs[0].date 
                       : transaction.date;
                     
                     return (
-                      <>
+                      <React.Fragment key={transaction.id}>
                         <tr 
-                          key={transaction.id}
                           className={`transaction-row ${animateRow === transaction.id ? 'row-animate' : ''} ${expandedTransaction === transaction.id ? 'expanded' : ''}`}
                           onClick={() => toggleExpandTransaction(transaction.id)}
                         >
                           <td className="transaction-id">{transaction.id}</td>
-                          <td className="date-cell">{formatDate(latestLogDate)}</td>
+                          <td className="date-cell">{latestLogDate}</td>
                           <td className="sender-cell">
                             {formatName(transaction.details?.thistransactionismadeby?.name)}
                           </td>
@@ -7993,6 +9470,7 @@ const SuccessfulWithdrawals = ({
                                 <FaEye />
                                 <span className="button-text">View</span>
                               </button>
+                              {/*
                               <button 
                                 className="edit-button" 
                                 onClick={(e) => {
@@ -8004,6 +9482,7 @@ const SuccessfulWithdrawals = ({
                                 <FaEdit />
                                 <span className="button-text">Edit</span>
                               </button>
+                              */}
                               <button 
                                 className="message-button" 
                                 onClick={(e) => {
@@ -8027,11 +9506,11 @@ const SuccessfulWithdrawals = ({
                                   <div className="detail-grid">
                                     <div className="detail-item">
                                       <span className="detail-label">Reference Number:</span>
-                                      <span className="detail-value">{transaction.details?.referrence?.referencenumber || 'N/A'}</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.number || 'N/A'}</span>
                                     </div>
                                     <div className="detail-item">
                                       <span className="detail-label">GCash Phone Number:</span>
-                                      <span className="detail-value">{transaction.details?.referrence?.gcashphonenumber || 'N/A'}</span>
+                                      <span className="detail-value">{transaction.details?.referrence?.gcashtransactionrecieptimage || 'N/A'}</span>
                                     </div>
                                     <div className="detail-item">
                                       <span className="detail-label">Intent Amount:</span>
@@ -8141,7 +9620,7 @@ const SuccessfulWithdrawals = ({
                             </td>
                           </tr>
                         )}
-                      </>
+                      </React.Fragment>
                     );
                   })}
                 </tbody>
@@ -8388,7 +9867,7 @@ const RejectedWithdrawals = ({
                     
                     // Get the latest log entry date if available
                     const latestLogDate = transaction.statusesandlogs?.logs?.length > 0 
-                      ? transaction.statusesandlogs.logs[transaction.statusesandlogs.logs.length - 1].date 
+                      ? transaction.statusesandlogs.logs[0].date 
                       : transaction.date;
                     
                     return (
@@ -8399,7 +9878,7 @@ const RejectedWithdrawals = ({
                           onClick={() => toggleExpandTransaction(transaction.id)}
                         >
                           <td className="transaction-id">{transaction.id}</td>
-                          <td className="date-cell">{formatDate(latestLogDate)}</td>
+                          <td className="date-cell">{latestLogDate}</td>
                           <td className="sender-cell">
                             {formatName(transaction.details?.thistransactionismadeby?.name)}
                           </td>
@@ -8433,6 +9912,7 @@ const RejectedWithdrawals = ({
                                 <FaEye />
                                 <span className="button-text">View</span>
                               </button>
+                              {/*
                               <button 
                                 className="edit-button" 
                                 onClick={(e) => {
@@ -8444,6 +9924,8 @@ const RejectedWithdrawals = ({
                                 <FaEdit />
                                 <span className="button-text">Edit</span>
                               </button>
+                              */}
+                              {/*
                               <button 
                                 className="accept-button" 
                                 onClick={(e) => {
@@ -8455,6 +9937,7 @@ const RejectedWithdrawals = ({
                                 <FaRecycle />
                                 <span className="button-text">Reprocess</span>
                               </button>
+                              */}
                               <button 
                                 className="message-button" 
                                 onClick={(e) => {
@@ -8604,6 +10087,817 @@ const RejectedWithdrawals = ({
     </div>
   );
 };
+
+const WithdrawalApprovalModal = ({
+  setShowDatabaseConfiguration,
+  setShowWithdrawalApproval,
+  setShowTotalWithdrawals,
+  withdrawalapprovaltransactiondata,
+
+  fetchOmsiapData
+}) => {
+  // State variables
+  const [successfulProcessingDeductionField, setSuccessfulProcessingDeductionField] = useState("");
+  const [rejectionProcessingDeductionField, setRejectionProcessingDeductionField] = useState("");
+  const [withdrawalApprovalLoadingIndication, setWithdrawalApprovalLoadingIndication] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [responseMessage, setResponseMessage] = useState("");
+  const [receiptImage, setReceiptImage] = useState(null);
+  
+  // Extract relevant data from transaction data with fallbacks
+  const id = withdrawalapprovaltransactiondata?.id || '';
+  const _id = withdrawalapprovaltransactiondata?._id || '';
+  const intent = withdrawalapprovaltransactiondata?.details?.amounts?.intent || 0;
+  const sender = withdrawalapprovaltransactiondata?.details?.thistransactionismadeby || {
+    name: { firstname: '', middlename: '', lastname: '' },
+    contact: { phonenumber: '' }
+  };
+  const recipient = withdrawalapprovaltransactiondata?.details?.thistransactionismainlyintendedto || {
+    name: { firstname: '', middlename: '', lastname: '' },
+    contact: { phonenumber: '' }
+  };
+  const amounts = withdrawalapprovaltransactiondata?.details?.amounts || {
+    intent: 0,
+    deductions: {
+      successfulprocessing: { amount: 0 },
+      rejectionprocessing: { amount: 0 }
+    },
+    phpamounttorecieve: 0
+  };
+  
+  // Get receipt image path with fallback
+  const receiptImagePath = withdrawalapprovaltransactiondata?.details?.referrence?.gcashtransactionrecieptimage || 
+    withdrawalapprovaltransactiondata?.referrence?.gcashtransactionrecieptimage || 
+    null;
+
+  // Format full names
+  const senderFullName = `${sender.name.firstname} ${sender.name.middlename} ${sender.name.lastname}`;
+  const recipientFullName = `${recipient.name.firstname} ${recipient.name.middlename} ${recipient.name.lastname}`;
+// Update the handleApprove function in WithdrawalApprovalModal component
+const handleApprove = async (_id) => {
+
+  // Validate inputs
+  if (!successfulProcessingDeductionField) {
+    setResponseMessage("Please fill in the successful processing deduction field");
+    return;
+  }
+  
+  // Set loading state
+  setWithdrawalApprovalLoadingIndication(true);
+  
+  try {
+    // Prepare form data for image upload
+    const formData = new FormData();
+    
+    // Add receipt image if available
+    if (receiptImage && receiptImage.startsWith('data:')) {
+      // Convert base64 to blob
+      const fetchRes = await fetch(receiptImage);
+      const blob = await fetchRes.blob();
+      formData.append('receipt', blob, 'receipt-image.jpg');
+    }
+    
+    // Add transaction data
+    formData.append('transactionId', _id);
+    formData.append('successfulProcessingDeduction', successfulProcessingDeductionField);
+    formData.append('intent', intent);
+    formData.append('phpAmountToReceive', amounts.phpamounttorecieve);
+    
+    // Make API request
+    const response = await axiosCreatedInstance.post("/omsiap/approvewithdrawal", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      },
+      timeout: 30000 // 30 seconds timeout
+    });
+    
+    // Handle success
+    if (response.data && response.data.success) {
+      setResponseMessage("Withdrawal approved successfully!");
+      
+      fetchOmsiapData()
+
+      {/*
+      // Close modal after 2 seconds
+      setTimeout(() => {
+        setShowWithdrawalApproval(false);
+        setShowTotalWithdrawals(true);
+      }, 2000);
+      */}
+    } else {
+      setResponseMessage(response.data?.message || "Failed to approve withdrawal");
+    }
+  } catch (error) {
+    // Handle different error scenarios
+    if (error.code === 'ECONNABORTED') {
+      setResponseMessage("Request timed out. Please check your internet connection.");
+    } else if (!navigator.onLine) {
+      setResponseMessage("No internet connection. Please check your network and try again.");
+    } else if (error.response) {
+      // Server responded with an error status
+      switch (error.response.status) {
+        case 400:
+          setResponseMessage(error.response.data?.message || "Invalid request data");
+          break;
+        case 403:
+          setResponseMessage("You don't have permission to approve withdrawals");
+          break;
+        case 404:
+          setResponseMessage("Withdrawal record not found");
+          break;
+        case 409:
+          setResponseMessage("This withdrawal has already been processed");
+          break;
+        case 500:
+          setResponseMessage("Server error. Please try again later");
+          break;
+        default:
+          setResponseMessage(`Error: ${error.response.data?.message || "Unknown server error"}`);
+      }
+    } else if (error.request) {
+      // Request was made but no response received
+      setResponseMessage("No response from server. Please try again later.");
+    } else {
+      // Something else caused the error
+      setResponseMessage(`Error: ${error.message}`);
+    }
+    console.error("Withdrawal approval error:", error);
+  } finally {
+    setWithdrawalApprovalLoadingIndication(false);
+  }
+};
+
+  // Handle reject button click
+  const handleReject = () => {
+    // Validate inputs
+    if (!rejectionProcessingDeductionField) {
+      setResponseMessage("Please fill in the rejection processing deduction field");
+      return;
+    }
+    
+    setWithdrawalApprovalLoadingIndication(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setResponseMessage("Withdrawal rejected!");
+      setWithdrawalApprovalLoadingIndication(false);
+    }, 2000);
+  };
+
+  // Handle receipt image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setReceiptImage(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Get the image to display (either uploaded or from transaction data)
+  const displayImage = receiptImage || receiptImagePath || "/api/placeholder/300/400";
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="withdrawal-approval-wrapper wd-modal-container"
+    >
+      <Col id="wd-approval-modal">
+        <motion.div 
+          className="wd-modal-header"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2>Withdrawal Approval</h2>
+          <button 
+            className="wd-close-button"
+            onClick={() => {
+              setShowWithdrawalApproval(false)
+              setShowDatabaseConfiguration(false)
+            }}
+          >
+            &times;
+          </button>
+        </motion.div>
+
+        <Col id="wd-approval-modal-viewcontainer">
+          <Row className="transaction-info-container">
+            <Col xs={12} md={8} className="transaction-details">
+              <motion.div 
+                className="info-card"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <h3>Transaction Details</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="label">Transaction ID:</span>
+                    <span className="value">{_id}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Reference ID:</span>
+                    <span className="value">{withdrawalapprovaltransactiondata?.details?.referrence?.number || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Intent:</span>
+                    <span className="value">{intent}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Payment Method:</span>
+                    <span className="value">{withdrawalapprovaltransactiondata?.details?.paymentmethod || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Sender:</span>
+                    <span className="value">{senderFullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Sender Phone:</span>
+                    <span className="value">{sender.contact.phonenumber}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Recipient:</span>
+                    <span className="value">{recipientFullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Recipient Phone:</span>
+                    <span className="value">{recipient.contact.phonenumber}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">PHP Amount to Receive:</span>
+                    <span className="value">{amounts.phpamounttorecieve} PHP</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Status:</span>
+                    <span className="value">{withdrawalapprovaltransactiondata?.statusesandlogs?.status || 'Pending'}</span>
+                  </div>
+                </div>
+              </motion.div>
+            </Col>
+
+            <Col xs={12} md={4} className="transaction-image-container">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="receipt-image-card"
+              >
+                <h4>Transaction Receipt</h4>
+                <div className="image-container">
+                  {displayImage && (
+                    <div className="preview-container" onClick={() => setShowImageModal(true)}>
+                      <img 
+                        src={displayImage} 
+                        alt="Transaction Receipt" 
+                        className="transaction-receipt-image"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/api/placeholder/300/400";
+                        }}
+                      />
+                      <div className="image-overlay">
+                        <span>Click to view</span>
+                      </div>
+                    </div>
+                  )}
+                  <div className="image-upload-container">
+                    <label htmlFor="receipt-upload" className="upload-button">
+                      Upload Receipt
+                    </label>
+                    <input
+                      id="receipt-upload"
+                      type="file"
+                      accept="image/*"
+                      className="file-input"
+                      onChange={handleImageUpload}
+                    />
+                  </div>
+                </div>
+              </motion.div>
+            </Col>
+          </Row>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="wd-validation-section"
+          >
+            <h3>Verification</h3>
+            <Row className="wd-validation-inputs">
+              <Col xs={12} md={6} className="wd-input-group">
+                <label>Successful Processing Deduction:</label>
+                <input 
+                  type="number"
+                  value={successfulProcessingDeductionField}
+                  onChange={(e) => setSuccessfulProcessingDeductionField(e.target.value)}
+                  placeholder="Enter successful processing deduction"
+                  className="wd-form-control"
+                />
+              </Col>
+              <Col xs={12} md={6} className="wd-input-group">
+                <label>Rejection Processing Deduction:</label>
+                <input 
+                  type="number"
+                  value={rejectionProcessingDeductionField}
+                  onChange={(e) => setRejectionProcessingDeductionField(e.target.value)}
+                  placeholder="Enter rejection processing deduction"
+                  className="wd-form-control"
+                />
+              </Col>
+            </Row>
+          </motion.div>
+
+          {responseMessage && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`wd-response-message ${responseMessage.includes("success") ? "wd-success" : "wd-error"}`}
+            >
+              {responseMessage}
+            </motion.div>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="wd-action-buttons"
+          >
+            {withdrawalApprovalLoadingIndication ? (
+              <div className="wd-loading-spinner">
+                <Spinner animation="border" variant="primary" />
+                <span>Processing...</span>
+              </div>
+            ) : (
+              <div className="wd-button-group">
+                <button 
+                  className="wd-reject-button"
+                  onClick={handleReject}
+                >
+                  Reject
+                </button>
+                <button 
+                  className="wd-approve-button"
+                  onClick={()=> handleApprove(_id)}
+                >
+                  Approve
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </Col>
+      </Col>
+
+      {/* Image Modal */}
+      <Modal 
+        show={showImageModal} 
+        onHide={() => setShowImageModal(false)}
+        centered
+        dialogClassName="wd-receipt-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Transaction Receipt</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="wd-full-image-container">
+            <Image 
+              src={displayImage} 
+              alt="Transaction Receipt" 
+              fluid 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/api/placeholder/300/400";
+              }}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <button onClick={() => setShowImageModal(false)} className="wd-close-modal-button">
+            Close
+          </button>
+        </Modal.Footer>
+      </Modal>
+    </motion.div>
+  );
+};
+
+const WithdrawalRejectionModal = ({
+  setShowDatabaseConfiguration,
+  setShowWithdrawalRejectionModal,
+  setShowTotalWithdrawals,
+  withdrawalrejectiontransactiondata,
+  fetchOmsiapData
+}) => {
+  // State variables
+  const [rejectionProcessingDeductionField, setRejectionProcessingDeductionField] = useState("");
+  const [rejectionReasonField, setRejectionReasonField] = useState("");
+  const [withdrawalRejectionLoadingIndication, setWithdrawalRejectionLoadingIndication] = useState(false);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [responseMessage, setResponseMessage] = useState("");
+  const [noteImage, setNoteImage] = useState(null);
+  
+  // Extract relevant data from transaction data with fallbacks
+  const id = withdrawalrejectiontransactiondata?.id || '';
+  const _id = withdrawalrejectiontransactiondata?._id || '';
+  const intent = withdrawalrejectiontransactiondata?.details?.amounts?.intent || 0;
+  const sender = withdrawalrejectiontransactiondata?.details?.thistransactionismadeby || {
+    name: { firstname: '', middlename: '', lastname: '' },
+    contact: { phonenumber: '' }
+  };
+  const recipient = withdrawalrejectiontransactiondata?.details?.thistransactionismainlyintendedto || {
+    name: { firstname: '', middlename: '', lastname: '' },
+    contact: { phonenumber: '' }
+  };
+  const amounts = withdrawalrejectiontransactiondata?.details?.amounts || {
+    intent: 0,
+    deductions: {
+      rejectionprocessing: { amount: 0 }
+    },
+    phpamounttorecieve: 0
+  };
+  
+  // Get receipt image path with fallback
+  const receiptImagePath = withdrawalrejectiontransactiondata?.details?.referrence?.gcashtransactionrecieptimage || 
+    withdrawalrejectiontransactiondata?.referrence?.gcashtransactionrecieptimage || 
+    null;
+
+  // Format full names
+  const senderFullName = `${sender.name.firstname} ${sender.name.middlename} ${sender.name.lastname}`;
+  const recipientFullName = `${recipient.name.firstname} ${recipient.name.middlename} ${recipient.name.lastname}`;
+
+  // Handle reject button click
+  const handleReject = async (_id) => {
+    // Clear previous response message
+    setResponseMessage("");
+    
+    // Validate inputs
+    if (!rejectionProcessingDeductionField || isNaN(parseFloat(rejectionProcessingDeductionField)) || parseFloat(rejectionProcessingDeductionField) < 0) {
+      setResponseMessage("Please enter a valid positive number for rejection processing deduction");
+      return;
+    }
+    
+    if (!rejectionReasonField || rejectionReasonField.trim() === "") {
+      setResponseMessage("Please provide a detailed reason for rejection");
+      return;
+    }
+    
+    // Check for internet connection
+    if (!navigator.onLine) {
+      setResponseMessage("No internet connection. Please check your network and try again.");
+      return;
+    }
+    
+    // Set loading state
+    setWithdrawalRejectionLoadingIndication(true);
+    
+    try {
+      // Create JSON payload - this matches the backend's expected req.body format
+      const payload = {
+        transactionId: _id,
+        rejectionProcessingDeduction: rejectionProcessingDeductionField,
+        rejectionReason: rejectionReasonField,
+        intent: intent
+      };
+      
+      // Log the payload for debugging
+      console.log("Sending payload:", payload);
+      
+      // Make API request with timeout and retry logic
+      const maxRetries = 2;
+      let retries = 0;
+      let response;
+      
+      while (retries <= maxRetries) {
+        try {
+          response = await axiosCreatedInstance.post("/omsiap/rejectwithdrawal", payload, {
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            timeout: retries === 0 ? 15000 : 30000 // Increase timeout on retry
+          });
+          break; // Exit the loop if request succeeds
+        } catch (err) {
+          if (err.code === 'ECONNABORTED' && retries < maxRetries) {
+            // Try again on timeout if we haven't exceeded max retries
+            retries++;
+            continue;
+          }
+          throw err; // Re-throw if not a timeout or we've exceeded retries
+        }
+      }
+      
+      // Handle success
+      if (response.data && response.data.success) {
+        setResponseMessage(`Withdrawal rejected successfully! ${response.data.message || ""}`);
+        
+        // Refresh data
+        fetchOmsiapData();
+        
+        // Close modal after 2 seconds
+        setTimeout(() => {
+          setShowWithdrawalRejectionModal(false);
+          setShowTotalWithdrawals(true);
+        }, 2000);
+      } else {
+        setResponseMessage(response.data?.message || "Failed to reject withdrawal");
+      }
+    } catch (error) {
+      // Handle different error scenarios
+      if (error.code === 'ECONNABORTED') {
+        setResponseMessage("Request timed out. The server took too long to respond. Please try again later.");
+      } else if (!navigator.onLine) {
+        setResponseMessage("Your internet connection was lost. Please check your network and try again.");
+      } else if (error.response) {
+        // Server responded with an error status
+        switch (error.response.status) {
+          case 400:
+            console.error("400 error details:", error.response.data);
+            setResponseMessage(error.response.data?.message || "Invalid request data. Please check all fields and try again.");
+            break;
+          case 401:
+            setResponseMessage("You need to log in again to perform this action.");
+            break;
+          case 403:
+            setResponseMessage("You don't have permission to reject withdrawals.");
+            break;
+          case 404:
+            setResponseMessage("Withdrawal record not found. It may have been deleted or processed already.");
+            break;
+          case 409:
+            // Conflict - transaction already processed
+            const statusMessage = error.response.data?.message || "This withdrawal has already been processed";
+            setResponseMessage(statusMessage);
+            
+            // If already processed, refresh data and close modal after delay
+            fetchOmsiapData();
+            setTimeout(() => {
+              setShowWithdrawalRejectionModal(false);
+              setShowTotalWithdrawals(true);
+            }, 3000);
+            break;
+          case 500:
+            setResponseMessage("Server error. Our team has been notified. Please try again later.");
+            break;
+          default:
+            setResponseMessage(`Error: ${error.response.data?.message || "Unknown server error"}`);
+        }
+      } else if (error.request) {
+        // Request was made but no response received
+        setResponseMessage("No response from server. Please check your connection and try again.");
+      } else {
+        // Something else caused the error
+        setResponseMessage(`Error: ${error.message || "Unknown error occurred"}`);
+      }
+      console.error("Withdrawal rejection error:", error);
+    } finally {
+      setWithdrawalRejectionLoadingIndication(false);
+    }
+  };
+
+  // Handle note image upload
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNoteImage(event.target.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Get the image to display (either uploaded or from transaction data)
+  const displayImage = receiptImagePath || "/api/placeholder/300/400";
+
+  return (
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="withdrawal-rejection-wrapper wr-modal-container"
+    >
+      <Col id="wr-rejection-modal">
+        <motion.div 
+          className="wr-modal-header"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+        >
+          <h2>Withdrawal Rejection</h2>
+          <button 
+            className="wr-close-button"
+            onClick={() => {
+              setShowWithdrawalRejectionModal(false)
+              setShowDatabaseConfiguration(false)
+            }}
+          >
+            &times;
+          </button>
+        </motion.div>
+
+        <Col id="wr-rejection-modal-viewcontainer">
+          <Row className="transaction-info-container">
+            <Col xs={12} md={8} className="transaction-details">
+              <motion.div 
+                className="info-card"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+              >
+                <h3>Transaction Details</h3>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="label">Transaction ID:</span>
+                    <span className="value">{_id}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Reference ID:</span>
+                    <span className="value">{withdrawalrejectiontransactiondata?.details?.referrence?.number || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Intent:</span>
+                    <span className="value">{intent}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Payment Method:</span>
+                    <span className="value">{withdrawalrejectiontransactiondata?.details?.paymentmethod || 'N/A'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Sender:</span>
+                    <span className="value">{senderFullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Sender Phone:</span>
+                    <span className="value">{sender.contact.phonenumber}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Recipient:</span>
+                    <span className="value">{recipientFullName}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Recipient Phone:</span>
+                    <span className="value">{recipient.contact.phonenumber}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">PHP Amount to Receive:</span>
+                    <span className="value">{amounts.phpamounttorecieve} PHP</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="label">Status:</span>
+                    <span className="value">{withdrawalrejectiontransactiondata?.statusesandlogs?.status || 'Pending'}</span>
+                  </div>
+                </div>
+              </motion.div>
+            </Col>
+
+            <Col xs={12} md={4} className="transaction-image-container">
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.4 }}
+                className="receipt-image-card"
+              >
+                <h4>Transaction Receipt</h4>
+                <div className="image-container">
+                  {displayImage && (
+                    <div className="preview-container" onClick={() => setShowImageModal(true)}>
+                      <img 
+                        src={displayImage} 
+                        alt="Transaction Receipt" 
+                        className="transaction-receipt-image"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/api/placeholder/300/400";
+                        }}
+                      />
+                      <div className="image-overlay">
+                        <span>Click to view</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </motion.div>
+            </Col>
+          </Row>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="wr-validation-section"
+          >
+            <h3>Rejection Details</h3>
+            <Row className="wr-validation-inputs">
+              <Col xs={12} className="wr-input-group">
+                <label>Rejection Processing Deduction:</label>
+                <input 
+                  type="number"
+                  value={rejectionProcessingDeductionField}
+                  onChange={(e) => setRejectionProcessingDeductionField(e.target.value)}
+                  placeholder="Enter rejection processing deduction"
+                  className="wr-form-control"
+                />
+              </Col>
+              <Col xs={12} className="wr-input-group">
+                <label>Rejection Reason:</label>
+                <textarea 
+                  value={rejectionReasonField}
+                  onChange={(e) => setRejectionReasonField(e.target.value)}
+                  placeholder="Enter detailed reason for rejection"
+                  className="wr-form-control wr-textarea"
+                  rows={4}
+                />
+              </Col>
+            </Row>
+          </motion.div>
+
+          {responseMessage && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className={`wr-response-message ${responseMessage.includes("success") ? "wr-success" : "wr-error"}`}
+            >
+              {responseMessage}
+            </motion.div>
+          )}
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6 }}
+            className="wr-action-buttons"
+          >
+            {withdrawalRejectionLoadingIndication ? (
+              <div className="wr-loading-spinner">
+                <Spinner animation="border" variant="primary" />
+                <span>Processing...</span>
+              </div>
+            ) : (
+              <div className="wr-button-group">
+                <button 
+                  className="wr-cancel-button"
+                  onClick={() => {
+                    setShowWithdrawalRejectionModal(false)
+                    setShowTotalWithdrawals(true)
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="wr-reject-button"
+                  onClick={() => handleReject(_id)}
+                >
+                  Confirm Rejection
+                </button>
+              </div>
+            )}
+          </motion.div>
+        </Col>
+      </Col>
+
+      {/* Image Modal */}
+      <Modal 
+        show={showImageModal} 
+        onHide={() => setShowImageModal(false)}
+        centered
+        dialogClassName="wr-receipt-modal"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Transaction Receipt</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <div className="wr-full-image-container">
+            <Image 
+              src={displayImage} 
+              alt="Transaction Receipt" 
+              fluid 
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/api/placeholder/300/400";
+              }}
+            />
+          </div>
+        </Modal.Body>
+        <Modal.Footer>
+          <button onClick={() => setShowImageModal(false)} className="wr-close-modal-button">
+            Close
+          </button>
+        </Modal.Footer>
+      </Modal>
+    </motion.div>
+  );
+};
+
+
+
 
 
 const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransaction }) => {
@@ -8781,7 +11075,7 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
               
               <div className="credit-transaction-modal-info-item">
                 <span className="credit-transaction-modal-label">Date:</span>
-                <span className="credit-transaction-modal-value">{formattedDate}</span>
+                <span className="credit-transaction-modal-value">{date}</span>
               </div>
               
               <div className="credit-transaction-modal-info-item">
@@ -9018,7 +11312,7 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
                       {statusesandlogs.logs.map((log, index) => (
                         <div key={index} className="credit-transaction-modal-status-item">
                           <div className="credit-transaction-modal-status-date">
-                            {new Date(log.date).toLocaleString()}
+                            {log.date}
                           </div>
                           <div className={`credit-transaction-modal-status-badge credit-transaction-modal-status-${log.indication?.toLowerCase() || 'neutral'}`}>
                             {log.type}
@@ -9052,7 +11346,340 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
 
 
 
+const MfatipRegisteredRegistrants = ({ 
+  setShowDatabaseConfiguration, 
+  setShowRegisteredRegistrants,
+  setShowRegistrantDetailsDisplay, 
 
+  totalregisteredregistrants, 
+  setregistrantdata,
+
+  onClose, 
+  onView, 
+  onEdit, 
+  onDelete,
+  onVerify, 
+  onReject 
+
+}) => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredRegistrants, setFilteredRegistrants] = useState([]);
+  const [isVisible, setIsVisible] = useState(false);
+  const [duplicateWarnings, setDuplicateWarnings] = useState({});
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    // Animation effect on mount with slight delay for better visual effect
+    setTimeout(() => {
+      setIsVisible(true);
+    }, 50);
+    
+    // Initial filtering to show all registrants
+    setFilteredRegistrants(totalregisteredregistrants);
+    
+    // Check for duplicate information
+    const duplicates = findDuplicates(totalregisteredregistrants);
+    setDuplicateWarnings(duplicates);
+    
+    {/*
+    // Add click outside listener
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+    */}
+  }, [totalregisteredregistrants]);
+
+  const handleClickOutside = (event) => {
+    if (modalRef.current && !modalRef.current.contains(event.target)) {
+      handleClose();
+    }
+  };
+
+  // Function to find duplicate registrants (by name, phone, or email)
+  const findDuplicates = (registrantsList) => {
+    const duplicateInfo = {};
+    const nameMap = {};
+    const phoneMap = {};
+    const emailMap = {};
+    
+    registrantsList.forEach(registrant => {
+      // Check for duplicate names
+      const fullName = `${registrant.name.firstname} ${registrant.name.middlename || ''} ${registrant.name.lastname}`.toLowerCase().trim();
+      if (nameMap[fullName]) {
+        nameMap[fullName].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('name');
+      } else {
+        nameMap[fullName] = [registrant.id];
+      }
+      
+      // Check for duplicate phone numbers
+      const phone = registrant.contact.phonenumber;
+      if (phone && phoneMap[phone]) {
+        phoneMap[phone].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('phone');
+      } else if (phone) {
+        phoneMap[phone] = [registrant.id];
+      }
+      
+      // Check for duplicate emails
+      const email = registrant.contact.emailaddress;
+      if (email && emailMap[email]) {
+        emailMap[email].push(registrant.id);
+        if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
+        duplicateInfo[registrant.id].push('email');
+      } else if (email) {
+        emailMap[email] = [registrant.id];
+      }
+    });
+    
+    return duplicateInfo;
+  };
+
+  useEffect(() => {
+    if (searchQuery) {
+      const results = totalregisteredregistrants.filter(registrant => 
+        registrant.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (registrant.name.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (registrant.contact.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
+        (registrant.contact.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (registrant.registrationstatusesandlogs && registrant.registrationstatusesandlogs.indication &&
+         registrant.registrationstatusesandlogs.indication.toLowerCase().includes(searchQuery.toLowerCase()))
+      );
+      setFilteredRegistrants(results);
+    } else {
+      // Reset to show all registrants when search is cleared
+      setFilteredRegistrants(totalregisteredregistrants);
+    }
+  }, [searchQuery, totalregisteredregistrants]);
+
+  const handleClose = () => {
+    setIsVisible(false);
+    // Delay actual closing to allow for animation
+    setTimeout(() => {
+      setShowDatabaseConfiguration(false);
+      setShowRegisteredRegistrants(false);
+    }, 300);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return "N/A";
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getRegistrationDate = (registrant) => {
+    // Check registration logs first
+    if (registrant.registrationstatusesandlogs && 
+        registrant.registrationstatusesandlogs.registrationlog && 
+        registrant.registrationstatusesandlogs.registrationlog.length > 0) {
+      return registrant.registrationstatusesandlogs.registrationlog[0].date;
+    }
+    // Fallback to transactions
+    else if (registrant.transactions && registrant.transactions.length > 0) {
+      return registrant.transactions[0].date;
+    }
+    return "N/A"; // No date found
+  };
+
+  const getStatusIndicator = (registrant) => {
+    if (registrant.registrationstatusesandlogs && registrant.registrationstatusesandlogs.indication) {
+      return registrant.registrationstatusesandlogs.indication;
+    }
+    return "Unknown";
+  };
+
+  const getStatusClass = (status) => {
+    if (!status) return "unknown";
+    
+    status = status.toLowerCase();
+    if (status.includes("verified")) return "verified";
+    if (status.includes("pending")) return "pending";
+    if (status.includes("rejected")) return "rejected";
+    if (status.includes("approved")) return "verified";
+    
+    return "default";
+  };
+
+  return (
+    <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
+      <div 
+        ref={modalRef}
+        className={`mfatip-registrants-modal ${isVisible ? 'visible' : ''}`}
+      >
+        <div className="modal-header">
+          <h2>
+            <FaFileAlt className="header-icon" />
+            MFATIP Registered Registrants
+          </h2>
+          <button className="close-button" onClick={handleClose} aria-label="Close">
+            <FaTimes />
+          </button>
+        </div>
+        
+        <div className="search-section">
+          <div className="search-input-container">
+            <FaSearch className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search by ID, name, phone number, email, or status..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="search-input"
+              aria-label="Search registrants"
+            />
+            {searchQuery && (
+              <button 
+                className="clear-search-button" 
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+          <div className="results-count">
+            <span className="count-number">{filteredRegistrants.length}</span> registrant{filteredRegistrants.length !== 1 ? 's' : ''} found
+          </div>
+        </div>
+        
+        <div className="registrants-container">
+          {filteredRegistrants.length === 0 ? (
+            <div className="no-results">
+              <FaExclamationCircle className="no-results-icon" />
+              <p>No registrants found</p>
+              {searchQuery && (
+                <button className="reset-search-button" onClick={() => setSearchQuery('')}>
+                  Clear search
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="table-responsive">
+              <table className="registrants-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Registration Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredRegistrants.map((registrant, index) => (
+                    <tr 
+                      key={registrant.id} 
+                      className={`registrant-row ${duplicateWarnings[registrant.id] ? 'has-duplicates' : ''}`}
+                      style={{ animationDelay: `${index * 0.05}s` }}
+                    >
+                      <td className="registrant-id">
+                        <div className="id-container">
+                          <FaIdCard className="id-icon" />
+                          <span>{registrant.id}</span>
+                        </div>
+                      </td>
+                      <td className="name-cell">
+                        <div className="name-flex-container">
+                          <FaUserCircle className="user-icon" />
+                          <div className="name-details">
+                            <span className="full-name">
+                              {registrant.name.firstname} {registrant.name.middlename} {registrant.name.lastname}
+                            </span>
+                            {registrant.name.nickname && (
+                              <span className="nickname">({registrant.name.nickname})</span>
+                            )}
+                          </div>
+                          {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('name') && (
+                            <div className="duplicate-warning" title="Duplicate name found">
+                              <FaExclamationTriangle className="warning-icon" />
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                      <td className="contact-cell">
+                        <div className="contact-details">
+                          <div className="phone-number">
+                            <FaPhone className="contact-icon" />
+                            <span>{registrant.contact.phonenumber || 'N/A'}</span>
+                            {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('phone') && (
+                              <FaExclamationTriangle className="warning-icon-small" title="Duplicate phone number found" />
+                            )}
+                          </div>
+                          <div className="email-address">
+                            <FaEnvelope className="contact-icon" />
+                            <span>{registrant.contact.emailaddress || 'N/A'}</span>
+                            {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('email') && (
+                              <FaExclamationTriangle className="warning-icon-small" title="Duplicate email found" />
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                      <td className="date-cell">
+                        <div className="date-flex-container">
+                          <FaCalendarAlt className="date-icon" />
+                          <span>{formatDate(getRegistrationDate(registrant))}</span>
+                        </div>
+                      </td>
+                      <td className="status-cell">
+                        <div className={`status-indicator ${getStatusClass(getStatusIndicator(registrant))}`}>
+                          <FaExclamationCircle className="status-icon" />
+                          <span>{getStatusIndicator(registrant)}</span>
+                        </div>
+                      </td>
+                      <td className="actions-cell">
+                        <div className="action-buttons">
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowRegistrantDetailsDisplay(true);
+                              setregistrantdata(registrant);
+                            }}
+                            aria-label="View registrant details"
+                          >
+                            <FaEye className="action-icon" />
+                            <span className="action-text">View</span>
+                          </button>
+                          <button 
+                            className="edit-button" 
+                            onClick={() => onEdit(registrant.id)}
+                            aria-label="Edit registrant"
+                          >
+                            <FaEdit className="action-icon" />
+                            <span className="action-text">Edit</span>
+                          </button>
+                          <button 
+                            className="delete-button" 
+                            onClick={() => onDelete(registrant.id)}
+                            aria-label="Delete registrant"
+                          >
+                            <FaTrash className="action-icon" />
+                            <span className="action-text">Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({ 
 
@@ -13214,7 +15841,13 @@ const RegistrationForm = ({ onClose, setShowDatabaseConfiguration, setShowCreate
   );
 };
 
-const ReadRegistrantFormDetails = ({ setShowDatabaseConfiguration, setShowRegistrantDetailsDisplay, registrantdata, registrantData, onClose }) => {
+const ReadRegistrantFormDetails = ({ 
+  setShowDatabaseConfiguration, 
+  setShowRegistrantDetailsDisplay, 
+  registrantdata,
+  registrantData, 
+  onClose 
+  }) => {
 
   // Display sections with their respective data
   const [documentImage, setDocumentImage] = useState(null);
@@ -13233,7 +15866,7 @@ const ReadRegistrantFormDetails = ({ setShowDatabaseConfiguration, setShowRegist
         <div className="form-header">
           <h2>MFATIP Registrant Details</h2>
           <button className="close-button" onClick={()=> {
-            setShowRegistrantDetailsDisplay(false);
+            setShowRegistrantDetailsDisplay(false)
           }}>
             ×
           </button>

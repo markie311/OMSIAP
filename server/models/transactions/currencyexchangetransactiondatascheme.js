@@ -5,7 +5,7 @@ const currencyexchangetransactiondataschemestatusesschememessagesscheme = new Sc
 message: {
 type: "string"
 }
-})
+}) 
   
 const currencyexchangetransactiondataschemestatusesscheme = new Schema({
 date: {

@@ -175,10 +175,10 @@ amounts: {
  }
 },
 referrence: {
-  gcashphonenumber: {
+  number: {
     type: 'string'
   },
-  referencenumber: {
+  gcashtransactionrecieptimage: {
     type: 'string'
   }
 }
