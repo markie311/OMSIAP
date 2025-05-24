@@ -81,7 +81,7 @@ export default function NavBar(props) {
               <div className="nav-dropdown">
                 <Dropdown>
                   <Dropdown.Toggle variant="dark" id="dropdown-mfatip" className="custom-dropdown-toggle">
-                    MONTHLY FINANCIAL ALLOCATION TO INDIVIDUAL PEOPLE
+                    FINANCIAL ALLOCATION
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="custom-dropdown-menu">
                     <Dropdown.Item href="/monthlyfinanceallocationtoindividualpeople">WHAT IS MFATIP</Dropdown.Item>
