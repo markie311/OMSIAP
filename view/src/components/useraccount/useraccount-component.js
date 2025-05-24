@@ -118,17 +118,6 @@ const UserAccount = (props) => {
     transactionImage: null,
   })
 
-  const [profileForm, setProfileForm] = useState({
-    firstName: user.firstName,
-    middleName: user.middleName,
-    lastName: user.lastName,
-    phoneNumber: user.phoneNumber,
-    birthCertificateFront: null,
-    birthCertificateBack: null,
-    governmentIdFront: null,
-    governmentIdBack: null,
-  })
-
   const [previewImage, setPreviewImage] = useState(null)
 
   const [previewImages, setPreviewImages] = useState({
@@ -299,43 +288,6 @@ const UserAccount = (props) => {
     } else {
       setDepositForm({ ...depositForm, [name]: value })
     }
-  }
-
-  const handleProfileChange = (e) => {
-    const { name, value, files } = e.target
-
-    if (files && files[0]) {
-      setProfileForm({ ...profileForm, [name]: files[0] })
-      setPreviewImages({
-        ...previewImages,
-        [name]: URL.createObjectURL(files[0]),
-      })
-    } else {
-      setProfileForm({ ...profileForm, [name]: value })
-    }
-  }
-
-  const handleProfileSubmit = (e) => {
-    e.preventDefault()
-
-    // In a real app, send profile update to server
-    console.log("Profile updated:", profileForm)
-
-    // Update user state with new profile information
-    setUser({
-      ...user,
-      firstName: profileForm.firstName,
-      middleName: profileForm.middleName,
-      lastName: profileForm.lastName,
-      phoneNumber: profileForm.phoneNumber,
-      birthCertificateFront: profileForm.birthCertificateFront || user.birthCertificateFront,
-      birthCertificateBack: profileForm.birthCertificateBack || user.birthCertificateBack,
-      governmentIdFront: profileForm.governmentIdFront || user.governmentIdFront,
-      governmentIdBack: profileForm.governmentIdBack || user.governmentIdBack,
-    })
-
-    // Show success message (in a real app, this would be more sophisticated)
-    alert("Profile updated successfully!")
   }
 
   const openTransactionModal = (transaction) => {
@@ -982,6 +934,314 @@ const UserAccount = (props) => {
     }
   }
 
+  // Document handling functions
+
+// This function handles file uploads
+const handleFileUpload = (event) => {
+  const { name, files } = event.target;
+  
+  if (files && files[0]) {
+    // Update the profile form with the selected file
+    setProfileForm(prev => ({
+      ...prev,
+      [name]: files[0]
+    }));
+  }
+};
+
+// This function handles removing a document
+const handleRemoveDocument = (documentField) => {
+  setProfileForm(prev => ({
+    ...prev,
+    [documentField]: null
+  }));
+};
+
+{/*
+const [profileForm, setProfileForm] = useState({
+    firstName: user.firstName,
+    middleName: user.middleName,
+    lastName: user.lastName,
+    phoneNumber: user.phoneNumber,
+    birthCertificateFront: null,
+    birthCertificateBack: null,
+    governmentIdFront: null,
+    governmentIdBack: null,
+  })
+*/}
+
+{/*
+// Initial form state with proper optional chaining
+const [profileForm, setProfileForm] = useState({
+  // Basic personal information
+  firstName: props.user.name.firstname || '',
+  middleName: props.user.name.middlename || '',
+  lastName: props.user.name.lastname || '',
+  phoneNumber: props.user.contact.phonenumber || '',
+  
+  // Document fields with proper optional chaining
+  birthCertificateFront: props.user.personaldata.birthcertificate.frontphoto?.image || null,
+  birthCertificateBack: props.user.personaldata.birthcertificate.backphoto?.image || null,
+  governmentIdFront: props.user.personaldata.government_issued_identification.frontphoto?.image || null,
+  governmentIdBack: props.user.personaldata.government_issued_identification.backphoto?.image || null
+});
+*/}
+// Initial form state with more robust optional chaining and default values
+const [profileForm, setProfileForm] = useState({
+  // Basic personal information
+  firstName: '',
+  middleName: '',
+  lastName: '',
+  phoneNumber: '',
+  
+  // Document fields
+  birthCertificateFront: null,
+  birthCertificateBack: null,
+  governmentIdFront: null,
+  governmentIdBack: null
+});
+
+// Update form data when props.user changes or becomes available
+useEffect(() => {
+  if (props.user) {
+    setProfileForm({
+      firstName: props.user?.name?.firstname || '',
+      middleName: props.user?.name?.middlename || '',
+      lastName: props.user?.name?.lastname || '',
+      phoneNumber: props.user?.contact?.phonenumber || '',
+      
+      birthCertificateFront: props.user?.personaldata?.birthcertificate?.frontphoto?.image || null,
+      birthCertificateBack: props.user?.personaldata?.birthcertificate?.backphoto?.image || null,
+      governmentIdFront: props.user?.personaldata?.government_issued_identification?.frontphoto?.image || null,
+      governmentIdBack: props.user?.personaldata?.government_issued_identification?.backphoto?.image || null
+    });
+  }
+}, [props.user]);
+
+// 2. Add console logging to help debug
+useEffect(() => {
+  console.log("Current props.user:", props.user);
+  console.log("Current profileForm state:", profileForm);
+}, [props.user, profileForm]);
+
+// 3. Helper function to safely access nested properties
+const getNestedValue = (obj, path, defaultValue = '') => {
+  try {
+    const value = path.split('.').reduce((o, key) => (o || {})[key], obj);
+    return value !== undefined && value !== null ? value : defaultValue;
+  } catch (error) {
+    console.error(`Error accessing path ${path}:`, error);
+    return defaultValue;
+  }
+};
+
+
+
+// Track documents that should be removed
+const [removedDocuments, setRemovedDocuments] = useState([])
+
+// State for loading and notifications
+const [isSubmitting, setIsSubmitting] = useState(false)
+
+const [notification, setNotification] = useState({ show: false, type: '', message: '' })
+
+const [profilesubmitloadingindication, profilesubmitloadingindicationcb] = useState(false)
+
+{/*
+   const handleProfileChange = (e) => {
+    const { name, value, files } = e.target
+
+    if (files && files[0]) {
+      setProfileForm({ ...profileForm, [name]: files[0] })
+      setPreviewImages({
+        ...previewImages,
+        [name]: URL.createObjectURL(files[0]),
+      })
+    } else {
+      setProfileForm({ ...profileForm, [name]: value })
+    }
+  }
+  */}
+
+// Handle normal form input changes
+const handleProfileChange = (event) => {
+  const { name, value } = event.target;
+  setProfileForm(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
+
+{/*
+   const handleProfileSubmit = (e) => {
+    e.preventDefault()
+
+    // In a real app, send profile update to server
+    console.log("Profile updated:", profileForm)
+
+    // Update user state with new profile information
+    setUser({
+      ...user,
+      firstName: profileForm.firstName,
+      middleName: profileForm.middleName,
+      lastName: profileForm.lastName,
+      phoneNumber: profileForm.phoneNumber,
+      birthCertificateFront: profileForm.birthCertificateFront || user.birthCertificateFront,
+      birthCertificateBack: profileForm.birthCertificateBack || user.birthCertificateBack,
+      governmentIdFront: profileForm.governmentIdFront || user.governmentIdFront,
+      governmentIdBack: profileForm.governmentIdBack || user.governmentIdBack,
+    })
+
+    // Show success message (in a real app, this would be more sophisticated)
+    alert("Profile updated successfully!")
+  }
+  */}
+
+// Handle profile form submission 
+const handleProfileSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+  
+  // Get reference to the response message element
+  const responseMessage = document.querySelector('#userdashboard-profilesubmit-responsemessage');
+  responseMessage.textContent = 'Submitting profile updates...';
+  responseMessage.style.color = '#666'; // Neutral color for processing
+  
+  // Show loading indicator
+  profilesubmitloadingindicationcb(true);
+  
+  try {
+    // Check internet connection
+    if (!navigator.onLine) {
+      throw new Error('No internet connection. Please check your network and try again.');
+    }
+    
+    // Create FormData for file uploads
+    const formData = new FormData();
+    
+    // Add user ID explicitly instead of relying on middleware
+    formData.append('userId', props.user._id); // Assuming currentUser is available from context/state
+    
+    // Add text fields
+    formData.append('firstName', profileForm.firstName);
+    formData.append('middleName', profileForm.middleName || '');
+    formData.append('lastName', profileForm.lastName);
+    formData.append('phoneNumber', profileForm.phoneNumber);
+    
+    // Add files if they are File objects (newly uploaded)
+    if (profileForm.birthCertificateFront instanceof File) {
+      formData.append('birthCertificateFront', profileForm.birthCertificateFront);
+    }
+    
+    if (profileForm.birthCertificateBack instanceof File) {
+      formData.append('birthCertificateBack', profileForm.birthCertificateBack);
+    }
+    
+    if (profileForm.governmentIdFront instanceof File) {
+      formData.append('governmentIdFront', profileForm.governmentIdFront);
+    }
+    
+    if (profileForm.governmentIdBack instanceof File) {
+      formData.append('governmentIdBack', profileForm.governmentIdBack);
+    }
+    
+    // Add the list of documents to remove
+    if (removedDocuments.length > 0) {
+      formData.append('removedDocuments', JSON.stringify(removedDocuments));
+    }
+    
+    // Set timeout for the request
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30-second timeout
+    
+    // Send request to update profile
+    const response = await axiosCreatedInstance.put('/omsiap/profile/update', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      signal: controller.signal
+    });
+    
+    // Clear the timeout
+    clearTimeout(timeoutId);
+    
+    if (response.data.success) {
+      // Reset removed documents array after successful update
+      setRemovedDocuments([]);
+      
+      // Update profile form with the returned data
+      const updatedData = response.data.data;
+      setProfileForm(prev => ({
+        ...prev,
+        firstName: updatedData.firstName || prev.firstName,
+        middleName: updatedData.middleName || prev.middleName,
+        lastName: updatedData.lastName || prev.lastName,
+        phoneNumber: updatedData.phoneNumber || prev.phoneNumber,
+        birthCertificateFront: updatedData.documents?.birthCertificateFront || null,
+        birthCertificateBack: updatedData.documents?.birthCertificateBack || null,
+        governmentIdFront: updatedData.documents?.governmentIdFront || null,
+        governmentIdBack: updatedData.documents?.governmentIdBack || null
+      }));
+      
+      // Update UI with success message
+      responseMessage.textContent = 'Profile updated successfully!';
+      responseMessage.style.color = '#4caf50'; // Green for success
+      
+      // Show success notification
+      setNotification({
+        show: true,
+        type: 'success',
+        message: 'Profile updated successfully'
+      });
+    } else {
+      throw new Error(response.data.message || 'Failed to update profile');
+    }
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    
+    // Handle specific error types
+    let errorMessage = 'An unexpected error occurred. Please try again later.';
+    
+    if (!navigator.onLine) {
+      errorMessage = 'No internet connection. Please check your network and try again.';
+    } else if (error.name === 'AbortError') {
+      errorMessage = 'Request timed out. The server is taking too long to respond.';
+    } else if (error.response) {
+      // The request was made and the server responded with a status code
+      // that falls out of the range of 2xx
+      errorMessage = error.response.data?.message || `Server error: ${error.response.status}`;
+    } else if (error.request) {
+      // The request was made but no response was received
+      errorMessage = 'No response from server. Please try again later.';
+    } else {
+      // Something happened in setting up the request
+      errorMessage = error.message || 'Failed to send request';
+    }
+    
+    // Update UI with error message
+    responseMessage.textContent = errorMessage;
+    responseMessage.style.color = '#f44336'; // Red for error
+    
+    // Show error notification
+    setNotification({
+      show: true,
+      type: 'error',
+      message: errorMessage
+    });
+  } finally {
+    // Hide loading indicator
+    profilesubmitloadingindicationcb(false);
+    setIsSubmitting(false);
+    
+    // Hide notification after 5 seconds (increased from 3)
+    if (notification.show) {
+      setTimeout(() => {
+        setNotification({ show: false, type: '', message: '' });
+      }, 5000);
+    }
+  }
+};
+
   return (
     <div className="userdashboard-dashboard-container" style={{ display: props.userdashboardmodal }}>
       <header className="userdashboard-dashboard-header">
@@ -1018,6 +1278,7 @@ const UserAccount = (props) => {
             Account Settings
           </button>
         </div>
+
         <button className="userdashboard-gotohome-btn">
           <a href={"/"} id="gotohomeatag">
             Go to home
@@ -1025,22 +1286,23 @@ const UserAccount = (props) => {
         </button>
 
         {/*
-    {
-    props.user.loginstatus === "logged in" ?
-    (
-      <button className="userdashboard-logout-btn" onClick={handleLogout}>LOG OUT</button>
-    )
-    :
-    (
-      <button className="userdashboard-login-btn" onClick={()=> {
-        navigate('/mfatip/loginregister')
-      }}>LOG IN</button>
-    )
-    }
-    */}
+          {
+          props.user.loginstatus === "logged in" ?
+          (
+            <button className="userdashboard-logout-btn" onClick={handleLogout}>LOG OUT</button>
+          )
+          :
+          (
+            <button className="userdashboard-login-btn" onClick={()=> {
+              navigate('/mfatip/loginregister')
+            }}>LOG IN</button>
+          )
+          }
+        */}
       </header>
 
       <div className="userdashboard-dashboard-content">
+
         {/* Account Summary Tab */}
         {activeTab === "account" && (
           <div className="userdashboard-account-panel">
@@ -1093,63 +1355,128 @@ const UserAccount = (props) => {
               </div>
             </section>
 
-            {/* Redesigned Document Verification Section */}
+           {/* Redesigned Document Verification Section - Simplified Based on Overall Status */}
             <section className="userdashboard-documents-verification">
               <h2>Document Verification Status</h2>
-              <div className="userdashboard-documents-status-grid">
-                <div
-                  className={`userdashboard-document-card ${user.birthCertificateFront && user.birthCertificateBack ? "userdashboard-verified" : "userdashboard-pending"}`}
-                  style={{ "--card-index": 1 }}
-                >
-                  <div className="userdashboard-document-icon">
-                    {user.birthCertificateFront && user.birthCertificateBack ? (
-                      <i className="fas fa-check-circle"></i>
-                    ) : (
-                      <i className="fas fa-exclamation-circle"></i>
-                    )}
+              
+              {props.user.registrationstatusesandlogs.indication === "Verified" ? (
+                <div className="userdashboard-verification-message userdashboard-verified">
+                  <div className="userdashboard-verification-icon">
+                    <i className="fas fa-check-circle"></i>
                   </div>
-                  <div className="userdashboard-document-info">
-                    <h3 className="userdashboard-document-title">Birth Certificate</h3>
-                    <span
-                      className={`userdashboard-document-badge ${user.birthCertificateFront && user.birthCertificateBack ? "userdashboard-verified" : "userdashboard-pending"}`}
-                    >
-                      {user.birthCertificateFront && user.birthCertificateBack ? "Verified" : "Pending Verification"}
-                    </span>
-                    {!(user.birthCertificateFront && user.birthCertificateBack) && (
-                      <p className="userdashboard-document-action">
-                        Please upload your birth certificate in the Settings section
-                      </p>
-                    )}
+                  <div className="userdashboard-verification-content">
+                    <h3>Account Successfully Verified</h3>
+                    <p>All your documents have been verified. Your account is fully activated and ready to use.</p>
                   </div>
                 </div>
+              ) : props.user.registrationstatusesandlogs.indication === "Pending Documents" ? (
+                // Show individual document cards only when status is Pending
+                <div className="userdashboard-documents-status-grid">
+                  {/* Birth Certificate Card */}
+                  <div
+                    className={`userdashboard-document-card ${
+                      props.user.personaldata?.birthcertificate?.frontphoto?.image && 
+                      props.user.personaldata?.birthcertificate?.backphoto?.image
+                        ? "userdashboard-verified"
+                        : "userdashboard-pending"
+                    }`}
+                  >
+                    <div className="userdashboard-document-icon">
+                      {props.user.personaldata?.birthcertificate?.frontphoto?.image && 
+                      props.user.personaldata?.birthcertificate?.backphoto?.image ? (
+                        <i className="fas fa-check-circle"></i>
+                      ) : (
+                        <i className="fas fa-exclamation-circle"></i>
+                      )}
+                    </div>
+                    <div className="userdashboard-document-info">
+                      <h3 className="userdashboard-document-title">Birth Certificate</h3>
+                      <span
+                        className={`userdashboard-document-badge ${
+                          props.user.personaldata?.birthcertificate?.frontphoto?.image && 
+                          props.user.personaldata?.birthcertificate?.backphoto?.image
+                            ? "userdashboard-verified"
+                            : "userdashboard-pending"
+                        }`}
+                      >
+                        {props.user.personaldata?.birthcertificate?.frontphoto?.image && 
+                        props.user.personaldata?.birthcertificate?.backphoto?.image
+                          ? "Verified"
+                          : "Pending Documents"}
+                      </span>
+                      {!(props.user.personaldata?.birthcertificate?.frontphoto?.image && 
+                        props.user.personaldata?.birthcertificate?.backphoto?.image) && (
+                        <p className="userdashboard-document-action">
+                          Please upload your birth certificate in the Settings section
+                        </p>
+                      )}
+                    </div>
+                  </div>
 
-                <div
-                  className={`userdashboard-document-card ${user.governmentIdFront && user.governmentIdBack ? "userdashboard-verified" : "userdashboard-pending"}`}
-                  style={{ "--card-index": 2 }}
-                >
-                  <div className="userdashboard-document-icon">
-                    {user.governmentIdFront && user.governmentIdBack ? (
-                      <i className="fas fa-check-circle"></i>
-                    ) : (
-                      <i className="fas fa-exclamation-circle"></i>
-                    )}
+                  {/* Government ID Card */}
+                  <div
+                    className={`userdashboard-document-card ${
+                      props.user.personaldata?.government_issued_identification?.frontphoto?.image && 
+                      props.user.personaldata?.government_issued_identification?.backphoto?.image
+                        ? "userdashboard-verified"
+                        : "userdashboard-pending"
+                    }`}
+                  >
+                    <div className="userdashboard-document-icon">
+                      {props.user.personaldata?.government_issued_identification?.frontphoto?.image && 
+                      props.user.personaldata?.government_issued_identification?.backphoto?.image ? (
+                        <i className="fas fa-check-circle"></i>
+                      ) : (
+                        <i className="fas fa-exclamation-circle"></i>
+                      )}
+                    </div>
+                    <div className="userdashboard-document-info">
+                      <h3 className="userdashboard-document-title">Government ID</h3>
+                      <span
+                        className={`userdashboard-document-badge ${
+                          props.user.personaldata?.government_issued_identification?.frontphoto?.image && 
+                          props.user.personaldata?.government_issued_identification?.backphoto?.image
+                            ? "userdashboard-verified"
+                            : "userdashboard-pending"
+                        }`}
+                      >
+                        {props.user.personaldata?.government_issued_identification?.frontphoto?.image && 
+                        props.user.personaldata?.government_issued_identification?.backphoto?.image
+                          ? "Verified"
+                          : "Pending Verification"}
+                      </span>
+                      {!(props.user.personaldata?.government_issued_identification?.frontphoto?.image && 
+                        props.user.personaldata?.government_issued_identification?.backphoto?.image) && (
+                        <p className="userdashboard-document-action">
+                          Please upload your government ID in the Settings section
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="userdashboard-document-info">
-                    <h3 className="userdashboard-document-title">Government ID</h3>
-                    <span
-                      className={`userdashboard-document-badge ${user.governmentIdFront && user.governmentIdBack ? "userdashboard-verified" : "userdashboard-pending"}`}
-                    >
-                      {user.governmentIdFront && user.governmentIdBack ? "Verified" : "Pending Verification"}
-                    </span>
-                    {!(user.governmentIdFront && user.governmentIdBack) && (
-                      <p className="userdashboard-document-action">
-                        Please upload your government ID in the Settings section
-                      </p>
-                    )}
+                  
+                  {/* Status Message for Pending */}
+                  <div className="userdashboard-document-status-message userdashboard-pending">
+                    <i className="fas fa-clock"></i>
+                    <p>Your account verification is in progress. Our team is reviewing your documents.</p>
                   </div>
                 </div>
-              </div>
+              ) : (
+                // Unverified Status - Simple Message
+                <div className="userdashboard-verification-message userdashboard-unverified">
+                  <div className="userdashboard-verification-icon">
+                    <i className="fas fa-exclamation-triangle"></i>
+                  </div>
+                  <div className="userdashboard-verification-content">
+                    <h3>Account Verification Required</h3>
+                    <p>Please provide the required documents to verify your account. Upload your birth certificate and government ID in the Settings section.</p>
+                    <button className="userdashboard-verification-action-btn">
+                      Go to Settings
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
+
           </div>
         )}
 
@@ -1613,7 +1940,7 @@ const UserAccount = (props) => {
           </div>
         )}
 
-        {/* Settings Tab */}
+       {/* Settings Tab */}
         {activeTab === "settings" && (
           <div className="userdashboard-settings-panel">
             <section className="userdashboard-user-settings">
@@ -1681,12 +2008,22 @@ const UserAccount = (props) => {
                         <label htmlFor="birthCertificateFront" className="userdashboard-file-input-label">
                           Front of Birth Certificate
                           <div className="userdashboard-image-preview">
-                            {previewImages.birthCertificateFront ? (
-                              <img
-                                src={previewImages.birthCertificateFront || "/placeholder.svg"}
-                                alt="Birth Certificate Front"
-                                style={{ height: "15vh", width: "10vw" }}
-                              />
+                            {profileForm.birthCertificateFront ? (
+                              <div className="userdashboard-document-preview">
+                                <img
+                                  src={typeof profileForm.birthCertificateFront === 'string' 
+                                    ? profileForm.birthCertificateFront 
+                                    : URL.createObjectURL(profileForm.birthCertificateFront)}
+                                  alt="Birth Certificate Front"
+                                />
+                                <button 
+                                  type="button" 
+                                  className="userdashboard-remove-document" 
+                                  onClick={() => handleRemoveDocument('birthCertificateFront')}
+                                >
+                                  Remove
+                                </button>
+                              </div>
                             ) : (
                               <div className="userdashboard-upload-placeholder">
                                 <span>Upload Front Image</span>
@@ -1699,7 +2036,7 @@ const UserAccount = (props) => {
                           id="birthCertificateFront"
                           name="birthCertificateFront"
                           accept="image/*"
-                          onChange={handleProfileChange}
+                          onChange={handleFileUpload}
                           className="userdashboard-file-input"
                         />
                       </div>
@@ -1708,12 +2045,22 @@ const UserAccount = (props) => {
                         <label htmlFor="birthCertificateBack" className="userdashboard-file-input-label">
                           Back of Birth Certificate
                           <div className="userdashboard-image-preview">
-                            {previewImages.birthCertificateBack ? (
-                              <img
-                                src={previewImages.birthCertificateBack || "/placeholder.svg"}
-                                alt="Birth Certificate Back"
-                                style={{ height: "15vh", width: "10vw" }}
-                              />
+                            {profileForm.birthCertificateBack ? (
+                              <div className="userdashboard-document-preview">
+                                <img
+                                  src={typeof profileForm.birthCertificateBack === 'string' 
+                                    ? profileForm.birthCertificateBack 
+                                    : URL.createObjectURL(profileForm.birthCertificateBack)}
+                                  alt="Birth Certificate Back"
+                                />
+                                <button 
+                                  type="button" 
+                                  className="userdashboard-remove-document" 
+                                  onClick={() => handleRemoveDocument('birthCertificateBack')}
+                                >
+                                  Remove
+                                </button>
+                              </div>
                             ) : (
                               <div className="userdashboard-upload-placeholder">
                                 <span>Upload Back Image</span>
@@ -1726,7 +2073,7 @@ const UserAccount = (props) => {
                           id="birthCertificateBack"
                           name="birthCertificateBack"
                           accept="image/*"
-                          onChange={handleProfileChange}
+                          onChange={handleFileUpload}
                           className="userdashboard-file-input"
                         />
                       </div>
@@ -1740,12 +2087,22 @@ const UserAccount = (props) => {
                         <label htmlFor="governmentIdFront" className="userdashboard-file-input-label">
                           Front of Government ID
                           <div className="userdashboard-image-preview">
-                            {previewImages.governmentIdFront ? (
-                              <img
-                                src={previewImages.governmentIdFront || "/placeholder.svg"}
-                                alt="Government ID Front"
-                                style={{ height: "15vh", width: "10vw" }}
-                              />
+                            {profileForm.governmentIdFront ? (
+                              <div className="userdashboard-document-preview">
+                                <img
+                                  src={typeof profileForm.governmentIdFront === 'string' 
+                                    ? profileForm.governmentIdFront 
+                                    : URL.createObjectURL(profileForm.governmentIdFront)}
+                                  alt="Government ID Front"
+                                />
+                                <button 
+                                  type="button" 
+                                  className="userdashboard-remove-document" 
+                                  onClick={() => handleRemoveDocument('governmentIdFront')}
+                                >
+                                  Remove
+                                </button>
+                              </div>
                             ) : (
                               <div className="userdashboard-upload-placeholder">
                                 <span>Upload Front Image</span>
@@ -1758,7 +2115,7 @@ const UserAccount = (props) => {
                           id="governmentIdFront"
                           name="governmentIdFront"
                           accept="image/*"
-                          onChange={handleProfileChange}
+                          onChange={handleFileUpload}
                           className="userdashboard-file-input"
                         />
                       </div>
@@ -1767,12 +2124,22 @@ const UserAccount = (props) => {
                         <label htmlFor="governmentIdBack" className="userdashboard-file-input-label">
                           Back of Government ID
                           <div className="userdashboard-image-preview">
-                            {previewImages.governmentIdBack ? (
-                              <img
-                                src={previewImages.governmentIdBack || "/placeholder.svg"}
-                                alt="Government ID Back"
-                                style={{ height: "15vh", width: "10vw" }}
-                              />
+                            {profileForm.governmentIdBack ? (
+                              <div className="userdashboard-document-preview">
+                                <img
+                                  src={typeof profileForm.governmentIdBack === 'string' 
+                                    ? profileForm.governmentIdBack 
+                                    : URL.createObjectURL(profileForm.governmentIdBack)}
+                                  alt="Government ID Back"
+                                />
+                                <button 
+                                  type="button" 
+                                  className="userdashboard-remove-document" 
+                                  onClick={() => handleRemoveDocument('governmentIdBack')}
+                                >
+                                  Remove
+                                </button>
+                              </div>
                             ) : (
                               <div className="userdashboard-upload-placeholder">
                                 <span>Upload Back Image</span>
@@ -1785,103 +2152,118 @@ const UserAccount = (props) => {
                           id="governmentIdBack"
                           name="governmentIdBack"
                           accept="image/*"
-                          onChange={handleProfileChange}
+                          onChange={handleFileUpload}
                           className="userdashboard-file-input"
                         />
                       </div>
                     </div>
                   </div>
                 </div>
+ 
+                
+               <h1 id="userdashboard-profilesubmit-responsemessage">Response message</h1>
 
                 <div className="userdashboard-settings-actions">
-                  <button type="submit" className="userdashboard-save-settings-btn">
-                    Save changes
-                  </button>
+                  {
+                    profilesubmitloadingindication ? 
+                    (
+                      <Spinner animation="border" variant="primary" />
+                    )
+                    :
+                    (
+                      <button type="submit" className="userdashboard-save-settings-btn">
+                       Save changes
+                      </button>
+                    )
+                  }
+                 
                 </div>
               </form>
             </section>
           </div>
         )}
+
       </div>
 
-      {/* Transaction Details Modal */}
-      {isModalOpen && selectedTransaction && (
-        <div className="userdashboard-modal-overlay" onClick={closeTransactionModal}>
-          <div className="userdashboard-modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="userdashboard-modal-header">
-              <h3>Transaction Details</h3>
-              <button className="userdashboard-close-modal-btn" onClick={closeTransactionModal}>
-                ×
-              </button>
-            </div>
-
-            <div className="userdashboard-modal-body">
-              <div className="userdashboard-transaction-summary">
-                <div className="userdashboard-summary-row">
-                  <span className="userdashboard-label">Transaction ID:</span>
-                  <span className="userdashboard-value">{selectedTransaction.id}</span>
-                </div>
-                <div className="userdashboard-summary-row">
-                  <span className="userdashboard-label">Date:</span>
-                  <span className="userdashboard-value">{selectedTransaction.date}</span>
-                </div>
-                <div className="userdashboard-summary-row">
-                  <span className="userdashboard-label">Type:</span>
-                  <span className="userdashboard-value">{selectedTransaction.type}</span>
-                </div>
-                <div className="userdashboard-summary-row">
-                  <span className="userdashboard-label">Status:</span>
-                  <span
-                    className={`userdashboard-value userdashboard-status-${selectedTransaction.status.toLowerCase().replace(/\s+/g, "-")}`}
-                  >
-                    {selectedTransaction.status}
-                  </span>
-                </div>
-                <div className="userdashboard-summary-row">
-                  <span className="userdashboard-label">Amount:</span>
-                  <span
-                    className={
-                      selectedTransaction.amount >= 0
-                        ? "userdashboard-value userdashboard-amount-positive"
-                        : "userdashboard-value userdashboard-amount-negative"
-                    }
-                  >
-                    {formatCurrency(selectedTransaction.amount, selectedTransaction.type)}
-                  </span>
-                </div>
+        {/* Transaction Details Modal */}
+        {isModalOpen && selectedTransaction && (
+          <div className="userdashboard-modal-overlay" onClick={closeTransactionModal}>
+            <div className="userdashboard-modal-content" onClick={(e) => e.stopPropagation()}>
+              <div className="userdashboard-modal-header">
+                <h3>Transaction Details</h3>
+                <button className="userdashboard-close-modal-btn" onClick={closeTransactionModal}>
+                  ×
+                </button>
               </div>
 
-              {/* Render transaction-specific details */}
-              {renderTransactionDetails(selectedTransaction)}
-            </div>
+              <div className="userdashboard-modal-body">
+                <div className="userdashboard-transaction-summary">
+                  <div className="userdashboard-summary-row">
+                    <span className="userdashboard-label">Transaction ID:</span>
+                    <span className="userdashboard-value">{selectedTransaction.id}</span>
+                  </div>
+                  <div className="userdashboard-summary-row">
+                    <span className="userdashboard-label">Date:</span>
+                    <span className="userdashboard-value">{selectedTransaction.date}</span>
+                  </div>
+                  <div className="userdashboard-summary-row">
+                    <span className="userdashboard-label">Type:</span>
+                    <span className="userdashboard-value">{selectedTransaction.type}</span>
+                  </div>
+                  <div className="userdashboard-summary-row">
+                    <span className="userdashboard-label">Status:</span>
+                    <span
+                      className={`userdashboard-value userdashboard-status-${selectedTransaction.status.toLowerCase().replace(/\s+/g, "-")}`}
+                    >
+                      {selectedTransaction.status}
+                    </span>
+                  </div>
+                  <div className="userdashboard-summary-row">
+                    <span className="userdashboard-label">Amount:</span>
+                    <span
+                      className={
+                        selectedTransaction.amount >= 0
+                          ? "userdashboard-value userdashboard-amount-positive"
+                          : "userdashboard-value userdashboard-amount-negative"
+                      }
+                    >
+                      {formatCurrency(selectedTransaction.amount, selectedTransaction.type)}
+                    </span>
+                  </div>
+                </div>
 
-            <div className="userdashboard-modal-footer">
-              <button className="userdashboard-modal-btn" onClick={closeTransactionModal}>
-                Close
+                {/* Render transaction-specific details */}
+                {renderTransactionDetails(selectedTransaction)}
+              </div>
+
+              <div className="userdashboard-modal-footer">
+                <button className="userdashboard-modal-btn" onClick={closeTransactionModal}>
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Full-size Image Modal */}
+        {imageModalOpen && modalImageSrc && (
+          <div className="userdashboard-modal-overlay userdashboard-full-size-modal" onClick={closeImageModal}>
+            <div
+              className="userdashboard-modal-content userdashboard-image-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button className="userdashboard-close-modal-btn" onClick={closeImageModal}>
+                ×
               </button>
+              <img
+                src={modalImageSrc || "/placeholder.svg"}
+                alt="Full size image"
+                className="userdashboard-full-size-image"
+              />
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Full-size Image Modal */}
-      {imageModalOpen && modalImageSrc && (
-        <div className="userdashboard-modal-overlay userdashboard-full-size-modal" onClick={closeImageModal}>
-          <div
-            className="userdashboard-modal-content userdashboard-image-modal-content"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button className="userdashboard-close-modal-btn" onClick={closeImageModal}>
-              ×
-            </button>
-            <img
-              src={modalImageSrc || "/placeholder.svg"}
-              alt="Full size image"
-              className="userdashboard-full-size-image"
-            />
-          </div>
-        </div>
-      )}
     </div>
   )
 }

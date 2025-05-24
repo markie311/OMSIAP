@@ -9,6 +9,8 @@ import "../../styles/database/database.scss"
 import { Container, Row, Col, Button, Form, Spinner, Modal, Image } from "react-bootstrap"
 
 import { FaEye, 
+         FaMobile,
+         FaRuler,
          FaClipboardCheck,
          FaRecycle,
          FaRedoAlt,
@@ -506,19 +508,20 @@ const fetchOmsiapData = async () => {
       totalregisteredregistrantscb(omsiapdata.people || []);
         
       const verified = omsiapdata.people.filter(person => 
-        person.status && person.status.type === "complete"
+        person.status && person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
+         person.status.indication === "Verified"
       );
             
       const pending = omsiapdata.people.filter(person => 
         person.status && 
         person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
-        person.status.indication === "pending documents"
+        person.status.indication === "Pending Documents"
       );
             
       const rejected = omsiapdata.people.filter(person => 
         person.status && 
         person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
-        person.status.indication === "rejected documents"
+        person.status.indication === "Rejected Documents"
       );
             
       verifiedmfatipregistrantscb(verified);
@@ -2057,6 +2060,8 @@ const fetchOmsiapData = async () => {
                                                                setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                                                setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
                                                                setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
+
+                                                               fetchOmsiapData={fetchOmsiapData}
                              />
             )
             }
@@ -11343,8 +11348,65 @@ const CreditTransactionModal = ({ credittransactionobject, setShowCreditTransact
   );
 };
 
+const VerifyMfatipRegistrantButton = ({ registrant, onVerifyMfatipRegisteredRegistrant }) => {
 
+  const [isLoading, setIsLoading] = useState(false);
 
+  const handleVerify = async () => {
+    setIsLoading(true);
+    try {
+      await onVerifyMfatipRegisteredRegistrant(registrant._id);
+    } catch (error) {
+      console.error('Error verifying mfatip registrant:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    isLoading ? (
+      <Spinner animation="border" variant="light" />
+    ) : (
+      <button 
+        className="accept-btn" 
+        onClick={handleVerify}
+        disabled={isLoading}
+      >
+        Verify
+      </button>
+    )
+  );
+};
+
+const RejectMfatipRegistrantButton = ({ registrant, onRejectMfatipRegisteredRegistrant }) => {
+
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleReject = async () => {
+    setIsLoading(true);
+    try {
+      await onRejectMfatipRegisteredRegistrant(registrant._id);
+    } catch (error) {
+      console.error('Error rejecting mfatip registrant:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    isLoading ? (
+      <Spinner animation="border" variant="light" />
+    ) : (
+      <button 
+        className="reject-button" 
+        onClick={handleReject}
+        disabled={isLoading}
+      >
+        Reject
+      </button>            
+    )
+  );
+};
 
 const MfatipRegisteredRegistrants = ({ 
   setShowDatabaseConfiguration, 
@@ -11682,7 +11744,6 @@ const MfatipRegisteredRegistrants = ({
 };
 
 const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({ 
-
   setShowDatabaseConfiguration, 
   setShowRegisteredRegistrantsWithVerifiedDocuments, 
   setShowRegistrantDetailsDisplay, 
@@ -11696,7 +11757,6 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
   onDelete,
   onVerify, 
   onReject 
-
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredRegistrants, setFilteredRegistrants] = useState([]);
@@ -11710,21 +11770,26 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
       setIsVisible(true);
     }, 50);
     
-    // Initial filtering of only registrants with pending documents
-    const pendingDocumentsRegistrants = verifiedmfatipregistrants.filter(
-      registrant => registrant.status && registrant.status.indication === 'Documents verified'
+    // Filter registrants with verified MFATIP status
+    const verifiedMfatipRegistrants = verifiedmfatipregistrants.filter(
+      registrant => 
+        registrant.registrationstatusesandlogs &&
+        registrant.registrationstatusesandlogs.type === 'Month Financial Allocation To Individual People ( MFATIP )' &&
+        registrant.registrationstatusesandlogs.indication === 'Verified'
     );
-    setFilteredRegistrants(pendingDocumentsRegistrants);
+    setFilteredRegistrants(verifiedMfatipRegistrants);
     
     // Check for duplicate information
     const duplicates = findDuplicates(verifiedmfatipregistrants);
     setDuplicateWarnings(duplicates);
     
+    {/*
     // Add click outside listener
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+    */}
   }, [verifiedmfatipregistrants]);
 
   const handleClickOutside = (event) => {
@@ -11778,26 +11843,31 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
   useEffect(() => {
     if (searchQuery) {
       const results = verifiedmfatipregistrants.filter(registrant => 
-        // Filter by pending documents status first
-        registrant.status && 
-        registrant.status.indication === 'Documents verified' &&
+        // Filter by verified MFATIP status first
+        registrant.registrationstatusesandlogs &&
+        registrant.registrationstatusesandlogs.type === 'Month Financial Allocation To Individual People ( MFATIP )' &&
+        registrant.registrationstatusesandlogs.indication === 'Verified' &&
         (
           // Then search by various fields
           registrant.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
           registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
           (registrant.name.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
           registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (registrant.name.nickname && registrant.name.nickname.toLowerCase().includes(searchQuery.toLowerCase())) ||
           (registrant.contact.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
           (registrant.contact.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
         )
       );
       setFilteredRegistrants(results);
     } else {
-      // Reset to show only pending documents registrants when search is cleared
-      const pendingDocumentsRegistrants = verifiedmfatipregistrants.filter(
-        registrant => registrant.status && registrant.status.indication === 'Documents verified'
+      // Reset to show only verified MFATIP registrants when search is cleared
+      const verifiedMfatipRegistrants = verifiedmfatipregistrants.filter(
+        registrant => 
+          registrant.registrationstatusesandlogs &&
+          registrant.registrationstatusesandlogs.type === 'Month Financial Allocation To Individual People ( MFATIP )' &&
+          registrant.registrationstatusesandlogs.indication === 'Verified'
       );
-      setFilteredRegistrants(pendingDocumentsRegistrants);
+      setFilteredRegistrants(verifiedMfatipRegistrants);
     }
   }, [searchQuery, verifiedmfatipregistrants]);
 
@@ -11811,6 +11881,7 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
   };
 
   const formatDate = (dateString) => {
+    if (!dateString || dateString === "N/A") return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -11822,15 +11893,30 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
   };
 
   const getRegistrationDate = (registrant) => {
-    // Assume the first transaction or status request might be the registration date
-    if (registrant.transactions && registrant.transactions.length > 0) {
-      return registrant.transactions[0].date;
-    } else if (registrant.status && 
-              registrant.status.requests && 
-              registrant.status.requests.length > 0) {
-      return registrant.status.requests[0].date;
+    // Check registration logs for the earliest date
+    if (registrant.registrationstatusesandlogs && 
+        registrant.registrationstatusesandlogs.registrationlog && 
+        registrant.registrationstatusesandlogs.registrationlog.length > 0) {
+      // Get the first (earliest) registration log entry
+      return registrant.registrationstatusesandlogs.registrationlog[0].date;
     }
+    
+    // Fallback to transaction dates if available
+    if (registrant.transactions && 
+        registrant.transactions.merchandise && 
+        registrant.transactions.merchandise.length > 0) {
+      return registrant.transactions.merchandise[0].statusesandlogs.date;
+    }
+    
     return "N/A"; // No date found
+  };
+
+  const getDeviceLoginStatus = (registrant) => {
+    if (registrant.registrationstatusesandlogs && 
+        registrant.registrationstatusesandlogs.deviceloginstatus) {
+      return registrant.registrationstatusesandlogs.deviceloginstatus;
+    }
+    return "Unknown";
   };
 
   return (
@@ -11871,7 +11957,7 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
             )}
           </div>
           <div className="results-count">
-            <span className="count-number">{filteredRegistrants.length}</span> registrant{filteredRegistrants.length !== 1 ? 's' : ''} found
+            <span className="count-number">{filteredRegistrants.length}</span> verified MFATIP registrant{filteredRegistrants.length !== 1 ? 's' : ''} found
           </div>
         </div>
         
@@ -11879,7 +11965,7 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
           {filteredRegistrants.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No registrants with pending documents found</p>
+              <p>No verified MFATIP registrants found</p>
               {searchQuery && (
                 <button className="reset-search-button" onClick={() => setSearchQuery('')}>
                   Clear search
@@ -11896,6 +11982,7 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
                     <th>Contact</th>
                     <th>Registration Date</th>
                     <th>Status</th>
+                    <th>Device Login</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -11955,9 +12042,15 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
                         </div>
                       </td>
                       <td className="status-cell">
-                        <div className="status-indicator pending">
-                          <FaExclamationCircle className="status-icon pulse" />
-                          <span>{registrant.status.indication}</span>
+                        <div className="status-indicator verified">
+                          <FaCheckCircle className="status-icon" />
+                          <span>{registrant.registrationstatusesandlogs.indication}</span>
+                        </div>
+                      </td>
+                      <td className="device-login-cell">
+                        <div className="device-status">
+                          <FaMobile className="device-icon" />
+                          <span>{getDeviceLoginStatus(registrant)}</span>
                         </div>
                       </td>
                       <td className="actions-cell">
@@ -11965,21 +12058,22 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
                           <button 
                             className="view-button" 
                             onClick={() => {
-                              setShowRegistrantDetailsDisplay(true)
-                              setregistrantdata(registrant)
+                              setShowRegistrantDetailsDisplay(true);
+                              setregistrantdata(registrant);
                             }}
                             aria-label="View registrant details"
                           >
                             <FaEye className="action-icon" />
                             <span className="action-text">View</span>
                           </button>
+                          {/*
                           <button 
                             className="verify-button" 
                             onClick={() => onVerify(registrant.id)}
                             aria-label="Verify registrant documents"
                           >
                             <FaCheckCircle className="action-icon" />
-                            <span className="action-text">Verify</span>
+                            <span className="action-text">Re-verify</span>
                           </button>
                           <button 
                             className="reject-button" 
@@ -11987,7 +12081,7 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
                             aria-label="Reject registrant documents"
                           >
                             <FaTimesCircle className="action-icon" />
-                            <span className="action-text">Reject</span>
+                            <span className="action-text">Revoke</span>
                           </button>
                           <button 
                             className="edit-button" 
@@ -12005,6 +12099,7 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
                             <FaTrash className="action-icon" />
                             <span className="action-text">Delete</span>
                           </button>
+                          */}
                         </div>
                       </td>
                     </tr>
@@ -12020,22 +12115,20 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
 };
 
 const MfatipRegisteredRegistrantsWithPendingDocuments = ({ 
-
   setShowDatabaseConfiguration, 
   setShowRegisteredRegistrantsWithPendingDocuments, 
   setShowRegistrantDetailsDisplay, 
-
   pendingmfatipregistrants, 
   setregistrantdata,
-
   onClose, 
   onView, 
   onEdit,
   onDelete, 
   onVerify, 
-  onReject
-  
-  }) => {
+  onReject,
+
+  fetchOmsiapData
+}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredRegistrants, setFilteredRegistrants] = useState([]);
   const [isVisible, setIsVisible] = useState(false);
@@ -12048,9 +12141,10 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
       setIsVisible(true);
     }, 50);
     
-    // Initial filtering of only registrants with pending documents
+    // Filter registrants with "Pending Documents" status (case-sensitive)
     const pendingDocumentsRegistrants = pendingmfatipregistrants.filter(
-      registrant => registrant.status && registrant.status.indication === 'pending documents'
+      registrant => registrant.registrationstatusesandlogs && 
+                   registrant.registrationstatusesandlogs.indication === 'Pending Documents'
     );
     setFilteredRegistrants(pendingDocumentsRegistrants);
     
@@ -12058,11 +12152,13 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
     const duplicates = findDuplicates(pendingmfatipregistrants);
     setDuplicateWarnings(duplicates);
     
+    {/*
     // Add click outside listener
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+    */}
   }, [pendingmfatipregistrants]);
 
   const handleClickOutside = (event) => {
@@ -12079,8 +12175,12 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
     const emailMap = {};
     
     registrantsList.forEach(registrant => {
-      // Check for duplicate names
-      const fullName = `${registrant.name.firstname} ${registrant.name.middlename || ''} ${registrant.name.lastname}`.toLowerCase().trim();
+      // Check for duplicate names - safely access name properties
+      const firstname = registrant.name?.firstname || '';
+      const middlename = registrant.name?.middlename || '';
+      const lastname = registrant.name?.lastname || '';
+      const fullName = `${firstname} ${middlename} ${lastname}`.toLowerCase().trim();
+      
       if (nameMap[fullName]) {
         nameMap[fullName].push(registrant.id);
         if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
@@ -12090,7 +12190,7 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
       }
       
       // Check for duplicate phone numbers
-      const phone = registrant.contact.phonenumber;
+      const phone = registrant.contact?.phonenumber;
       if (phone && phoneMap[phone]) {
         phoneMap[phone].push(registrant.id);
         if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
@@ -12100,7 +12200,7 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
       }
       
       // Check for duplicate emails
-      const email = registrant.contact.emailaddress;
+      const email = registrant.contact?.emailaddress;
       if (email && emailMap[email]) {
         emailMap[email].push(registrant.id);
         if (!duplicateInfo[registrant.id]) duplicateInfo[registrant.id] = [];
@@ -12116,24 +12216,25 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
   useEffect(() => {
     if (searchQuery) {
       const results = pendingmfatipregistrants.filter(registrant => 
-        // Filter by pending documents status first
-        registrant.status && 
-        registrant.status.indication === 'pending documents' &&
+        // Filter by "Pending Documents" status first
+        registrant.registrationstatusesandlogs && 
+        registrant.registrationstatusesandlogs.indication === 'Pending Documents' &&
         (
-          // Then search by various fields
-          registrant.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (registrant.name.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (registrant.contact.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
-          (registrant.contact.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
+          // Then search by various fields - safely access properties
+          (registrant.id && registrant.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (registrant.name?.firstname && registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (registrant.name?.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (registrant.name?.lastname && registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase())) ||
+          (registrant.contact?.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
+          (registrant.contact?.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
         )
       );
       setFilteredRegistrants(results);
     } else {
-      // Reset to show only pending documents registrants when search is cleared
+      // Reset to show only "Pending Documents" registrants when search is cleared
       const pendingDocumentsRegistrants = pendingmfatipregistrants.filter(
-        registrant => registrant.status && registrant.status.indication === 'pending documents'
+        registrant => registrant.registrationstatusesandlogs && 
+                     registrant.registrationstatusesandlogs.indication === 'Pending Documents'
       );
       setFilteredRegistrants(pendingDocumentsRegistrants);
     }
@@ -12149,27 +12250,181 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
   };
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (!dateString || dateString === "N/A") return "N/A";
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch (error) {
+      return dateString;
+    }
   };
 
   const getRegistrationDate = (registrant) => {
-    // Assume the first transaction or status request might be the registration date
-    if (registrant.transactions && registrant.transactions.length > 0) {
-      return registrant.transactions[0].date;
-    } else if (registrant.status && 
-              registrant.status.requests && 
-              registrant.status.requests.length > 0) {
-      return registrant.status.requests[0].date;
+    // Try multiple possible locations for registration date based on schema
+    if (registrant.transactions?.merchandise && registrant.transactions.merchandise.length > 0) {
+      const firstTransaction = registrant.transactions.merchandise[0];
+      if (firstTransaction.statusesandlogs?.date) {
+        return firstTransaction.statusesandlogs.date;
+      }
     }
-    return "N/A"; // No date found
+    
+    if (registrant.registrationstatusesandlogs?.registrationlog && 
+        registrant.registrationstatusesandlogs.registrationlog.length > 0) {
+      return registrant.registrationstatusesandlogs.registrationlog[0].date;
+    }
+    
+    // Fallback to any date-like properties
+    if (registrant.createdAt) return registrant.createdAt;
+    if (registrant.dateCreated) return registrant.dateCreated;
+    if (registrant.registrationDate) return registrant.registrationDate;
+    
+    return "N/A";
   };
+
+  
+  const [statusMessage, setStatusMessage] = useState("")
+
+// Frontend: Complete handleMfatipRegisteredRegistrantVerification function
+async function handleMfatipRegisteredRegistrantVerification(id) {
+
+  try {
+
+    setStatusMessage('Verifying registrant...');
+    
+    const response = await axiosCreatedInstance.post("/omsiap/verifymfatipregistrant", { 
+      id: id 
+    });
+    
+    if (response.data.success) {
+      // Handle successful verification
+      console.log('Registrant verified successfully:', response.data.message);
+      setStatusMessage('✓ Registrant verified successfully!');
+      await fetchOmsiapData()
+      // You might want to update the UI state here
+      // For example, refresh the registrant list or update the specific registrant's status
+      if (response.data.registrant) {
+        // Update local state if you're managing it
+        // setRegistrants(prev => prev.map(reg => 
+        //   reg._id === id ? { ...reg, ...response.data.registrant } : reg
+        // ));
+      }
+      
+    } else {
+      // Handle server-side validation errors
+      console.error('Verification failed:', response.data.message);
+      setStatusMessage(`✗ Verification failed: ${response.data.message}`);
+    }
+    
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with error status
+      const status = error.response.status;
+      const message = error.response.data?.message || 'Unknown server error';
+      
+      switch (status) {
+        case 400:
+          setStatusMessage(`✗ Bad Request: ${message}`);
+          break;
+        case 404:
+          setStatusMessage('✗ Registrant not found. They may have been deleted.');
+          break;
+        case 409:
+          setStatusMessage('⚠ Registrant is already verified.');
+          break;
+        case 500:
+          setStatusMessage('✗ Server error occurred. Please try again later.');
+          break;
+        default:
+          setStatusMessage(`✗ Error: ${message}`);
+      }
+      
+    } else if (error.request) {
+      // Network error - no response received
+      console.error('Network error:', error.request);
+      setStatusMessage('✗ Network error: Please check your internet connection and try again.');
+      
+    } else {
+      // Something else went wrong
+      console.error('Error:', error.message);
+      setStatusMessage('✗ An unexpected error occurred. Please try again.');
+    }
+  }
+}
+
+// Frontend: handleMfatipRegisteredRegistrantRejection function
+async function handleMfatipRegisteredRegistrantRejection(id) {
+  try {
+    setStatusMessage('Rejecting registrant...');
+    
+    const response = await axiosCreatedInstance.post("/omsiap/rejectmfatipregistrant", {
+      id: id
+    });
+    
+    if (response.data.success) {
+      // Handle successful rejection
+      console.log('Registrant rejected successfully:', response.data.message);
+      setStatusMessage('✓ Registrant rejected successfully!');
+      await fetchOmsiapData()
+      // You might want to update the UI state here
+      // For example, refresh the registrant list or update the specific registrant's status
+      if (response.data.registrant) {
+        // Update local state if you're managing it
+        // setRegistrants(prev => prev.map(reg => 
+        //   reg._id === id ? { ...reg, ...response.data.registrant } : reg
+        // ));
+      }
+      
+    } else {
+      // Handle server-side validation errors
+      console.error('Rejection failed:', response.data.message);
+      setStatusMessage(`✗ Rejection failed: ${response.data.message}`);
+    }
+    
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with error status
+      const status = error.response.status;
+      const message = error.response.data?.message || 'Unknown server error';
+      
+      switch (status) {
+        case 400:
+          setStatusMessage(`✗ Bad Request: ${message}`);
+          break;
+        case 404:
+          setStatusMessage('✗ Registrant not found. They may have been deleted.');
+          break;
+        case 409:
+          setStatusMessage('⚠ Registrant is already rejected.');
+          break;
+        case 500:
+          setStatusMessage('✗ Server error occurred. Please try again later.');
+          break;
+        default:
+          setStatusMessage(`✗ Error: ${message}`);
+      }
+      
+    } else if (error.request) {
+      // Network error - no response received
+      console.error('Network error:', error.request);
+      setStatusMessage('✗ Network error: Please check your internet connection and try again.');
+      
+    } else {
+      // Something else went wrong
+      console.error('Error:', error.message);
+      setStatusMessage('✗ An unexpected error occurred. Please try again.');
+    }
+  }
+}
+
+
 
   return (
     <div className={`modal-backdrop ${isVisible ? 'visible' : ''}`}>
@@ -12226,6 +12481,14 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
             </div>
           ) : (
             <div className="table-responsive">
+              {
+                statusMessage && (
+                  <div className="status-message">
+                    {statusMessage}
+                  </div>
+                )
+              }
+               
               <table className="registrants-table">
                 <thead>
                   <tr>
@@ -12240,14 +12503,14 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
                 <tbody>
                   {filteredRegistrants.map((registrant, index) => (
                     <tr 
-                      key={registrant.id} 
+                      key={registrant.id || index} 
                       className={`registrant-row ${duplicateWarnings[registrant.id] ? 'has-duplicates' : ''}`}
                       style={{ animationDelay: `${index * 0.05}s` }}
                     >
                       <td className="registrant-id">
                         <div className="id-container">
                           <FaIdCard className="id-icon" />
-                          <span>{registrant.id}</span>
+                          <span>{registrant.id || 'No ID'}</span>
                         </div>
                       </td>
                       <td className="name-cell">
@@ -12255,9 +12518,9 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
                           <FaUserCircle className="user-icon" />
                           <div className="name-details">
                             <span className="full-name">
-                              {registrant.name.firstname} {registrant.name.middlename} {registrant.name.lastname}
+                              {registrant.name?.firstname || ''} {registrant.name?.middlename || ''} {registrant.name?.lastname || ''}
                             </span>
-                            {registrant.name.nickname && (
+                            {registrant.name?.nickname && (
                               <span className="nickname">({registrant.name.nickname})</span>
                             )}
                           </div>
@@ -12272,14 +12535,14 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
                         <div className="contact-details">
                           <div className="phone-number">
                             <FaPhone className="contact-icon" />
-                            <span>{registrant.contact.phonenumber || 'N/A'}</span>
+                            <span>{registrant.contact?.phonenumber || 'N/A'}</span>
                             {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('phone') && (
                               <FaExclamationTriangle className="warning-icon-small" title="Duplicate phone number found" />
                             )}
                           </div>
                           <div className="email-address">
                             <FaEnvelope className="contact-icon" />
-                            <span>{registrant.contact.emailaddress || 'N/A'}</span>
+                            <span>{registrant.contact?.emailaddress || 'N/A'}</span>
                             {duplicateWarnings[registrant.id] && duplicateWarnings[registrant.id].includes('email') && (
                               <FaExclamationTriangle className="warning-icon-small" title="Duplicate email found" />
                             )}
@@ -12295,7 +12558,7 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
                       <td className="status-cell">
                         <div className="status-indicator pending">
                           <FaExclamationCircle className="status-icon pulse" />
-                          <span>{registrant.status.indication}</span>
+                          <span>{registrant.registrationstatusesandlogs?.indication || 'Unknown'}</span>
                         </div>
                       </td>
                       <td className="actions-cell">
@@ -12311,14 +12574,15 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
                             <FaEye className="action-icon" />
                             <span className="action-text">View</span>
                           </button>
-                          <button 
-                            className="verify-button" 
-                            onClick={() => onVerify(registrant.id)}
-                            aria-label="Verify registrant documents"
-                          >
-                            <FaCheckCircle className="action-icon" />
-                            <span className="action-text">Verify</span>
-                          </button>
+
+                          <VerifyMfatipRegistrantButton key={registrant._id}
+                                                        registrant={registrant}
+                                                        onVerifyMfatipRegisteredRegistrant={handleMfatipRegisteredRegistrantVerification}/>
+                           <RejectMfatipRegistrantButton key={registrant._id}
+                                                         registrant={registrant}
+                                                         onRejectMfatipRegisteredRegistrant={handleMfatipRegisteredRegistrantRejection}/>
+
+                          {/*                          
                           <button 
                             className="reject-button" 
                             onClick={() => onReject(registrant.id)}
@@ -12327,6 +12591,8 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
                             <FaTimesCircle className="action-icon" />
                             <span className="action-text">Reject</span>
                           </button>
+                          */}
+
                           <button 
                             className="edit-button" 
                             onClick={() => onEdit(registrant.id)}
@@ -12358,7 +12624,6 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
 };
 
 const MfatipRegisteredRegistrantsWithRejectedDocuments = ({ 
-
   setShowDatabaseConfiguration, 
   setShowRegisteredRegistrantsWithRejectedDocuments, 
   setShowRegistrantDetailsDisplay,
@@ -12386,21 +12651,24 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
       setIsVisible(true);
     }, 50);
     
-    // Initial filtering of only registrants with pending documents
-    const pendingDocumentsRegistrants = mfatipregistrantsrejecteddocuments.filter(
-      registrant => registrant.status && registrant.status.indication === 'rejected documents'
+    // Initial filtering of only registrants with rejected documents
+    const rejectedDocumentsRegistrants = mfatipregistrantsrejecteddocuments.filter(
+      registrant => registrant.registrationstatusesandlogs && 
+                   registrant.registrationstatusesandlogs.indication === 'Rejected Documents'
     );
-    setFilteredRegistrants(pendingDocumentsRegistrants);
+    setFilteredRegistrants(rejectedDocumentsRegistrants);
     
     // Check for duplicate information
     const duplicates = findDuplicates(mfatipregistrantsrejecteddocuments);
     setDuplicateWarnings(duplicates);
     
+    {/*
     // Add click outside listener
     document.addEventListener('mousedown', handleClickOutside);
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
+    */}
   }, [mfatipregistrantsrejecteddocuments]);
 
   const handleClickOutside = (event) => {
@@ -12454,9 +12722,9 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
   useEffect(() => {
     if (searchQuery) {
       const results = mfatipregistrantsrejecteddocuments.filter(registrant => 
-        // Filter by pending documents status first
-        registrant.status && 
-        registrant.status.indication === 'rejected documents' &&
+        // Filter by rejected documents status first
+        registrant.registrationstatusesandlogs && 
+        registrant.registrationstatusesandlogs.indication === 'Rejected Documents' &&
         (
           // Then search by various fields
           registrant.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -12469,11 +12737,12 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
       );
       setFilteredRegistrants(results);
     } else {
-      // Reset to show only pending documents registrants when search is cleared
-      const pendingDocumentsRegistrants = mfatipregistrantsrejecteddocuments.filter(
-        registrant => registrant.status && registrant.status.indication === 'rejected documents'
+      // Reset to show only rejected documents registrants when search is cleared
+      const rejectedDocumentsRegistrants = mfatipregistrantsrejecteddocuments.filter(
+        registrant => registrant.registrationstatusesandlogs && 
+                     registrant.registrationstatusesandlogs.indication === 'Rejected Documents'
       );
-      setFilteredRegistrants(pendingDocumentsRegistrants);
+      setFilteredRegistrants(rejectedDocumentsRegistrants);
     }
   }, [searchQuery, mfatipregistrantsrejecteddocuments]);
 
@@ -12487,6 +12756,7 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
   };
 
   const formatDate = (dateString) => {
+    if (!dateString || dateString === "N/A") return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -12498,15 +12768,35 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
   };
 
   const getRegistrationDate = (registrant) => {
-    // Assume the first transaction or status request might be the registration date
-    if (registrant.transactions && registrant.transactions.length > 0) {
-      return registrant.transactions[0].date;
-    } else if (registrant.status && 
-              registrant.status.requests && 
-              registrant.status.requests.length > 0) {
-      return registrant.status.requests[0].date;
+    // Check registrationstatusesandlogs.registrationlog for the earliest date
+    if (registrant.registrationstatusesandlogs && 
+        registrant.registrationstatusesandlogs.registrationlog && 
+        registrant.registrationstatusesandlogs.registrationlog.length > 0) {
+      // Get the earliest registration log entry
+      const sortedLogs = registrant.registrationstatusesandlogs.registrationlog
+        .filter(log => log.date)
+        .sort((a, b) => new Date(a.date) - new Date(b.date));
+      
+      if (sortedLogs.length > 0) {
+        return sortedLogs[0].date;
+      }
     }
+    
+    // Fallback: check for merchandise transactions if available
+    if (registrant.transactions && 
+        registrant.transactions.merchandise && 
+        registrant.transactions.merchandise.length > 0) {
+      return registrant.transactions.merchandise[0].statusesandlogs?.date;
+    }
+    
     return "N/A"; // No date found
+  };
+
+  const getStatusDisplay = (registrant) => {
+    if (registrant.registrationstatusesandlogs) {
+      return registrant.registrationstatusesandlogs.indication || 'Unknown Status';
+    }
+    return 'No Status';
   };
 
   return (
@@ -12555,7 +12845,7 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
           {filteredRegistrants.length === 0 ? (
             <div className="no-results">
               <FaExclamationCircle className="no-results-icon" />
-              <p>No registrants with pending documents found</p>
+              <p>No registrants with rejected documents found</p>
               {searchQuery && (
                 <button className="reset-search-button" onClick={() => setSearchQuery('')}>
                   Clear search
@@ -12633,7 +12923,7 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
                       <td className="status-cell">
                         <div className="status-indicator pending">
                           <FaExclamationCircle className="status-icon pulse" />
-                          <span>{registrant.status.indication}</span>
+                          <span>{getStatusDisplay(registrant)}</span>
                         </div>
                       </td>
                       <td className="actions-cell">
@@ -12649,6 +12939,7 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
                             <FaEye className="action-icon" />
                             <span className="action-text">View</span>
                           </button>
+                          {/*
                           <button 
                             className="verify-button" 
                             onClick={() => onVerify(registrant.id)}
@@ -12681,6 +12972,7 @@ const MfatipRegisteredRegistrantsWithRejectedDocuments = ({
                             <FaTrash className="action-icon" />
                             <span className="action-text">Delete</span>
                           </button>
+                          */}
                         </div>
                       </td>
                     </tr>
@@ -15962,7 +16254,7 @@ const ReadRegistrantFormDetails = ({
                 </div>
                 <div className="detail-content">
                   <label>Street</label>
-                  <p>{registrantData.street || 'N/A'}</p>
+                  <p>{registrantData.contact.address.street || 'N/A'}</p>
                 </div>
               </div>
               
@@ -16083,11 +16375,21 @@ const ReadRegistrantFormDetails = ({
               
               <div className="detail-item">
                 <div className="detail-icon">
-                  <FaIdCard />
+                  <FaRuler />
                 </div>
                 <div className="detail-content">
-                  <label>Government ID</label>
-                  <p>{registrantData.personaldata.government_id || 'N/A'}</p>
+                  <label>Height</label>
+                  <p>{registrantData.personaldata.height || 'N/A'}</p>
+                </div>
+              </div>
+              
+              <div className="detail-item">
+                <div className="detail-icon">
+                  <FaWeight />
+                </div>
+                <div className="detail-content">
+                  <label>Weight</label>
+                  <p>{registrantData.personaldata.weight || 'N/A'}</p>
                 </div>
               </div>
             </div>
@@ -16099,30 +16401,29 @@ const ReadRegistrantFormDetails = ({
               <div className="document-group">
                 <h4>Birth Certificate</h4>
                 <div className="document-display">
-
-                <div className="document-item">
-                  <label>Front Side</label>
-                  {registrantData.governmentid_front ? (
-                    <div className="document-image">
-                      <img src={registrantData.birthcertificate_front} 
-                           alt="Government ID Front" 
-                           onClick={()=> {
-                            handleDocumentClick(registrantData.birthcertificate_front)
-                           }}/>
-                    </div>
-                  ) : (
-                    <p className="document-placeholder">No image uploaded</p>
-                  )}
-                </div>
+                  <div className="document-item">
+                    <label>Front Side</label>
+                    {registrantData.personaldata.birthcertificate?.frontphoto?.image ? (
+                      <div className="document-image">
+                        <img src={registrantData.personaldata.birthcertificate.frontphoto.image} 
+                             alt="Birth Certificate Front" 
+                             onClick={()=> {
+                              handleDocumentClick(registrantData.personaldata.birthcertificate.frontphoto.image)
+                             }}/>
+                      </div>
+                    ) : (
+                      <p className="document-placeholder">No image uploaded</p>
+                    )}
+                  </div>
                   
                   <div className="document-item">
                     <label>Back Side</label>
-                    {registrantData.birthcertificate_back ? (
+                    {registrantData.personaldata.birthcertificate?.backphoto?.image ? (
                       <div className="document-image">
-                        <img src={registrantData.birthcertificate_back} 
+                        <img src={registrantData.personaldata.birthcertificate.backphoto.image} 
                              alt="Birth Certificate Back"
                              onClick={()=> {
-                              handleDocumentClick(registrantData.birthcertificate_back)
+                              handleDocumentClick(registrantData.personaldata.birthcertificate.backphoto.image)
                              }} />
                       </div>
                     ) : (
@@ -16137,12 +16438,12 @@ const ReadRegistrantFormDetails = ({
                 <div className="document-display">
                   <div className="document-item">
                     <label>Front Side</label>
-                    {registrantData.governmentid_back ? (
+                    {registrantData.personaldata.government_issued_identification?.frontphoto?.image ? (
                       <div className="document-image">
-                        <img src={registrantData.governmentid_front}
+                        <img src={registrantData.personaldata.government_issued_identification.frontphoto.image}
                              alt="Government ID Front" 
                              onClick={()=> {
-                              handleDocumentClick(registrantData.governmentid_front)
+                              handleDocumentClick(registrantData.personaldata.government_issued_identification.frontphoto.image)
                              }}/>
                       </div>
                     ) : (
@@ -16152,12 +16453,12 @@ const ReadRegistrantFormDetails = ({
                   
                   <div className="document-item">
                     <label>Back Side</label>
-                    {registrantData.governmentid_back ? (
+                    {registrantData.personaldata.government_issued_identification?.backphoto?.image ? (
                       <div className="document-image">
-                        <img src={registrantData.governmentid_back}
+                        <img src={registrantData.personaldata.government_issued_identification.backphoto.image}
                              alt="Government ID Back" 
                              onClick={()=> {
-                              handleDocumentClick(registrantData.governmentid_back)
+                              handleDocumentClick(registrantData.personaldata.government_issued_identification.backphoto.image)
                              }}/>
                       </div>
                     ) : (
@@ -16189,8 +16490,6 @@ const ReadRegistrantFormDetails = ({
           </div>
         )
       }
-    
-
     </div>
   );
 };

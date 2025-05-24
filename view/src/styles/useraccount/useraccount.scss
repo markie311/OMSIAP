@@ -203,78 +203,209 @@
     margin-right: 0.25rem;
   }
   
-  /* Document Verification */
+ /* Improved CSS for Document Verification Status */
+.userdashboard-documents-verification {
+  background-color: white;
+  border-radius: var(--border-radius);
+  padding: 1.5rem;
+  box-shadow: var(--box-shadow);
+}
+
+.userdashboard-documents-verification h2 {
+  color: var(--primary-color);
+  margin-bottom: 1.25rem;
+  font-size: 1.25rem;
+  border-bottom: 1px solid var(--medium-gray);
+  padding-bottom: 0.75rem;
+}
+
+/* Document Cards Grid - Only for Pending state */
+.userdashboard-documents-status-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
   .userdashboard-documents-status-grid {
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
   }
   
-  .userdashboard-document-card {
-    display: flex;
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    background-color: white;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-    border: 1px solid var(--medium-gray);
-    gap: 1rem;
+  .userdashboard-document-status-message {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Individual Document Cards */
+.userdashboard-document-card {
+  display: flex;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  background-color: white;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--medium-gray);
+  gap: 1rem;
+  transition: all 0.3s ease;
+}
+
+.userdashboard-document-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.userdashboard-document-card.userdashboard-verified {
+  border-left: 4px solid var(--success-color);
+}
+
+.userdashboard-document-card.userdashboard-pending {
+  border-left: 4px solid var(--warning-color);
+}
+
+.userdashboard-document-icon {
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.userdashboard-document-card.userdashboard-verified .userdashboard-document-icon {
+  color: var(--success-color);
+}
+
+.userdashboard-document-card.userdashboard-pending .userdashboard-document-icon {
+  color: var(--warning-color);
+}
+
+.userdashboard-document-info {
+  flex: 1;
+}
+
+.userdashboard-document-title {
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.userdashboard-document-badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.userdashboard-document-badge.userdashboard-verified {
+  background-color: rgba(46, 204, 113, 0.1);
+  color: var(--success-color);
+}
+
+.userdashboard-document-badge.userdashboard-pending {
+  background-color: rgba(243, 156, 18, 0.1);
+  color: var(--warning-color);
+}
+
+.userdashboard-document-action {
+  font-size: 0.8rem;
+  color: var(--dark-gray);
+}
+
+/* Status message for pending verification */
+.userdashboard-document-status-message {
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background-color: rgba(243, 156, 18, 0.05);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--warning-color);
+  margin-top: 1rem;
+}
+
+.userdashboard-document-status-message i {
+  font-size: 1.25rem;
+  color: var(--warning-color);
+  margin-right: 0.75rem;
+}
+
+.userdashboard-document-status-message p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--dark-gray);
+}
+
+/* Full verification message displays */
+.userdashboard-verification-message {
+  display: flex;
+  padding: 2rem;
+  border-radius: var(--border-radius);
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.userdashboard-verification-message.userdashboard-verified {
+  background-color: rgba(46, 204, 113, 0.05);
+  border: 1px solid var(--success-color);
+}
+
+.userdashboard-verification-message.userdashboard-unverified {
+  background-color: rgba(231, 76, 60, 0.05);
+  border: 1px solid var(--danger-color, #e74c3c);
+}
+
+.userdashboard-verification-icon {
+  font-size: 2.5rem;
+}
+
+.userdashboard-verification-message.userdashboard-verified .userdashboard-verification-icon {
+  color: var(--success-color);
+}
+
+.userdashboard-verification-message.userdashboard-unverified .userdashboard-verification-icon {
+  color: var(--danger-color, #e74c3c);
+}
+
+.userdashboard-verification-content {
+  flex: 1;
+}
+
+.userdashboard-verification-content h3 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.25rem;
+}
+
+.userdashboard-verification-content p {
+  margin: 0;
+  font-size: 0.95rem;
+  color: var(--dark-gray);
+}
+
+.userdashboard-verification-action-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.userdashboard-verification-action-btn:hover {
+  background-color: var(--primary-color-dark, #2c3e50);
+}
+
+/* Responsive styles */
+@media (max-width: 576px) {
+  .userdashboard-verification-message {
+    flex-direction: column;
+    text-align: center;
+    padding: 1.5rem;
   }
   
-  .userdashboard-document-card.userdashboard-verified {
-    border-left: 4px solid var(--success-color);
+  .userdashboard-verification-icon {
+    margin-bottom: 1rem;
   }
-  
-  .userdashboard-document-card.userdashboard-pending {
-    border-left: 4px solid var(--warning-color);
-  }
-  
-  .userdashboard-document-icon {
-    font-size: 1.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .userdashboard-document-card.userdashboard-verified .userdashboard-document-icon {
-    color: var(--success-color);
-  }
-  
-  .userdashboard-document-card.userdashboard-pending .userdashboard-document-icon {
-    color: var(--warning-color);
-  }
-  
-  .userdashboard-document-info {
-    flex: 1;
-  }
-  
-  .userdashboard-document-title {
-    font-size: 1rem;
-    margin-bottom: 0.25rem;
-  }
-  
-  .userdashboard-document-badge {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    border-radius: 1rem;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-  
-  .userdashboard-document-badge.userdashboard-verified {
-    background-color: rgba(46, 204, 113, 0.1);
-    color: var(--success-color);
-  }
-  
-  .userdashboard-document-badge.userdashboard-pending {
-    background-color: rgba(243, 156, 18, 0.1);
-    color: var(--warning-color);
-  }
-  
-  .userdashboard-document-action {
-    font-size: 0.8rem;
-    color: var(--dark-gray);
-  }
+}
   
   /* =========== Deposit and Withdrawal Forms =========== */
   .userdashboard-deposit-panel,
@@ -897,6 +1028,84 @@
   .userdashboard-save-settings-btn:hover {
     background-color: var(--secondary-color);
   }
+
+.userdashboard-image-preview {
+  width: 100%;
+  height: 180px;
+  border: 2px dashed var(--medium-gray);
+  border-radius: var(--border-radius);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  background-color: #f0f0f0;
+  position: relative;
+}
+
+.userdashboard-upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--dark-gray);
+  font-size: 0.9rem;
+  width: 100%;
+  height: 100%;
+}
+
+.userdashboard-upload-placeholder span {
+  margin-top: 0.5rem;
+}
+
+.userdashboard-document-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.userdashboard-document-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.userdashboard-remove-document {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(255, 0, 0, 0.7);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.userdashboard-remove-document:hover {
+  background-color: rgba(255, 0, 0, 0.9);
+}
+
+.userdashboard-file-input {
+  display: none;
+}
+
+.userdashboard-file-input-label {
+  cursor: pointer;
+  width: 100%;
+}
+
+/* Responsive adjustments */
+@media (min-width: 768px) {
+  .userdashboard-document-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
   
   /* =========== Modals =========== */
   .userdashboard-modal-overlay {

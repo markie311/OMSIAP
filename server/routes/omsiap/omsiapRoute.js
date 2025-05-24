@@ -1,29 +1,209 @@
 const express = require('express');
-const Router = require('express').Router();
-
+const Router = express.Router();
 const mongoose = require('mongoose');
-
-const mongodb = require('../../lib/mongodb/database.js');
-
-const RegistrantDataModel = require('../../models/people/registrantdatascheme.js')
-
-const MerchandiseTransactionDataModel = require('../../models/transactions/merchandisetransactiondatascheme.js')
-const CurrencyExchangeTransactionDataModel = require('../../models/transactions/currencyexchangetransactiondatascheme.js')
-const WidthdrawalTransactionDataModel = require('../../models/transactions/withdrawaltransactiondatascheme.js')
-
-
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-
 const { v4: uuidv4 } = require('uuid');
-
-const timestamps = require('../../lib/timestamps/timestamps');
-
 const bcrypt = require('bcrypt');
 
-// Server-side route handler 
-Router.route("/getomsiapdata").get(async (req, res) => {
+// Import models - consolidated at the top
+const RegistrantDataModel = require('../../models/people/registrantdatascheme.js');
+const MerchandiseTransactionDataModel = require('../../models/transactions/merchandisetransactiondatascheme.js');
+const CurrencyExchangeTransactionDataModel = require('../../models/transactions/currencyexchangetransactiondatascheme.js');
+const WidthdrawalTransactionDataModel = require('../../models/transactions/withdrawaltransactiondatascheme.js');
+
+// Import utilities
+const timestamps = require('../../lib/timestamps/timestamps');
+
+// Define all upload paths in one place to avoid duplication
+const UPLOAD_PATHS = {
+  CURRENCY_EXCHANGE: path.join(__dirname, '../../../view/public/images/currencyexchange'),
+  WITHDRAWALS: path.join(__dirname, '../../../view/public/images/withdrawals'),
+  DOCUMENTS: path.join(__dirname, '../../../view/public/images/documents')
+};
+
+// Ensure all directories exist
+Object.values(UPLOAD_PATHS).forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
+
+// Common file filter for images
+const imageFileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image files are allowed!'), false);
+  }
+};
+
+// Create storage factory function to avoid duplication
+const createStorage = (uploadPath) => {
+  return multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, uploadPath);
+    },
+    filename: (req, file, cb) => {
+      const now = new Date();
+      const datePrefix = now.getFullYear() + 
+                        ('0' + (now.getMonth() + 1)).slice(-2) + 
+                        ('0' + now.getDate()).slice(-2);
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      cb(null, `${datePrefix}-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+  });
+};
+
+// Create multer instances for different upload types
+const multerInstances = {
+  currencyExchange: multer({
+    storage: createStorage(UPLOAD_PATHS.CURRENCY_EXCHANGE),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: imageFileFilter
+  }),
+  withdrawals: multer({
+    storage: createStorage(UPLOAD_PATHS.WITHDRAWALS),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: imageFileFilter
+  }),
+  documents: multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, UPLOAD_PATHS.DOCUMENTS);
+      },
+      filename: (req, file, cb) => {
+        // Generate unique filename with user ID, document type and timestamp
+        const userId = req.user ? req.user.id : 'unknown';
+        const timestamp = Date.now();
+        const fileExt = path.extname(file.originalname);
+        cb(null, `${userId}-${file.fieldname}-${timestamp}${fileExt}`);
+      }
+    }),
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+    fileFilter: imageFileFilter
+  })
+};
+
+// Document fields for profile update
+const documentFields = [
+  { name: 'birthCertificateFront', maxCount: 1 },
+  { name: 'birthCertificateBack', maxCount: 1 },
+  { name: 'governmentIdFront', maxCount: 1 },
+  { name: 'governmentIdBack', maxCount: 1 }
+];
+
+// Helper function to remove old documents
+const removeOldDocument = (filePath) => {
+  if (filePath && fs.existsSync(filePath)) {
+    fs.unlink(filePath, (err) => {
+      if (err) console.error('Error deleting old document:', err);
+    });
+  }
+};
+
+// Generic cleanup function that can be used for any directory
+const cleanupOldFiles = (uploadPath, monthsOld = 1) => {
+  console.log(`Running cleanup of files in ${uploadPath} older than ${monthsOld} month(s)...`);
+  
+  return new Promise((resolve, reject) => {
+    fs.readdir(uploadPath, (err, files) => {
+      if (err) {
+        console.error(`Error reading directory for cleanup: ${err}`);
+        reject(`Error reading directory: ${err.message}`);
+        return;
+      }
+      
+      if (files.length === 0) {
+        console.log('No files found in directory');
+        resolve({ message: 'No files found to clean up', deletedCount: 0 });
+        return;
+      }
+      
+      const cutoffDate = new Date();
+      cutoffDate.setMonth(cutoffDate.getMonth() - monthsOld);
+      
+      let processedCount = 0;
+      let deletedCount = 0;
+      let errors = [];
+      
+      files.forEach(file => {
+        const filePath = path.join(uploadPath, file);
+        
+        fs.stat(filePath, (err, stats) => {
+          if (err) {
+            console.error(`Error getting stats for file ${file}:`, err);
+            errors.push(`Error getting stats for file ${file}: ${err.message}`);
+            processedCount++;
+            
+            if (processedCount === files.length) {
+              finishCleanup();
+            }
+            return;
+          }
+          
+          // Check if file is older than specified months based on filename date prefix
+          const dateMatch = file.match(/^(\d{8})-/);
+          let fileDate;
+          let shouldDelete = false;
+          
+          if (dateMatch) {
+            const fileYear = parseInt(dateMatch[1].substring(0, 4));
+            const fileMonth = parseInt(dateMatch[1].substring(4, 6)) - 1;
+            const fileDay = parseInt(dateMatch[1].substring(6, 8));
+            fileDate = new Date(fileYear, fileMonth, fileDay);
+            shouldDelete = fileDate < cutoffDate;
+          } 
+          // Fallback to file modification time
+          else {
+            fileDate = stats.mtime;
+            shouldDelete = fileDate < cutoffDate;
+          }
+          
+          if (shouldDelete) {
+            fs.unlink(filePath, err => {
+              if (err) {
+                console.error(`Error deleting old file ${file}:`, err);
+                errors.push(`Error deleting file ${file}: ${err.message}`);
+              } else {
+                console.log(`Deleted old file ${file} (from ${fileDate.toDateString()})`);
+                deletedCount++;
+              }
+              
+              processedCount++;
+              if (processedCount === files.length) {
+                finishCleanup();
+              }
+            });
+          } else {
+            processedCount++;
+            if (processedCount === files.length) {
+              finishCleanup();
+            }
+          }
+        });
+      });
+      
+      function finishCleanup() {
+        const result = {
+          message: `Cleanup completed. Deleted ${deletedCount} of ${files.length} files.`,
+          deletedCount,
+          totalFiles: files.length,
+          errors: errors.length > 0 ? errors : undefined
+        };
+        
+        console.log(result.message);
+        resolve(result);
+      }
+    });
+  });
+};
+
+// ===== ROUTES =====
+
+// Get OMSIAP data route
+Router.get("/getomsiapdata", async (req, res) => {
   try {
     // Fetch registrants data
     const registrants = await RegistrantDataModel.find({}, {
@@ -51,7 +231,6 @@ Router.route("/getomsiapdata").get(async (req, res) => {
       pending: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'pending'),
       confirmed: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'confirmed'),
       rejected: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected'),
-      // Add new order categories
       forshipping: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'forshipping'),
       shipped: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'shipped'),
       successful: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'successful')
@@ -100,8 +279,7 @@ Router.route("/getomsiapdata").get(async (req, res) => {
 });
 
 // Confirm Order Route
-Router.route('/confirmorder').post(async (req, res) => {
-  
+Router.post('/confirmorder', async (req, res) => {
   try {
     const { _id } = req.body;
     
@@ -189,7 +367,7 @@ Router.route('/confirmorder').post(async (req, res) => {
 });
 
 // Order For Shipping Route
-Router.route('/orderforshipping').post(async (req, res) => {
+Router.post('/orderforshipping', async (req, res) => {
   try {
     const { _id } = req.body;
     
@@ -277,7 +455,7 @@ Router.route('/orderforshipping').post(async (req, res) => {
 });
 
 // Order Shipped Route
-Router.route('/ordershipped').post(async (req, res) => {
+Router.post('/ordershipped', async (req, res) => {
   try {
     const { _id } = req.body;
     
@@ -365,9 +543,8 @@ Router.route('/ordershipped').post(async (req, res) => {
   }
 });
 
-
-Router.route('/acceptorder').post(async (req, res) => {
-
+// Accept Order Route
+Router.post('/acceptorder', async (req, res) => {
   try {
     // Connect to MongoDB
     await mongoose.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
@@ -478,149 +655,8 @@ Router.route('/acceptorder').post(async (req, res) => {
   }
 });
 
-// Define path for transaction images
-const UPLOAD_PATH = path.join(__dirname, '../../../view/public/images/currencyexchange');
-
-// Ensure directory exists
-if (!fs.existsSync(UPLOAD_PATH)) {
-  fs.mkdirSync(UPLOAD_PATH, { recursive: true });
-}
-
-// Configure multer storage
-const storage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, UPLOAD_PATH);
-  },
-  filename: function(req, file, cb) {
-    // Create filename with date prefix for easier management
-    const now = new Date();
-    const datePrefix = now.getFullYear() + 
-                      ('0' + (now.getMonth() + 1)).slice(-2) + 
-                      ('0' + now.getDate()).slice(-2);
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `${datePrefix}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
-// File filter to only accept images
-const fileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed!'), false);
-  }
-};
-
-// Initialize multer with configuration
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: fileFilter
-});
-
-// Manual cleanup function for files older than a specified time period
-function cleanupOldFiles(monthsOld = 1) {
-  console.log(`Running cleanup of transaction images older than ${monthsOld} month(s)...`);
-  
-  return new Promise((resolve, reject) => {
-    fs.readdir(UPLOAD_PATH, (err, files) => {
-      if (err) {
-        console.error('Error reading directory for cleanup:', err);
-        reject(`Error reading directory: ${err.message}`);
-        return;
-      }
-      
-      if (files.length === 0) {
-        console.log('No files found in directory');
-        resolve({ message: 'No files found to clean up', deletedCount: 0 });
-        return;
-      }
-      
-      const currentDate = new Date();
-      const cutoffDate = new Date();
-      cutoffDate.setMonth(cutoffDate.getMonth() - monthsOld);
-      
-      let processedCount = 0;
-      let deletedCount = 0;
-      let errors = [];
-      
-      files.forEach(file => {
-        const filePath = path.join(UPLOAD_PATH, file);
-        
-        // Get file stats to check last modified date
-        fs.stat(filePath, (err, stats) => {
-          if (err) {
-            console.error(`Error getting stats for file ${file}:`, err);
-            errors.push(`Error getting stats for file ${file}: ${err.message}`);
-            processedCount++;
-            
-            if (processedCount === files.length) {
-              finishCleanup();
-            }
-            return;
-          }
-          
-          // Check if file is older than specified months based on filename date prefix
-          const dateMatch = file.match(/^(\d{8})-/);
-          let fileDate;
-          let shouldDelete = false;
-          
-          if (dateMatch) {
-            const fileYear = parseInt(dateMatch[1].substring(0, 4));
-            const fileMonth = parseInt(dateMatch[1].substring(4, 6)) - 1;
-            const fileDay = parseInt(dateMatch[1].substring(6, 8));
-            fileDate = new Date(fileYear, fileMonth, fileDay);
-            shouldDelete = fileDate < cutoffDate;
-          } 
-          // Fallback to file modification time
-          else {
-            fileDate = stats.mtime;
-            shouldDelete = fileDate < cutoffDate;
-          }
-          
-          if (shouldDelete) {
-            fs.unlink(filePath, err => {
-              if (err) {
-                console.error(`Error deleting old file ${file}:`, err);
-                errors.push(`Error deleting file ${file}: ${err.message}`);
-              } else {
-                console.log(`Deleted old file ${file} (from ${fileDate.toDateString()})`);
-                deletedCount++;
-              }
-              
-              processedCount++;
-              if (processedCount === files.length) {
-                finishCleanup();
-              }
-            });
-          } else {
-            processedCount++;
-            if (processedCount === files.length) {
-              finishCleanup();
-            }
-          }
-        });
-      });
-      
-      function finishCleanup() {
-        const result = {
-          message: `Cleanup completed. Deleted ${deletedCount} of ${files.length} files.`,
-          deletedCount,
-          totalFiles: files.length,
-          errors: errors.length > 0 ? errors : undefined
-        };
-        
-        console.log(result.message);
-        resolve(result);
-      }
-    });
-  });
-}
-
-// Expose a route to manually trigger the cleanup
-Router.route('/currencyexchange/cleanup').post(async (req, res) => {
+// Cleanup routes
+Router.post('/currencyexchange/cleanup', async (req, res) => {
   try {
     // Get months parameter - default to 1 month if not specified
     const months = req.body.months ? parseInt(req.body.months) : 1;
@@ -633,7 +669,7 @@ Router.route('/currencyexchange/cleanup').post(async (req, res) => {
     }
     
     // Run the cleanup
-    const result = await cleanupOldFiles(months);
+    const result = await cleanupOldFiles(UPLOAD_PATHS.CURRENCY_EXCHANGE, months);
     
     return res.status(200).json({
       success: true,
@@ -649,9 +685,37 @@ Router.route('/currencyexchange/cleanup').post(async (req, res) => {
   }
 });
 
-// Currency Exchange Route
-Router.route('/currencyexchange').post(upload.single('transactionImage'), async (req, res) => {
+Router.post('/withdrawals/cleanup', async (req, res) => {
+  try {
+    // Get months parameter - default to 1 month if not specified
+    const months = req.body.months ? parseInt(req.body.months) : 1;
+    
+    if (isNaN(months) || months < 1) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid months parameter. Must be a positive number.'
+      });
+    }
+    
+    // Run the cleanup
+    const result = await cleanupOldFiles(UPLOAD_PATHS.WITHDRAWALS, months);
+    
+    return res.status(200).json({
+      success: true,
+      ...result
+    });
+  } catch (error) {
+    console.error('Error during withdrawal images cleanup:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Error during cleanup process',
+      error: error.message
+    });
+  }
+});
 
+// Currency Exchange Route
+Router.post('/currencyexchange', multerInstances.currencyExchange.single('transactionImage'), async (req, res) => {
   try {
     // Get request data
     const {
@@ -719,7 +783,6 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
         ? JSON.parse(transactionmadeby) 
         : transactionmadeby;
     } catch (error) {
-
       console.error('Error parsing user data:', error);
       
       // Delete uploaded file
@@ -904,7 +967,7 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
       }
     }
     
-    console.log("Error" + " " + error)
+    console.log("Error" + " " + error);
 
     return res.status(500).json({
       success: false,
@@ -914,7 +977,7 @@ Router.route('/currencyexchange').post(upload.single('transactionImage'), async 
   }
 });
 
-// Route for approving currency exchange
+// Approve currency exchange route
 Router.post('/approvecurrencyexchange', async (req, res) => {
   try {
     const {
@@ -1005,7 +1068,7 @@ Router.post('/approvecurrencyexchange', async (req, res) => {
   }
 });
 
-// Route for rejecting currency exchange
+// Reject currency exchange route
 Router.post('/rejectcurrencyexchange', async (req, res) => {
   try {
     const {
@@ -1130,7 +1193,8 @@ Router.post('/rejectcurrencyexchange', async (req, res) => {
   }
 });
 
-Router.route('/widthdrawal').post(async(req, res) => {
+// Withdrawal route
+Router.post('/widthdrawal', async(req, res) => {
   try {
     const { firstName, middleName, lastName, phoneNumber, amount, password, userId } = req.body;
     
@@ -1340,179 +1404,8 @@ Router.route('/widthdrawal').post(async(req, res) => {
   }
 });
 
-// Define path for withdrawal receipt images
-const WITHDRAWALS_UPLOAD_PATH = path.join(__dirname, '../../../view/public/images/withdrawals');
-
-// Ensure directory exists for withdrawal images
-if (!fs.existsSync(WITHDRAWALS_UPLOAD_PATH)) {
-  fs.mkdirSync(WITHDRAWALS_UPLOAD_PATH, { recursive: true });
-}
-
-// Withdrawal cleanup function - using the same pattern as currency exchange cleanup
-function cleanupWithdrawalFiles(monthsOld = 1) {
-  console.log(`Running cleanup of withdrawal receipt images older than ${monthsOld} month(s)...`);
-  
-  return new Promise((resolve, reject) => {
-    fs.readdir(WITHDRAWALS_UPLOAD_PATH, (err, files) => {
-      if (err) {
-        console.error('Error reading withdrawal images directory for cleanup:', err);
-        reject(`Error reading directory: ${err.message}`);
-        return;
-      }
-      
-      if (files.length === 0) {
-        console.log('No withdrawal image files found in directory');
-        resolve({ message: 'No withdrawal files found to clean up', deletedCount: 0 });
-        return;
-      }
-      
-      const currentDate = new Date();
-      const cutoffDate = new Date();
-      cutoffDate.setMonth(cutoffDate.getMonth() - monthsOld);
-      
-      let processedCount = 0;
-      let deletedCount = 0;
-      let errors = [];
-      
-      files.forEach(file => {
-        const filePath = path.join(WITHDRAWALS_UPLOAD_PATH, file);
-        
-        // Get file stats to check last modified date
-        fs.stat(filePath, (err, stats) => {
-          if (err) {
-            console.error(`Error getting stats for file ${file}:`, err);
-            errors.push(`Error getting stats for file ${file}: ${err.message}`);
-            processedCount++;
-            
-            if (processedCount === files.length) {
-              finishCleanup();
-            }
-            return;
-          }
-          
-          // Check if file is older than specified months based on filename date prefix
-          const dateMatch = file.match(/^(\d{8})-/);
-          let fileDate;
-          let shouldDelete = false;
-          
-          if (dateMatch) {
-            const fileYear = parseInt(dateMatch[1].substring(0, 4));
-            const fileMonth = parseInt(dateMatch[1].substring(4, 6)) - 1;
-            const fileDay = parseInt(dateMatch[1].substring(6, 8));
-            fileDate = new Date(fileYear, fileMonth, fileDay);
-            shouldDelete = fileDate < cutoffDate;
-          } 
-          // Fallback to file modification time
-          else {
-            fileDate = stats.mtime;
-            shouldDelete = fileDate < cutoffDate;
-          }
-          
-          if (shouldDelete) {
-            fs.unlink(filePath, err => {
-              if (err) {
-                console.error(`Error deleting old withdrawal image file ${file}:`, err);
-                errors.push(`Error deleting file ${file}: ${err.message}`);
-              } else {
-                console.log(`Deleted old withdrawal image file ${file} (from ${fileDate.toDateString()})`);
-                deletedCount++;
-              }
-              
-              processedCount++;
-              if (processedCount === files.length) {
-                finishCleanup();
-              }
-            });
-          } else {
-            processedCount++;
-            if (processedCount === files.length) {
-              finishCleanup();
-            }
-          }
-        });
-      });
-      
-      function finishCleanup() {
-        const result = {
-          message: `Withdrawal images cleanup completed. Deleted ${deletedCount} of ${files.length} files.`,
-          deletedCount,
-          totalFiles: files.length,
-          errors: errors.length > 0 ? errors : undefined
-        };
-        
-        console.log(result.message);
-        resolve(result);
-      }
-    });
-  });
-}
-
-// Expose a route to manually trigger withdrawal images cleanup
-Router.route('/withdrawals/cleanup').post(async (req, res) => {
-  try {
-    // Get months parameter - default to 1 month if not specified
-    const months = req.body.months ? parseInt(req.body.months) : 1;
-    
-    if (isNaN(months) || months < 1) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid months parameter. Must be a positive number.'
-      });
-    }
-    
-    // Run the cleanup
-    const result = await cleanupWithdrawalFiles(months);
-    
-    return res.status(200).json({
-      success: true,
-      ...result
-    });
-  } catch (error) {
-    console.error('Error during withdrawal images cleanup:', error);
-    return res.status(500).json({
-      success: false,
-      message: 'Error during cleanup process',
-      error: error.message
-    });
-  }
-});
-
-// Configure multer for withdrawal receipts - using the existing multer configuration pattern
-const withdrawalStorage = multer.diskStorage({
-  destination: function(req, file, cb) {
-    cb(null, WITHDRAWALS_UPLOAD_PATH);
-  },
-  filename: function(req, file, cb) {
-    // Create filename with date prefix for easier management
-    const now = new Date();
-    const datePrefix = now.getFullYear() + 
-                      ('0' + (now.getMonth() + 1)).slice(-2) + 
-                      ('0' + now.getDate()).slice(-2);
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, `${datePrefix}-${uniqueSuffix}${path.extname(file.originalname)}`);
-  }
-});
-
-// File filter for withdrawal receipts - reusing the same one from currency exchange
-const withdrawalFileFilter = (req, file, cb) => {
-  if (file.mimetype.startsWith('image/')) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files are allowed for receipts!'), false);
-  }
-};
-
-// Initialize multer for withdrawal receipts
-const uploadWithdrawalReceipt = multer({
-  storage: withdrawalStorage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
-  fileFilter: withdrawalFileFilter
-});
-
 // Approve withdrawal route
-Router.route("/approvewithdrawal").post(uploadWithdrawalReceipt.single('receipt'), async (req, res) => {
+Router.post("/approvewithdrawal", multerInstances.withdrawals.single('receipt'), async (req, res) => {
   try {
     const { transactionId, successfulProcessingDeduction, intent, phpAmountToReceive } = req.body;
     
@@ -1661,8 +1554,8 @@ Router.route("/approvewithdrawal").post(uploadWithdrawalReceipt.single('receipt'
   }
 });
 
-/// Reject withdrawal route
-Router.route("/rejectwithdrawal").post(async (req, res) => {
+// Reject withdrawal route
+Router.post("/rejectwithdrawal", async (req, res) => {
   try {
     // Extract data from request body
     const { 
@@ -1794,6 +1687,538 @@ Router.route("/rejectwithdrawal").post(async (req, res) => {
 });
 
 
+Router.put('/profile/update', (req, res, next) => {
+  // Use multer fields to handle multiple file uploads
+  const uploadHandler = multerInstances.documents.fields(documentFields);
+  
+  // Add timeout handling for large file uploads
+  const requestTimeout = setTimeout(() => {
+    return res.status(408).json({
+      success: false,
+      message: 'Request timeout. Please try again with smaller files or a better connection.'
+    });
+  }, 120000); // 2 minute timeout for file uploads
+  
+  uploadHandler(req, res, async (err) => {
+    // Clear the timeout once handler is executing
+    clearTimeout(requestTimeout);
+    
+    if (err instanceof multer.MulterError) {
+      // Specific multer file upload errors
+      let errorMessage = 'File upload error';
+      
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        errorMessage = 'File too large. Maximum file size is 5MB.';
+      } else if (err.code === 'LIMIT_FILE_COUNT') {
+        errorMessage = 'Too many files uploaded. Please try again.';
+      } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+        errorMessage = `Unexpected file field: ${err.field}. Please use the correct form fields.`;
+      } else {
+        errorMessage = `${err.message}`;
+      }
+      
+      return res.status(400).json({ 
+        success: false, 
+        message: errorMessage
+      });
+    } else if (err) {
+      return res.status(400).json({ 
+        success: false, 
+        message: `Error: ${err.message}` 
+      });
+    }
+    
+    try {
+      // Validate required fields
+      const { firstName, lastName, userId } = req.body;
+      
+      if (!firstName || !lastName) {
+        return res.status(400).json({
+          success: false,
+          message: 'First name and last name are required'
+        });
+      }
+      
+      // Validate userId is provided
+      if (!userId) {
+        return res.status(400).json({
+          success: false,
+          message: 'User ID is required'
+        });
+      }
+      
+      // Get current user from database using the provided userId
+      const user = await RegistrantDataModel.findById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ success: false, message: 'User not found' });
+      }
+      
+      // Optional: Implement additional authorization check if needed
+      // For example, check if the requester is allowed to update this user
+      // This could be based on a token, API key, or other authentication method
+      
+      // Process text fields for profile update
+      const { middleName, phoneNumber } = req.body;
+      
+      // Update user profile information
+      user.name.firstname = firstName;
+      user.name.middlename = middleName !== undefined ? middleName : user.name.middlename;
+      user.name.lastname = lastName;
+      
+      if (phoneNumber) {
+        // Basic phone validation
+        const phoneRegex = /^\+?[0-9\s\-()]{8,20}$/;
+        if (!phoneRegex.test(phoneNumber)) {
+          return res.status(400).json({
+            success: false,
+            message: 'Invalid phone number format'
+          });
+        }
+        user.contact.phonenumber = phoneNumber;
+      }
+      
+      // Process uploaded documents (if any)
+      // Initialize personaldata if it doesn't exist
+      if (!user.personaldata) {
+        user.personaldata = {};
+      }
+      
+      // Initialize government ID and birth certificate structures if they don't exist
+      if (!user.personaldata.government_issued_identification) {
+        user.personaldata.government_issued_identification = {
+          frontphoto: {},
+          backphoto: {}
+        };
+      }
+      
+      if (!user.personaldata.birthcertificate) {
+        user.personaldata.birthcertificate = {
+          frontphoto: {},
+          backphoto: {}
+        };
+      }
+      
+      // Flag to track if any document was uploaded
+      let documentUploaded = false;
+      
+      // Check which files were uploaded in this request
+      if (req.files) {
+        const formattedDate = timestamps.getFormattedDate();
+        
+        // Process birth certificate front if uploaded
+        if (req.files.birthCertificateFront) {
+          documentUploaded = true;
+          const file = req.files.birthCertificateFront[0];
+          const newFilePath = `/images/documents/${file.filename}`;
+          
+          // If there was a previous document, mark it for deletion
+          if (user.personaldata.birthcertificate && 
+              user.personaldata.birthcertificate.frontphoto && 
+              user.personaldata.birthcertificate.frontphoto.image) {
+            const oldPath = path.join(__dirname, '../../../view/public', user.personaldata.birthcertificate.frontphoto.image);
+            removeOldDocument(oldPath);
+          }
+          
+          // Update with new document info
+          user.personaldata.birthcertificate.frontphoto = {
+            name: 'Birth Certificate (Front)',
+            description: 'Front side of birth certificate',
+            image: newFilePath,
+            uploaddate: formattedDate
+          };
+        }
+        
+        // Process birth certificate back if uploaded
+        if (req.files.birthCertificateBack) {
+          documentUploaded = true;
+          const file = req.files.birthCertificateBack[0];
+          const newFilePath = `/images/documents/${file.filename}`;
+          
+          if (user.personaldata.birthcertificate && 
+              user.personaldata.birthcertificate.backphoto && 
+              user.personaldata.birthcertificate.backphoto.image) {
+            const oldPath = path.join(__dirname, '../../../view/public', user.personaldata.birthcertificate.backphoto.image);
+            removeOldDocument(oldPath);
+          }
+          
+          user.personaldata.birthcertificate.backphoto = {
+            name: 'Birth Certificate (Back)',
+            description: 'Back side of birth certificate',
+            image: newFilePath,
+            uploaddate: formattedDate
+          };
+        }
+        
+        // Process government ID front if uploaded
+        if (req.files.governmentIdFront) {
+          documentUploaded = true;
+          const file = req.files.governmentIdFront[0];
+          const newFilePath = `/images/documents/${file.filename}`;
+          
+          if (user.personaldata.government_issued_identification && 
+              user.personaldata.government_issued_identification.frontphoto && 
+              user.personaldata.government_issued_identification.frontphoto.image) {
+            const oldPath = path.join(__dirname, '../../../view/public', user.personaldata.government_issued_identification.frontphoto.image);
+            removeOldDocument(oldPath);
+          }
+          
+          user.personaldata.government_issued_identification.frontphoto = {
+            name: 'Government ID (Front)',
+            description: 'Front side of government ID',
+            image: newFilePath,
+            uploaddate: formattedDate
+          };
+        }
+        
+        // Process government ID back if uploaded
+        if (req.files.governmentIdBack) {
+          documentUploaded = true;
+          const file = req.files.governmentIdBack[0];
+          const newFilePath = `/images/documents/${file.filename}`;
+          
+          if (user.personaldata.government_issued_identification && 
+              user.personaldata.government_issued_identification.backphoto && 
+              user.personaldata.government_issued_identification.backphoto.image) {
+            const oldPath = path.join(__dirname, '../../../view/public', user.personaldata.government_issued_identification.backphoto.image);
+            removeOldDocument(oldPath);
+          }
+          
+          user.personaldata.government_issued_identification.backphoto = {
+            name: 'Government ID (Back)',
+            description: 'Back side of government ID',
+            image: newFilePath,
+            uploaddate: formattedDate
+          };
+        }
+      }
 
-// Export the cleanupOldFiles function so it can be used elsewhere in your application
+      // Check if any documents were specifically removed
+      try {
+        const documentsToRemove = req.body.removedDocuments 
+          ? JSON.parse(req.body.removedDocuments) 
+          : [];
+          
+        if (documentsToRemove.length > 0) {
+          documentsToRemove.forEach(docField => {
+            // Handle government ID removal
+            if (docField === 'governmentIdFront' && 
+                user.personaldata.government_issued_identification && 
+                user.personaldata.government_issued_identification.frontphoto && 
+                user.personaldata.government_issued_identification.frontphoto.image) {
+              const oldPath = path.join(__dirname, '../../../view/public', user.personaldata.government_issued_identification.frontphoto.image);
+              removeOldDocument(oldPath);
+              user.personaldata.government_issued_identification.frontphoto = {};
+            }
+            
+            if (docField === 'governmentIdBack' && 
+                user.personaldata.government_issued_identification && 
+                user.personaldata.government_issued_identification.backphoto && 
+                user.personaldata.government_issued_identification.backphoto.image) {
+              const oldPath = path.join(__dirname, '../../../view/public', user.personaldata.government_issued_identification.backphoto.image);
+              removeOldDocument(oldPath);
+              user.personaldata.government_issued_identification.backphoto = {};
+            }
+            
+            // Handle birth certificate removal
+            if (docField === 'birthCertificateFront' && 
+                user.personaldata.birthcertificate && 
+                user.personaldata.birthcertificate.frontphoto && 
+                user.personaldata.birthcertificate.frontphoto.image) {
+              const oldPath = path.join(__dirname, '../../../view/public', user.personaldata.birthcertificate.frontphoto.image);
+              removeOldDocument(oldPath);
+              user.personaldata.birthcertificate.frontphoto = {};
+            }
+            
+            if (docField === 'birthCertificateBack' && 
+                user.personaldata.birthcertificate && 
+                user.personaldata.birthcertificate.backphoto && 
+                user.personaldata.birthcertificate.backphoto.image) {
+              const oldPath = path.join(__dirname, '../../../view/public', user.personaldata.birthcertificate.backphoto.image);
+              removeOldDocument(oldPath);
+              user.personaldata.birthcertificate.backphoto = {};
+            }
+          });
+        }
+      } catch (parseError) {
+        console.error('Error parsing removedDocuments:', parseError);
+        // Continue execution even if there's an error parsing removedDocuments
+      }
+      
+      // Update registration status indication if documents were uploaded
+      if (documentUploaded) {
+        // Initialize registrationstatusesandlogs if it doesn't exist
+        if (!user.registrationstatusesandlogs) {
+          user.registrationstatusesandlogs = {
+            type: "registration",
+            indication: "Pending Documents",
+            deviceloginstatus: user.registrationstatusesandlogs?.deviceloginstatus || "active",
+            registrationlog: []
+          };
+        } else {
+          // Update the indication only
+          user.registrationstatusesandlogs.indication = "Pending Documents";
+        }
+        
+        // Add a new log entry for this status change
+        const logEntry = {
+          date: timestamps.getFormattedDate(),
+          type: "document_upload",
+          indication: "Pending Documents",
+          messages: [
+            { message: "User uploaded new document(s). Verification pending." }
+          ]
+        };
+        
+        // Add the log entry to registrationLog array
+        if (!user.registrationstatusesandlogs.registrationlog) {
+          user.registrationstatusesandlogs.registrationlog = [logEntry];
+        } else {
+          user.registrationstatusesandlogs.registrationlog.push(logEntry);
+        }
+      }
+      
+      // Save the updated user profile
+      await user.save();
+      
+      // Prepare document information for response
+      const documentInfo = {
+        governmentIdFront: user.personaldata.government_issued_identification?.frontphoto?.image || null,
+        governmentIdBack: user.personaldata.government_issued_identification?.backphoto?.image || null,
+        birthCertificateFront: user.personaldata.birthcertificate?.frontphoto?.image || null,
+        birthCertificateBack: user.personaldata.birthcertificate?.backphoto?.image || null
+      };
+      
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        message: documentUploaded ? 
+          'Profile updated successfully. Document verification pending.' : 
+          'Profile updated successfully',
+        data: {
+          firstName: user.name.firstname,
+          middleName: user.name.middlename,
+          lastName: user.name.lastname,
+          phoneNumber: user.contact.phonenumber,
+          documents: documentInfo,
+          registrationStatus: user.registrationstatusesandlogs?.indication || null
+        }
+      });
+      
+    } catch (error) {
+      console.error('Profile update error:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Server error while updating profile. Please try again later.'
+      });
+    }
+  });
+});
+
+
+Router.post('/verifymfatipregistrant', async (req, res) => {
+  try {
+    const { id } = req.body;
+    
+    // Validate input
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registrant ID is required'
+      });
+    }
+    
+    // Find the registrant
+    const user = await RegistrantDataModel.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registrant not found'
+      });
+    }
+    
+    // Check if already verified
+    if (user.registrationstatusesandlogs.indication === 'Verified') {
+      return res.status(409).json({
+        success: false,
+        message: 'Registrant is already verified'
+      });
+    }
+    
+    // Create verification log entry using custom timestamps
+    const verificationLogEntry = {
+      date: timestamps.getFormattedDate(),
+      type: 'verification',
+      indication: 'Verified',
+      messages: [{
+        message: 'Account verified by administrator'
+      }]
+    };
+    
+    // Update registrant status
+    const updatedUser = await RegistrantDataModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          'registrationstatusesandlogs.indication': 'Verified',
+          'registrationstatusesandlogs.type': 'Month Financial Allocation To Individual People ( MFATIP )'
+        },
+        $push: {
+          'registrationstatusesandlogs.registrationlog': verificationLogEntry
+        }
+      },
+      { 
+        new: true, // Return updated document
+        runValidators: true // Run schema validators
+      }
+    );
+    
+    if (!updatedUser) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to update registrant status'
+      });
+    }
+    
+    // Success response
+    res.status(200).json({
+      success: true,
+      message: 'Registrant verified successfully',
+      registrant: {
+        _id: updatedUser._id,
+        registrationstatusesandlogs: updatedUser.registrationstatusesandlogs,
+        name: updatedUser.name
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error verifying MFATIP registrant:', error);
+    
+    // Handle specific MongoDB errors
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid registrant ID format'
+      });
+    }
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error: ' + error.message
+      });
+    }
+    
+    // Generic server error
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error occurred while verifying registrant'
+    });
+  }
+});
+
+// Backend: /rejectmfatipregistrant route
+Router.post('/rejectmfatipregistrant', async (req, res) => {
+  try {
+    const { id } = req.body;
+    
+    // Validate input
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registrant ID is required'
+      });
+    }
+    
+    // Find the registrant
+    const user = await RegistrantDataModel.findById(id);
+    
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registrant not found'
+      });
+    }
+    
+    // Check if already rejected
+    if (user.registrationstatusesandlogs.indication === 'Rejected') {
+      return res.status(409).json({
+        success: false,
+        message: 'Registrant is already rejected'
+      });
+    }
+    
+    // Create rejection log entry using custom timestamps
+    const rejectionLogEntry = {
+      date: timestamps.getFormattedDate(),
+      type: 'rejection',
+      indication: 'Rejected',
+      messages: [{
+        message: 'Account rejected by administrator'
+      }]
+    };
+    
+    // Update registrant status
+    const updatedUser = await RegistrantDataModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          'registrationstatusesandlogs.indication': 'Rejected Documents',
+          'registrationstatusesandlogs.type': 'Month Financial Allocation To Individual People ( MFATIP )'
+        },
+        $push: {
+          'registrationstatusesandlogs.registrationlog': rejectionLogEntry
+        }
+      },
+      { 
+        new: true, // Return updated document
+        runValidators: true // Run schema validators
+      }
+    );
+    
+    if (!updatedUser) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to update registrant status'
+      });
+    }
+    
+    // Success response
+    res.status(200).json({
+      success: true,
+      message: 'Registrant rejected successfully',
+      registrant: {
+        _id: updatedUser._id,
+        registrationstatusesandlogs: updatedUser.registrationstatusesandlogs,
+        name: updatedUser.name
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error rejecting MFATIP registrant:', error);
+    
+    // Handle specific MongoDB errors
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid registrant ID format'
+      });
+    }
+    
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error: ' + error.message
+      });
+    }
+    
+    // Generic server error
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error occurred while rejecting registrant'
+    });
+  }
+});
+
 module.exports = Router;
