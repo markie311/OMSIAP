@@ -817,463 +817,483 @@ background: dodgerblue;
 
 //// start of mfatip configuration
 #mfatipconfiguration {
-position:relative;
-height:auto;
-width:100%;
-margin-top:5vh;
-padding:0px 220px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 2rem 1rem;
+  position: relative;
+  overflow: hidden;
+  animation: fadeIn 1s ease-in-out;
+  margin-top:5vh;
 }
+
+#mfatipconfiguration::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="75" cy="75" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="50" cy="10" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Header Section */
 #mfatipconfiguration-headerindicationcontainer {
-position:relative;
-height:auto;
-width:100%;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-padding:50px 0px;
+  text-align: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+  animation: slideInFromTop 1s ease-out 0.2s both;
 }
-.mfatipconfiguration-headerindicationcontainer-headerindication {
-position:relative;
-font: auto {
- family: $sub-font;
+
+#mfatipconfiguration-headerindicationcontainer .mfatipconfiguration-headerindicationcontainer-headerindication:first-child {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.2rem;
+  font-weight: 400;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  animation: glow 2s ease-in-out infinite alternate;
 }
-color:white;
+
+#mfatipconfiguration-headerindicationcontainer .mfatipconfiguration-headerindicationcontainer-headerindication:last-child {
+  color: #ffffff;
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  animation: pulse 2s ease-in-out infinite;
 }
+
+/* Main Content Container */
 #mfatipconfiguration-configurationmodalrowcontainer {
-position:relative;
-height:auto;
-width:100%;
-margin-left:auto;
-margin-right:auto;
-padding:30px 220px;
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
 }
+
 .mfatipconfiguration-configurationmodalrowcontainer-colcontainer {
-position:relative;
-background-color:white;
-border-radius:20px;
-height:auto;
-margin-top:5vh;
-padding:60px 30px;
-display:flex;
-flex-direction:column;
-justify-content:center;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+  animation: slideInFromBottom 1s ease-out both;
 }
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer:nth-child(1) {
+  animation-delay: 0.3s;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer:nth-child(3) {
+  animation-delay: 0.7s;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Typography */
 .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication {
-position:relative;
-font: auto {
- family: $sub-font;
- weight:900;
+  color: #2c3e50;
+  margin-bottom: 1rem;
 }
-letter-spacing:1px;
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer h3 {
+  font-size: 2rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  margin-bottom: 1.5rem;
 }
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer h4 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #34495e;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 1rem;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+/* List Styles */
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 0;
+  font-size: 1rem;
+  color: #444;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.1);
+  animation: slideInFromLeft 0.6s ease-out both;
+  transition: all 0.3s ease;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:hover {
+  background: rgba(102, 126, 234, 0.05);
+  transform: translateX(10px);
+  border-radius: 8px;
+  padding-left: 1rem;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:nth-child(1) { animation-delay: 0.1s; }
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:nth-child(2) { animation-delay: 0.2s; }
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:nth-child(3) { animation-delay: 0.3s; }
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:nth-child(4) { animation-delay: 0.4s; }
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:nth-child(5) { animation-delay: 0.5s; }
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:nth-child(6) { animation-delay: 0.6s; }
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:nth-child(7) { animation-delay: 0.7s; }
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:nth-child(8) { animation-delay: 0.8s; }
+
+/* Nested list styles */
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer ul ul {
+  margin-left: 2rem;
+  margin-top: 0.5rem;
+}
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer ul ul .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li {
+  padding: 0.5rem 0;
+  font-size: 0.95rem;
+  border-bottom: 1px solid rgba(102, 126, 234, 0.05);
+}
+
+/* Check Image */
 .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage {
-position:relative;
-height:50px; 
-width:50px;  
+  width: 20px;
+  height: 20px;
+  margin-right: 1rem;
+  filter: hue-rotate(240deg) saturate(1.5);
+  transition: transform 0.3s ease;
 }
+
+.mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li:hover .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage {
+  transform: scale(1.2) rotate(360deg);
+}
+
+/* Button Styles */
 #mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton {
-position:relative;
-background-color:green;
-border:0.1vh solid orange;
-border-radius:20px;
-height:10vh;
-width:80%;
-font: auto {
- family: $sub-font;
-}
-color:white;
-margin-left: auto;
-margin-right:auto;
-}
-/// end of mfatip configuration
-
-//// start of set up mfatipaccount
-#setupmfatipaccount {
-position:absolute;
-background-color:white;
-height:100%;
-width:100%;
-margin-left:auto;
-margin-right:auto;
-display:none;
-overflow-y:scroll;
-z-index:100;
+  width: 100%;
+  padding: 1.2rem 2rem;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  position: relative;
+  overflow: hidden;
+  animation: buttonPulse 2s ease-in-out infinite;
 }
 
-/* width */
-#setupmfatipaccount::-webkit-scrollbar {
-width: 20px;
+#mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s;
 }
 
-/* Track */
-#setupmfatipaccount::-webkit-scrollbar-track {
-box-shadow: inset 0 0 5px grey; 
-border-radius: 10px;
+#mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton:hover::before {
+  left: 100%;
 }
 
-/* Handle */
-#setupmfatipaccount::-webkit-scrollbar-thumb {
-background: blue; 
-border-radius: 10px;
+#mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+  background: linear-gradient(135deg, #7c89e8, #8b5fbf);
 }
 
-/* Handle on hover */
-#setupmfatipaccount::-webkit-scrollbar-thumb:hover {
-background: dodgerblue; 
-}
-#setupmfatipaccount-navigationcontainer {
-position:relative;
-height:10%;
-width:100%;
-margin-left:auto;
-margin-right:auto;
-padding:10px 30px;
-}
-.setupmfatipaccount-navigationcontainer-navigationheaderindicationcontainer {
-position:relative;
-height:auto;
-display:flex;
-align-items:center;
-}
-.setupmfatipaccount-navigationcontainer-navigationheaderindicationcontainer-headerindication {
-position:relative;
-font: auto {
- family: $sub-font;
- weight:900;
-}
-user-select:none;
-}
-#setupmfatipaccount-headerindicationscontainer {
-position:relative;
-height:auto;
-width:100%;
-padding:130px 120px;
-}
-.setupmfatipaccount-headerindicationscontainer-headerindication {
-position:relative;
-font:auto {
-family: $sub-font;
-}
+#mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton:active {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
 }
 
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer {
-position:relative;
-height:auto;
-width:100%;
-margin-left:auto;
-margin-right:auto;
-padding:100px 180px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer {
-position:relative;
-height:auto;
-padding:40px 20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-headerindicationscontainer-headerindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer {
-position:relative;
-height:auto;
-padding:20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameheaderindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnameinputfield {
-position:relative;
-background-color:transparent;
-border: 1px solid transparent;
-border-bottom:0.1vh solid black;
-height:5vh;
-width:90%;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-fullnameinputfieldcolcontainer-fullnamereminder {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-margin-top:3vh;
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer {
-position:relative;
-height:auto;
-padding:20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberheaderindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberinputfield {
-position:relative;
-background-color:transparent;
-border: 1px solid transparent;
-border-bottom:0.1vh solid black;
-height:5vh;
-width:20%;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-phonenumberinputfieldcolcontainer-phonenumberreminder {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-margin-top:3vh;
-}
-#setupmfatipaccountcitizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer {
-position:relative;
-height:auto;
-padding:20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobheaderindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobinputfield {
-position:relative;
-height:5vh;
-width:90%;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-padding:10px 20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-dobinputfieldcolcontainer-dobreminder {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-margin-top:3vh;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer {
-position:relative;
-height:auto;
-padding:20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusheaderindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselectlabel {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-civilstatusinputfieldcolcontainer-civilstatusselect {
-position:relative;
-height:5vh;
-width:90%;
-font: auto {
-family:$sub-font;
-weight:900;
-}
-margin-top:1vh;
-padding:10px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofbirthcertificateinputfieldcolcontainer {
-position:relative;
-height:auto;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-padding:20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificateheaderindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofbirthcertificateinputfieldcolcontainer-blackquestionmarkimage {
-position:relative;
-height:80%;
-width:80%;
-margin-left:auto;
-margin-right:auto;
-} 
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificatelabel {
-position:relative;
-background-color:white;
-border:0.1vh solid black;
-border-radius:20px;
-font: auto {
-family:$sub-font;
-weight:900;
-}
-color:black;
-padding:20px 35px;
-}
-.setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofbirthcertificateinputfieldcolcontainer-frontphotoofbirthcertificateinputfield {
-position:relative;
-display:none;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofbirthcertificateinputfieldcolcontainer {
-position:relative;
-height:auto;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-padding:20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificateheaderindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofbirthcertificateinputfieldcolcontainer-blackquestionmarkimage {
-position:relative;
-height:80%;
-width:80%;
-margin-left:auto;
-margin-right:auto;   
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificatelabel {
-position:relative;
-background-color:white;
-border:0.1vh solid black;
-border-radius:20px;
-font: auto {
-family:$sub-font;
-weight:900;
-}
-color:black;
-padding:20px 35px;
-}
-.setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofbirthcertificateinputfieldcolcontainer-backphotoofbirthcertificateinputfield {
-position:relative;
-display:none;
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofvalidgovernmentidinputfieldcolcontainer {
-position:relative;
-height:auto;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-padding:20px;
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidheaderindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
-}
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotoofvalidgovernmentidinputfieldcolcontainer-blackquestionmarkimage {
-position:relative;
-height:80%;
-width:80%;
-margin-left:auto;
-margin-right:auto; 
-}
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidlabel {
-position:relative;
-background-color:white;
-border:0.1vh solid black;
-border-radius:20px;
-font: auto {
-family:$sub-font;
-weight:900;
-}
-color:black;
-padding:20px 35px;
-}
-.setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-frontphotofvalidgovernmentidinputfieldcolcontainer-frontphotoofvalidgovernmentidinputfield {
-position:relative;
-display:none;
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofvalidgovernmentidinputfieldcolcontainer {
-position:relative;
-height:auto;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-padding:20px;
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidheaderindication {
-position:relative;
-font: auto {
-family: $sub-font;
-weight:900;
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+  to {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+  }
 }
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotoofvalidgovernmentidinputfieldcolcontainer-blackquestionmarkimage {
-position:relative;
-height:80%;
-width:80%;
-margin-left:auto;
-margin-right:auto;
+
+@keyframes buttonPulse {
+  0%, 100% {
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+  50% {
+    box-shadow: 0 4px 25px rgba(102, 126, 234, 0.6);
+  }
 }
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidlabel {
-position:relative;
-background-color:white;
-border:0.1vh solid black;
-border-radius:20px;
-font: auto {
-family:$sub-font;
-weight:900;
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  #mfatipconfiguration {
+    padding: 1.5rem 0.5rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer {
+    padding: 2rem;
+    margin-bottom: 1.5rem;
+  }
 }
-color:black;
-padding:20px 35px;
+
+@media (max-width: 992px) {
+  #mfatipconfiguration-headerindicationcontainer .mfatipconfiguration-headerindicationcontainer-headerindication:last-child {
+    font-size: 2.5rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h1 {
+    font-size: 2rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h3 {
+    font-size: 1.7rem;
+  }
 }
-.setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-backphotofvalidgovernmentidinputfieldcolcontainer-backphotoofvalidgovernmentidinputfield {
-position:relative;
-display:none;
+
+@media (max-width: 768px) {
+  #mfatipconfiguration {
+    padding: 1rem 0.5rem;
+  }
+  
+  #mfatipconfiguration-headerindicationcontainer {
+    margin-bottom: 2rem;
+  }
+  
+  #mfatipconfiguration-headerindicationcontainer .mfatipconfiguration-headerindicationcontainer-headerindication:last-child {
+    font-size: 2rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer {
+    padding: 1.5rem;
+    border-radius: 15px;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h1 {
+    font-size: 1.8rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h3 {
+    font-size: 1.5rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h4 {
+    font-size: 1.2rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer p {
+    font-size: 1rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li {
+    font-size: 0.95rem;
+  }
+  
+  #mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
 }
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-submitbuttoncontainer {
-position:relative;
-padding:140px 20px;
+
+@media (max-width: 576px) {
+  #mfatipconfiguration {
+    padding: 0.5rem;
+  }
+  
+  #mfatipconfiguration-headerindicationcontainer .mfatipconfiguration-headerindicationcontainer-headerindication:first-child {
+    font-size: 1rem;
+  }
+  
+  #mfatipconfiguration-headerindicationcontainer .mfatipconfiguration-headerindicationcontainer-headerindication:last-child {
+    font-size: 1.7rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h1 {
+    font-size: 1.5rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h3 {
+    font-size: 1.3rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li {
+    padding: 0.6rem 0;
+    font-size: 0.9rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer ul ul {
+    margin-left: 1rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage {
+    width: 16px;
+    height: 16px;
+    margin-right: 0.8rem;
+  }
+  
+  #mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton {
+    padding: 0.9rem 1rem;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+  }
 }
-#setupmfatipaccount-citizenshipregistrationtypeviewcontainer-mfatipcitizenshipregistrationpersonaldetailscontainer-submitbuttoncontainer-submitbutton {
-position:relative;
-background-color:magenta;
-border:0.1vh solid white;
-border-radius:15px;
-font: auto {
-family: $sub-font;
-weight:900;
+
+@media (max-width: 400px) {
+  #mfatipconfiguration-headerindicationcontainer .mfatipconfiguration-headerindicationcontainer-headerindication:last-child {
+    font-size: 1.4rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h1 {
+    font-size: 1.3rem;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer h3 {
+    font-size: 1.2rem;
+  }
+  
+  #mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton {
+    font-size: 0.8rem;
+    padding: 0.8rem;
+  }
 }
-padding:20px 85px;
+
+/* Print Styles */
+@media print {
+  #mfatipconfiguration {
+    background: white !important;
+    color: black !important;
+    -webkit-print-color-adjust: exact;
+  }
+  
+  #mfatipconfiguration::before {
+    display: none;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer {
+    background: white !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+  
+  #mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton {
+    background: #667eea !important;
+    -webkit-print-color-adjust: exact;
+  }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  #mfatipconfiguration,
+  #mfatipconfiguration-headerindicationcontainer,
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer,
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li,
+  #mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  .mfatipconfiguration-configurationmodalrowcontainer-colcontainer:hover {
+    transform: none;
+  }
+  
+  #mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton:hover {
+    transform: none;
+  }
 }
 //// end of set up mfatip account
 /// 

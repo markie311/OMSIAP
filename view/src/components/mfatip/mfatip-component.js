@@ -8,23 +8,30 @@ import { Row,
        Dropdown
      } from 'react-bootstrap';
 
-import '../../styles/mfatip/mfatip.scss';
+import '../../styles/mfatip/mfatip.scss'
 
-import NavBar from '../navbar/navbar/navbar-component.js';
-import RapportAdvertisement from '../landingpage/rapportadvertisement/rapportadvertisement-component.js';
-import PricingTable from '../landingpage/pricingtable/pricingtable-component.js';
-import Footer from '../landingpage/footer/footer-component.js';
+import { useNavigate } from "react-router-dom"
+
+import NavBar from '../navbar/navbar/navbar-component.js'
+import RapportAdvertisement from '../landingpage/rapportadvertisement/rapportadvertisement-component.js'
+import PricingTable from '../landingpage/pricingtable/pricingtable-component.js'
+import Footer from '../landingpage/footer/footer-component.js'
+
+
 
 export default function MonthlyFinanceAllocationToIndividualPeople(props) {
+
+  const navigate = useNavigate()
+
 return(
   <Col id="mfatip">
 
     <Col id='mfatip-landingpageview'>
       <NavBar viewport={props.viewport}/>
       <Header />
-      <HopeHeader />
+      <HopeHeader navigate={navigate}/>
       <RapportAdvertisement />
-      <MFATIPConfiguration />
+      <MFATIPConfiguration navigate={navigate}/>
       <Footer />
     </Col>
 
@@ -294,7 +301,7 @@ function Header() {
     )
 }
 
-function HopeHeader() {
+function HopeHeader(props) {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -345,7 +352,12 @@ function HopeHeader() {
                 <p className="hope-header-description">
                   OMSIAP believes that the foundation we established was sufficient to unite everyone for constitutional change. Join our growing community that tracks market prices, shares data-driven insights about current trends, provides updates on our industrial economy and latest designs, and offers financial allocations based on OMSIAP's profits.
                 </p>
-                <button className="hope-header-cta-button">
+                <button className="hope-header-cta-button"
+                         onClick={()=> {
+                          //const _setupmfatipaccountmodal = document.querySelector("#setupmfatipaccount");
+                          //_setupmfatipaccountmodal.style.display = "block";
+                          props.navigate('/mfatip/loginregister')
+                        }}>
                   Join Community
                 </button>
               </div>
@@ -374,7 +386,7 @@ function HopeHeader() {
   );
 }
 
-function MFATIPConfiguration() {
+function MFATIPConfiguration(props) {
 return (
 <Col id="mfatipconfiguration">
  <Col id="mfatipconfiguration-headerindicationcontainer">
@@ -437,8 +449,9 @@ return (
         className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer">
      <button id="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton"
              onClick={()=> {
-              const _setupmfatipaccountmodal = document.querySelector("#setupmfatipaccount");
-              _setupmfatipaccountmodal.style.display = "block";
+              //const _setupmfatipaccountmodal = document.querySelector("#setupmfatipaccount");
+              //_setupmfatipaccountmodal.style.display = "block";
+              props.navigate('/mfatip/loginregister')
              }}>SET UP MY (M)onthly (F)inance (A)llocation (T)o (I)ndividual (P)eople ACCOUNT</button>
    </Col>
  </Row>
