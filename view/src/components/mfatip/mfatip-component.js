@@ -107,188 +107,271 @@ return (
 */}
 
 function Header() {
-
   const [counts, setCounts] = useState({
     pageVisits: 0,
     activeProfiles: 0,
     publicCitizens: 0,
     privateCitizens: 0,
-  })
+  });
 
-  const [animate, setAnimate] = useState(false)
+  const [animate, setAnimate] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
+    // Trigger entrance animation
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 100);
+
     // Simulate fetching data
     const fetchData = () => {
-      // Replace these with actual API calls or data fetching logic
       return {
         pageVisits: 1234,
         activeProfiles: 567,
         publicCitizens: 890,
         privateCitizens: 123,
-      }
-    }
+      };
+    };
 
-    const data = fetchData()
+    const data = fetchData();
 
     // Start animation after a short delay
     setTimeout(() => {
-      setAnimate(true)
-      animateCounts(data)
-    }, 500)
-  }, [])
+      setAnimate(true);
+      animateCounts(data);
+    }, 800);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   const animateCounts = (targetCounts) => {
+    const duration = 2000;
+    const steps = 60;
+    const interval = duration / steps;
 
-    const duration = 2000 // 2 seconds
-    const steps = 60
-    const interval = duration / steps
-
-    let step = 0
+    let step = 0;
     const timer = setInterval(() => {
-      step++
-      const progress = step / steps
+      step++;
+      const progress = step / steps;
 
       setCounts({
         pageVisits: Math.round(targetCounts.pageVisits * progress),
         activeProfiles: Math.round(targetCounts.activeProfiles * progress),
         publicCitizens: Math.round(targetCounts.publicCitizens * progress),
         privateCitizens: Math.round(targetCounts.privateCitizens * progress),
-      })
+      });
 
       if (step === steps) {
-        clearInterval(timer)
+        clearInterval(timer);
       }
-    }, interval)
-  }
+    }, interval);
+  };
 
-  return (
-    <Row id="mfatipheaderrowcontariner">
-         <Col xs={12}
-              md={5}
-              lg={5}
-              id="mfatipheaderrowcontariner-headerindicationscontainer">
-          <h4 className="mfatipheaderrowcontariner-headerindicationscontainer-headerindication">Building Your Path to Personal Success</h4>
-          <br/>
-          <h1 className="mfatipheaderrowcontariner-headerindicationscontainer-headerindication">(M)onthly (F)inancial (A)llocation (T)o (I)ndividual (P)eople: MFATIP</h1>
-          <br/>
-          <br/>
-          <p className="mfatipheaderrowcontariner-headerindicationscontainer-headerindication">Accelerate your personal growth by receiving monthly financial allocations through your MFATIP profile. Our team will be present to support your success. We pride ourselves on providing excellent service to individuals, ensuring a positive experience for everyone.</p>
-        </Col>
-      <Col xs={12} md={7} lg={7} id="mfatipheaderrowcontariner-dataheaderindicationcontainer">
-        <Row id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer">
-          <Col
-            xs={12}
-            md={6}
-            lg={6}
-            id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer">
-            <Row id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer">
-              <Col
-                xs={6}
-                md={6}
-                lg={6}
-                className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer"
-              >
-                <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer">
-                  <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer">
-                    <p
-                      className={`mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer-dataheaderindication ${animate ? "animate-count" : ""}`}
+  const openImageModal = (imageSrc, imageAlt) => {
+    setSelectedImage({ src: imageSrc, alt: imageAlt });
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+  };
+
+    return (
+      <div className={`mfatip-header ${isVisible ? 'mfatip-header--visible' : ''}`}>
+        <div className="mfatip-container">
+          <div className="mfatip-grid">
+            {/* Left Content Section */}
+            <div className="mfatip-content">
+              <div className="mfatip-content__inner">
+                <h4 className="mfatip-subtitle">Building Your Path to Personal Success</h4>
+                <h1 className="mfatip-title">
+                  <span className="mfatip-title__acronym">(M)onthly (F)inancial (A)llocation (T)o (I)ndividual (P)eople:</span>
+                  <span className="mfatip-title__name">MFATIP</span>
+                </h1>
+                <p className="mfatip-description">
+                  Accelerate your personal growth by receiving monthly financial allocations through your MFATIP profile. 
+                  Our team will be present to support your success. We pride ourselves on providing excellent service to 
+                  individuals, ensuring a positive experience for everyone.
+                </p>
+              </div>
+            </div>
+
+            {/* Right Data Section */}
+            <div className="mfatip-data-section">
+              <div className="mfatip-stats-grid">
+                {/* Stats Cards */}
+                <div className="mfatip-stats-container">
+                  <div className="mfatip-stat-card mfatip-stat-card--primary">
+                    <div className="mfatip-stat-card__content">
+                      <span className={`mfatip-stat-number ${animate ? 'mfatip-stat-number--animate' : ''}`}>
+                        {counts.pageVisits}
+                      </span>
+                      <span className="mfatip-stat-label">Website Page Visits</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mfatip-stat-card mfatip-stat-card--secondary">
+                    <div className="mfatip-stat-card__content">
+                      <span className={`mfatip-stat-number ${animate ? 'mfatip-stat-number--animate' : ''}`}>
+                        {counts.activeProfiles}
+                      </span>
+                      <span className="mfatip-stat-label">Active MFATIP Account Profile Holders</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mfatip-stat-card mfatip-stat-card--accent">
+                    <div className="mfatip-stat-card__content">
+                      <span className={`mfatip-stat-number ${animate ? 'mfatip-stat-number--animate' : ''}`}>
+                        {counts.publicCitizens}
+                      </span>
+                      <span className="mfatip-stat-label">Public Active Citizens</span>
+                    </div>
+                  </div>
+                  
+                  <div className="mfatip-stat-card mfatip-stat-card--tertiary">
+                    <div className="mfatip-stat-card__content">
+                      <span className={`mfatip-stat-number ${animate ? 'mfatip-stat-number--animate' : ''}`}>
+                        {counts.privateCitizens}
+                      </span>
+                      <span className="mfatip-stat-label">Private Active Citizens</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Images Section */}
+                <div className="mfatip-images">
+                  <div className="mfatip-image-container mfatip-image-container--people">
+                    <div 
+                      className="mfatip-image-placeholder mfatip-image-placeholder--people"
+                      onClick={() => openImageModal('/images/mfatip/people.jpg', 'MFATIP Community')}
                     >
-                      <span className="count-number">{counts.pageVisits}</span> WEBSITE PAGE VISITS
-                    </p>
-                  </Col>
-                  <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer">
-                    <p
-                      className={`mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer-dataheaderindication ${animate ? "animate-count" : ""}`}
+                      <div className="mfatip-image-overlay">
+                        <span className="mfatip-image-text">Community</span>
+                        <div className="mfatip-image-icon">👥</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="mfatip-image-container mfatip-image-container--owner">
+                    <div 
+                      className="mfatip-image-placeholder mfatip-image-placeholder--owner"
+                      onClick={() => openImageModal('/images/mfatip/tuxedo.jpg', 'Professional Excellence')}
                     >
-                      <span className="count-number">{counts.activeProfiles}</span> ACTIVE MFATIP ACCOUNT PROFILE
-                      HOLDERS
-                    </p>
-                  </Col>
-                </Col>
-              </Col>
-              <Col
-                xs={6}
-                md={6}
-                lg={6}
-                className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer"
-              >
-                <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer">
-                  <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer">
-                    <p
-                      className={`mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer-dataheaderindication ${animate ? "animate-count" : ""}`}
-                    >
-                      <span className="count-number">{counts.publicCitizens}</span> PUBLIC ACTIVE CITIZEN'S
-                    </p>
-                  </Col>
-                  <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer">
-                    <p
-                      className={`mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer-dataheaderindication ${animate ? "animate-count" : ""}`}
-                    >
-                      <span className="count-number">{counts.privateCitizens}</span> PRIVATE ACTIVE CITIZEN'S
-                    </p>
-                  </Col>
-                </Col>
-              </Col>
-            </Row>
-            <Col id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datadisplayimagecontainer">
-              <img src="../images/mfatip/people.jpg"
-                   id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datadisplayimagecontainer-datadisplayimage"/>
-            </Col>
-          </Col>
-          <Col xs={12}
-                md={6}
-                lg={6}
-                id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-ownerbackgroundimagecontainer">
-              <img src="../images/mfatip/tuxedo.jpg"
-                  id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-ownerbackgroundimagecontainer-ownerbackgrounimage"/>
-          </Col>
-        </Row>
-      </Col>
-    </Row>
-  )
+                      <div className="mfatip-image-overlay">
+                        <span className="mfatip-image-text">Excellence</span>
+                        <div className="mfatip-image-icon">🎩</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Image Modal */}
+        {selectedImage && (
+          <div className="mfatip-modal" onClick={closeImageModal}>
+            <div className="mfatip-modal__backdrop"></div>
+            <div className="mfatip-modal__content" onClick={e => e.stopPropagation()}>
+              <button className="mfatip-modal__close" onClick={closeImageModal}>
+                ×
+              </button>
+              <div className="mfatip-modal__image-container">
+                <img 
+                  src={selectedImage.src} 
+                  alt={selectedImage.alt}
+                  className="mfatip-modal__image"
+                />
+              </div>
+              <div className="mfatip-modal__caption">
+                {selectedImage.alt}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
 }
 
 function HopeHeader() {
-return(
-  <Row id="hopeheader">
-      
-    <Col xs={6}
-         md={6}
-         lg={6}
-         id="hopeheader-displayimagescontainer">
-      <Row id="hopeheader-displayimagescontainer-rowcontainer">
-        <Col xs={6}
-             md={6}
-             lg={6}
-             className="hopeheader-displayimagescontainer-rowcontainer-colcontainer">
-          <img src="../images/mfatip/tuxedo.jpg"
-               id="hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage1"/>
-           <img src="../images/mfatip/tuxedo.jpg"
-               id="hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage2"/>
-        </Col>
-        <Col xs={6}
-             md={6}
-             lg={6}
-             className="hopeheader-displayimagescontainer-rowcontainer-colcontainer">
-            <img src="../images/mfatip/tuxedo.jpg"
-               id="hopeheader-displayimagescontainer-rowcontainer-colcontainer-displayimage3"/>
-        </Col>
-      </Row>
-    </Col>
-    <Col xs={6}
-         md={6}
-         lg={6}
-         id="hopeheader-hopeheader-headerindicationscontainer">
-      <h4 className="hopeheader-hopeheader-headerindicationscontainer-headerindication">About HOPE</h4>
-      <br/>
-      <h2 className="hopeheader-hopeheader-headerindicationscontainer-headerindication">LEADING ALL HOPES INTO PRECISION</h2>
-      <br/>
-      <p className="hopeheader-hopeheader-headerindicationscontainer-headerindication">OMSIAP believes that the foundation we established was sufficient to unite everyone for constitutional change. Join our growing community that tracks market prices, shares data-driven insights about current trends, provides updates on our industrial economy and latest designs, and offers financial allocations based on OMSIAP's profits.</p>
-    </Col>
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  </Row>
-)
+  const images = [
+    { src: "../images/mfatip/tuxedo.jpg", alt: "Tuxedo Image 1", id: "image1" },
+    { src: "../images/mfatip/tuxedo.jpg", alt: "Tuxedo Image 2", id: "image2" },
+    { src: "../images/mfatip/tuxedo.jpg", alt: "Tuxedo Image 3", id: "image3" }
+  ];
+
+  const handleImageClick = (image) => {
+    setSelectedImage(image);
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setSelectedImage(null);
+  };
+
+  return (  
+   <div className="hope-header-wrapper">
+      <div className="hope-header-container">
+            <div className="hope-header-row">
+              <div className="hope-header-images-section">
+                <div className="hope-header-images-grid">
+                  {images.map((image, index) => (
+                    <div 
+                      key={index}
+                      className="hope-header-image-container"
+                      onClick={() => handleImageClick(image)}
+                    >
+                      <img 
+                        src={image.src} 
+                        alt={image.alt}
+                        className="hope-header-display-image"
+                      />
+                      <div className="hope-header-image-overlay">
+                        <span className="hope-header-zoom-icon">🔍</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="hope-header-content-section">
+                <h4 className="hope-header-subtitle">About HOPE</h4>
+                <h2 className="hope-header-title">LEADING ALL HOPES INTO PRECISION</h2>
+                <p className="hope-header-description">
+                  OMSIAP believes that the foundation we established was sufficient to unite everyone for constitutional change. Join our growing community that tracks market prices, shares data-driven insights about current trends, provides updates on our industrial economy and latest designs, and offers financial allocations based on OMSIAP's profits.
+                </p>
+                <button className="hope-header-cta-button">
+                  Join Community
+                </button>
+              </div>
+            </div>
+      </div>
+
+      {/* Modal */}
+      <div 
+        className={`hope-header-modal ${isModalOpen ? 'active' : ''}`}
+        onClick={closeModal}
+      >
+        <div className="hope-header-modal-content" onClick={(e) => e.stopPropagation()}>
+          <button className="hope-header-modal-close" onClick={closeModal}>
+            ×
+          </button>
+          {selectedImage && (
+            <img 
+              src={selectedImage.src} 
+              alt={selectedImage.alt}
+              className="hope-header-modal-image"
+            />
+          )}
+        </div>
+      </div>
+   </div>
+  );
 }
 
 function MFATIPConfiguration() {

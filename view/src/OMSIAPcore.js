@@ -815,8 +815,8 @@ const loadUserData = async () => {
       </Route>
       <Route path='/monthlyfinanceallocationtoindividualpeople'
             element={<MonthlyFinanceAllocationToIndividualPeople viewport={viewport}
-                                                                user={user}
-                                                                usercb={usercb}/>}>
+                                                                 user={user}
+                                                                 usercb={usercb}/>}>
       </Route>
       <Route path='/cart'
             element={<Cart />}>
