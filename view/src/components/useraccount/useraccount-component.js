@@ -1244,6 +1244,7 @@ const handleProfileSubmit = async (e) => {
 
   return (
     <div className="userdashboard-dashboard-container" style={{ display: props.userdashboardmodal }}>
+
       <header className="userdashboard-dashboard-header">
         <h1>(M)onthly (F)inancial (A)llocation (T)o (I)ndividual (P)eople PROFILE</h1>
         <div className="userdashboard-nav-tabs">
@@ -1281,7 +1282,7 @@ const handleProfileSubmit = async (e) => {
 
         <button className="userdashboard-gotohome-btn">
           <a href={"/"} id="gotohomeatag">
-            Go to home
+            <span style={{color: 'white'}}>Go to home</span>
           </a>
         </button>
 
@@ -1701,7 +1702,7 @@ const handleProfileSubmit = async (e) => {
                 </p>
                 <div className="userdashboard-form-row">
                   <div className="userdashboard-form-group">
-                    <label htmlFor="referenceNumber">GCash Reference Number</label>
+                    <label>GCash Reference Number</label>
                     <input
                       type="text"
                       id="referenceNumber"
@@ -1716,7 +1717,7 @@ const handleProfileSubmit = async (e) => {
 
                 <div className="userdashboard-form-row userdashboard-image-upload">
                   <div className="userdashboard-form-group">
-                    <label htmlFor="transactionImage" className="userdashboard-file-input-label">
+                    <label className="userdashboard-file-input-label">
                       GCash Transaction Screenshot
                       <div className="userdashboard-image-preview">
                         {previewImage ? (
@@ -1772,7 +1773,7 @@ const handleProfileSubmit = async (e) => {
               <form className="userdashboard-withdrawal-form" onSubmit={handleWithdrawalSubmit}>
                 <div className="userdashboard-form-row">
                   <div className="userdashboard-form-group">
-                    <label htmlFor="w-firstName">First Name</label>
+                    <label>First Name</label>
                     <input
                       type="text"
                       id="w-firstName"
@@ -1783,7 +1784,7 @@ const handleProfileSubmit = async (e) => {
                     />
                   </div>
                   <div className="userdashboard-form-group">
-                    <label htmlFor="w-middleName">Middle Name</label>
+                    <label>Middle Name</label>
                     <input
                       type="text"
                       id="w-middleName"
@@ -1796,7 +1797,7 @@ const handleProfileSubmit = async (e) => {
 
                 <div className="userdashboard-form-row">
                   <div className="userdashboard-form-group">
-                    <label htmlFor="w-lastName">Last Name</label>
+                    <label>Last Name</label>
                     <input
                       type="text"
                       id="w-lastName"
@@ -1807,7 +1808,7 @@ const handleProfileSubmit = async (e) => {
                     />
                   </div>
                   <div className="userdashboard-form-group">
-                    <label htmlFor="w-phoneNumber">GCash Phone Number</label>
+                    <label>GCash Phone Number</label>
                     <input
                       type="tel"
                       id="w-phoneNumber"
@@ -1821,7 +1822,7 @@ const handleProfileSubmit = async (e) => {
 
                 <div className="userdashboard-form-row">
                   <div className="userdashboard-form-group">
-                    <label htmlFor="w-amount">Withdrawal Amount</label>
+                    <label>Withdrawal Amount</label>
                     <input
                       type="number"
                       id="w-amount"
@@ -1834,7 +1835,7 @@ const handleProfileSubmit = async (e) => {
                     />
                   </div>
                   <div className="userdashboard-form-group">
-                    <label htmlFor="w-password">Account Password</label>
+                    <label>Account Password</label>
                     <input
                       type="password"
                       id="w-password"
@@ -1950,7 +1951,7 @@ const handleProfileSubmit = async (e) => {
                   <h3>Personal Information</h3>
                   <div className="userdashboard-form-row">
                     <div className="userdashboard-form-group">
-                      <label htmlFor="profile-firstName">First Name</label>
+                      <label>First Name</label>
                       <input
                         type="text"
                         id="profile-firstName"
@@ -1961,7 +1962,7 @@ const handleProfileSubmit = async (e) => {
                       />
                     </div>
                     <div className="userdashboard-form-group">
-                      <label htmlFor="profile-middleName">Middle Name</label>
+                      <label>Middle Name</label>
                       <input
                         type="text"
                         id="profile-middleName"
@@ -1974,7 +1975,7 @@ const handleProfileSubmit = async (e) => {
 
                   <div className="userdashboard-form-row">
                     <div className="userdashboard-form-group">
-                      <label htmlFor="profile-lastName">Last Name</label>
+                      <label>Last Name</label>
                       <input
                         type="text"
                         id="profile-lastName"
@@ -1985,7 +1986,7 @@ const handleProfileSubmit = async (e) => {
                       />
                     </div>
                     <div className="userdashboard-form-group">
-                      <label htmlFor="profile-phoneNumber">Phone Number</label>
+                      <label>Phone Number</label>
                       <input
                         type="tel"
                         id="profile-phoneNumber"
@@ -2005,7 +2006,7 @@ const handleProfileSubmit = async (e) => {
                     <h4>Birth Certificate</h4>
                     <div className="userdashboard-form-row userdashboard-document-row">
                       <div className="userdashboard-form-group">
-                        <label htmlFor="birthCertificateFront" className="userdashboard-file-input-label">
+                        <label className="userdashboard-file-input-label">
                           Front of Birth Certificate
                           <div className="userdashboard-image-preview">
                             {profileForm.birthCertificateFront ? (
@@ -2042,7 +2043,7 @@ const handleProfileSubmit = async (e) => {
                       </div>
 
                       <div className="userdashboard-form-group">
-                        <label htmlFor="birthCertificateBack" className="userdashboard-file-input-label">
+                        <label className="userdashboard-file-input-label">
                           Back of Birth Certificate
                           <div className="userdashboard-image-preview">
                             {profileForm.birthCertificateBack ? (
@@ -2084,7 +2085,7 @@ const handleProfileSubmit = async (e) => {
                     <h4>Government ID</h4>
                     <div className="userdashboard-form-row userdashboard-document-row">
                       <div className="userdashboard-form-group">
-                        <label htmlFor="governmentIdFront" className="userdashboard-file-input-label">
+                        <label className="userdashboard-file-input-label">
                           Front of Government ID
                           <div className="userdashboard-image-preview">
                             {profileForm.governmentIdFront ? (
@@ -2121,7 +2122,7 @@ const handleProfileSubmit = async (e) => {
                       </div>
 
                       <div className="userdashboard-form-group">
-                        <label htmlFor="governmentIdBack" className="userdashboard-file-input-label">
+                        <label className="userdashboard-file-input-label">
                           Back of Government ID
                           <div className="userdashboard-image-preview">
                             {profileForm.governmentIdBack ? (
