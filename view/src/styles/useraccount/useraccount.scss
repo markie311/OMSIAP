@@ -974,7 +974,85 @@
 .userdashboard-document-row {
   display: grid;
   gap: 1rem;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1fr 1fr;
+}
+
+/* Fixed image preview container */
+.userdashboard-image-preview {
+  width: 100%;
+  height: 200px; /* Set a fixed height */
+  border: 2px dashed #ddd;
+  border-radius: var(--border-radius);
+  overflow: hidden; /* Prevent overflow */
+  position: relative;
+  background-color: #f8f9fa;
+}
+
+.userdashboard-upload-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6c757d;
+  font-size: 0.9rem;
+}
+
+.userdashboard-document-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Prevent image overflow */
+}
+
+/* Fixed image sizing */
+.userdashboard-document-preview img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain; /* Maintain aspect ratio while fitting container */
+  border-radius: 4px;
+}
+
+.userdashboard-remove-document {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(220, 53, 69, 0.9);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: var(--transition);
+  z-index: 2;
+}
+
+.userdashboard-remove-document:hover {
+  background-color: rgba(220, 53, 69, 1);
+}
+
+/* File input styling */
+.userdashboard-file-input {
+  display: none; /* Hide the default file input */
+}
+
+.userdashboard-file-input-label {
+  display: block;
+  cursor: pointer;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: var(--text-color);
+}
+
+.userdashboard-file-input-label:hover .userdashboard-image-preview {
+  border-color: var(--primary-color);
+  background-color: #f0f8ff;
 }
 
 .userdashboard-settings-actions {
@@ -998,37 +1076,15 @@
   background-color: var(--secondary-color);
 }
 
-.userdashboard-document-preview {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.userdashboard-document-preview .userdashboard-preview-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain;
-}
-
-.userdashboard-remove-document {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  background-color: rgba(255, 0, 0, 0.7);
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 10px;
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition: var(--transition);
-}
-
-.userdashboard-remove-document:hover {
-  background-color: rgba(255, 0, 0, 0.9);
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .userdashboard-document-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .userdashboard-image-preview {
+    height: 150px; /* Smaller height on mobile */
+  }
 }
 
 /* Currency Exchange Tab Styles */

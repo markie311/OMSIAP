@@ -422,7 +422,7 @@ const handleRegistration = async (e) => {
         <form onSubmit={handleSignIn} className="loginandregister-auth-form">
           <div className="loginandregister-form-row">
             <div className="loginandregister-form-group">
-              <label htmlFor="firstName">First Name</label>
+              <label>First Name</label>
               <input
                 type="text"
                 id="firstName"
@@ -434,7 +434,7 @@ const handleRegistration = async (e) => {
             </div>
 
             <div className="loginandregister-form-group">
-              <label htmlFor="middleName">Middle Name</label>
+              <label>Middle Name</label>
               <input
                 type="text"
                 id="middleName"
@@ -446,7 +446,7 @@ const handleRegistration = async (e) => {
           </div>
 
           <div className="loginandregister-form-group">
-            <label htmlFor="lastName">Last Name</label>
+            <label>Last Name</label>
             <input
               type="text"
               id="lastName"
@@ -458,7 +458,7 @@ const handleRegistration = async (e) => {
           </div>
 
           <div className="loginandregister-form-group">
-            <label htmlFor="password">Password</label>
+            <label>Password</label>
             <input
               type="password"
               id="password"
@@ -512,7 +512,7 @@ const handleRegistration = async (e) => {
             <form onSubmit={handleRegistration} className="loginandregister-registration-form">
               <div className="loginandregister-form-row">
                 <div className="loginandregister-form-group">
-                  <label htmlFor="firstName">First Name*</label>
+                  <label>First Name*</label>
                   <input
                     type="text"
                     id="firstName"
@@ -525,7 +525,7 @@ const handleRegistration = async (e) => {
                 </div>
                 
                 <div className="loginandregister-form-group">
-                  <label htmlFor="middleName">Middle Name</label>
+                  <label>Middle Name</label>
                   <input
                     type="text"
                     id="middleName"
@@ -539,7 +539,7 @@ const handleRegistration = async (e) => {
               
               <div className="loginandregister-form-row">
                 <div className="loginandregister-form-group">
-                  <label htmlFor="lastName">Last Name*</label>
+                  <label>Last Name*</label>
                   <input
                     type="text"
                     id="lastName"
@@ -552,7 +552,7 @@ const handleRegistration = async (e) => {
                 </div>
                 
                 <div className="loginandregister-form-group">
-                  <label htmlFor="phoneNumber">Phone Number*</label>
+                  <label>Phone Number*</label>
                   <input
                     type="tel"
                     id="phoneNumber"
@@ -566,7 +566,7 @@ const handleRegistration = async (e) => {
               </div>
               
               <div className="loginandregister-form-group">
-                <label htmlFor="birthDate">Birth Date*</label>
+                <label>Birth Date*</label>
                 <input
                   type="date"
                   id="birthDate"
@@ -579,7 +579,7 @@ const handleRegistration = async (e) => {
 
               <div className="loginandregister-form-row">
                 <div className="loginandregister-form-group">
-                  <label htmlFor="regPassword">Password*</label>
+                  <label>Password*</label>
                   <input
                     type="password"
                     id="regPassword"
@@ -592,7 +592,7 @@ const handleRegistration = async (e) => {
                 </div>
                 
                 <div className="loginandregister-form-group">
-                  <label htmlFor="confirmPassword">Confirm Password*</label>
+                  <label>Confirm Password*</label>
                   <input
                     type="password"
                     id="confirmPassword"

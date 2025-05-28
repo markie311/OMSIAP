@@ -1942,96 +1942,95 @@ const handleProfileSubmit = async (e) => {
         )}
 
        {/* Settings Tab */}
-        {activeTab === "settings" && (
-          <div className="userdashboard-settings-panel">
-            <section className="userdashboard-user-settings">
-              <h2>Account Settings</h2>
-              <form className="userdashboard-profile-form" onSubmit={handleProfileSubmit}>
-                <div className="userdashboard-settings-group userdashboard-personal-info">
-                  <h3>Personal Information</h3>
-                  <div className="userdashboard-form-row">
-                    <div className="userdashboard-form-group">
-                      <label>First Name</label>
-                      <input
-                        type="text"
-                        id="profile-firstName"
-                        name="firstName"
-                        value={profileForm.firstName}
-                        onChange={handleProfileChange}
-                        required
-                      />
-                    </div>
-                    <div className="userdashboard-form-group">
-                      <label>Middle Name</label>
-                      <input
-                        type="text"
-                        id="profile-middleName"
-                        name="middleName"
-                        value={profileForm.middleName}
-                        onChange={handleProfileChange}
-                      />
-                    </div>
+       {activeTab === "settings" && (
+        <div className="userdashboard-settings-panel">
+          <section className="userdashboard-user-settings">
+            <h2>Account Settings</h2>
+            <form className="userdashboard-profile-form" onSubmit={handleProfileSubmit}>
+              <div className="userdashboard-settings-group userdashboard-personal-info">
+                <h3>Personal Information</h3>
+                <div className="userdashboard-form-row">
+                  <div className="userdashboard-form-group">
+                    <label>First Name</label>
+                    <input
+                      type="text"
+                      id="profile-firstName"
+                      name="firstName"
+                      value={profileForm.firstName}
+                      onChange={handleProfileChange}
+                      required
+                    />
                   </div>
-
-                  <div className="userdashboard-form-row">
-                    <div className="userdashboard-form-group">
-                      <label>Last Name</label>
-                      <input
-                        type="text"
-                        id="profile-lastName"
-                        name="lastName"
-                        value={profileForm.lastName}
-                        onChange={handleProfileChange}
-                        required
-                      />
-                    </div>
-                    <div className="userdashboard-form-group">
-                      <label>Phone Number</label>
-                      <input
-                        type="tel"
-                        id="profile-phoneNumber"
-                        name="phoneNumber"
-                        value={profileForm.phoneNumber}
-                        onChange={handleProfileChange}
-                        required
-                      />
-                    </div>
+                  <div className="userdashboard-form-group">
+                    <label>Middle Name</label>
+                    <input
+                      type="text"
+                      id="profile-middleName"
+                      name="middleName"
+                      value={profileForm.middleName}
+                      onChange={handleProfileChange}
+                    />
                   </div>
                 </div>
 
-                <div className="userdashboard-settings-group userdashboard-document-uploads">
-                  <h3>Identity Verification Documents</h3>
+                <div className="userdashboard-form-row">
+                  <div className="userdashboard-form-group">
+                    <label>Last Name</label>
+                    <input
+                      type="text"
+                      id="profile-lastName"
+                      name="lastName"
+                      value={profileForm.lastName}
+                      onChange={handleProfileChange}
+                      required
+                    />
+                  </div>
+                  <div className="userdashboard-form-group">
+                    <label>Phone Number</label>
+                    <input
+                      type="tel"
+                      id="profile-phoneNumber"
+                      name="phoneNumber"
+                      value={profileForm.phoneNumber}
+                      onChange={handleProfileChange}
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
 
-                  <div className="userdashboard-document-section">
-                    <h4>Birth Certificate</h4>
-                    <div className="userdashboard-form-row userdashboard-document-row">
-                      <div className="userdashboard-form-group">
-                        <label className="userdashboard-file-input-label">
-                          Front of Birth Certificate
-                          <div className="userdashboard-image-preview">
-                            {profileForm.birthCertificateFront ? (
-                              <div className="userdashboard-document-preview">
-                                <img
-                                  src={typeof profileForm.birthCertificateFront === 'string' 
-                                    ? profileForm.birthCertificateFront 
-                                    : URL.createObjectURL(profileForm.birthCertificateFront)}
-                                  alt="Birth Certificate Front"
-                                />
-                                <button 
-                                  type="button" 
-                                  className="userdashboard-remove-document" 
-                                  onClick={() => handleRemoveDocument('birthCertificateFront')}
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="userdashboard-upload-placeholder">
-                                <span>Upload Front Image</span>
-                              </div>
-                            )}
-                          </div>
-                        </label>
+              <div className="userdashboard-settings-group userdashboard-document-uploads">
+                <h3>Identity Verification Documents</h3>
+
+                <div className="userdashboard-document-section">
+                  <h4>Birth Certificate</h4>
+                  <div className="userdashboard-form-row userdashboard-document-row">
+                    <div className="userdashboard-form-group">
+                      <label className="userdashboard-file-input-label">
+                        Front of Birth Certificate
+                        <div className="userdashboard-image-preview">
+                          {profileForm.birthCertificateFront ? (
+                            <div className="userdashboard-document-preview">
+                              <img
+                                src={typeof profileForm.birthCertificateFront === 'string' 
+                                  ? profileForm.birthCertificateFront 
+                                  : URL.createObjectURL(profileForm.birthCertificateFront)}
+                                alt="Birth Certificate Front"
+                              />
+                              <button 
+                                type="button" 
+                                className="userdashboard-remove-document" 
+                                onClick={() => handleRemoveDocument('birthCertificateFront')}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="userdashboard-upload-placeholder">
+                              <span>Upload Front Image</span>
+                            </div>
+                          )}
+                        </div>
                         <input
                           type="file"
                           id="birthCertificateFront"
@@ -2040,35 +2039,35 @@ const handleProfileSubmit = async (e) => {
                           onChange={handleFileUpload}
                           className="userdashboard-file-input"
                         />
-                      </div>
+                      </label>
+                    </div>
 
-                      <div className="userdashboard-form-group">
-                        <label className="userdashboard-file-input-label">
-                          Back of Birth Certificate
-                          <div className="userdashboard-image-preview">
-                            {profileForm.birthCertificateBack ? (
-                              <div className="userdashboard-document-preview">
-                                <img
-                                  src={typeof profileForm.birthCertificateBack === 'string' 
-                                    ? profileForm.birthCertificateBack 
-                                    : URL.createObjectURL(profileForm.birthCertificateBack)}
-                                  alt="Birth Certificate Back"
-                                />
-                                <button 
-                                  type="button" 
-                                  className="userdashboard-remove-document" 
-                                  onClick={() => handleRemoveDocument('birthCertificateBack')}
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="userdashboard-upload-placeholder">
-                                <span>Upload Back Image</span>
-                              </div>
-                            )}
-                          </div>
-                        </label>
+                    <div className="userdashboard-form-group">
+                      <label className="userdashboard-file-input-label">
+                        Back of Birth Certificate
+                        <div className="userdashboard-image-preview">
+                          {profileForm.birthCertificateBack ? (
+                            <div className="userdashboard-document-preview">
+                              <img
+                                src={typeof profileForm.birthCertificateBack === 'string' 
+                                  ? profileForm.birthCertificateBack 
+                                  : URL.createObjectURL(profileForm.birthCertificateBack)}
+                                alt="Birth Certificate Back"
+                              />
+                              <button 
+                                type="button" 
+                                className="userdashboard-remove-document" 
+                                onClick={() => handleRemoveDocument('birthCertificateBack')}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="userdashboard-upload-placeholder">
+                              <span>Upload Back Image</span>
+                            </div>
+                          )}
+                        </div>
                         <input
                           type="file"
                           id="birthCertificateBack"
@@ -2077,40 +2076,40 @@ const handleProfileSubmit = async (e) => {
                           onChange={handleFileUpload}
                           className="userdashboard-file-input"
                         />
-                      </div>
+                      </label>
                     </div>
                   </div>
+                </div>
 
-                  <div className="userdashboard-document-section">
-                    <h4>Government ID</h4>
-                    <div className="userdashboard-form-row userdashboard-document-row">
-                      <div className="userdashboard-form-group">
-                        <label className="userdashboard-file-input-label">
-                          Front of Government ID
-                          <div className="userdashboard-image-preview">
-                            {profileForm.governmentIdFront ? (
-                              <div className="userdashboard-document-preview">
-                                <img
-                                  src={typeof profileForm.governmentIdFront === 'string' 
-                                    ? profileForm.governmentIdFront 
-                                    : URL.createObjectURL(profileForm.governmentIdFront)}
-                                  alt="Government ID Front"
-                                />
-                                <button 
-                                  type="button" 
-                                  className="userdashboard-remove-document" 
-                                  onClick={() => handleRemoveDocument('governmentIdFront')}
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="userdashboard-upload-placeholder">
-                                <span>Upload Front Image</span>
-                              </div>
-                            )}
-                          </div>
-                        </label>
+                <div className="userdashboard-document-section">
+                  <h4>Government ID</h4>
+                  <div className="userdashboard-form-row userdashboard-document-row">
+                    <div className="userdashboard-form-group">
+                      <label className="userdashboard-file-input-label">
+                        Front of Government ID
+                        <div className="userdashboard-image-preview">
+                          {profileForm.governmentIdFront ? (
+                            <div className="userdashboard-document-preview">
+                              <img
+                                src={typeof profileForm.governmentIdFront === 'string' 
+                                  ? profileForm.governmentIdFront 
+                                  : URL.createObjectURL(profileForm.governmentIdFront)}
+                                alt="Government ID Front"
+                              />
+                              <button 
+                                type="button" 
+                                className="userdashboard-remove-document" 
+                                onClick={() => handleRemoveDocument('governmentIdFront')}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="userdashboard-upload-placeholder">
+                              <span>Upload Front Image</span>
+                            </div>
+                          )}
+                        </div>
                         <input
                           type="file"
                           id="governmentIdFront"
@@ -2119,35 +2118,35 @@ const handleProfileSubmit = async (e) => {
                           onChange={handleFileUpload}
                           className="userdashboard-file-input"
                         />
-                      </div>
+                      </label>
+                    </div>
 
-                      <div className="userdashboard-form-group">
-                        <label className="userdashboard-file-input-label">
-                          Back of Government ID
-                          <div className="userdashboard-image-preview">
-                            {profileForm.governmentIdBack ? (
-                              <div className="userdashboard-document-preview">
-                                <img
-                                  src={typeof profileForm.governmentIdBack === 'string' 
-                                    ? profileForm.governmentIdBack 
-                                    : URL.createObjectURL(profileForm.governmentIdBack)}
-                                  alt="Government ID Back"
-                                />
-                                <button 
-                                  type="button" 
-                                  className="userdashboard-remove-document" 
-                                  onClick={() => handleRemoveDocument('governmentIdBack')}
-                                >
-                                  Remove
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="userdashboard-upload-placeholder">
-                                <span>Upload Back Image</span>
-                              </div>
-                            )}
-                          </div>
-                        </label>
+                    <div className="userdashboard-form-group">
+                      <label className="userdashboard-file-input-label">
+                        Back of Government ID
+                        <div className="userdashboard-image-preview">
+                          {profileForm.governmentIdBack ? (
+                            <div className="userdashboard-document-preview">
+                              <img
+                                src={typeof profileForm.governmentIdBack === 'string' 
+                                  ? profileForm.governmentIdBack 
+                                  : URL.createObjectURL(profileForm.governmentIdBack)}
+                                alt="Government ID Back"
+                              />
+                              <button 
+                                type="button" 
+                                className="userdashboard-remove-document" 
+                                onClick={() => handleRemoveDocument('governmentIdBack')}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="userdashboard-upload-placeholder">
+                              <span>Upload Back Image</span>
+                            </div>
+                          )}
+                        </div>
                         <input
                           type="file"
                           id="governmentIdBack"
@@ -2156,33 +2155,27 @@ const handleProfileSubmit = async (e) => {
                           onChange={handleFileUpload}
                           className="userdashboard-file-input"
                         />
-                      </div>
+                      </label>
                     </div>
                   </div>
                 </div>
- 
-                
-               <h1 id="userdashboard-profilesubmit-responsemessage">Response message</h1>
+              </div>
 
-                <div className="userdashboard-settings-actions">
-                  {
-                    profilesubmitloadingindication ? 
-                    (
-                      <Spinner animation="border" variant="primary" />
-                    )
-                    :
-                    (
-                      <button type="submit" className="userdashboard-save-settings-btn">
-                       Save changes
-                      </button>
-                    )
-                  }
-                 
-                </div>
-              </form>
-            </section>
-          </div>
-        )}
+              <h1 id="userdashboard-profilesubmit-responsemessage">Response message</h1>
+
+              <div className="userdashboard-settings-actions">
+                {profilesubmitloadingindication ? (
+                  <Spinner animation="border" variant="primary" />
+                ) : (
+                  <button type="submit" className="userdashboard-save-settings-btn">
+                    Save changes
+                  </button>
+                )}
+              </div>
+            </form>
+          </section>
+        </div>
+       )}
 
       </div>
 
