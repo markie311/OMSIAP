@@ -313,7 +313,7 @@ const CheckoutPage = (props) => {
                 <h3 className="checkout-section-heading">Personal Details</h3>
                 <div className="checkout-form-grid">
                   <div className="checkout-form-group">
-                    <label htmlFor="firstName">
+                    <label>
                       <FaUser className="checkout-input-icon" /> First Name*
                     </label>
                     <input
@@ -327,7 +327,7 @@ const CheckoutPage = (props) => {
                     />
                   </div>
                   <div className="checkout-form-group">
-                    <label htmlFor="middleName">
+                    <label>
                       <FaUser className="checkout-input-icon" /> Middle Name
                     </label>
                     <input
@@ -340,7 +340,7 @@ const CheckoutPage = (props) => {
                     />
                   </div>
                   <div className="checkout-form-group">
-                    <label htmlFor="lastName">
+                    <label>
                       <FaUser className="checkout-input-icon" /> Last Name*
                     </label>
                     <input
@@ -354,7 +354,7 @@ const CheckoutPage = (props) => {
                     />
                   </div>
                   <div className="checkout-form-group checkout-phone-field">
-                    <label htmlFor="phoneNumber">
+                    <label>
                       <FaPhone className="checkout-input-icon" /> Phone Number*
                     </label>
                     <input
@@ -376,7 +376,7 @@ const CheckoutPage = (props) => {
                 </h3>
                 <div className="checkout-form-grid">
                   <div className="checkout-form-group checkout-full-width">
-                    <label htmlFor="street">
+                    <label>
                       <FaMapMarkerAlt className="checkout-input-icon" /> Street*
                     </label>
                     <input
@@ -407,7 +407,7 @@ const CheckoutPage = (props) => {
                   </div>
                   
                   <div className="checkout-form-group">
-                    <label htmlFor="baranggay">
+                    <label>
                       <FaMapPin className="checkout-input-icon" /> Baranggay*
                     </label>
                     <input
@@ -422,7 +422,7 @@ const CheckoutPage = (props) => {
                   </div>
                   
                   <div className="checkout-form-group">
-                    <label htmlFor="city">
+                    <label>
                       <FaCity className="checkout-input-icon" /> City/Municipality*
                     </label>
                     <input
@@ -437,7 +437,7 @@ const CheckoutPage = (props) => {
                   </div>
                   
                   <div className="checkout-form-group">
-                    <label htmlFor="province">
+                    <label>
                       <FaMapMarkedAlt className="checkout-input-icon" /> Province*
                     </label>
                     <input
@@ -452,7 +452,7 @@ const CheckoutPage = (props) => {
                   </div>
                   
                   <div className="checkout-form-group">
-                    <label htmlFor="zipCode">
+                    <label>
                       <FaEnvelope className="checkout-input-icon" /> Postal Zipcode*
                     </label>
                     <input
@@ -467,7 +467,7 @@ const CheckoutPage = (props) => {
                   </div>
                   
                   <div className="checkout-form-group">
-                    <label htmlFor="country">
+                    <label>
                       <FaGlobe className="checkout-input-icon" /> Country*
                     </label>
                     <input
