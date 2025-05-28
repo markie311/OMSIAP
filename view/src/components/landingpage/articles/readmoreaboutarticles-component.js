@@ -17,8 +17,8 @@ export default function BlogPage() {
   const [selectedBlog, setSelectedBlog] = useState(null)
 
   // Placeholder images - replace with your actual image paths
-  const headerImage = "../images/market/products/lighter.jpg"
-  const blogImage1 = "../images/market/products/lighter.jpg"
+  const headerImage = "../images/landingpage/articles/blog.jpg"
+  const blogImage1 = "../images/landingpage/articles/omsiapwebsite.png"
   const blogImage2 = "../images/market/products/lighter.jpg"
   const blogImage3 = "../images/market/products/lighter.jpg"
 
@@ -28,26 +28,10 @@ export default function BlogPage() {
       id: 1,
       image: blogImage1,
       date: "Jan 28, 2024",
-      title: "The Future of Business Technology: Trends to Watch",
+      title: "OMSIAP's website platform launched",
       description:
         "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
-    },
-    {
-      id: 2,
-      image: blogImage2,
-      date: "Jan 22, 2024",
-      title: "Sustainable Business Practices for the Modern Enterprise",
-      description:
-        "Sustainability is no longer just a buzzword—it's a business imperative. Discover how leading companies are implementing eco-friendly practices that benefit both the planet and their bottom line.",
-    },
-    {
-      id: 3,
-      image: blogImage3,
-      date: "Jan 15, 2024",
-      title: "Remote Work Revolution: Building Effective Virtual Teams",
-      description:
-        "The shift to remote work has transformed how businesses operate. Learn strategies for building, managing, and motivating distributed teams in this comprehensive guide to the new workplace paradigm.",
-    },
+    }
   ]
 
   // Enhanced topics with summaries

@@ -16,33 +16,14 @@ export default function Articles() {
   const articles = [
     {
       id: 1,
-      image: "../images/landingpage/articles/people.jpg",
-      topic: "Finance",
-      date: "November 17 2024",
-      title: "Stay Ahead With Our Expert Analysis",
+      image: "../images/landingpage/articles/omsiapwebsite.png",
+      topic: "Business growth",
+      date: "Wednesday",
+      title: "OMSIAP's website platform launched",
       readTime: "6 mins read",
       content:
-        "Detailed content about financial analysis and market trends would go here. This section would contain the full article text that appears when the modal is opened.",
-    },
-    {
-      id: 2,
-      image: "../images/landingpage/articles/people.jpg",
-      topic: "Business",
-      date: "November 15 2024",
-      title: "Business Strategies for Growth in 2025",
-      readTime: "8 mins read",
-      content: "Comprehensive analysis of business growth strategies and market opportunities for the upcoming year.",
-    },
-    {
-      id: 3,
-      image: "../images/landingpage/articles/people.jpg",
-      topic: "Technology",
-      date: "November 12 2024",
-      title: "The Future of AI in Everyday Applications",
-      readTime: "5 mins read",
-      content:
-        "Exploring how artificial intelligence is transforming daily applications and what to expect in the near future.",
-    },
+        "Detailed content about OMSIAP's website platform purpose and functionalitie's",
+    }
   ]
 
   const openArticleModal = (article) => {
