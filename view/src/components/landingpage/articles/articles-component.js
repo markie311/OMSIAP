@@ -26,7 +26,7 @@ export default function Articles() {
     },
     {
       id: 2,
-      image: "../images/landingpage/articles/business.jpg",
+      image: "../images/landingpage/articles/people.jpg",
       topic: "Business",
       date: "November 15 2024",
       title: "Business Strategies for Growth in 2025",
@@ -35,7 +35,7 @@ export default function Articles() {
     },
     {
       id: 3,
-      image: "../images/landingpage/articles/technology.jpg",
+      image: "../images/landingpage/articles/people.jpg",
       topic: "Technology",
       date: "November 12 2024",
       title: "The Future of AI in Everyday Applications",
