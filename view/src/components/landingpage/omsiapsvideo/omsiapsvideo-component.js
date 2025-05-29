@@ -52,7 +52,7 @@ export default function OMSIAPSVideo() {
               }}>close</p>
         </div>
         <div className="fullscreen-video-modal-videoplayercontainer">
-         <VideoPlayer url="https://www.youtube.com/watch?v=DAvNAwCDM7A&ab_channel=SweetnotesMusicOfficial"/>
+         <VideoPlayer url="https://www.youtube.com/watch?v=emPqaeJsRBk"/>
         </div>
       </div>
     </Col>
