@@ -147,32 +147,33 @@ const UserAccount = (props) => {
     try {
       const normalizedTransactions = []
 
-      // 1. Process merchandise transactions
-      if (props.user?.transactions?.merchandise && Array.isArray(props.user.transactions.merchandise)) {
-        props.user.transactions.merchandise.forEach((tx) => {
-          const products = tx.details?.merchandise?.list || []
-          const totalAmount = tx.system?.ordersummary?.merchandisetotal || 0
+    // 1. Process merchandise transactions
+    if (props.user?.transactions?.merchandise && Array.isArray(props.user.transactions.merchandise)) {
+      props.user.transactions.merchandise.forEach((tx) => {
+        const products = tx.details?.merchandise?.list || []
+        const totalAmount = tx.system?.ordersummary?.merchandisetotal || 0
 
-          normalizedTransactions.push({
-            id: tx.id || `MERCH-${generateRandomId()}`,
-            date: tx.statusesandlogs?.date || new Date().toISOString().split("T")[0],
-            type: "Merchandise",
-            typeClass: "merchandise",
-            amount: -Math.abs(totalAmount), // Negative because it's a purchase
-            status: tx.statusesandlogs?.indication || "Pending",
-            products: products.map((product) => ({
-              id: product.authentications?.id || `PRD-${generateRandomId()}`,
-              name: product.details?.productname || "Unknown Product",
-              price: product.details?.price?.amount || 0,
-              quantity: 1, // Default quantity if not specified
-              color: product.details?.specifications?.find((s) => s.name === "Color")?.value || "",
-              size: product.details?.specifications?.find((s) => s.name === "Size")?.value || "",
-            })),
-            originalData: tx,
-            icon: <FaShoppingCart />,
-          })
+        normalizedTransactions.push({
+          id: tx.id || `MERCH-${generateRandomId()}`,
+          date: tx.statusesandlogs?.date || new Date().toISOString().split("T")[0],
+          type: "Merchandise",
+          typeClass: "merchandise",
+          amount: -Math.abs(totalAmount), // Negative because it's a purchase
+          status: tx.statusesandlogs?.indication || "Pending",
+          products: products.map((product) => ({
+            id: product.authentications?.id || `PRD-${generateRandomId()}`,
+            name: product.details?.productname || "Unknown Product",
+            price: product.details?.price?.amount || 0,
+            quantity: 1, // Default quantity if not specified
+            color: product.details?.specifications?.find((s) => s.name === "Color")?.value || "",
+            size: product.details?.specifications?.find((s) => s.name === "Size")?.value || "",
+            image: product.images?.[0]?.url || null, // Extract first image URL
+          })),
+          originalData: tx,
+          icon: <FaShoppingCart />,
         })
-      }
+      })
+    }
 
       // 2. Process currency exchange transactions
       if (
@@ -794,21 +795,21 @@ const UserAccount = (props) => {
     }
   }
 
-  // Function to render transaction details based on type
   const renderTransactionDetails = (transaction) => {
-    if (!transaction) return null
+  if (!transaction) return null
 
-    switch (transaction.type) {
-      case "Merchandise":
-        return (
-          <div className="userdashboard-product-details">
-            <h4>Purchased Merchandise</h4>
-            {transaction.products && transaction.products.length > 0 ? (
-              <table className="userdashboard-product-table">
+  switch (transaction.type) {
+    case "Merchandise":
+      return (
+        <div className="transaction-modal__product-details">
+          <h4 className="transaction-modal__section-title">Purchased Merchandise</h4>
+          {transaction.products && transaction.products.length > 0 ? (
+            <div className="transaction-modal__table-container">
+              <table className="transaction-modal__product-table">
                 <thead>
                   <tr>
                     <th>Product</th>
-                    <th>Details</th>
+                    <th>Image</th>
                     <th>Quantity</th>
                     <th>Price</th>
                     <th>Subtotal</th>
@@ -816,123 +817,181 @@ const UserAccount = (props) => {
                 </thead>
                 <tbody>
                   {transaction.products.map((product, index) => (
-                    <tr key={product.id || index} className="userdashboard-product-row">
-                      <td className="userdashboard-product-name">{product.name}</td>
-                      <td className="userdashboard-product-details">
-                        {product.color && <span>Color: {product.color}</span>}
-                        {product.size && <span>Size: {product.size}</span>}
+                    <tr key={product.id || index} className="transaction-modal__product-row">
+                      <td className="transaction-modal__product-name">
+                        <span className="transaction-modal__product-title">{product.name}</span>
                       </td>
-                      <td className="userdashboard-product-quantity">{product.quantity || 1}</td>
-                      <td className="userdashboard-product-price">₱{product.price.toFixed(2)}</td>
-                      <td className="userdashboard-product-subtotal">
-                        ₱{((product.price || 0) * (product.quantity || 1)).toFixed(2)}
+                      <td className="transaction-modal__product-image-cell">
+                        {product.image ? (
+                          <div className="transaction-modal__product-image-container">
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="transaction-modal__product-image"
+                              onClick={() => openImageModal(product.image)}
+                            />
+                          </div>
+                        ) : (
+                          <div className="transaction-modal__product-image-placeholder">
+                            <span>No Image</span>
+                          </div>
+                        )}
+                      </td>
+                      <td className="transaction-modal__product-quantity">
+                        <span className="transaction-modal__quantity-badge">{product.quantity || 1}</span>
+                      </td>
+                      <td className="transaction-modal__product-price">₱{product.price.toFixed(2)}</td>
+                      <td className="transaction-modal__product-subtotal">
+                        <strong>₱{((product.price || 0) * (product.quantity || 1)).toFixed(2)}</strong>
                       </td>
                     </tr>
                   ))}
                 </tbody>
-                <tfoot>
-                  <tr>
-                    <td colSpan="4" className="userdashboard-total-label">
-                      Total
-                    </td>
-                    <td className="userdashboard-total-amount">
-                      ₱
-                      {transaction.products
-                        .reduce((sum, product) => sum + (product.price || 0) * (product.quantity || 1), 0)
-                        .toFixed(2)}
-                    </td>
-                  </tr>
-                </tfoot>
               </table>
-            ) : (
-              <p>No product details available</p>
-            )}
-          </div>
-        )
-
-      case "Currency Exchange":
-        return (
-          <div className="userdashboard-exchange-details">
-            <div className="userdashboard-summary-row">
-              <span className="userdashboard-label">PHP Amount:</span>
-              <span className="userdashboard-value">₱{transaction.phpAmount?.toFixed(2) || "0.00"}</span>
+              <div className="transaction-modal__total-section">
+                <div className="transaction-modal__total-row">
+                  <span className="transaction-modal__total-label">Total Amount:</span>
+                  <span className="transaction-modal__total-amount">
+                    ₱
+                    {transaction.products
+                      .reduce((sum, product) => sum + (product.price || 0) * (product.quantity || 1), 0)
+                      .toFixed(2)}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="userdashboard-summary-row">
-              <span className="userdashboard-label">OMSIAPAWAS Received:</span>
-              <span className="userdashboard-value">{transaction.amount?.toFixed(2) || "0.00"} OMSIAPAWAS</span>
+          ) : (
+            <div className="transaction-modal__no-data">
+              <p>No product details available</p>
+            </div>
+          )}
+        </div>
+      )
+
+    case "Currency Exchange":
+      return (
+        <div className="transaction-modal__exchange-details">
+          <h4 className="transaction-modal__section-title">Exchange Details</h4>
+          <div className="transaction-modal__details-grid">
+            <div className="transaction-modal__detail-card">
+              <span className="transaction-modal__detail-label">PHP Amount</span>
+              <span className="transaction-modal__detail-value transaction-modal__amount-negative">
+                ₱{transaction.phpAmount?.toFixed(2) || "0.00"}
+              </span>
+            </div>
+            <div className="transaction-modal__detail-card">
+              <span className="transaction-modal__detail-label">OMSIAPAWAS Received</span>
+              <span className="transaction-modal__detail-value transaction-modal__amount-positive">
+                {transaction.amount?.toFixed(2) || "0.00"} OMSIAPAWAS
+              </span>
             </div>
             {transaction.transactionDetails?.receiptNumber && (
-              <div className="userdashboard-summary-row">
-                <span className="userdashboard-label">Reference Number:</span>
-                <span className="userdashboard-value">{transaction.transactionDetails.receiptNumber}</span>
-              </div>
-            )}
-            {transaction.transactionDetails?.receiptImage && (
-              <div className="userdashboard-receipt-image-container">
-                <h4>Transaction Receipt</h4>
-                <img
-                  src={transaction.transactionDetails.receiptImage || "/placeholder.svg"}
-                  alt="Transaction Receipt"
-                  className="userdashboard-receipt-image"
-                  onClick={() => openImageModal(transaction.transactionDetails.receiptImage)}
-                  style={{ cursor: "pointer", maxWidth: "100%", maxHeight: "200px" }}
-                />
-                <p className="userdashboard-image-hint">Click on image to view full size</p>
+              <div className="transaction-modal__detail-card transaction-modal__detail-card--full">
+                <span className="transaction-modal__detail-label">Reference Number</span>
+                <span className="transaction-modal__detail-value transaction-modal__reference-number">
+                  {transaction.transactionDetails.receiptNumber}
+                </span>
               </div>
             )}
           </div>
-        )
+          {transaction.transactionDetails?.receiptImage && (
+            <div className="transaction-modal__receipt-section">
+              <h5 className="transaction-modal__subsection-title">Transaction Receipt</h5>
+              <div className="transaction-modal__receipt-container">
+                <img
+                  src={transaction.transactionDetails.receiptImage || "/placeholder.svg?height=200&width=300"}
+                  alt="Transaction Receipt"
+                  className="transaction-modal__receipt-image"
+                  onClick={() => openImageModal(transaction.transactionDetails.receiptImage)}
+                />
+                <p className="transaction-modal__image-hint">Click to view full size</p>
+              </div>
+            </div>
+          )}
+        </div>
+      )
 
-      case "Withdrawal":
-        return (
-          <div className="userdashboard-withdrawal-details">
-            <div className="userdashboard-summary-row">
-              <span className="userdashboard-label">OMSIAPAWAS Amount:</span>
-              <span className="userdashboard-value">{Math.abs(transaction.amount).toFixed(2)} OMSIAPAWAS</span>
+    case "Withdrawal":
+      return (
+        <div className="transaction-modal__withdrawal-details">
+          <h4 className="transaction-modal__section-title">Withdrawal Details</h4>
+          <div className="transaction-modal__details-grid">
+            <div className="transaction-modal__detail-card">
+              <span className="transaction-modal__detail-label">OMSIAPAWAS Amount</span>
+              <span className="transaction-modal__detail-value transaction-modal__amount-negative">
+                {Math.abs(transaction.amount).toFixed(2)} OMSIAPAWAS
+              </span>
             </div>
             {transaction.transactionDetails?.accountNumber && (
-              <div className="userdashboard-summary-row">
-                <span className="userdashboard-label">GCash Number:</span>
-                <span className="userdashboard-value">{transaction.transactionDetails.accountNumber}</span>
-              </div>
-            )}
-            {transaction.transactionDetails?.notes && (
-              <div className="userdashboard-summary-row">
-                <span className="userdashboard-label">Notes:</span>
-                <span className="userdashboard-value">{transaction.transactionDetails.notes}</span>
+              <div className="transaction-modal__detail-card">
+                <span className="transaction-modal__detail-label">GCash Number</span>
+                <span className="transaction-modal__detail-value">
+                  {transaction.transactionDetails.accountNumber}
+                </span>
               </div>
             )}
           </div>
-        )
+          {transaction.transactionDetails?.notes && (
+            <div className="transaction-modal__notes-section">
+              <h5 className="transaction-modal__subsection-title">Notes</h5>
+              <p className="transaction-modal__notes-text">{transaction.transactionDetails.notes}</p>
+            </div>
+          )}
+        </div>
+      )
 
-      case "OMSIAPAWAS Transfer":
-        return (
-          <div className="userdashboard-transfer-details">
-            <div className="userdashboard-summary-row">
-              <span className="userdashboard-label">Transfer Amount:</span>
-              <span className="userdashboard-value">{Math.abs(transaction.amount).toFixed(2)} OMSIAPAWAS</span>
+    case "OMSIAPAWAS Transfer":
+      return (
+        <div className="transaction-modal__transfer-details">
+          <h4 className="transaction-modal__section-title">Transfer Details</h4>
+          <div className="transaction-modal__details-grid">
+            <div className="transaction-modal__detail-card">
+              <span className="transaction-modal__detail-label">Transfer Amount</span>
+              <span
+                className={`transaction-modal__detail-value ${
+                  transaction.amount >= 0
+                    ? "transaction-modal__amount-positive"
+                    : "transaction-modal__amount-negative"
+                }`}
+              >
+                {Math.abs(transaction.amount).toFixed(2)} OMSIAPAWAS
+              </span>
             </div>
-            <div className="userdashboard-summary-row">
-              <span className="userdashboard-label">Transfer Type:</span>
-              <span className="userdashboard-value">{transaction.amount >= 0 ? "Received" : "Sent"}</span>
+            <div className="transaction-modal__detail-card">
+              <span className="transaction-modal__detail-label">Transfer Type</span>
+              <span
+                className={`transaction-modal__detail-value transaction-modal__transfer-type ${
+                  transaction.amount >= 0
+                    ? "transaction-modal__transfer-received"
+                    : "transaction-modal__transfer-sent"
+                }`}
+              >
+                {transaction.amount >= 0 ? "Received" : "Sent"}
+              </span>
             </div>
-            {transaction.transactionDetails?.notes && (
-              <div className="userdashboard-summary-row">
-                <span className="userdashboard-label">Notes:</span>
-                <span className="userdashboard-value">{transaction.transactionDetails.notes}</span>
-              </div>
-            )}
           </div>
-        )
+          {transaction.transactionDetails?.notes && (
+            <div className="transaction-modal__notes-section">
+              <h5 className="transaction-modal__subsection-title">Notes</h5>
+              <p className="transaction-modal__notes-text">{transaction.transactionDetails.notes}</p>
+            </div>
+          )}
+        </div>
+      )
 
-      default:
-        return (
-          <div className="userdashboard-generic-details">
+    default:
+      return (
+        <div className="transaction-modal__generic-details">
+          <div className="transaction-modal__no-data">
             <p>No additional details available for this transaction type.</p>
           </div>
-        )
-    }
+        </div>
+      )
   }
+  }
+
+  const [selectedImage, setSelectedImage] = useState(null)
+
 
   // Document handling functions
 
@@ -1682,11 +1741,8 @@ const handleProfileSubmit = async (e) => {
                   </p>
                   <ul style={{ color: "black" }}>
                     <br />
-                    <li className="userdashboard-omsiapgcashnumber">(1.) 09-1230123-123</li>
+                    <li className="userdashboard-omsiapgcashnumber">(1.) 0-995-677-7674</li>
                     <br />
-                    <li className="userdashboard-omsiapgcashnumber">(2.) 09-123-1231-123</li>
-                    <br />
-                    <li className="userdashboard-omsiapgcashnumber">(3.) 09-123012312-12</li>
                   </ul>
                 </div>
                 <p style={{ color: "black" }}>After sending the amount,</p>
@@ -2181,65 +2237,96 @@ const handleProfileSubmit = async (e) => {
 
         {/* Transaction Details Modal */}
         {isModalOpen && selectedTransaction && (
-          <div className="userdashboard-modal-overlay" onClick={closeTransactionModal}>
-            <div className="userdashboard-modal-content" onClick={(e) => e.stopPropagation()}>
-              <div className="userdashboard-modal-header">
-                <h3>Transaction Details</h3>
-                <button className="userdashboard-close-modal-btn" onClick={closeTransactionModal}>
-                  ×
-                </button>
-              </div>
+            <>
+              {/* Main Transaction Modal */}
+              <div className="transaction-modal__overlay" onClick={closeTransactionModal}>
+                <div className="transaction-modal__content" onClick={(e) => e.stopPropagation()}>
+                  <div className="transaction-modal__header">
+                    <div className="transaction-modal__header-content">
+                      <h3 className="transaction-modal__title">Transaction Details</h3>
+                      <div
+                        className={`transaction-modal__status-badge transaction-modal__status-${selectedTransaction.status.toLowerCase().replace(/\s+/g, "-")}`}
+                      >
+                        {selectedTransaction.status}
+                      </div>
+                    </div>
+                    <button className="transaction-modal__close-btn" onClick={closeTransactionModal}>
+                      ×
+                    </button>
+                  </div>
 
-              <div className="userdashboard-modal-body">
-                <div className="userdashboard-transaction-summary">
-                  <div className="userdashboard-summary-row">
-                    <span className="userdashboard-label">Transaction ID:</span>
-                    <span className="userdashboard-value">{selectedTransaction.id}</span>
+                  <div className="transaction-modal__body">
+                    <div className="transaction-modal__summary">
+                      <div className="transaction-modal__summary-grid">
+                        <div className="transaction-modal__summary-item">
+                          <span className="transaction-modal__summary-label">Transaction ID</span>
+                          <span className="transaction-modal__summary-value">{selectedTransaction.id}</span>
+                        </div>
+                        <div className="transaction-modal__summary-item">
+                          <span className="transaction-modal__summary-label">Date</span>
+                          <span className="transaction-modal__summary-value">{selectedTransaction.date}</span>
+                        </div>
+                        <div className="transaction-modal__summary-item">
+                          <span className="transaction-modal__summary-label">Type</span>
+                          <span className="transaction-modal__summary-value">{selectedTransaction.type}</span>
+                        </div>
+                        <div className="transaction-modal__summary-item">
+                          <span className="transaction-modal__summary-label">Amount</span>
+                          <span
+                            className={`transaction-modal__summary-value ${
+                              selectedTransaction.amount >= 0
+                                ? "transaction-modal__amount-positive"
+                                : "transaction-modal__amount-negative"
+                            }`}
+                          >
+                            {formatCurrency(selectedTransaction.amount, selectedTransaction.type)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="transaction-modal__details">{renderTransactionDetails(selectedTransaction)}</div>
                   </div>
-                  <div className="userdashboard-summary-row">
-                    <span className="userdashboard-label">Date:</span>
-                    <span className="userdashboard-value">{selectedTransaction.date}</span>
-                  </div>
-                  <div className="userdashboard-summary-row">
-                    <span className="userdashboard-label">Type:</span>
-                    <span className="userdashboard-value">{selectedTransaction.type}</span>
-                  </div>
-                  <div className="userdashboard-summary-row">
-                    <span className="userdashboard-label">Status:</span>
-                    <span
-                      className={`userdashboard-value userdashboard-status-${selectedTransaction.status.toLowerCase().replace(/\s+/g, "-")}`}
-                    >
-                      {selectedTransaction.status}
-                    </span>
-                  </div>
-                  <div className="userdashboard-summary-row">
-                    <span className="userdashboard-label">Amount:</span>
-                    <span
-                      className={
-                        selectedTransaction.amount >= 0
-                          ? "userdashboard-value userdashboard-amount-positive"
-                          : "userdashboard-value userdashboard-amount-negative"
-                      }
-                    >
-                      {formatCurrency(selectedTransaction.amount, selectedTransaction.type)}
-                    </span>
+
+                  <div className="transaction-modal__footer">
+                    <button className="transaction-modal__action-btn" onClick={closeTransactionModal}>
+                      Close
+                    </button>
                   </div>
                 </div>
-
-                {/* Render transaction-specific details */}
-                {renderTransactionDetails(selectedTransaction)}
               </div>
 
-              <div className="userdashboard-modal-footer">
-                <button className="userdashboard-modal-btn" onClick={closeTransactionModal}>
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
+               {/* Image Modal */}
+              {imageModalOpen && selectedImage && (
+                <div className="transaction-modal__image-overlay" onClick={closeImageModal}>
+                  <div className="transaction-modal__image-modal" onClick={(e) => e.stopPropagation()}>
+                    <div className="transaction-modal__image-header">
+                      <h4 className="transaction-modal__image-title">Image Preview</h4>
+                      <button className="transaction-modal__image-close" onClick={closeImageModal}>
+                        ×
+                      </button>
+                    </div>
+                    <div className="transaction-modal__image-container">
+                      <img
+                        src={selectedImage || "/placeholder.svg"}
+                        alt="Full size preview"
+                        className="transaction-modal__full-image"
+                      />
+                    </div>
+                    <div className="transaction-modal__image-footer">
+                      <button className="transaction-modal__action-btn" onClick={closeImageModal}>
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+           </>
         )}
 
-        {/* Full-size Image Modal */}
+   
+       {/* Full-size Image Modal */}
         {imageModalOpen && modalImageSrc && (
           <div className="userdashboard-modal-overlay userdashboard-full-size-modal" onClick={closeImageModal}>
             <div
@@ -2257,6 +2344,7 @@ const handleProfileSubmit = async (e) => {
             </div>
           </div>
         )}
+
 
     </div>
   )
