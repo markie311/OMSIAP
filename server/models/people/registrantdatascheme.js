@@ -162,7 +162,11 @@ const productDataSchema = new Schema({
     accepted: [],
     rejected: []
   }
- }
+ },
+ quantity: {
+  type: 'number',
+  default: 0
+}
 });
 
 const merchandisetransactiondataschemestatusesschememessagesscheme = new Schema({

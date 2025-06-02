@@ -231,6 +231,17 @@ const CheckoutPage = (props) => {
       orderDate: new Date().toISOString()
     };
     
+    const order = {
+       registrantid: props.user._id,
+       products: orderData.cartItems,
+       personalInfo: formData,
+       paymentInfo: {
+         method: paymentDetails.selectedPaymentMethod,
+         amount: orderSummary.total
+       },
+       orderSummary
+    }
+
     try {
       // Example API call
       await axiosCreatedInstance.post("/products/order", {
@@ -246,6 +257,8 @@ const CheckoutPage = (props) => {
           orderSummary
         },
       });
+
+      console.log(order)
       
       // Show success message
       alert('Order successfully placed using OMSIAPAWASTO currency!');

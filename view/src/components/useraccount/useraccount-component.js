@@ -164,7 +164,7 @@ const UserAccount = (props) => {
             id: product.authentications?.id || `PRD-${generateRandomId()}`,
             name: product.details?.productname || "Unknown Product",
             price: product.details?.price?.amount || 0,
-            quantity: 1, // Default quantity if not specified
+            quantity: product.quantity, // Default quantity if not specified
             color: product.details?.specifications?.find((s) => s.name === "Color")?.value || "",
             size: product.details?.specifications?.find((s) => s.name === "Size")?.value || "",
             image: product.images?.[0]?.url || null, // Extract first image URL

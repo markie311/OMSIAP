@@ -453,32 +453,36 @@ Router.route("/deleteproduct").post(async (req, res) => {
   }
 });
 
-// Helper function to create a transaction record
+// Corrected Helper function to create a transaction record (updated for quantity field in schema)
 function createTransactionRecord(orderData, registrant) {
   // Generate a unique transaction ID
   const transactionId = generateUniqueTransactionId();
   
   // Process products from the order data
   const productList = orderData.products.map(product => {
+    let productRecord;
+    
     // If the product already has full details, use them
     if (product.authentications && product.details) {
-      // Ensure quantity is set
-      product.quantity = product.quantity || 1;
-      return product;
+      productRecord = product;
     } else {
       // Otherwise find full product details for each product in the order
-      const fullProductDetails = findFullProductDetails(product.id);
-      
-      // Add quantity from the order
-      fullProductDetails.quantity = product.quantity || 1;
-      
-      return fullProductDetails;
+      productRecord = findFullProductDetails(product.id);
     }
+    
+    // Ensure quantity is set according to the schema location
+    productRecord.quantity = product.quantity || 1;
+    
+    return productRecord;
   });
+  
+  // Calculate total quantity for the transaction
+  const totalQuantity = productList.reduce((total, product) => total + (product.quantity || 0), 0);
   
   // Create the transaction record following the merchandisetransactiondatascheme
   return {
     id: transactionId,
+    // DO NOT add _id field - let MongoDB handle it automatically
     intent: "Purchase merchandise",
     statusesandlogs: {
       status: "pending",
@@ -497,7 +501,7 @@ function createTransactionRecord(orderData, registrant) {
     },
     details: {
       merchandise: {
-        list: productList
+        list: productList // Each product in this list now has the quantity field set
       },
       paymentmethod: orderData.paymentInfo.method || "N/A"
     },
@@ -542,7 +546,7 @@ function createTransactionRecord(orderData, registrant) {
         totalcapital: parseFloat(orderData.orderSummary?.totalCapital || 0),
         totaltransactiongiveaway: parseFloat(orderData.orderSummary?.totalTransactionGiveaway || 0),
         totalprofit: parseFloat(orderData.orderSummary?.totalOmsiaProfit || 0),
-        totalitems: orderData.orderSummary?.totalItems || orderData.products?.reduce((total, product) => total + (product.quantity || 1), 0) || 0,
+        totalitems: orderData.orderSummary?.totalItems || totalQuantity,
         totalweightgrams: parseFloat(orderData.orderSummary?.totalWeightGrams || 0),
         totalweightkilos: parseFloat(orderData.orderSummary?.totalWeightKilos || 0)
       },
@@ -572,7 +576,7 @@ function generateUniqueTransactionId() {
 // Helper function to find full product details
 function findFullProductDetails(productId) {
   // This would typically involve a database lookup
-  // For now, we'll return a placeholder that matches the new product schema
+  // For now, we'll return a placeholder that matches the productDataSchema
   return {
     authentications: {
       producttype: '',  // You'd look up the actual product type
@@ -589,7 +593,7 @@ function findFullProductDetails(productId) {
         amount: 0,      // Look up price amount
         capital: 0,     // Look up capital
         transactiongiveaway: 0, // Look up transaction giveaway
-        profit: 0       // Look up profit (previously omsiapprofit)
+        profit: 0       // Look up profit
       },
       specifications: [] // Look up specifications
     },
@@ -600,7 +604,6 @@ function findFullProductDetails(productId) {
       reviews: 0        // Look up number of reviews
     },
     system: {
-      stocks: 0,        // Look up current stock
       purchases: {
         total: [],
         pending: [],
@@ -608,7 +611,7 @@ function findFullProductDetails(productId) {
         rejected: []
       }
     },
-    // Add quantity for order processing
+    // Initialize quantity to 0 - will be set from order data
     quantity: 0
   };
 }
@@ -1100,7 +1103,7 @@ async function processOrder(req, res) {
       registrant.transactions.merchandise = [];
     }
     
-    // Add transaction ID to registrant's transactions
+    // Add transaction to registrant's transactions
     registrant.transactions.merchandise.push(newTransaction);
     
     // Calculate the transaction give away
@@ -1130,10 +1133,17 @@ async function processOrder(req, res) {
     // Save the updated pending fund
     await pendingFund.save();
     
+    // Log the quantity information for verification
+    console.log("Order processed successfully. Product quantities:");
+    newTransaction.details.merchandise.list.forEach((product, index) => {
+      console.log(`Product ${index + 1}: ID=${product.authentications.id}, Quantity=${product.quantity}`);
+    });
+    
     return res.status(200).json({ 
       success: true, 
       message: "Order processed successfully",
-      transactionId: newTransaction.id
+      transactionId: newTransaction.id,
+      totalQuantity: newTransaction.details.merchandise.list.reduce((total, product) => total + (product.quantity || 0), 0)
     });
     
   } catch (error) {
