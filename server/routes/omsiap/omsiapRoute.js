@@ -1195,6 +1195,7 @@ Router.post('/rejectcurrencyexchange', async (req, res) => {
 
 // Withdrawal route
 Router.post('/widthdrawal', async(req, res) => {
+
   try {
     const { firstName, middleName, lastName, phoneNumber, amount, password, userId } = req.body;
     
@@ -1333,7 +1334,8 @@ Router.post('/widthdrawal', async(req, res) => {
           phpamounttorecieve: finalAmount
         },
         referrence: {
-          gcashphonenumber: phoneNumber
+          number: phoneNumber,
+          gcashtransactionrecieptimage: ''
         }
       }
     });

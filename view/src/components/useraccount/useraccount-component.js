@@ -214,12 +214,12 @@ const UserAccount = (props) => {
             date: tx.statusesandlogs?.logs?.[0]?.date || new Date().toISOString().split("T")[0],
             type: "Withdrawal",
             typeClass: "withdrawal",
-            amount: -Math.abs(tx.amounts?.intent || 0), // Negative because user is withdrawing
+            amount: -Math.abs(tx.details?.amounts?.intent || 0), // Negative because user is withdrawing
             status: tx.statusesandlogs?.indication || "Pending",
             transactionDetails: {
               receiptNumber: tx.id || "",
               withdrawalMethod: tx.details?.paymentmethod || "GCash",
-              accountNumber: tx.referrence?.gcashphonenumber || "",
+              accountNumber: tx.details?.referrence?.number || "",
               notes: `Withdrawal of ${tx.amounts?.intent || 0} OMSIAPAWAS to PHP`,
             },
             originalData: tx,
@@ -935,7 +935,7 @@ const UserAccount = (props) => {
             <div className="transaction-modal__detail-card">
               <span className="transaction-modal__detail-label">OMSIAPAWAS Amount</span>
               <span className="transaction-modal__detail-value transaction-modal__amount-negative">
-                {Math.abs(transaction.amount).toFixed(2)} OMSIAPAWAS
+                {Math.abs(transaction.amount)} OMSIAPAWAS
               </span>
             </div>
             {transaction.transactionDetails?.accountNumber && (
@@ -947,6 +947,40 @@ const UserAccount = (props) => {
               </div>
             )}
           </div>
+          
+          {/* Receipt Section */}
+          <div className="transaction-modal__receipt-section">
+            <h5 className="transaction-modal__subsection-title">Transaction Receipt</h5>
+            <div className="transaction-modal__receipt-container">
+              {transaction.transactionDetails?.gcashtransactionreceipt && 
+               transaction.transactionDetails.gcashtransactionreceipt !== "" ? (
+                <>
+                  <img
+                    src={transaction.transactionDetails.gcashtransactionreceipt}
+                    alt="Withdrawal Receipt"
+                    className="transaction-modal__receipt-image"
+                    onClick={() => openImageModal(transaction.transactionDetails.gcashtransactionreceipt)}
+                  />
+                  <p className="transaction-modal__image-hint">Click to view full size</p>
+                </>
+              ) : (
+                <div className="transaction-modal__receipt-placeholder">
+                  <div className="transaction-modal__receipt-placeholder-icon">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 18H17V16H7V18Z" fill="currentColor"/>
+                      <path d="M7 14H17V12H7V14Z" fill="currentColor"/>
+                      <path d="M7 10H11V8H7V10Z" fill="currentColor"/>
+                      <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
+                    </svg>
+                  </div>
+                  <p className="transaction-modal__receipt-placeholder-text">
+                    No transaction receipt at the moment because it still needs to be approved
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+          
           {transaction.transactionDetails?.notes && (
             <div className="transaction-modal__notes-section">
               <h5 className="transaction-modal__subsection-title">Notes</h5>
