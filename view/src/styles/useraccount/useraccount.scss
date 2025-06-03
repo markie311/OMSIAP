@@ -2552,18 +2552,19 @@
 }
 
 .userdashboard-transfer-info {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: white;
   padding: 1.5rem;
   border-radius: 12px;
   margin-bottom: 2rem;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e1e8ed;
 }
 
 .userdashboard-current-balance {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: white;
+  color: #2c3e50;
 }
 
 .userdashboard-balance-label {
@@ -2574,7 +2575,7 @@
 .userdashboard-balance-amount {
   font-size: 1.5rem;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  text-align: right;
 }
 
 .userdashboard-omsiapawastransfer-form {
@@ -2755,6 +2756,10 @@
     flex-direction: column;
     text-align: center;
     gap: 0.5rem;
+  }
+  
+  .userdashboard-balance-amount {
+    text-align: center;
   }
   
   .userdashboard-omsiapawastransfer-form {
