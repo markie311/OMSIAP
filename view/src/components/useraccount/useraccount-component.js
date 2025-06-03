@@ -188,13 +188,13 @@ const UserAccount = (props) => {
             date: tx.statusesandlogs?.logs?.[0]?.date || new Date().toISOString().split("T")[0],
             type: "Currency Exchange",
             typeClass: "currency-exchange",
-            amount: tx.amounts?.omsiapawasamounttorecieve || 0, // Positive because user receives OMSIAPAWAS
-            phpAmount: tx.amounts?.phppurchaseorexchangeamount || 0,
+            amount: tx.details?.amounts?.omsiapawasamounttorecieve || 0, // Positive because user receives OMSIAPAWAS
+            phpAmount: tx.details?.amounts?.phppurchaseorexchangeamount || 0,
             status: tx.statusesandlogs?.indication || "Pending",
             transactionDetails: {
-              receiptNumber: tx.referrence?.number || "",
+              receiptNumber: tx.details?.referrence?.number || "",
               paymentMethod: tx.details?.paymentmethod || "GCash",
-              receiptImage: tx.referrence?.gcashtransactionrecieptimage || null,
+              receiptImage: tx.details?.referrence?.gcashtransactionrecieptimage || null,
               notes: `Exchanged ₱${tx.amounts?.phppurchaseorexchangeamount || 0} for ${tx.amounts?.omsiapawasamounttorecieve || 0} OMSIAPAWAS`,
             },
             originalData: tx,
@@ -890,7 +890,7 @@ const UserAccount = (props) => {
           <h4 className="transaction-modal__section-title">Exchange Details</h4>
           <div className="transaction-modal__details-grid">
             <div className="transaction-modal__detail-card">
-              <span className="transaction-modal__detail-label">PHP Amount</span>
+              <span className="transaction-modal__detail-label">Omsiapawas Purchase Amount</span>
               <span className="transaction-modal__detail-value transaction-modal__amount-negative">
                 ₱{transaction.phpAmount?.toFixed(2) || "0.00"}
               </span>

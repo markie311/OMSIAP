@@ -683,96 +683,7 @@ function ensureCreditsStructure(user) {
   return user;
 }
 
-// Helper function to create a deposit record - modified for schema
-function createDepositRecord(type, amount) {
-  const now = timestamps.getFormattedDate();
-  
-  return {
-    id: 'DEP-' + type + '-' + timestamps.dateNow() + '-' + Math.floor(Math.random() * 1000),
-    intent: "Credit deposit",
-    statusesandlogs: {
-      status: "completed",
-      indication: "Completed",
-      logs: [
-        {
-          date: now,
-          type: type,
-          indication: "Completed",
-          messages: [
-            { message: `Deposit of ${amount} credits completed` }
-          ]
-        }
-      ]
-    },
-    details: {
-      paymentmethod: "system_distribution",
-      thistransactionismadeby: {
-        id: "system",
-        name: {
-          firstname: "System",
-          middlename: "",
-          lastname: "Distribution",
-          nickname: ""
-        },
-        contact: {
-          phonenumber: "",
-          emailaddress: "",
-          address: {
-            street: "",
-            trademark: "",
-            baranggay: "",
-            city: "",
-            province: "",
-            postal_zip_code: "",
-            country: ""
-          }
-        }
-      },
-      thistransactionismainlyintendedto: {
-        id: "",  // Will be filled with user ID
-        name: {
-          firstname: "",
-          middlename: "",
-          lastname: "",
-          nickname: ""
-        },
-        contact: {
-          phonenumber: "",
-          emailaddress: "",
-          address: {
-            street: "",
-            trademark: "",
-            baranggay: "",
-            city: "",
-            province: "",
-            postal_zip_code: "",
-            country: ""
-          }
-        }
-      },
-      amounts: {
-        intent: parseFloat(amount),
-        phppurchaseorexchangeamount: 0,
-        deductions: {
-          successfulprocessing: {
-            amount: 0,
-            reasons: ""
-          },
-          rejectionprocessing: {
-            amount: 0,
-            reasons: ""
-          }
-        },
-        profit: 0,
-        omsiapawasamounttorecieve: parseFloat(amount)
-      },
-      referrence: {
-        number: "",
-        gcashtransactionrecieptimage: ""
-      }
-    }
-  };
-}
+// Helper function to create a deposit record - removed as per requirement
 
 // Helper function to distribute funds to eligible users - updated for schema match
 async function distributeToEligibleUsers(eligibleUsers, totalAmount) {
@@ -807,21 +718,6 @@ async function distributeToEligibleUsers(eligibleUsers, totalAmount) {
     // Track the running total of distributions
     totalDistributed = preciseAdd(totalDistributed, perUserShare);
     
-    // Create a deposit transaction record
-    const userDeposit = createDepositRecord("community_share", perUserShare);
-    
-    // Fill in recipient details
-    userDeposit.details.thistransactionismainlyintendedto.id = user._id.toString() || user.id;
-    if (user.name) {
-      userDeposit.details.thistransactionismainlyintendedto.name.firstname = user.name.firstname || "";
-      userDeposit.details.thistransactionismainlyintendedto.name.middlename = user.name.middlename || "";
-      userDeposit.details.thistransactionismainlyintendedto.name.lastname = user.name.lastname || "";
-      userDeposit.details.thistransactionismainlyintendedto.name.nickname = user.name.nickname || "";
-    }
-    
-    // Add transaction to user's currencyexchange array
-    user.credits.omsiapawas.transactions.currencyexchange.push(userDeposit);
-    
     // Add to array of updated users
     updatedUsers.push(user);
     
@@ -843,21 +739,6 @@ async function distributeToEligibleUsers(eligibleUsers, totalAmount) {
       lastUser.credits.omsiapawas.amount, 
       lastUserShare
     );
-    
-    // Create a deposit transaction record for the last user
-    const lastUserDeposit = createDepositRecord("community_share", lastUserShare);
-    
-    // Fill in recipient details
-    lastUserDeposit.details.thistransactionismainlyintendedto.id = lastUser._id.toString() || lastUser.id;
-    if (lastUser.name) {
-      lastUserDeposit.details.thistransactionismainlyintendedto.name.firstname = lastUser.name.firstname || "";
-      lastUserDeposit.details.thistransactionismainlyintendedto.name.middlename = lastUser.name.middlename || "";
-      lastUserDeposit.details.thistransactionismainlyintendedto.name.lastname = lastUser.name.lastname || "";
-      lastUserDeposit.details.thistransactionismainlyintendedto.name.nickname = lastUser.name.nickname || "";
-    }
-    
-    // Add transaction to user's currencyexchange array
-    lastUser.credits.omsiapawas.transactions.currencyexchange.push(lastUserDeposit);
     
     // Add to array of updated users
     updatedUsers.push(lastUser);
@@ -892,21 +773,6 @@ async function distributeTransactionGiveaway(currentRegistrant, totalGiveaway, p
     currentRegistrant.credits.omsiapawas.amount, 
     currentRegistrantShare
   );
-  
-  // Create a deposit transaction record
-  const deposit = createDepositRecord("order_reward", currentRegistrantShare);
-  
-  // Fill in recipient details
-  deposit.details.thistransactionismainlyintendedto.id = currentRegistrant._id.toString() || currentRegistrant.id;
-  if (currentRegistrant.name) {
-    deposit.details.thistransactionismainlyintendedto.name.firstname = currentRegistrant.name.firstname || "";
-    deposit.details.thistransactionismainlyintendedto.name.middlename = currentRegistrant.name.middlename || "";
-    deposit.details.thistransactionismainlyintendedto.name.lastname = currentRegistrant.name.lastname || "";
-    deposit.details.thistransactionismainlyintendedto.name.nickname = currentRegistrant.name.nickname || "";
-  }
-  
-  // Add transaction to the currency exchange array
-  currentRegistrant.credits.omsiapawas.transactions.currencyexchange.push(deposit);
   
   // 40% for distribution based on registrant status type
   const distributionShare = preciseMul(totalGiveaway, 0.4);
