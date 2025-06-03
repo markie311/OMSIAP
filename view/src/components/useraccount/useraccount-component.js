@@ -151,13 +151,15 @@ const UserAccount = (props) => {
     if (props.user?.transactions?.merchandise && Array.isArray(props.user.transactions.merchandise)) {
       props.user.transactions.merchandise.forEach((tx) => {
         const products = tx.details?.merchandise?.list || []
-        const totalAmount = tx.system?.ordersummary?.merchandisetotal || 0
+        const totalAmount = tx.system?.ordersummary?.merchandisetotal + tx.system?.ordersummary?.shippingtotal 
 
         normalizedTransactions.push({
           id: tx.id || `MERCH-${generateRandomId()}`,
           date: tx.statusesandlogs?.date || new Date().toISOString().split("T")[0],
           type: "Merchandise",
           typeClass: "merchandise",
+          merchandisesubtotal: tx.system?.ordersummary?.merchandisetotal || 0,
+          shippingsubtotal: tx.system?.ordersummary?.shippingtotal,
           amount: -Math.abs(totalAmount), // Negative because it's a purchase
           status: tx.statusesandlogs?.indication || "Pending",
           products: products.map((product) => ({
@@ -850,12 +852,26 @@ const UserAccount = (props) => {
               </table>
               <div className="transaction-modal__total-section">
                 <div className="transaction-modal__total-row">
-                  <span className="transaction-modal__total-label">Total Amount:</span>
+                  <span className="transaction-modal__total-label">Total merchandise purchase amount: </span>
                   <span className="transaction-modal__total-amount">
                     ₱
                     {transaction.products
                       .reduce((sum, product) => sum + (product.price || 0) * (product.quantity || 1), 0)
                       .toFixed(2)}
+                  </span>
+                </div>
+                <div className="transaction-modal__total-row">
+                  <span className="transaction-modal__total-label">Total shipping amount:</span>
+                  <span className="transaction-modal__total-amount">
+                    ₱
+                    {transaction.shippingsubtotal}
+                  </span>
+                </div>
+                <div className="transaction-modal__total-row">
+                  <span className="transaction-modal__total-label">Total Amount:</span>
+                  <span className="transaction-modal__total-amount">
+                    ₱
+                    { transaction.merchandisesubtotal + transaction.shippingsubtotal}
                   </span>
                 </div>
               </div>
@@ -1773,7 +1789,7 @@ const handleProfileSubmit = async (e) => {
 
                 <div className="userdashboard-form-row userdashboard-image-upload">
                   <div className="userdashboard-form-group">
-                    <label className="userdashboard-file-input-label">
+                    <label htmlFor="transactionImage" className="userdashboard-file-input-label">
                       GCash Transaction Screenshot
                       <div className="userdashboard-image-preview">
                         {previewImage ? (
