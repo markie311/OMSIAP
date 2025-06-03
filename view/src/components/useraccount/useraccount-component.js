@@ -1351,11 +1351,114 @@ const handleProfileSubmit = async (e) => {
   }
 };
 
+// Add these state variables to your component
+const [omsiapawasTransferForm, setOmsiapawasTransferForm] = useState({
+  recipientId: '',
+  amount: '',
+  note: '',
+  password: ''
+});
+
+const [omsiapawasTransferLoadingIndication, setOmsiapawasTransferLoadingIndication] = useState(false);
+const [omsiapawasTransferResponseVisible, setOmsiapawasTransferResponseVisible] = useState(false);
+
+// Add these handler functions
+const handleOmsiapawasTransferChange = (e) => {
+  const { name, value } = e.target;
+  setOmsiapawasTransferForm(prev => ({
+    ...prev,
+    [name]: value
+  }));
+};
+
+const handleOmsiapawasTransferSubmit = async (e) => {
+  e.preventDefault();
+  
+  // Validation
+  if (!omsiapawasTransferForm.recipientId || !omsiapawasTransferForm.amount || !omsiapawasTransferForm.password) {
+    document.getElementById('omsiapawas-transfer-response-message').innerHTML = 'Please fill in all required fields.';
+    document.getElementById('omsiapawas-transfer-response-message').className = 'userdashboard-transfer-response-message visible error';
+    setOmsiapawasTransferResponseVisible(true);
+    return;
+  }
+
+  if (parseFloat(omsiapawasTransferForm.amount) > props.user.credits.omsiapawas.amount) {
+    document.getElementById('omsiapawas-transfer-response-message').innerHTML = 'Transfer amount cannot exceed your current balance.';
+    document.getElementById('omsiapawas-transfer-response-message').className = 'userdashboard-transfer-response-message visible error';
+    setOmsiapawasTransferResponseVisible(true);
+    return;
+  }
+
+  if (parseFloat(omsiapawasTransferForm.amount) < 1) {
+    document.getElementById('omsiapawas-transfer-response-message').innerHTML = 'Minimum transfer amount is 1 OMSIAPAWAS.';
+    document.getElementById('omsiapawas-transfer-response-message').className = 'userdashboard-transfer-response-message visible error';
+    setOmsiapawasTransferResponseVisible(true);
+    return;
+  }
+
+  setOmsiapawasTransferLoadingIndication(true);
+  setOmsiapawasTransferResponseVisible(false);
+
+  try {
+    // Replace this with your actual API call
+    const response = await fetch('/api/transfer-omsiapawas', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        senderId: props.user.id,
+        recipientId: omsiapawasTransferForm.recipientId,
+        amount: parseFloat(omsiapawasTransferForm.amount),
+        note: omsiapawasTransferForm.note,
+        password: omsiapawasTransferForm.password
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      document.getElementById('omsiapawas-transfer-response-message').innerHTML = 
+        `Transfer successful! ${omsiapawasTransferForm.amount} OMSIAPAWAS sent to account ${omsiapawasTransferForm.recipientId}.`;
+      document.getElementById('omsiapawas-transfer-response-message').className = 'userdashboard-transfer-response-message visible success';
+      
+      // Reset form
+      setOmsiapawasTransferForm({
+        recipientId: '',
+        amount: '',
+        note: '',
+        password: ''
+      });
+      
+      // Update user balance (you might want to refresh user data here)
+      // props.refreshUserData();
+      
+    } else {
+      document.getElementById('omsiapawas-transfer-response-message').innerHTML = 
+        data.message || 'Transfer failed. Please try again.';
+      document.getElementById('omsiapawas-transfer-response-message').className = 'userdashboard-transfer-response-message visible error';
+    }
+  } catch (error) {
+    console.error('Transfer error:', error);
+    document.getElementById('omsiapawas-transfer-response-message').innerHTML = 
+      'An error occurred during transfer. Please try again.';
+    document.getElementById('omsiapawas-transfer-response-message').className = 'userdashboard-transfer-response-message visible error';
+  } finally {
+    setOmsiapawasTransferLoadingIndication(false);
+    setOmsiapawasTransferResponseVisible(true);
+    
+    // Hide response message after 5 seconds
+    setTimeout(() => {
+      setOmsiapawasTransferResponseVisible(false);
+    }, 5000);
+  }
+};
+
   return (
     <div className="userdashboard-dashboard-container" style={{ display: props.userdashboardmodal }}>
 
       <header className="userdashboard-dashboard-header">
-        <h1>(M)onthly (F)inancial (A)llocation (T)o (I)ndividual (P)eople PROFILE</h1>
+        <h1>(M)onthly (F)inancial (A)llocation (T)o (I)ndividual (P)eople</h1>
         <div className="userdashboard-nav-tabs">
           <button
             className={`userdashboard-tab-btn ${activeTab === "account" ? "userdashboard-active" : ""}`}
@@ -1374,6 +1477,12 @@ const handleProfileSubmit = async (e) => {
             onClick={() => setActiveTab("withdrawal")}
           >
             Withdrawal
+          </button>
+            <button
+            className={`userdashboard-tab-btn ${activeTab === "omsiapawastransfer" ? "userdashboard-active" : ""}`}
+            onClick={() => setActiveTab("omsiapawastransfer")}
+          >
+            Omsiapawas transfer
           </button>
           <button
             className={`userdashboard-tab-btn ${activeTab === "transactions" ? "userdashboard-active" : ""}`}
@@ -1969,6 +2078,155 @@ const handleProfileSubmit = async (e) => {
           </div>
         )}
 
+        {/* Omsiapawas Transfer Tab */}
+        {activeTab === "omsiapawastransfer" && (
+          <div className="userdashboard-omsiapawastransfer-panel">
+            <section className="userdashboard-omsiapawastransfer-section">
+              <h2>Transfer OMSIAPAWAS</h2>
+              
+              <div className="userdashboard-transfer-info">
+                <div className="userdashboard-current-balance">
+                  <span className="userdashboard-balance-label">Your Current Balance:</span>
+                  <span className="userdashboard-balance-amount">
+                    {props.user.credits.omsiapawas.amount.toFixed(2)} 
+                    <span className="tooltip-container">
+                      OMSIAPAWAS
+                      <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
+                    </span>
+                  </span>
+                </div>
+              </div>
+
+              <form className="userdashboard-omsiapawastransfer-form" onSubmit={handleOmsiapawasTransferSubmit}>
+                <div className="userdashboard-form-row">
+                  <div className="userdashboard-form-group">
+                    <label>Recipient's Account ID</label>
+                    <input
+                      type="text"
+                      id="transfer-recipientId"
+                      name="recipientId"
+                      placeholder="Enter recipient's account ID"
+                      value={omsiapawasTransferForm.recipientId}
+                      onChange={handleOmsiapawasTransferChange}
+                      required
+                    />
+                  </div>
+                  <div className="userdashboard-form-group">
+                    <label>
+                      Transfer Amount 
+                      <span className="tooltip-container">
+                        (OMSIAPAWAS)
+                        <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
+                      </span>
+                    </label>
+                    <input
+                      type="number"
+                      id="transfer-amount"
+                      name="amount"
+                      min="1"
+                      step="0.01"
+                      max={props.user.credits.omsiapawas.amount}
+                      placeholder="Enter amount to transfer"
+                      value={omsiapawasTransferForm.amount}
+                      onChange={handleOmsiapawasTransferChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="userdashboard-form-row">
+                  <div className="userdashboard-form-group">
+                    <label>Transfer Note (Optional)</label>
+                    <textarea
+                      id="transfer-note"
+                      name="note"
+                      placeholder="Add a note for this transfer (optional)"
+                      value={omsiapawasTransferForm.note}
+                      onChange={handleOmsiapawasTransferChange}
+                      maxLength="200"
+                      rows="3"
+                    />
+                  </div>
+                  <div className="userdashboard-form-group">
+                    <label>Account Password</label>
+                    <input
+                      type="password"
+                      id="transfer-password"
+                      name="password"
+                      placeholder="Enter your account password"
+                      value={omsiapawasTransferForm.password}
+                      onChange={handleOmsiapawasTransferChange}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="userdashboard-transfer-summary">
+                  <div className="userdashboard-summary-row">
+                    <span>Transfer Amount:</span>
+                    <span className="userdashboard-summary-value">
+                      {omsiapawasTransferForm.amount || '0.00'} OMSIAPAWAS
+                    </span>
+                  </div>
+                  <div className="userdashboard-summary-row">
+                    <span>Remaining Balance:</span>
+                    <span className="userdashboard-summary-value">
+                      {(props.user.credits.omsiapawas.amount - (parseFloat(omsiapawasTransferForm.amount) || 0)).toFixed(2)} OMSIAPAWAS
+                    </span>
+                  </div>
+                </div>
+
+                <div 
+                  className={`userdashboard-transfer-response-message ${omsiapawasTransferResponseVisible ? 'visible' : ''}`}
+                  id="omsiapawas-transfer-response-message"
+                >
+                  Transfer response will appear here
+                </div>
+
+                <div className="userdashboard-transfer-actions">
+                  {omsiapawasTransferLoadingIndication ? (
+                    <Spinner animation="border" variant="primary" />
+                  ) : (
+                    <button 
+                      type="submit" 
+                      className="userdashboard-omsiapawastransfer-btn"
+                      disabled={!omsiapawasTransferForm.amount || !omsiapawasTransferForm.recipientId || !omsiapawasTransferForm.password}
+                    >
+                      Transfer OMSIAPAWAS
+                    </button>
+                  )}
+                </div>
+              </form>
+
+              <div className="userdashboard-transfer-guidelines">
+                <h3>Transfer Guidelines</h3>
+                <ul className="userdashboard-guidelines-list">
+                  <li>
+                    <i className="fas fa-info-circle"></i>
+                    Minimum transfer amount is 1 OMSIAPAWAS
+                  </li>
+                  <li>
+                    <i className="fas fa-shield-alt"></i>
+                    Double-check the recipient's Account ID before transferring
+                  </li>
+                  <li>
+                    <i className="fas fa-clock"></i>
+                    Transfers are processed instantly and cannot be reversed
+                  </li>
+                  <li>
+                    <i className="fas fa-exclamation-triangle"></i>
+                    You cannot transfer more than your current balance
+                  </li>
+                  <li>
+                    <i className="fas fa-lock"></i>
+                    Your account password is required for security verification
+                  </li>
+                </ul>
+              </div>
+            </section>
+          </div>
+        )}
+
         {/* Transactions Tab */}
         {activeTab === "transactions" && (
           <div className="userdashboard-transactions-panel">
@@ -2398,6 +2656,7 @@ const handleProfileSubmit = async (e) => {
 
     </div>
   )
+
 }
 
 export default UserAccount

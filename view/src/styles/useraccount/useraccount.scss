@@ -2535,3 +2535,249 @@
     display: none;
   }
 }
+
+/* Omsiapawas Transfer Tab Styles */
+.userdashboard-omsiapawastransfer-panel {
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.userdashboard-omsiapawastransfer-section h2 {
+  color: #2c3e50;
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.userdashboard-transfer-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.userdashboard-current-balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+}
+
+.userdashboard-balance-label {
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+.userdashboard-balance-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.userdashboard-omsiapawastransfer-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  margin-bottom: 2rem;
+}
+
+.userdashboard-omsiapawastransfer-form .userdashboard-form-group label {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.userdashboard-omsiapawastransfer-form input,
+.userdashboard-omsiapawastransfer-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: #f8f9fa;
+}
+
+.userdashboard-omsiapawastransfer-form input:focus,
+.userdashboard-omsiapawastransfer-form textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  background: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.userdashboard-omsiapawastransfer-form textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.userdashboard-transfer-summary {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border-left: 4px solid #667eea;
+}
+
+.userdashboard-summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  color: #2c3e50;
+}
+
+.userdashboard-summary-row:last-child {
+  margin-bottom: 0;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.userdashboard-summary-value {
+  font-weight: 600;
+  color: #667eea;
+}
+
+.userdashboard-transfer-response-message {
+  background: #e3f2fd;
+  color: #1976d2;
+  padding: 1rem;
+  border-radius: 8px;
+  margin: 1rem 0;
+  text-align: center;
+  font-weight: 500;
+  border: 1px solid #bbdefb;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s ease;
+}
+
+.userdashboard-transfer-response-message.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.userdashboard-transfer-response-message.success {
+  background: #e8f5e8;
+  color: #2e7d32;
+  border-color: #c8e6c9;
+}
+
+.userdashboard-transfer-response-message.error {
+  background: #ffebee;
+  color: #c62828;
+  border-color: #ffcdd2;
+}
+
+.userdashboard-transfer-actions {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.userdashboard-omsiapawastransfer-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2.5rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.userdashboard-omsiapawastransfer-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.userdashboard-omsiapawastransfer-btn:disabled {
+  background: #bdc3c7;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+.userdashboard-transfer-guidelines {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+.userdashboard-transfer-guidelines h3 {
+  color: #2c3e50;
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.userdashboard-guidelines-list {
+  list-style: none;
+  padding: 0;
+}
+
+.userdashboard-guidelines-list li {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  color: #34495e;
+  line-height: 1.5;
+}
+
+.userdashboard-guidelines-list li:last-child {
+  margin-bottom: 0;
+}
+
+.userdashboard-guidelines-list li i {
+  color: #667eea;
+  margin-right: 0.75rem;
+  margin-top: 0.2rem;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .userdashboard-omsiapawastransfer-panel {
+    padding: 1rem;
+  }
+  
+  .userdashboard-current-balance {
+    flex-direction: column;
+    text-align: center;
+    gap: 0.5rem;
+  }
+  
+  .userdashboard-omsiapawastransfer-form {
+    padding: 1.5rem;
+  }
+  
+  .userdashboard-summary-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  
+  .userdashboard-omsiapawastransfer-btn {
+    width: 100%;
+    padding: 1rem;
+  }
+}
+
+/* Animation for form validation */
+.userdashboard-omsiapawastransfer-form input:invalid {
+  border-color: #e74c3c;
+}
+
+.userdashboard-omsiapawastransfer-form input:valid {
+  border-color: #27ae60;
+}
