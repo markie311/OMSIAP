@@ -9,6 +9,16 @@ import "../../styles/database/database.scss"
 import { Container, Row, Col, Button, Form, Spinner, Modal, Image } from "react-bootstrap"
 
 import { FaEye, 
+         FaBarcode,
+         FaList,
+         FaShieldAlt,
+         FaUserTag,
+         FaVenus,
+         FaBell,
+         FaPercent,
+         FaChartLine,
+         FaVideo,
+         FaRedo,
          FaMobile,
          FaRuler,
          FaClipboardCheck,
@@ -13467,166 +13477,330 @@ const PendingPrivateRegistrationsModal = ({ onClose, setShowDatabaseConfiguratio
 
 
 const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) => {
-  const [images, setImages] = useState([]);
-  const [specifications, setSpecifications] = useState([]);
-  const [features, setFeatures] = useState([]);
-  const [productData, setProductData] = useState({
-    name: '',
-    price: '',
-    stock: '',
-    category: '',
-    weightingrams: '',
-    description: '',
-    warranty: '',
-    videoUrl: '',
-    capital: '',
-    transactiongiveaway: '',
-    omsiapprofit: ''
-  });
+  const [images, setImages] = useState([])
+  const [specifications, setSpecifications] = useState([])
+  const [features, setFeatures] = useState([])
+  const [showSpecModal, setShowSpecModal] = useState(false)
+  const [editingSpecIndex, setEditingSpecIndex] = useState(null)
+  const [currentSpec, setCurrentSpec] = useState({
+    authentications: {
+      producttype: "",
+      id: "",
+    },
+    details: {
+      productname: "",
+      category: "",
+      description: "",
+      features: [],
+      weightingrams: 0,
+      warranty: "",
+      for: {
+        age: "",
+        part: "",
+        gender: "",
+        reminder: "",
+      },
+      price: {
+        amount: 0,
+        capital: 0,
+        transactiongiveaway: 0,
+        profit: 0,
+      },
+      specifications: [],
+    },
+    images: [],
+    videos: [],
+    customerfeedback: {
+      rating: 0,
+      reviews: 0,
+    },
+    system: {
+      stocks: 0,
+    },
+  })
 
-  const [createproductloadingindication, createproductloadingindicationcb] = useState(false);
+  const [productData, setProductData] = useState({
+    name: "",
+    price: "",
+    stock: "",
+    category: "",
+    weightingrams: "",
+    description: "",
+    warranty: "",
+    videoUrl: "",
+    capital: "",
+    transactiongiveaway: "",
+    omsiapprofit: "",
+  })
+
+  const [createproductloadingindication, createproductloadingindicationcb] = useState(false)
 
   // Handle form input changes
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProductData({ ...productData, [name]: value });
-  };
+    const { name, value } = e.target
+    setProductData({ ...productData, [name]: value })
+  }
+
+  // Handle specification form changes
+  const handleSpecChange = (e, section, subsection = null, subfield = null) => {
+    const { name, value } = e.target
+    const updatedSpec = { ...currentSpec }
+
+    if (subsection && subfield) {
+      updatedSpec[section][subsection][subfield] = value
+    } else if (subsection) {
+      updatedSpec[section][subsection] = value
+    } else {
+      updatedSpec[section][name] = value
+    }
+
+    setCurrentSpec(updatedSpec)
+  }
 
   // Handle image upload
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files);
-    const newImages = files.map(file => ({
+    const files = Array.from(e.target.files)
+    const newImages = files.map((file) => ({
       file,
-      preview: URL.createObjectURL(file)
-    }));
-    setImages([...images, ...newImages]);
-  };
+      preview: URL.createObjectURL(file),
+    }))
+    setImages([...images, ...newImages])
+  }
+
+  // Handle specification image upload
+  const handleSpecImageUpload = (e) => {
+    const files = Array.from(e.target.files)
+    const newImages = files.map((file) => ({
+      url: URL.createObjectURL(file),
+      file,
+    }))
+    setCurrentSpec({
+      ...currentSpec,
+      images: [...currentSpec.images, ...newImages],
+    })
+  }
 
   // Remove image
   const removeImage = (index) => {
-    const updatedImages = [...images];
-    URL.revokeObjectURL(updatedImages[index].preview);
-    updatedImages.splice(index, 1);
-    setImages(updatedImages);
-  };
+    const updatedImages = [...images]
+    URL.revokeObjectURL(updatedImages[index].preview)
+    updatedImages.splice(index, 1)
+    setImages(updatedImages)
+  }
 
-  // Add specification
-  const addSpecification = (e) => {
-    e.preventDefault();
-    const specField = document.getElementById('specification-input');
-    if (specField.value.trim()) {
-      setSpecifications([...specifications, specField.value]);
-      specField.value = '';
+  // Remove specification image
+  const removeSpecImage = (index) => {
+    const updatedImages = [...currentSpec.images]
+    updatedImages.splice(index, 1)
+    setCurrentSpec({
+      ...currentSpec,
+      images: updatedImages,
+    })
+  }
+
+  // Add specification feature
+  const addSpecFeature = () => {
+    const featureInput = document.getElementById("spec-feature-input")
+    if (featureInput.value.trim()) {
+      setCurrentSpec({
+        ...currentSpec,
+        details: {
+          ...currentSpec.details,
+          features: [...currentSpec.details.features, { data: featureInput.value }],
+        },
+      })
+      featureInput.value = ""
     }
-  };
+  }
+
+  // Remove specification feature
+  const removeSpecFeature = (index) => {
+    const updatedFeatures = [...currentSpec.details.features]
+    updatedFeatures.splice(index, 1)
+    setCurrentSpec({
+      ...currentSpec,
+      details: {
+        ...currentSpec.details,
+        features: updatedFeatures,
+      },
+    })
+  }
+
+  // Add video to specification
+  const addSpecVideo = () => {
+    const videoInput = document.getElementById("spec-video-input")
+    if (videoInput.value.trim()) {
+      setCurrentSpec({
+        ...currentSpec,
+        videos: [...currentSpec.videos, { url: videoInput.value }],
+      })
+      videoInput.value = ""
+    }
+  }
+
+  // Remove specification video
+  const removeSpecVideo = (index) => {
+    const updatedVideos = [...currentSpec.videos]
+    updatedVideos.splice(index, 1)
+    setCurrentSpec({
+      ...currentSpec,
+      videos: updatedVideos,
+    })
+  }
+
+  // Reset specification form
+  const resetSpecForm = () => {
+    setCurrentSpec({
+      authentications: {
+        producttype: "",
+        id: "",
+      },
+      details: {
+        productname: "",
+        category: "",
+        description: "",
+        features: [],
+        weightingrams: 0,
+        warranty: "",
+        for: {
+          age: "",
+          part: "",
+          gender: "",
+          reminder: "",
+        },
+        price: {
+          amount: 0,
+          capital: 0,
+          transactiongiveaway: 0,
+          profit: 0,
+        },
+        specifications: [],
+      },
+      images: [],
+      videos: [],
+      customerfeedback: {
+        rating: 0,
+        reviews: 0,
+      },
+      system: {
+        stocks: 0,
+      },
+    })
+  }
+
+  // Save specification
+  const saveSpecification = () => {
+    if (editingSpecIndex !== null) {
+      const updatedSpecs = [...specifications]
+      updatedSpecs[editingSpecIndex] = { ...currentSpec }
+      setSpecifications(updatedSpecs)
+      setEditingSpecIndex(null)
+    } else {
+      setSpecifications([...specifications, { ...currentSpec }])
+    }
+    resetSpecForm()
+    setShowSpecModal(false)
+  }
+
+  // Edit specification
+  const editSpecification = (index) => {
+    setCurrentSpec({ ...specifications[index] })
+    setEditingSpecIndex(index)
+    setShowSpecModal(true)
+  }
 
   // Remove specification
   const removeSpecification = (index) => {
-    const updatedSpecs = [...specifications];
-    updatedSpecs.splice(index, 1);
-    setSpecifications(updatedSpecs);
-  };
+    const updatedSpecs = [...specifications]
+    updatedSpecs.splice(index, 1)
+    setSpecifications(updatedSpecs)
+  }
 
   // Add feature
   const addFeature = (e) => {
-    e.preventDefault();
-    const featureField = document.getElementById('feature-input');
+    e.preventDefault()
+    const featureField = document.getElementById("feature-input")
     if (featureField.value.trim()) {
-      setFeatures([...features, featureField.value]);
-      featureField.value = '';
+      setFeatures([...features, featureField.value])
+      featureField.value = ""
     }
-  };
+  }
 
   // Remove feature
   const removeFeature = (index) => {
-    const updatedFeatures = [...features];
-    updatedFeatures.splice(index, 1);
-    setFeatures(updatedFeatures);
-  };
+    const updatedFeatures = [...features]
+    updatedFeatures.splice(index, 1)
+    setFeatures(updatedFeatures)
+  }
 
   // Handle form submission
   const handleSubmit = async (e) => {
-    // Prevent default form submission
-    e.preventDefault();
-    
-    const responseMessage = document.querySelectorAll(".createproduct-responsemessage")[0];
-    responseMessage.style.color = "white";
-    responseMessage.innerText = "";
-    responseMessage.style.display = "none";
-    
-    createproductloadingindicationcb(true);
-    
-    // Create FormData to handle file uploads
-    const formData = new FormData();
-    
-    // Add product data
-    Object.keys(productData).forEach(key => {
-      formData.append(key, productData[key]);
-    });
-    
-    // Add images - for multer
+    e.preventDefault()
+
+    const responseMessage = document.querySelectorAll(".createproduct-responsemessage")[0]
+    responseMessage.style.color = "white"
+    responseMessage.innerText = ""
+    responseMessage.style.display = "none"
+
+    createproductloadingindicationcb(true)
+
+    const formData = new FormData()
+
+    Object.keys(productData).forEach((key) => {
+      formData.append(key, productData[key])
+    })
+
     images.forEach((image) => {
-      formData.append('images', image.file);
-    });
-    
-    // Add specifications and features as simple string arrays
-    formData.append('specifications', JSON.stringify(specifications));
-    formData.append('features', JSON.stringify(features));
-    
+      formData.append("images", image.file)
+    })
+
+    // Send specifications as complex objects
+    formData.append("specifications", JSON.stringify(specifications))
+    formData.append("features", JSON.stringify(features))
+
     try {
-      // Send the data to the backend
       const response = await axiosCreatedInstance.post("/products/addproduct", formData, {
         headers: {
-          'Content-Type': 'multipart/form-data' // Important for multer
-        }
-      });
-      
-      // Process the response
-      const { message, productId } = response.data;
-      
-      // Update response message state
+          "Content-Type": "multipart/form-data",
+        },
+      })
+
+      const { message, productId } = response.data
+
       if (message === "Product added successfully") {
-        responseMessage.style.color = "green";
-        responseMessage.innerText = `Product added successfully! Product ID: ${productId}`;
+        responseMessage.style.color = "green"
+        responseMessage.innerText = `Product added successfully! Product ID: ${productId}`
       } else {
-        responseMessage.style.color = "red";
-        responseMessage.innerText = message || "Unknown error occurred";
+        responseMessage.style.color = "red"
+        responseMessage.innerText = message || "Unknown error occurred"
       }
-      
-      responseMessage.style.display = "block";
-      createproductloadingindicationcb(false);
-      
-      // Return false to prevent any potential form submission
-      return false;
+
+      responseMessage.style.display = "block"
+      createproductloadingindicationcb(false)
+
+      return false
     } catch (error) {
-      // Handle network or other errors
-      createproductloadingindicationcb(false);
-      
-      let errorText = "An unexpected error occurred";
-      
+      createproductloadingindicationcb(false)
+
+      let errorText = "An unexpected error occurred"
+
       if (error.response) {
-        // The server responded with an error status
-        errorText = `Error: ${error.response.data.message || "Server error"}`;
+        errorText = `Error: ${error.response.data.message || "Server error"}`
       } else if (error.request) {
-        // The request was made but no response was received
-        errorText = "Network error: Please check your connection and try again";
+        errorText = "Network error: Please check your connection and try again"
       } else {
-        // Something else happened
-        errorText = `Error: ${error.message}`;
+        errorText = `Error: ${error.message}`
       }
-      
-      responseMessage.style.color = "red";
-      responseMessage.innerText = errorText;
-      responseMessage.style.display = "block";
-      
-      // Return false to prevent any potential form submission
-      return false;
+
+      responseMessage.style.color = "red"
+      responseMessage.innerText = errorText
+      responseMessage.style.display = "block"
+
+      return false
     }
-  };
-  
-  // Helper function to reset the form
+  }
+
   const resetForm = () => {
-    // Reset all form fields
     setProductData({
       name: "",
       price: 0,
@@ -13639,14 +13813,13 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
       quantity: 0,
       capital: 0,
       transactiongiveaway: 0,
-      omsiapprofit: 0
-    });
-    
-    // Reset images, specifications and features
-    setImages([]);
-    setSpecifications([]);
-    setFeatures([]);
-  };
+      omsiapprofit: 0,
+    })
+
+    setImages([])
+    setSpecifications([])
+    setFeatures([])
+  }
 
   return (
     <div className="create-product-container">
@@ -13654,12 +13827,12 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
         <Row className="header-row">
           <Col xs={12} className="d-flex justify-content-between align-items-center">
             <h1 className="create-product-title">Create New Product</h1>
-            <Button 
-              variant="none" 
+            <Button
+              variant="none"
               className="close-button"
               onClick={() => {
-                setShowDatabaseConfiguration(false);
-                setShowCreateProduct(false);
+                setShowDatabaseConfiguration(false)
+                setShowCreateProduct(false)
               }}
             >
               <FaTimes />
@@ -13675,9 +13848,9 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                 <Form.Label className="form-label">
                   <FaTag className="form-icon" /> Product Name
                 </Form.Label>
-                <Form.Control 
-                  type="text" 
-                  name="name" 
+                <Form.Control
+                  type="text"
+                  name="name"
                   value={productData.name}
                   onChange={handleInputChange}
                   className="form-control-dark"
@@ -13685,37 +13858,41 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                 />
               </Form.Group>
             </Col>
-            
+
             {/* Image Upload Section */}
             <Col xs={12} md={6} className="mb-4">
               <div className="image-upload-section">
                 <h2 className="section-title">Product Images</h2>
-                
+
                 <div className="image-upload-container">
                   <label htmlFor="product-images" className="image-upload-label">
                     <FaFileImage className="upload-icon" />
                     <span>Select Images</span>
                   </label>
-                  <input 
-                    id="product-images" 
-                    type="file" 
-                    multiple 
-                    accept="image/*" 
-                    onChange={handleImageUpload} 
+                  <input
+                    id="product-images"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleImageUpload}
                     className="hidden-input"
                   />
                 </div>
-                
+
                 <div className="images-preview-container">
                   {images.length > 0 ? (
                     <Row className="image-grid">
                       {images.map((img, index) => (
                         <Col xs={6} sm={4} md={4} key={index} className="image-preview-col">
                           <div className="image-preview-wrapper">
-                            <img src={img.preview} alt={`Product preview ${index}`} className="image-preview" />
-                            <Button 
-                              variant="danger" 
-                              size="sm" 
+                            <img
+                              src={img.preview || "/placeholder.svg"}
+                              alt={`Product preview ${index}`}
+                              className="image-preview"
+                            />
+                            <Button
+                              variant="danger"
+                              size="sm"
                               className="remove-image-btn"
                               onClick={() => removeImage(index)}
                             >
@@ -13733,21 +13910,21 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                 </div>
               </div>
             </Col>
-            
+
             {/* Product Details Section */}
             <Col xs={12} md={6} className="mb-4">
               <div className="product-details-section">
                 <h2 className="section-title">Product Details</h2>
-                
+
                 <Row>
                   <Col xs={12} sm={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaMoneyBillWave className="form-icon" /> Price
                       </Form.Label>
-                      <Form.Control 
-                        type="number" 
-                        name="price" 
+                      <Form.Control
+                        type="number"
+                        name="price"
                         value={productData.price}
                         onChange={handleInputChange}
                         className="form-control-dark"
@@ -13755,15 +13932,15 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                       />
                     </Form.Group>
                   </Col>
-                  
+
                   <Col xs={12} sm={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaBoxOpen className="form-icon" /> Stock
                       </Form.Label>
-                      <Form.Control 
-                        type="number" 
-                        name="stock" 
+                      <Form.Control
+                        type="number"
+                        name="stock"
                         value={productData.stock}
                         onChange={handleInputChange}
                         className="form-control-dark"
@@ -13771,15 +13948,15 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                       />
                     </Form.Group>
                   </Col>
-                  
+
                   <Col xs={12} sm={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaTag className="form-icon" /> Category
                       </Form.Label>
-                      <Form.Control 
-                        type="text" 
-                        name="category" 
+                      <Form.Control
+                        type="text"
+                        name="category"
                         value={productData.category}
                         onChange={handleInputChange}
                         className="form-control-dark"
@@ -13787,15 +13964,15 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                       />
                     </Form.Group>
                   </Col>
-                  
+
                   <Col xs={12} sm={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaWeight className="form-icon" /> Weight (g)
                       </Form.Label>
-                      <Form.Control 
-                        type="number" 
-                        name="weightingrams" 
+                      <Form.Control
+                        type="number"
+                        name="weightingrams"
                         value={productData.weightingrams}
                         onChange={handleInputChange}
                         className="form-control-dark"
@@ -13803,17 +13980,17 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                     </Form.Group>
                   </Col>
                 </Row>
-                
+
                 <Row>
                   <Col xs={12} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaInfoCircle className="form-icon" /> Description
                       </Form.Label>
-                      <Form.Control 
-                        as="textarea" 
+                      <Form.Control
+                        as="textarea"
                         rows={4}
-                        name="description" 
+                        name="description"
                         value={productData.description}
                         onChange={handleInputChange}
                         className="form-control-dark"
@@ -13822,31 +13999,31 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                     </Form.Group>
                   </Col>
                 </Row>
-                
+
                 <Row>
                   <Col xs={12} sm={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaInfoCircle className="form-icon" /> Warranty
                       </Form.Label>
-                      <Form.Control 
-                        type="text" 
-                        name="warranty" 
+                      <Form.Control
+                        type="text"
+                        name="warranty"
                         value={productData.warranty}
                         onChange={handleInputChange}
                         className="form-control-dark"
                       />
                     </Form.Group>
                   </Col>
-                  
+
                   <Col xs={12} sm={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaYoutube className="form-icon" /> Video URL
                       </Form.Label>
-                      <Form.Control 
-                        type="text" 
-                        name="videoUrl" 
+                      <Form.Control
+                        type="text"
+                        name="videoUrl"
                         value={productData.videoUrl}
                         onChange={handleInputChange}
                         className="form-control-dark"
@@ -13856,81 +14033,92 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                 </Row>
               </div>
             </Col>
-            
-            {/* Specifications Section */}
+
+            {/* Enhanced Specifications Section */}
             <Col xs={12} className="mb-4">
               <div className="specifications-section">
                 <h2 className="section-title">
-                  <FaClipboardList className="section-icon" /> Specifications
+                  <FaClipboardList className="section-icon" /> Product Specifications
                 </h2>
-                
+
                 <div className="add-item-container">
-                  <Form.Control 
-                    type="text" 
-                    id="specification-input"
-                    className="form-control-dark"
-                    placeholder="Enter specification"
-                  />
-                  <Button 
-                    variant="outline-light" 
+                  <Button
+                    variant="outline-light"
                     className="add-button"
-                    onClick={addSpecification}
+                    onClick={() => {
+                      resetSpecForm()
+                      setShowSpecModal(true)
+                    }}
                   >
-                    <FaPlus /> Add
+                    <FaPlus /> Add New Specification
                   </Button>
                 </div>
-                
+
                 {specifications.length > 0 && (
-                  <div className="items-list">
+                  <div className="specifications-list">
                     {specifications.map((spec, index) => (
-                      <div key={index} className="item-pill">
-                        <span>{spec}</span>
-                        <Button 
-                          variant="none" 
-                          size="sm" 
-                          className="remove-item-btn"
-                          onClick={() => removeSpecification(index)}
-                        >
-                          <FaTimes />
-                        </Button>
+                      <div key={index} className="specification-card">
+                        <div className="spec-header">
+                          <h4>{spec.details.productname || `Specification ${index + 1}`}</h4>
+                          <div className="spec-actions">
+                            <Button variant="outline-primary" size="sm" onClick={() => editSpecification(index)}>
+                              <FaEdit />
+                            </Button>
+                            <Button variant="outline-danger" size="sm" onClick={() => removeSpecification(index)}>
+                              <FaTrash />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="spec-details">
+                          <p>
+                            <strong>Category:</strong> {spec.details.category}
+                          </p>
+                          <p>
+                            <strong>Price:</strong> ${spec.details.price.amount}
+                          </p>
+                          <p>
+                            <strong>Stock:</strong> {spec.system.stocks}
+                          </p>
+                          {spec.details.description && (
+                            <p>
+                              <strong>Description:</strong> {spec.details.description.substring(0, 100)}...
+                            </p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
               </div>
             </Col>
-            
+
             {/* Features Section */}
             <Col xs={12} className="mb-4">
               <div className="features-section">
                 <h2 className="section-title">
                   <FaStar className="section-icon" /> Features
                 </h2>
-                
+
                 <div className="add-item-container">
-                  <Form.Control 
-                    type="text" 
+                  <Form.Control
+                    type="text"
                     id="feature-input"
                     className="form-control-dark"
                     placeholder="Enter feature"
                   />
-                  <Button 
-                    variant="outline-light" 
-                    className="add-button"
-                    onClick={addFeature}
-                  >
+                  <Button variant="outline-light" className="add-button" onClick={addFeature}>
                     <FaPlus /> Add
                   </Button>
                 </div>
-                
+
                 {features.length > 0 && (
                   <div className="items-list">
                     {features.map((feature, index) => (
                       <div key={index} className="item-pill">
                         <span>{feature}</span>
-                        <Button 
-                          variant="none" 
-                          size="sm" 
+                        <Button
+                          variant="none"
+                          size="sm"
                           className="remove-item-btn"
                           onClick={() => removeFeature(index)}
                         >
@@ -13942,21 +14130,21 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                 )}
               </div>
             </Col>
-            
+
             {/* Pricing Details */}
             <Col xs={12} className="mb-4">
               <div className="pricing-details-section">
                 <h2 className="section-title">Pricing Details</h2>
-                
+
                 <Row>
                   <Col xs={12} sm={6} md={3} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaMoneyBillWave className="form-icon" /> Price
                       </Form.Label>
-                      <Form.Control 
-                        type="number" 
-                        name="price" 
+                      <Form.Control
+                        type="number"
+                        name="price"
                         value={productData.price}
                         onChange={handleInputChange}
                         className="form-control-dark"
@@ -13964,45 +14152,45 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                       />
                     </Form.Group>
                   </Col>
-                  
+
                   <Col xs={12} sm={6} md={3} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaMoneyBillWave className="form-icon" /> Capital
                       </Form.Label>
-                      <Form.Control 
-                        type="number" 
-                        name="capital" 
+                      <Form.Control
+                        type="number"
+                        name="capital"
                         value={productData.capital}
                         onChange={handleInputChange}
                         className="form-control-dark"
                       />
                     </Form.Group>
                   </Col>
-                  
+
                   <Col xs={12} sm={6} md={3} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaMoneyBillWave className="form-icon" /> Transaction Fee
                       </Form.Label>
-                      <Form.Control 
-                        type="number" 
-                        name="transactiongiveaway" 
+                      <Form.Control
+                        type="number"
+                        name="transactiongiveaway"
                         value={productData.transactiongiveaway}
                         onChange={handleInputChange}
                         className="form-control-dark"
                       />
                     </Form.Group>
                   </Col>
-                  
+
                   <Col xs={12} sm={6} md={3} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
                         <FaMoneyBillWave className="form-icon" /> Profit
                       </Form.Label>
-                      <Form.Control 
-                        type="number" 
-                        name="omsiapprofit" 
+                      <Form.Control
+                        type="number"
+                        name="omsiapprofit"
                         value={productData.omsiapprofit}
                         onChange={handleInputChange}
                         className="form-control-dark"
@@ -14012,47 +14200,347 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                 </Row>
               </div>
             </Col>
-             
+
             <p className="createproduct-responsemessage">Product added successfully</p>
 
             {/* Submit Button */}
-            <Col xs={12}
-                 md={1}
-                 lg={1} 
-                 className="text-center mb-4">
-              {
-                createproductloadingindication ? 
-                (
-                  <Spinner animation="border" variant="warning" />
-                )
-                :
-                (
-                 <Button type="button" 
-                         className="submit-button" 
-                         size="lg"
-                         onClick={handleSubmit}>
-                   Create Product
-                 </Button>
-                )
-              }
+            <Col xs={12} md={1} lg={1} className="text-center mb-4">
+              {createproductloadingindication ? (
+                <Spinner animation="border" variant="warning" />
+              ) : (
+                <Button type="button" className="submit-button" size="lg" onClick={handleSubmit}>
+                  Create Product
+                </Button>
+              )}
             </Col>
 
-            <Col xs={12}
-                 md={3}
-                 lg={3} 
-                 className="text-center mb-4">
-                 <Button className="submit-button" size="lg"
-                         onClick={resetForm}>
-                   Reset 
-                 </Button>
+            <Col xs={12} md={3} lg={3} className="text-center mb-4">
+              <Button className="submit-button" size="lg" onClick={resetForm}>
+                Reset
+              </Button>
             </Col>
           </Row>
         </Form>
 
+        {/* Specification Modal */}
+        <Modal show={showSpecModal} onHide={() => setShowSpecModal(false)} size="xl">
+          <Modal.Header closeButton>
+            <Modal.Title>{editingSpecIndex !== null ? "Edit Specification" : "Add New Specification"}</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <Form>
+              {/* Authentication Section */}
+              <Row className="mb-4">
+                <Col xs={12}>
+                  <h5>Authentication Details</h5>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Group>
+                    <Form.Label>Product Type</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="producttype"
+                      value={currentSpec.authentications.producttype}
+                      onChange={(e) => handleSpecChange(e, "authentications")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Group>
+                    <Form.Label>ID</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="id"
+                      value={currentSpec.authentications.id}
+                      onChange={(e) => handleSpecChange(e, "authentications")}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Product Details Section */}
+              <Row className="mb-4">
+                <Col xs={12}>
+                  <h5>Product Details</h5>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Group>
+                    <Form.Label>Product Name</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="productname"
+                      value={currentSpec.details.productname}
+                      onChange={(e) => handleSpecChange(e, "details")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Group>
+                    <Form.Label>Category</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="category"
+                      value={currentSpec.details.category}
+                      onChange={(e) => handleSpecChange(e, "details")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12}>
+                  <Form.Group>
+                    <Form.Label>Description</Form.Label>
+                    <Form.Control
+                      as="textarea"
+                      rows={3}
+                      name="description"
+                      value={currentSpec.details.description}
+                      onChange={(e) => handleSpecChange(e, "details")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Group>
+                    <Form.Label>Weight (grams)</Form.Label>
+                    <Form.Control
+                      type="number"
+                      name="weightingrams"
+                      value={currentSpec.details.weightingrams}
+                      onChange={(e) => handleSpecChange(e, "details")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Group>
+                    <Form.Label>Warranty</Form.Label>
+                    <Form.Control
+                      type="text"
+                      name="warranty"
+                      value={currentSpec.details.warranty}
+                      onChange={(e) => handleSpecChange(e, "details")}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* For Section */}
+              <Row className="mb-4">
+                <Col xs={12}>
+                  <h5>Target Information</h5>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                  <Form.Group>
+                    <Form.Label>Age</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={currentSpec.details.for.age}
+                      onChange={(e) => handleSpecChange(e, "details", "for", "age")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                  <Form.Group>
+                    <Form.Label>Part</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={currentSpec.details.for.part}
+                      onChange={(e) => handleSpecChange(e, "details", "for", "part")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                  <Form.Group>
+                    <Form.Label>Gender</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={currentSpec.details.for.gender}
+                      onChange={(e) => handleSpecChange(e, "details", "for", "gender")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                  <Form.Group>
+                    <Form.Label>Reminder</Form.Label>
+                    <Form.Control
+                      type="text"
+                      value={currentSpec.details.for.reminder}
+                      onChange={(e) => handleSpecChange(e, "details", "for", "reminder")}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Price Section */}
+              <Row className="mb-4">
+                <Col xs={12}>
+                  <h5>Pricing</h5>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                  <Form.Group>
+                    <Form.Label>Amount</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={currentSpec.details.price.amount}
+                      onChange={(e) => handleSpecChange(e, "details", "price", "amount")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                  <Form.Group>
+                    <Form.Label>Capital</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={currentSpec.details.price.capital}
+                      onChange={(e) => handleSpecChange(e, "details", "price", "capital")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                  <Form.Group>
+                    <Form.Label>Transaction Fee</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={currentSpec.details.price.transactiongiveaway}
+                      onChange={(e) => handleSpecChange(e, "details", "price", "transactiongiveaway")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6} md={3}>
+                  <Form.Group>
+                    <Form.Label>Profit</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={currentSpec.details.price.profit}
+                      onChange={(e) => handleSpecChange(e, "details", "price", "profit")}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+
+              {/* Features Section */}
+              <Row className="mb-4">
+                <Col xs={12}>
+                  <h5>Features</h5>
+                  <div className="add-item-container">
+                    <Form.Control type="text" id="spec-feature-input" placeholder="Enter feature" />
+                    <Button variant="outline-primary" onClick={addSpecFeature}>
+                      <FaPlus /> Add
+                    </Button>
+                  </div>
+                  {currentSpec.details.features.length > 0 && (
+                    <div className="items-list mt-2">
+                      {currentSpec.details.features.map((feature, index) => (
+                        <div key={index} className="item-pill">
+                          <span>{feature.data}</span>
+                          <Button variant="none" size="sm" onClick={() => removeSpecFeature(index)}>
+                            <FaTimes />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Col>
+              </Row>
+
+              {/* Images Section */}
+              <Row className="mb-4">
+                <Col xs={12}>
+                  <h5>Images</h5>
+                  <input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleSpecImageUpload}
+                    className="form-control mb-2"
+                  />
+                  {currentSpec.images.length > 0 && (
+                    <Row>
+                      {currentSpec.images.map((img, index) => (
+                        <Col xs={6} sm={4} md={3} key={index} className="mb-2">
+                          <div className="image-preview-wrapper">
+                            <img
+                              src={img.url || "/placeholder.svg"}
+                              alt={`Spec preview ${index}`}
+                              className="img-thumbnail"
+                            />
+                            <Button variant="danger" size="sm" onClick={() => removeSpecImage(index)}>
+                              <FaTrash />
+                            </Button>
+                          </div>
+                        </Col>
+                      ))}
+                    </Row>
+                  )}
+                </Col>
+              </Row>
+
+              {/* Videos Section */}
+              <Row className="mb-4">
+                <Col xs={12}>
+                  <h5>Videos</h5>
+                  <div className="add-item-container">
+                    <Form.Control type="text" id="spec-video-input" placeholder="Enter video URL" />
+                    <Button variant="outline-primary" onClick={addSpecVideo}>
+                      <FaPlus /> Add
+                    </Button>
+                  </div>
+                  {currentSpec.videos.length > 0 && (
+                    <div className="items-list mt-2">
+                      {currentSpec.videos.map((video, index) => (
+                        <div key={index} className="item-pill">
+                          <span>{video.url}</span>
+                          <Button variant="none" size="sm" onClick={() => removeSpecVideo(index)}>
+                            <FaTimes />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </Col>
+              </Row>
+
+              {/* System Section */}
+              <Row className="mb-4">
+                <Col xs={12}>
+                  <h5>System Information</h5>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Group>
+                    <Form.Label>Stock</Form.Label>
+                    <Form.Control
+                      type="number"
+                      value={currentSpec.system.stocks}
+                      onChange={(e) => handleSpecChange(e, "system", "stocks")}
+                    />
+                  </Form.Group>
+                </Col>
+                <Col xs={12} sm={6}>
+                  <Form.Group>
+                    <Form.Label>Rating</Form.Label>
+                    <Form.Control
+                      type="number"
+                      min="0"
+                      max="5"
+                      step="0.1"
+                      value={currentSpec.customerfeedback.rating}
+                      onChange={(e) => handleSpecChange(e, "customerfeedback", "rating")}
+                    />
+                  </Form.Group>
+                </Col>
+              </Row>
+            </Form>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={() => setShowSpecModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={saveSpecification}>
+              {editingSpecIndex !== null ? "Update Specification" : "Add Specification"}
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </Container>
     </div>
-  );
-};
+  )
+}
 
 const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingOrders }) => {
   const [isVisible, setIsVisible] = useState(false);
