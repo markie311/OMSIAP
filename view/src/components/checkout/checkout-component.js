@@ -87,6 +87,7 @@ const CheckoutPage = (props) => {
   const [orderSummary, setOrderSummary] = useState({
     merchandiseTotal: 0,
     shippingTotal: 0,
+    paymentProcessingFee: 0,
     totalTransactionGiveaway: 0,
     totalOmsiaProfit: 0,
     totalCapital: 0,
@@ -114,73 +115,74 @@ const CheckoutPage = (props) => {
     }, 300);
   }, []);
 
-  // Calculate order summary from order data, using useMemo to prevent recalculation on every render
-  const calculatedSummary = useMemo(() => {
-    if (orderData && orderData.cartItems && orderData.cartItems.length > 0) {
-      // Get values directly from cartStats for some totals
-      const subtotal = orderData.cartStats?.subtotal || 0;
-      const shippingTotal = orderData.cartStats?.shippingCost || 0;
-      const totalWeightGrams = orderData.cartStats?.totalWeightGrams || 0;
-      const totalWeightKilos = orderData.cartStats?.totalWeightKilos || 0;
-      const totalItems = orderData.cartStats?.totalItems || 0;
-      
-      // Initialize other totals that may not be in cartStats
-      let totalTransactionGiveaway = 0;
-      let totalOmsiaProfit = 0;
-      let totalCapital = 0;
-      
-      // Process each item to get financial breakdown
-      orderData.cartItems.forEach(item => {
-        const quantity = item.quantity || 1;
-        
-        // Extract values from the item's details.price structure
-        const itemTransactionGiveaway = item.details?.price?.transactiongiveaway || 0;
-        const itemProfit = item.details?.price?.profit || 0;
-        const itemCapital = item.details?.price?.capital || 0;
-        
-        // Multiply values by quantity using precise decimal multiplication
-        const totalItemTransactionGiveaway = decimalPrecision.multiply(itemTransactionGiveaway, quantity);
-        const totalItemOmsiaProfit = decimalPrecision.multiply(itemProfit, quantity);
-        const totalItemCapital = decimalPrecision.multiply(itemCapital, quantity);
-        
-        // Add to running totals using precise decimal addition
-        totalTransactionGiveaway = decimalPrecision.add(totalTransactionGiveaway, totalItemTransactionGiveaway);
-        totalOmsiaProfit = decimalPrecision.add(totalOmsiaProfit, totalItemOmsiaProfit);
-        totalCapital = decimalPrecision.add(totalCapital, totalItemCapital);
-      });
-      
-      // Calculate final total using precise decimal addition
-      const total = decimalPrecision.add(subtotal, shippingTotal);
-      
-      // Return formatted values
-      return {
-        merchandiseTotal: decimalPrecision.formatCurrency(subtotal),
-        shippingTotal: decimalPrecision.formatCurrency(shippingTotal),
-        totalTransactionGiveaway: decimalPrecision.formatCurrency(totalTransactionGiveaway),
-        totalOmsiaProfit: decimalPrecision.formatCurrency(totalOmsiaProfit),
-        totalCapital: decimalPrecision.formatCurrency(totalCapital),
-        totalItems,
-        totalProducts: orderData.cartItems.length,
-        totalWeightGrams: parseFloat(totalWeightGrams.toFixed(2)),
-        totalWeightKilos: parseFloat(totalWeightKilos.toFixed(3)),
-        total: decimalPrecision.formatCurrency(total)
-      };
-    }
+ const calculatedSummary = useMemo(() => {
+  if (orderData && orderData.cartItems && orderData.cartItems.length > 0) {
+    // Get values from paymentBreakdown if available, otherwise fallback to cartStats
+    const subtotal = orderData.paymentBreakdown?.subtotal || orderData.cartStats?.subtotal || 0;
+    const shippingTotal = orderData.paymentBreakdown?.shipping || orderData.cartStats?.shippingCost || 0;
+    const paymentProcessingFee = orderData.paymentBreakdown?.paymentProcessingFee || orderData.cartStats?.paymentProcessingFee || 0;
+    const total = orderData.paymentBreakdown?.total || orderData.cartStats?.total || 0;
     
-    // Return default values if no cart items
+    const totalWeightGrams = orderData.cartStats?.totalWeightGrams || 0;
+    const totalWeightKilos = orderData.cartStats?.totalWeightKilos || 0;
+    const totalItems = orderData.cartStats?.totalItems || 0;
+    
+    // Initialize other totals that may not be in cartStats
+    let totalTransactionGiveaway = 0;
+    let totalOmsiaProfit = 0;
+    let totalCapital = 0;
+    
+    // Process each item to get financial breakdown
+    orderData.cartItems.forEach(item => {
+      const quantity = item.quantity || 1;
+      
+      // Extract values from the item's details.price structure
+      const itemTransactionGiveaway = item.details?.price?.transactiongiveaway || 0;
+      const itemProfit = item.details?.price?.profit || 0;
+      const itemCapital = item.details?.price?.capital || 0;
+      
+      // Multiply values by quantity using precise decimal multiplication
+      const totalItemTransactionGiveaway = decimalPrecision.multiply(itemTransactionGiveaway, quantity);
+      const totalItemOmsiaProfit = decimalPrecision.multiply(itemProfit, quantity);
+      const totalItemCapital = decimalPrecision.multiply(itemCapital, quantity);
+      
+      // Add to running totals using precise decimal addition
+      totalTransactionGiveaway = decimalPrecision.add(totalTransactionGiveaway, totalItemTransactionGiveaway);
+      totalOmsiaProfit = decimalPrecision.add(totalOmsiaProfit, totalItemOmsiaProfit);
+      totalCapital = decimalPrecision.add(totalCapital, totalItemCapital);
+    });
+    
+    // Return formatted values
     return {
-      merchandiseTotal: 0,
-      shippingTotal: 0,
-      totalTransactionGiveaway: 0,
-      totalOmsiaProfit: 0,
-      totalCapital: 0,
-      totalItems: 0,
-      totalProducts: 0,
-      totalWeightGrams: 0,
-      totalWeightKilos: 0,
-      total: 0
+      merchandiseTotal: decimalPrecision.formatCurrency(subtotal),
+      shippingTotal: decimalPrecision.formatCurrency(shippingTotal),
+      paymentProcessingFee: decimalPrecision.formatCurrency(paymentProcessingFee),
+      totalTransactionGiveaway: decimalPrecision.formatCurrency(totalTransactionGiveaway),
+      totalOmsiaProfit: decimalPrecision.formatCurrency(totalOmsiaProfit),
+      totalCapital: decimalPrecision.formatCurrency(totalCapital),
+      totalItems,
+      totalProducts: orderData.cartItems.length,
+      totalWeightGrams: parseFloat(totalWeightGrams.toFixed(2)),
+      totalWeightKilos: parseFloat(totalWeightKilos.toFixed(3)),
+      total: decimalPrecision.formatCurrency(total)
     };
-  }, [orderData]);
+  }
+  
+  // Return default values if no cart items
+  return {
+    merchandiseTotal: 0,
+    shippingTotal: 0,
+    paymentProcessingFee: 0,
+    totalTransactionGiveaway: 0,
+    totalOmsiaProfit: 0,
+    totalCapital: 0,
+    totalItems: 0,
+    totalProducts: 0,
+    totalWeightGrams: 0,
+    totalWeightKilos: 0,
+    total: 0
+  };
+}, [orderData]);
 
   // Update order summary state only when calculated summary changes
   useEffect(() => {
@@ -559,6 +561,26 @@ const CheckoutPage = (props) => {
                   <span className="checkout-label">Shipping Total:</span>
                   <span className="checkout-value">₱{orderSummary.shippingTotal.toFixed(2)}</span>
                 </div>
+                <div className="checkout-summary-item">
+                  <span className="checkout-label">Shipping Total:</span>
+                  <span className="checkout-value">₱{orderSummary.shippingTotal.toFixed(2)}</span>
+                </div>
+                <div className="checkout-summary-item" style={{
+                  borderBottom: '1px solid #e2e8f0',
+                  paddingBottom: '8px',
+                  marginBottom: '8px'
+                }}>
+                  <span className="checkout-label" style={{ color: '#3b82f6', fontWeight: '500' }}>
+                    Payment Processing Fee:
+                  </span>
+                  <span className="checkout-value" style={{ 
+                    color: '#3b82f6', 
+                    fontWeight: '600',
+                    fontSize: '0.95em'
+                  }}>
+                    ₱{orderSummary.paymentProcessingFee.toFixed(2)}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -571,6 +593,7 @@ const CheckoutPage = (props) => {
                   <span className="checkout-label">Transaction Giveaway:</span>
                   <span className="checkout-value">₱{orderSummary.totalTransactionGiveaway.toFixed(2)}</span>
                 </div>
+                {/*
                 <div className="checkout-summary-item">
                   <span className="checkout-label">Omsia Profit:</span>
                   <span className="checkout-value">₱{orderSummary.totalOmsiaProfit.toFixed(2)}</span>
@@ -579,6 +602,7 @@ const CheckoutPage = (props) => {
                   <span className="checkout-label">Capital Cost:</span>
                   <span className="checkout-value">₱{orderSummary.totalCapital.toFixed(2)}</span>
                 </div>
+                */}
               </div>
             </div>
             

@@ -687,11 +687,11 @@ const getProductShippingCost = (item) => {
 
                 <div className="shipping-details">
                  <div className="shipping-info-row">
-  <span>
-    <FaTruck /> Weight-based shipping calculation:
-  </span>
-  <span className="shipping-value highlighted">₱{cartStats.shippingCost}</span>
-</div>
+                  <span>
+                    <FaTruck /> Weight-based shipping calculation:
+                  </span>
+                  <span className="shipping-value highlighted">₱{cartStats.shippingCost}</span>
+                 </div>
 
                   <div className="shipping-info-row">
                     <span>
@@ -709,72 +709,72 @@ const getProductShippingCost = (item) => {
                     </span>
                   </div>
 
- <div className="shipping-calculation-example">
-  <h4>
-    <FaInfoCircle /> Individual Product Shipping Calculation:
-  </h4>
-  <div style={{ fontSize: "0.85rem", marginBottom: "10px", color: "#64748b" }}>
-    Formula: Base Shipping Rate (per kg) × Weight (rounded up, max 20kg)
-  </div>
-  {cartItems.map((item, index) => {
-    const shippingInfo = getProductShippingCost(item)
-    const quantity = Math.floor(item.quantity || 1)
+                  <div className="shipping-calculation-example">
+                    <h4>
+                      <FaInfoCircle /> Individual Product Shipping Calculation:
+                    </h4>
+                    <div style={{ fontSize: "0.85rem", marginBottom: "10px", color: "#64748b" }}>
+                      Formula: Base Shipping Rate (per kg) × Weight (rounded up, max 20kg)
+                    </div>
+                    {cartItems.map((item, index) => {
+                      const shippingInfo = getProductShippingCost(item)
+                      const quantity = Math.floor(item.quantity || 1)
 
-    return (
-      <div
-        key={index}
-        style={{
-          padding: "10px",
-          background: shippingInfo.hasFallback ? "#fef3c7" : "#f1f5f9",
-          margin: "8px 0",
-          borderRadius: "6px",
-          fontSize: "0.85rem",
-          border: shippingInfo.hasFallback ? "1px solid #f59e0b" : "1px solid #e2e8f0",
-        }}
-      >
-        <div style={{ fontWeight: "600", marginBottom: "4px" }}>
-          {getProductName(item)} (Qty: {quantity})
-          {shippingInfo.hasFallback && (
-            <span style={{ color: "#f59e0b", fontSize: "0.8rem", marginLeft: "8px" }}>
-              (Fallback: ₱50/kg)
-            </span>
-          )}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px", fontSize: "0.8rem" }}>
-          <div>Rate: ₱{formatDecimal(shippingInfo.baseRate, 2)}/kg</div>
-          <div>Actual Weight: {formatDecimal(shippingInfo.itemWeightKilos, 3)}kg</div>
-          <div>Billing Weight: {shippingInfo.weightMultiplier}kg</div>
-          <div style={{ fontWeight: "600", color: "#059669" }}>
-            Shipping: ₱{formatDecimal(shippingInfo.shippingCost, 2)}
-          </div>
-        </div>
-        <div style={{ 
-          marginTop: "6px", 
-          padding: "4px 8px", 
-          background: "#e0f2fe", 
-          borderRadius: "4px",
-          fontSize: "0.75rem",
-          color: "#0369a1"
-        }}>
-          Calculation: ₱{formatDecimal(shippingInfo.baseRate, 2)}/kg × {shippingInfo.weightMultiplier}kg = ₱{formatDecimal(shippingInfo.shippingCost, 2)}
-        </div>
-      </div>
-    )
-  })}
-  <div
-    style={{
-      marginTop: "12px",
-      fontWeight: "bold",
-      background: "#dcfce7",
-      padding: "10px",
-      borderRadius: "6px",
-      border: "1px solid #16a34a",
-      color: "#15803d"
-    }}
-  >
-    <strong>Total Shipping Cost: ₱{cartStats.shippingCost}</strong>
-  </div>
-</div>
+                      return (
+                        <div
+                          key={index}
+                          style={{
+                            padding: "10px",
+                            background: shippingInfo.hasFallback ? "#fef3c7" : "#f1f5f9",
+                            margin: "8px 0",
+                            borderRadius: "6px",
+                            fontSize: "0.85rem",
+                            border: shippingInfo.hasFallback ? "1px solid #f59e0b" : "1px solid #e2e8f0",
+                          }}
+                        >
+                          <div style={{ fontWeight: "600", marginBottom: "4px" }}>
+                            {getProductName(item)} (Qty: {quantity})
+                            {shippingInfo.hasFallback && (
+                              <span style={{ color: "#f59e0b", fontSize: "0.8rem", marginLeft: "8px" }}>
+                                (Fallback: ₱50/kg)
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px", fontSize: "0.8rem" }}>
+                            <div>Rate: ₱{formatDecimal(shippingInfo.baseRate, 2)}/kg</div>
+                            <div>Actual Weight: {formatDecimal(shippingInfo.itemWeightKilos, 3)}kg</div>
+                            <div>Billing Weight: {shippingInfo.weightMultiplier}kg</div>
+                            <div style={{ fontWeight: "600", color: "#059669" }}>
+                              Shipping: ₱{formatDecimal(shippingInfo.shippingCost, 2)}
+                            </div>
+                          </div>
+                          <div style={{ 
+                            marginTop: "6px", 
+                            padding: "4px 8px", 
+                            background: "#e0f2fe", 
+                            borderRadius: "4px",
+                            fontSize: "0.75rem",
+                            color: "#0369a1"
+                          }}>
+                            Calculation: ₱{formatDecimal(shippingInfo.baseRate, 2)}/kg × {shippingInfo.weightMultiplier}kg = ₱{formatDecimal(shippingInfo.shippingCost, 2)}
+                          </div>
+                        </div>
+                      )
+                    })}
+                    <div
+                      style={{
+                        marginTop: "12px",
+                        fontWeight: "bold",
+                        background: "#dcfce7",
+                        padding: "10px",
+                        borderRadius: "6px",
+                        border: "1px solid #16a34a",
+                        color: "#15803d"
+                      }}
+                    >
+                      <strong>Total Shipping Cost: ₱{cartStats.shippingCost}</strong>
+                    </div>
+                  </div>
 
                   <div className="shipping-info-row weight-limit-note">
                     <FaExclamationTriangle className="note-icon" />
