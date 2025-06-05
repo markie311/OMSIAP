@@ -295,7 +295,6 @@ function OMSIAPCoreContent() {
       if (response.data && response.data.products) {
 
         alloftheproductscb(response.data.products);
-        alert(JSON.stringify(response.data.products))
 
       } else {
         // Default products if none returned
