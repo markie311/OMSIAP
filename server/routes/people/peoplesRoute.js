@@ -9,7 +9,7 @@ const RegistrantDataModel = require('../../models/people/registrantdatascheme.js
 
 const timestamps = require('../../lib/timestamps/timestamps');
 
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const multer = require('multer');
 const fs = require('fs');
