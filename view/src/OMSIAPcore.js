@@ -299,7 +299,185 @@ function OMSIAPCoreContent() {
       } else {
         // Default products if none returned
         alloftheproductscb([
-         
+         {
+          authentications: {
+            producttype: "Apparel",
+            id: ""
+          },
+          details: {
+           productname: "Lighter",
+           category: "Apparel",
+           description: "A nice red lighter",
+           features: [{data: "3 millimeters in size"},{data: "strong and durable"},{data: "stock and loaded"}],
+           weightingrams: 0,
+           warranty: "1 year warranty",
+           price: {
+             amount: 60,
+             capital: 57,
+             transactiongiveaway: 2,
+             profit: 1
+           },
+           specifications: [
+            {
+              authentications: {
+                producttype: "",
+                id: "",
+              },
+              details: {
+               productname: "Product specification name 1",
+               category: "Product category specification 1",
+               description: "A product specification and it's description",
+               features: [{data: "3 millimeters in size"},{data: "strong and durable"},{data: "stock and loaded"}],
+               weightingrams: 100,
+               warranty: 0,
+               for: {
+                age: "10 below",
+                part: "Wrist",
+                gender: "Male",
+                reminder: "Water repellant"
+               },
+               price: {
+                 amount: 60,
+                 capital: 57,
+                 transactiongiveaway: 2,
+                 profit: 1
+               },
+               specifications: []
+              },
+              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
+              videos: [],
+              customerfeedback: {
+               rating: 0,
+               reviews: 0
+              },
+              system: {
+               stocks: 100
+              }
+            },
+            {
+              authentications: {
+                producttype: "",
+                id: "",
+              },
+              details: {
+               productname: "",
+               category: "",
+               description: "A product specification and it's description",
+               features: [],
+               weightingrams: 300,
+               warranty: 0,
+               for: {
+                age: 0,
+                part: "",
+                gender: "",
+                reminder: ""
+               },
+               price: {
+                 amount: 60,
+                 capital: 57,
+                 transactiongiveaway: 2,
+                 profit: 1
+               },
+               specifications: []
+              },
+              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
+              videos: [],
+              customerfeedback: {
+               rating: 0,
+               reviews: 0
+              },
+              system: {
+               stocks: 100
+              }
+            },
+            {
+              authentications: {
+                producttype: "",
+                id: "",
+              },
+              details: {
+               productname: "",
+               category: "",
+               description: "A product specification and it's description",
+               features: [],
+               weightingrams: 100,
+               warranty: 0,
+               for: {
+                age: 0,
+                part: "",
+                gender: "",
+                reminder: ""
+               },
+               price: {
+                 amount: 60,
+                 capital: 57,
+                 transactiongiveaway: 2,
+                 profit: 1
+               },
+               specifications: []
+              },
+              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
+              videos: [],
+              customerfeedback: {
+               rating: 0,
+               reviews: 0
+              },
+              system: {
+               stocks: 100
+              }
+            }
+           ]
+          },
+          images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
+          videos: [],
+          customerfeedback: {
+           rating: 0,
+           reviews: 0
+          },
+          system: {
+           purchases: {
+             total: [],
+             pending: [],
+             accepted: [],
+             rejected: []
+           }
+          }
+         },
+         {
+          authentications: {
+            producttype: "Electronics",
+            id: ""
+          },
+          details: {
+           productname: "333",
+           category: "Electronics",
+           description: "",
+           features: [],
+           weightingrams: 0,
+           warranty: "",
+           price: {
+             amount: 0,
+             capital: 0,
+             transactiongiveaway: 0,
+             profit: 0
+           },
+           specifications: []
+          },
+          images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
+          videos: [],
+          customerfeedback: {
+           rating: 0,
+           reviews: 0
+          },
+          system: {
+           purchases: {
+             total: [],
+             pending: [],
+             accepted: [],
+             rejected: []
+           }
+          }
+         },
         ]);
 
       }
@@ -312,7 +490,7 @@ function OMSIAPCoreContent() {
       updateLoadingState('products', false);
       // Set default products on error
       alloftheproductscb([
-       {
+        {
           authentications: {
             producttype: "Apparel",
             id: ""
@@ -491,7 +669,6 @@ function OMSIAPCoreContent() {
            }
           }
         },
-
       ]);
 
     }
