@@ -22,7 +22,6 @@ const PendingFundsDataModel = require('../../models/pendingfunds/pendingfundsdat
 
 const timestamps = require('../../lib/timestamps/timestamps');
 
-
 // Configure multer storage
 const storage = multer.diskStorage({
   destination: function(req, file, cb) {
@@ -37,20 +36,20 @@ const storage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: function(req, file, cb) {
-    // Get the product name from the request body
-    const productName = req.body.name || 'product';
+    // Generate a unique filename with timestamp and random string
+    const timestamp = Date.now();
+    const randomString = Math.random().toString(36).substr(2, 9);
+    const extension = path.extname(file.originalname);
     
-    // Clean the product name to make it filename-friendly
-    const cleanProductName = productName
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '') // Remove special characters
-      .trim();
-    
-    // Get the file count to determine image number
-    const fileCount = req.fileCount = (req.fileCount || 0) + 1;
-    
-    // Create filename in format: productname-image1.jpg
-    const filename = `${cleanProductName}-image${fileCount}${path.extname(file.originalname)}`;
+    // Create filename based on field name
+    let filename;
+    if (file.fieldname === 'images') {
+      filename = `product-${timestamp}-${randomString}${extension}`;
+    } else if (file.fieldname.startsWith('specImages_')) {
+      filename = `spec-${timestamp}-${randomString}${extension}`;
+    } else {
+      filename = `upload-${timestamp}-${randomString}${extension}`;
+    }
     
     cb(null, filename);
   }
@@ -67,121 +66,335 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-// Initialize multer upload
-const upload = multer({ 
-  storage: storage, 
+// Initialize multer upload with support for any field name
+const upload = multer({
+  storage: storage,
   fileFilter: fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-
-Router.route("/addproduct").post(upload.array('images', 10), async (req, res) => {
+// Get all products route handler
+Router.route("/getallproducts").get(async (req, res) => {
   try {
-    // Connect to MongoDB
-    await mongoose.connect("mongodb+srv://ofmackysinkandpaper:38NJaxXX2AF9Mpmp@cluster0.djai0.mongodb.net/omsiap", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      dbName: 'omsiap',
-      autoCreate: false
-    });
+    // Extract query parameters for filtering, sorting, and pagination
+    const {
+      category,
+      minPrice,
+      maxPrice,
+      producttype,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      page = 1,
+      limit = 50,
+      search
+    } = req.query;
 
-    // Check if database info exists
-    const OmsiapData = mongoose.model('datas', omsiapdatascheme);
-    const omsiapdata = await OmsiapData.findById("Code-113-1143");
+    // Build filter object
+    const filter = {};
     
-    if (!omsiapdata) {
-      return res.status(404).json({ message: "Data not found" });
+    if (category) {
+      filter['details.category'] = { $regex: category, $options: 'i' };
+    }
+    
+    if (minPrice || maxPrice) {
+      filter['details.price.amount'] = {};
+      if (minPrice) filter['details.price.amount'].$gte = parseFloat(minPrice);
+      if (maxPrice) filter['details.price.amount'].$lte = parseFloat(maxPrice);
+    }
+    
+    if (producttype) {
+      filter['authentications.producttype'] = producttype;
+    }
+    
+    if (search) {
+      filter.$or = [
+        { 'details.productname': { $regex: search, $options: 'i' } },
+        { 'details.description': { $regex: search, $options: 'i' } },
+        { 'details.category': { $regex: search, $options: 'i' } }
+      ];
     }
 
-    // Parse specifications and features as simple string arrays
-    let specifications = [];
-    let features = [];
+    // Build sort object
+    const sort = {};
+    const validSortFields = ['createdAt', 'details.price.amount', 'details.productname', 'customerfeedback.rating'];
     
-    try {
-      if (req.body.specifications) {
-        specifications = JSON.parse(req.body.specifications);
-        // Convert each string to specification object format required by schema
-        specifications = specifications.map(spec => ({ name: spec }));
-      }
-      
-      if (req.body.features) {
-        features = JSON.parse(req.body.features);
-        // Convert each string to feature object format required by schema
-        features = features.map(feature => ({ name: feature }));
-      }
-    } catch (error) {
-      return res.status(400).json({ 
-        message: "Invalid specifications or features format",
-        error: error.message
+    if (validSortFields.includes(sortBy)) {
+      sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
+    } else {
+      sort['createdAt'] = -1; // Default sort
+    }
+
+    // Calculate pagination
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Cap at 100 items per page
+    const skip = (pageNum - 1) * limitNum;
+
+    // Get total count for pagination info
+    const totalProducts = await ProductDataModel.countDocuments(filter);
+    
+    // Fetch products with filters, sorting, and pagination
+    const products = await ProductDataModel
+      .find(filter)
+      .sort(sort)
+      .skip(skip)
+      .limit(limitNum)
+      .select('-system.purchases') // Exclude sensitive purchase data but keep stocks
+      .lean(); // Use lean() for better performance
+
+    // Check if products exist
+    if (!products || products.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No products found",
+        products: [],
+        pagination: {
+          currentPage: pageNum,
+          totalPages: 0,
+          totalProducts: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+          limit: limitNum
+        },
+        filters: {
+          category,
+          minPrice,
+          maxPrice,
+          producttype,
+          search
+        }
       });
     }
 
-    // Process uploaded images
-    const imageFiles = req.files || [];
-    
-    // Convert image paths to objects with 'url' property
-    const images = imageFiles.map(file => ({ url: file.path }));
-    
-    // Create product ID
-    const productId = `PROD-${uuidv4().substring(0, 8)}`;
-    
-    // Create product object (but don't save it as a separate document)
-    const newProduct = {
-      id: productId,
-      name: req.body.name,
-      price: parseFloat(req.body.price) || 0,
-      category: req.body.category,
-      description: req.body.description,
-      weightingrams: parseFloat(req.body.weightingrams) || 0,
-      images: images,
-      stock: parseFloat(req.body.stock) || 0,
-      rating: 0,
-      reviews: 0,
-      specifications: specifications,
-      videoUrl: req.body.videoUrl || "",
-      features: features,
-      warranty: req.body.warranty || "",
-      quantity: parseFloat(req.body.quantity) || 1,
-      focuseddata: {
-        price: {
-          price: parseFloat(req.body.price) || 0,
-          capital: parseFloat(req.body.capital) || 0,
-          transactiongiveaway: parseFloat(req.body.transactiongiveaway) || 0,
-          omsiapprofit: parseFloat(req.body.omsiapprofit) || 0
-        }
+    // Keep original product structure for frontend
+    const productsForFrontend = products;
+
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalProducts / limitNum);
+    const hasNextPage = pageNum < totalPages;
+    const hasPrevPage = pageNum > 1;
+
+    // Return successful response
+    res.status(200).json({
+      success: true,
+      message: `Found ${productsForFrontend.length} products`,
+      products: productsForFrontend,
+      pagination: {
+        currentPage: pageNum,
+        totalPages,
+        totalProducts,
+        hasNextPage,
+        hasPrevPage,
+        limit: limitNum,
+        resultsPerPage: productsForFrontend.length
       },
-      orderdetails: {
-        quantity: parseFloat(req.body.quantity) || 1,
-        product: {
-          price: parseFloat(req.body.price) || 0,
-          capital: parseFloat(req.body.capital) || 0,
-          transactiongiveaway: parseFloat(req.body.transactiongiveaway) || 0,
-          omsiapprofit: parseFloat(req.body.omsiapprofit) || 0
+      filters: {
+        category,
+        minPrice,
+        maxPrice,
+        producttype,
+        search,
+        sortBy,
+        sortOrder
+      }
+    });
+
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    
+    // Handle different types of errors
+    let statusCode = 500;
+    let errorMessage = "Failed to fetch products";
+    
+    if (error.name === 'CastError') {
+      statusCode = 400;
+      errorMessage = "Invalid query parameters";
+    } else if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+      statusCode = 503;
+      errorMessage = "Database connection failed";
+    } else if (error.name === 'MongooseError') {
+      statusCode = 500;
+      errorMessage = "Database query failed";
+    }
+    
+    res.status(statusCode).json({
+      success: false,
+      message: errorMessage,
+      products: [],
+      error: process.env.NODE_ENV === 'development' ? {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      } : undefined
+    });
+  }
+});
+
+// Updated route handler
+Router.route("/addproduct").post(upload.any(), async (req, res) => {
+  try {
+    // Parse the structured product data
+    let productData;
+    
+    try {
+      productData = JSON.parse(req.body.productData);
+    } catch (parseError) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid product data format. Must be valid JSON.",
+        error: parseError.message
+      });
+    }
+
+    // Validate required fields from the parsed data
+    const { authentications, details } = productData;
+    
+    if (!details.productname || !details.price.amount || !details.category || !details.description) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields: productname, price.amount, category, and description are required"
+      });
+    }
+
+    // Validate numeric fields
+    if (isNaN(details.price.amount) || details.price.amount < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Price amount must be a valid positive number"
+      });
+    }
+
+    // Process uploaded files
+    const uploadedFiles = req.files || [];
+    
+    // Separate main product images from specification images
+    const mainImages = uploadedFiles
+      .filter(file => file.fieldname === 'images')
+      .map(file => ({ 
+        url: `/images/market/products/${file.filename}` // Store relative path for frontend
+      }));
+
+    // Process specification images
+    const specImageFiles = uploadedFiles.filter(file => file.fieldname.startsWith('specImages_'));
+    const specImagesByIndex = {};
+    
+    specImageFiles.forEach(file => {
+      const matches = file.fieldname.match(/specImages_(\d+)_(\d+)/);
+      if (matches) {
+        const specIndex = parseInt(matches[1]);
+        const imgIndex = parseInt(matches[2]);
+        
+        if (!specImagesByIndex[specIndex]) {
+          specImagesByIndex[specIndex] = [];
+        }
+        
+        specImagesByIndex[specIndex][imgIndex] = { 
+          url: `/images/market/products/${file.filename}` // Store relative path
+        };
+      }
+    });
+
+    // Update product data with processed images
+    productData.images = mainImages;
+
+    // Update specification images
+    if (productData.details.specifications && productData.details.specifications.length > 0) {
+      productData.details.specifications.forEach((spec, index) => {
+        if (specImagesByIndex[index]) {
+          spec.images = specImagesByIndex[index].filter(img => img); // Filter out undefined entries
+        }
+      });
+    }
+
+    // Ensure all required schema fields are present with proper defaults
+    const finalProductData = {
+      authentications: {
+        producttype: authentications.producttype,
+        id: authentications.id
+      },
+      details: {
+        productname: details.productname,
+        category: details.category,
+        description: details.description,
+        features: details.features || [],
+        weightingrams: details.weightingrams || 0,
+        webaddress: details.webaddress || "",
+        warranty: details.warranty || "",
+        price: {
+          amount: details.price.amount,
+          capital: details.price.capital || 0,
+          shipping: details.price.shipping || 0,
+          transactiongiveaway: details.price.transactiongiveaway || 0,
+          profit: details.price.profit || 0
         },
-        shipment: {
-          totalkilos: parseFloat(req.body.weightingrams) / 1000 || 0,
-          totalshipmentfee: parseFloat(req.body.shipmentfee) || 0
+        specifications: details.specifications || []
+      },
+      images: productData.images,
+      videos: productData.videos || [],
+      customerfeedback: {
+        rating: productData.customerfeedback?.rating || 0,
+        reviews: productData.customerfeedback?.reviews || 0
+      },
+      system: {
+        purchases: {
+          total: [],
+          pending: [],
+          accepted: [],
+          rejected: []
         }
       }
     };
-    
-    // Update OMSIAP data to include the new product
-    await OmsiapData.updateOne(
-      { _id: "Code-113-1143" },
-      { $push: { products: newProduct } }
-    );
-    
+
+    // Save the product to database
+    const savedProduct = await ProductDataModel.create(finalProductData);
+
+    if (!savedProduct) {
+      return res.status(400).json({
+        success: false,
+        message: "Failed to add product to database"
+      });
+    }
+
     // Return success response
     res.status(201).json({
+      success: true,
       message: "Product added successfully",
-      productId: productId
+      productId: authentications.id,
+      data: {
+        id: authentications.id,
+        name: details.productname,
+        category: details.category,
+        price: details.price.amount,
+        images: mainImages.length,
+        specifications: details.specifications.length,
+        features: details.features.length
+      }
     });
-    
+
   } catch (error) {
-    console.warn("Error adding product:", error);
-    res.status(500).json({
-      message: "Something went wrong",
-      error: error.message
+    console.error("Error adding product:", error);
+    
+    // Handle different types of errors
+    let statusCode = 500;
+    let errorMessage = "Something went wrong while adding the product";
+    
+    if (error.name === 'ValidationError') {
+      statusCode = 400;
+      errorMessage = "Product data validation failed: " + error.message;
+    } else if (error.name === 'MongoError' || error.name === 'MongoServerError') {
+      statusCode = 503;
+      errorMessage = "Database operation failed";
+    } else if (error.name === 'SyntaxError') {
+      statusCode = 400;
+      errorMessage = "Invalid JSON format in request";
+    } else if (error.code === 11000) {
+      statusCode = 409;
+      errorMessage = "Product with this ID already exists";
+    }
+    
+    res.status(statusCode).json({
+      success: false,
+      message: errorMessage,
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 });

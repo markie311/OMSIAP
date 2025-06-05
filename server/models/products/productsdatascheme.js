@@ -118,6 +118,9 @@ const productDataSchema = new Schema({
     type: Number,
     default: 0
   },
+  webaddress: {
+    type: 'string'
+  },
   warranty: {
     type: String
   },
@@ -128,6 +131,10 @@ const productDataSchema = new Schema({
     },
     capital: {
       type: Number,
+      default: 0
+    },
+    shipping: {
+      type: 'number',
       default: 0
     },
     transactiongiveaway: {

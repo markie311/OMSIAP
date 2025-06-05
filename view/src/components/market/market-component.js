@@ -83,7 +83,7 @@ const closeFullScreenVideo = () => {
 
   // Load products from props
   useEffect(() => {
-    if (props.alloftheproducts && props.alloftheproducts.length > 0) {
+    if (props.alloftheproducts) {
       setProducts(props.alloftheproducts)
 
       // Extract unique categories
@@ -750,9 +750,13 @@ const openImageModal = (imageUrl, index) => {
                             
                             <br />
                             <div className="market-spec-details">
+                              <p>DESCRIPTION</p>
                               <p>{spec.details ? spec.details.description : ""}</p>
+
+                              <p>CATEGORY</p>
                               <p>{spec.details.category}</p>
-                              
+
+                              <p>FEATURES</p>
                               <ul>
                               {
                                 spec.details.features.map((features, featuresindx) => (
@@ -761,17 +765,24 @@ const openImageModal = (imageUrl, index) => {
                               }
                               </ul>
 
+                              <p>WEIGHT</p>
                               <p>Weight in grams: {spec.details.weightingrams} grams</p>
-
+ 
+                              <p>FOR</p>
                               <p>For age {spec.details.for.age}</p>
                               <p>For {spec.details.for.part}</p>
                               <p>For all {spec.details.for.gender} genders </p>
                               <p>Reminder: {spec.details.for.reminder}</p>
-
+ 
+                              <p>PRICE</p>
                               <p className="market-spec-price">
                                 {formatPrice(spec.details && spec.details.price ? spec.details.price.amount : 0)}
                               </p>
 
+                              <p>TRANSACTION GIVE AWAY TO BE SHARED AMONG MFATIP USERS</p>
+                              <p>&#8369;{spec.details.price.transactiongiveaway}</p>
+
+                              <p>STOCKS</p>
                               <p>Stocks: {spec.system.stocks}</p>
 
                               <div className="market-spec-images">

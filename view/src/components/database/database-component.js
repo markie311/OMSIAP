@@ -9,6 +9,8 @@ import "../../styles/database/database.scss"
 import { Container, Row, Col, Button, Form, Spinner, Modal, Image } from "react-bootstrap"
 
 import { FaEye, 
+         FaGlobe,
+         FaTruck,
          FaBarcode,
          FaList,
          FaShieldAlt,
@@ -13475,13 +13477,13 @@ const PendingPrivateRegistrationsModal = ({ onClose, setShowDatabaseConfiguratio
 
 
 
-
 const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) => {
-  const [images, setImages] = useState([])
-  const [specifications, setSpecifications] = useState([])
-  const [features, setFeatures] = useState([])
-  const [showSpecModal, setShowSpecModal] = useState(false)
-  const [editingSpecIndex, setEditingSpecIndex] = useState(null)
+
+  const [images, setImages] = useState([]);
+  const [specifications, setSpecifications] = useState([]);
+  const [features, setFeatures] = useState([]);
+  const [showSpecModal, setShowSpecModal] = useState(false);
+  const [editingSpecIndex, setEditingSpecIndex] = useState(null);
   const [currentSpec, setCurrentSpec] = useState({
     authentications: {
       producttype: "",
@@ -13517,12 +13519,12 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
     system: {
       stocks: 0,
     },
-  })
+  });
 
   const [productData, setProductData] = useState({
+    producttype: "",
     name: "",
     price: "",
-    stock: "",
     category: "",
     weightingrams: "",
     description: "",
@@ -13531,76 +13533,80 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
     capital: "",
     transactiongiveaway: "",
     omsiapprofit: "",
-  })
+    webAddress: "",
+    shippingCost: "",
+  });
 
-  const [createproductloadingindication, createproductloadingindicationcb] = useState(false)
+  const [createproductloadingindication, createproductloadingindicationcb] = useState(false);
 
   // Handle form input changes
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setProductData({ ...productData, [name]: value })
-  }
+    const { name, value } = e.target;
+    setProductData({ ...productData, [name]: value });
+  };
 
   // Handle specification form changes
   const handleSpecChange = (e, section, subsection = null, subfield = null) => {
-    const { name, value } = e.target
-    const updatedSpec = { ...currentSpec }
+    const { name, value } = e.target;
+    const updatedSpec = { ...currentSpec };
 
     if (subsection && subfield) {
-      updatedSpec[section][subsection][subfield] = value
+      updatedSpec[section][subsection][subfield] = value;
     } else if (subsection) {
-      updatedSpec[section][subsection] = value
+      updatedSpec[section][subsection] = value;
+    } else if (section === "system" && name === "stocks") {
+      updatedSpec.system.stocks = parseInt(value) || 0;
     } else {
-      updatedSpec[section][name] = value
+      updatedSpec[section][name] = value;
     }
 
-    setCurrentSpec(updatedSpec)
-  }
+    setCurrentSpec(updatedSpec);
+  };
 
   // Handle image upload
   const handleImageUpload = (e) => {
-    const files = Array.from(e.target.files)
+    const files = Array.from(e.target.files);
     const newImages = files.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
-    }))
-    setImages([...images, ...newImages])
-  }
+    }));
+    setImages([...images, ...newImages]);
+  };
 
   // Handle specification image upload
   const handleSpecImageUpload = (e) => {
-    const files = Array.from(e.target.files)
+    const files = Array.from(e.target.files);
     const newImages = files.map((file) => ({
       url: URL.createObjectURL(file),
       file,
-    }))
+    }));
     setCurrentSpec({
       ...currentSpec,
       images: [...currentSpec.images, ...newImages],
-    })
-  }
+    });
+  };
 
   // Remove image
   const removeImage = (index) => {
-    const updatedImages = [...images]
-    URL.revokeObjectURL(updatedImages[index].preview)
-    updatedImages.splice(index, 1)
-    setImages(updatedImages)
-  }
+    const updatedImages = [...images];
+    URL.revokeObjectURL(updatedImages[index].preview);
+    updatedImages.splice(index, 1);
+    setImages(updatedImages);
+  };
 
   // Remove specification image
   const removeSpecImage = (index) => {
-    const updatedImages = [...currentSpec.images]
-    updatedImages.splice(index, 1)
+    const updatedImages = [...currentSpec.images];
+    updatedImages.splice(index, 1);
     setCurrentSpec({
       ...currentSpec,
       images: updatedImages,
-    })
-  }
+    });
+  };
 
   // Add specification feature
   const addSpecFeature = () => {
-    const featureInput = document.getElementById("spec-feature-input")
+    const featureInput = document.getElementById("spec-feature-input");
     if (featureInput.value.trim()) {
       setCurrentSpec({
         ...currentSpec,
@@ -13608,45 +13614,45 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
           ...currentSpec.details,
           features: [...currentSpec.details.features, { data: featureInput.value }],
         },
-      })
-      featureInput.value = ""
+      });
+      featureInput.value = "";
     }
-  }
+  };
 
   // Remove specification feature
   const removeSpecFeature = (index) => {
-    const updatedFeatures = [...currentSpec.details.features]
-    updatedFeatures.splice(index, 1)
+    const updatedFeatures = [...currentSpec.details.features];
+    updatedFeatures.splice(index, 1);
     setCurrentSpec({
       ...currentSpec,
       details: {
         ...currentSpec.details,
         features: updatedFeatures,
       },
-    })
-  }
+    });
+  };
 
   // Add video to specification
   const addSpecVideo = () => {
-    const videoInput = document.getElementById("spec-video-input")
+    const videoInput = document.getElementById("spec-video-input");
     if (videoInput.value.trim()) {
       setCurrentSpec({
         ...currentSpec,
         videos: [...currentSpec.videos, { url: videoInput.value }],
-      })
-      videoInput.value = ""
+      });
+      videoInput.value = "";
     }
-  }
+  };
 
   // Remove specification video
   const removeSpecVideo = (index) => {
-    const updatedVideos = [...currentSpec.videos]
-    updatedVideos.splice(index, 1)
+    const updatedVideos = [...currentSpec.videos];
+    updatedVideos.splice(index, 1);
     setCurrentSpec({
       ...currentSpec,
       videos: updatedVideos,
-    })
-  }
+    });
+  };
 
   // Reset specification form
   const resetSpecForm = () => {
@@ -13685,120 +13691,209 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
       system: {
         stocks: 0,
       },
-    })
-  }
+    });
+  };
 
   // Save specification
   const saveSpecification = () => {
     if (editingSpecIndex !== null) {
-      const updatedSpecs = [...specifications]
-      updatedSpecs[editingSpecIndex] = { ...currentSpec }
-      setSpecifications(updatedSpecs)
-      setEditingSpecIndex(null)
+      const updatedSpecs = [...specifications];
+      updatedSpecs[editingSpecIndex] = { ...currentSpec };
+      setSpecifications(updatedSpecs);
+      setEditingSpecIndex(null);
     } else {
-      setSpecifications([...specifications, { ...currentSpec }])
+      setSpecifications([...specifications, { ...currentSpec }]);
     }
-    resetSpecForm()
-    setShowSpecModal(false)
-  }
+    resetSpecForm();
+    setShowSpecModal(false);
+  };
 
   // Edit specification
   const editSpecification = (index) => {
-    setCurrentSpec({ ...specifications[index] })
-    setEditingSpecIndex(index)
-    setShowSpecModal(true)
-  }
+    setCurrentSpec({ ...specifications[index] });
+    setEditingSpecIndex(index);
+    setShowSpecModal(true);
+  };
 
   // Remove specification
   const removeSpecification = (index) => {
-    const updatedSpecs = [...specifications]
-    updatedSpecs.splice(index, 1)
-    setSpecifications(updatedSpecs)
-  }
+    const updatedSpecs = [...specifications];
+    updatedSpecs.splice(index, 1);
+    setSpecifications(updatedSpecs);
+  };
 
   // Add feature
   const addFeature = (e) => {
-    e.preventDefault()
-    const featureField = document.getElementById("feature-input")
+    e.preventDefault();
+    const featureField = document.getElementById("feature-input");
     if (featureField.value.trim()) {
-      setFeatures([...features, featureField.value])
-      featureField.value = ""
+      setFeatures([...features, featureField.value]);
+      featureField.value = "";
     }
-  }
+  };
 
   // Remove feature
   const removeFeature = (index) => {
-    const updatedFeatures = [...features]
-    updatedFeatures.splice(index, 1)
-    setFeatures(updatedFeatures)
-  }
+    const updatedFeatures = [...features];
+    updatedFeatures.splice(index, 1);
+    setFeatures(updatedFeatures);
+  };
 
-  // Handle form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+// Updated handleSubmit function that prepares data according to your schema
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const responseMessage = document.querySelectorAll(".createproduct-responsemessage")[0]
-    responseMessage.style.color = "white"
-    responseMessage.innerText = ""
-    responseMessage.style.display = "none"
+  const responseMessage = document.querySelectorAll(".createproduct-responsemessage")[0];
+  responseMessage.style.color = "white";
+  responseMessage.innerText = "";
+  responseMessage.style.display = "none";
 
-    createproductloadingindicationcb(true)
+  createproductloadingindicationcb(true);
 
-    const formData = new FormData()
-
-    Object.keys(productData).forEach((key) => {
-      formData.append(key, productData[key])
-    })
-
-    images.forEach((image) => {
-      formData.append("images", image.file)
-    })
-
-    // Send specifications as complex objects
-    formData.append("specifications", JSON.stringify(specifications))
-    formData.append("features", JSON.stringify(features))
-
-    try {
-      const response = await axiosCreatedInstance.post("/products/addproduct", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      })
-
-      const { message, productId } = response.data
-
-      if (message === "Product added successfully") {
-        responseMessage.style.color = "green"
-        responseMessage.innerText = `Product added successfully! Product ID: ${productId}`
-      } else {
-        responseMessage.style.color = "red"
-        responseMessage.innerText = message || "Unknown error occurred"
-      }
-
-      responseMessage.style.display = "block"
-      createproductloadingindicationcb(false)
-
-      return false
-    } catch (error) {
-      createproductloadingindicationcb(false)
-
-      let errorText = "An unexpected error occurred"
-
-      if (error.response) {
-        errorText = `Error: ${error.response.data.message || "Server error"}`
-      } else if (error.request) {
-        errorText = "Network error: Please check your connection and try again"
-      } else {
-        errorText = `Error: ${error.message}`
-      }
-
-      responseMessage.style.color = "red"
-      responseMessage.innerText = errorText
-      responseMessage.style.display = "block"
-
-      return false
+  try {
+    // Validate required fields
+    if (!productData.name || !productData.price || !productData.category || !productData.description) {
+      throw new Error("Please fill in all required fields: Name, Price, Category, and Description");
     }
+
+    const formData = new FormData();
+
+    // Generate product ID
+    const productId = `PROD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Prepare product data according to schema structure
+    const productPayload = {
+      authentications: {
+        producttype: productData.producttype, // or get from form if needed
+        id: productId
+      },
+      details: {
+        productname: productData.name,
+        category: productData.category,
+        description: productData.description,
+        features: features.map(feature => ({ data: feature })),
+        weightingrams: parseFloat(productData.weightingrams) || 0,
+        webaddress: productData.webAddress || "",
+        warranty: productData.warranty || "",
+        price: {
+          amount: parseFloat(productData.price) || 0,
+          capital: parseFloat(productData.capital) || 0,
+          shipping: parseFloat(productData.shippingCost) || 0,
+          transactiongiveaway: parseFloat(productData.transactiongiveaway) || 0,
+          profit: parseFloat(productData.omsiapprofit) || 0
+        },
+        specifications: specifications.map(spec => ({
+          authentications: {
+            producttype: spec.authentications.producttype || "",
+            id: spec.authentications.id || ""
+          },
+          details: {
+            productname: spec.details.productname || "",
+            category: spec.details.category || "",
+            description: spec.details.description || "",
+            features: spec.details.features || [],
+            weightingrams: spec.details.weightingrams || 0,
+            warranty: spec.details.warranty || "",
+            for: {
+              age: spec.details.for?.age || "",
+              part: spec.details.for?.part || "",
+              gender: spec.details.for?.gender || "",
+              reminder: spec.details.for?.reminder || ""
+            },
+            price: {
+              amount: spec.details.price?.amount || 0,
+              capital: spec.details.price?.capital || 0,
+              transactiongiveaway: spec.details.price?.transactiongiveaway || 0,
+              profit: spec.details.price?.profit || 0
+            },
+            specifications: []
+          },
+          images: spec.images || [],
+          videos: spec.videos || [],
+          customerfeedback: {
+            rating: spec.customerfeedback?.rating || 0,
+            reviews: spec.customerfeedback?.reviews || 0
+          },
+          system: {
+            stocks: spec.system?.stocks || 0
+          }
+        }))
+      },
+      images: [], // Will be populated by backend from uploaded files
+      videos: productData.videoUrl ? [{ url: productData.videoUrl }] : [],
+      customerfeedback: {
+        rating: 0,
+        reviews: 0
+      },
+      system: {
+        purchases: {
+          total: [],
+          pending: [],
+          accepted: [],
+          rejected: []
+        }
+      }
+    };
+
+    // Append the structured product data
+    formData.append("productData", JSON.stringify(productPayload));
+
+    // Append images
+    images.forEach((image, index) => {
+      formData.append("images", image.file);
+    });
+
+    // Append specification images if any
+    specifications.forEach((spec, specIndex) => {
+      if (spec.images && spec.images.length > 0) {
+        spec.images.forEach((img, imgIndex) => {
+          if (img.file) {
+            formData.append(`specImages_${specIndex}_${imgIndex}`, img.file);
+          }
+        });
+      }
+    });
+
+    const response = await axiosCreatedInstance.post("/products/addproduct", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    const { message, productId: returnedProductId } = response.data;
+
+    if (response.data.success) {
+      responseMessage.style.color = "green";
+      responseMessage.innerText = `Product added successfully! Product ID: ${returnedProductId}`;
+      
+      // Reset form on success
+      resetForm();
+    } else {
+      responseMessage.style.color = "red";
+      responseMessage.innerText = message || "Unknown error occurred";
+    }
+
+    responseMessage.style.display = "block";
+    createproductloadingindicationcb(false);
+
+  } catch (error) {
+    createproductloadingindicationcb(false);
+
+    let errorText = "An unexpected error occurred";
+
+    if (error.response) {
+      errorText = `Error: ${error.response.data.message || "Server error"}`;
+    } else if (error.request) {
+      errorText = "Network error: Please check your connection and try again";
+    } else {
+      errorText = `Error: ${error.message}`;
+    }
+
+    responseMessage.style.color = "red";
+    responseMessage.innerText = errorText;
+    responseMessage.style.display = "block";
   }
+};
 
   const resetForm = () => {
     setProductData({
@@ -13807,19 +13902,20 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
       category: "",
       description: "",
       weightingrams: 0,
-      stock: 0,
       videoUrl: "",
       warranty: "",
       quantity: 0,
       capital: 0,
       transactiongiveaway: 0,
       omsiapprofit: 0,
-    })
+      webAddress: "",
+      shippingCost: "",
+    });
 
-    setImages([])
-    setSpecifications([])
-    setFeatures([])
-  }
+    setImages([]);
+    setSpecifications([]);
+    setFeatures([]);
+  };
 
   return (
     <div className="create-product-container">
@@ -13831,8 +13927,8 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
               variant="none"
               className="close-button"
               onClick={() => {
-                setShowDatabaseConfiguration(false)
-                setShowCreateProduct(false)
+                setShowDatabaseConfiguration(false);
+                setShowCreateProduct(false);
               }}
             >
               <FaTimes />
@@ -13842,6 +13938,24 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
 
         <Form className="product-form">
           <Row>
+
+            {/* Product Type */}
+            <Col xs={12} className="mb-4">
+              <Form.Group>
+                <Form.Label className="form-label">
+                  <FaTag className="form-icon" /> Product Type
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="producttype"
+                  value={productData.producttype}
+                  onChange={handleInputChange}
+                  className="form-control-dark"
+                  required
+                />
+              </Form.Group>
+            </Col>
+
             {/* Product Name */}
             <Col xs={12} className="mb-4">
               <Form.Group>
@@ -13936,22 +14050,6 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                   <Col xs={12} sm={6} className="mb-3">
                     <Form.Group>
                       <Form.Label className="form-label">
-                        <FaBoxOpen className="form-icon" /> Stock
-                      </Form.Label>
-                      <Form.Control
-                        type="number"
-                        name="stock"
-                        value={productData.stock}
-                        onChange={handleInputChange}
-                        className="form-control-dark"
-                        required
-                      />
-                    </Form.Group>
-                  </Col>
-
-                  <Col xs={12} sm={6} className="mb-3">
-                    <Form.Group>
-                      <Form.Label className="form-label">
                         <FaTag className="form-icon" /> Category
                       </Form.Label>
                       <Form.Control
@@ -13967,7 +14065,7 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
 
                   <Col xs={12} sm={6} className="mb-3">
                     <Form.Group>
-                      <Form.Label className="form-label">
+                      <Form.Label>
                         <FaWeight className="form-icon" /> Weight (g)
                       </Form.Label>
                       <Form.Control
@@ -13976,6 +14074,40 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                         value={productData.weightingrams}
                         onChange={handleInputChange}
                         className="form-control-dark"
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col xs={12} sm={6} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaGlobe className="form-icon" /> Web Address
+                      </Form.Label>
+                      <Form.Control
+                        type="url"
+                        name="webAddress"
+                        value={productData.webAddress}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                        placeholder="https://example.com"
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col xs={12} sm={6} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="form-label">
+                        <FaTruck className="form-icon" /> Shipping Cost
+                      </Form.Label>
+                      <Form.Control
+                        type="number"
+                        name="shippingCost"
+                        value={productData.shippingCost}
+                        onChange={handleInputChange}
+                        className="form-control-dark"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
                       />
                     </Form.Group>
                   </Col>
@@ -14046,8 +14178,8 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                     variant="outline-light"
                     className="add-button"
                     onClick={() => {
-                      resetSpecForm()
-                      setShowSpecModal(true)
+                      resetSpecForm();
+                      setShowSpecModal(true);
                     }}
                   >
                     <FaPlus /> Add New Specification
@@ -14504,11 +14636,15 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
                 </Col>
                 <Col xs={12} sm={6}>
                   <Form.Group>
-                    <Form.Label>Stock</Form.Label>
+                    <Form.Label><FaBoxOpen className="form-icon" /> Stocks</Form.Label>
                     <Form.Control
                       type="number"
+                      name="stocks"
+                      min="0"
                       value={currentSpec.system.stocks}
-                      onChange={(e) => handleSpecChange(e, "system", "stocks")}
+                      onChange={(e) => handleSpecChange(e, "system")}
+                      placeholder="Enter stock quantity"
+                      className="form-control-dark"
                     />
                   </Form.Group>
                 </Col>
@@ -14539,8 +14675,8 @@ const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) =
         </Modal>
       </Container>
     </div>
-  )
-}
+  );
+};
 
 const ProductReader = ({ product, onClose, setShowProductReader, setShowPendingOrders }) => {
   const [isVisible, setIsVisible] = useState(false);
