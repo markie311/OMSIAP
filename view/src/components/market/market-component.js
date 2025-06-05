@@ -232,11 +232,15 @@ const openImageModal = (imageUrl, index) => {
     setImageModalOpen(false)
   }
 
-  // Function to change active image in the modal
-  const changeActiveImage = (index) => {
-    setActiveImageIndex(index)
-    setShowVideo(false)
+ // Function to change active image in the modal
+const changeActiveImage = (index) => {
+  setActiveImageIndex(index)
+  setShowVideo(false)
+  // Update fullScreenImage in case it's used elsewhere
+  if (selectedProduct && selectedProduct.images && selectedProduct.images[index]) {
+    setFullScreenImage(selectedProduct.images[index].url)
   }
+}
 
   // Function to toggle video view
   const toggleVideo = () => {
@@ -268,25 +272,31 @@ const openImageModal = (imageUrl, index) => {
     }).format(price || 0)
   }
 
-  // Navigate to next image in full screen mode
-  const nextImage = () => {
-    if (!selectedProduct) return
+// Navigate to next image in full screen mode
+const nextImage = () => {
+  if (!selectedProduct) return
 
-    const images = selectedProduct.images || []
-    const nextIndex = (activeImageIndex + 1) % images.length
-    setActiveImageIndex(nextIndex)
-    setFullScreenImage(images[nextIndex])
-  }
+  const images = selectedProduct.images || []
+  if (images.length === 0) return
+  
+  const nextIndex = (activeImageIndex + 1) % images.length
+  setActiveImageIndex(nextIndex)
+  setFullScreenImage(images[nextIndex].url) // Add .url here
+  setShowVideo(false)
+}
 
-  // Navigate to previous image in full screen mode
-  const prevImage = () => {
-    if (!selectedProduct) return
+// Navigate to previous image in full screen mode
+const prevImage = () => {
+  if (!selectedProduct) return
 
-    const images = selectedProduct.images || []
-    const prevIndex = (activeImageIndex - 1 + images.length) % images.length
-    setActiveImageIndex(prevIndex)
-    setFullScreenImage(images[prevIndex])
-  }
+  const images = selectedProduct.images || []
+  if (images.length === 0) return
+  
+  const prevIndex = (activeImageIndex - 1 + images.length) % images.length
+  setActiveImageIndex(prevIndex)
+  setFullScreenImage(images[prevIndex].url)
+  setShowVideo(false) // Ensure we're in image mode, not video mode
+}
 
   // Show loading skeleton if products are still loading
   if (loadingState.products) {
@@ -614,45 +624,75 @@ const openImageModal = (imageUrl, index) => {
             <div className="market-modal-product-details">
               <div className="market-modal-product-media">
                 <div className="market-modal-media-main">
-                  {showVideo ? (
-                    <div className="market-product-video-container">
-                      <video
-                        src={
-                          selectedProduct.videos && selectedProduct.videos.length > 0
-                            ? selectedProduct.videos[0].url
-                            : "/placeholder.svg?height=400&width=400"
+               {showVideo && selectedProduct.videos && selectedProduct.videos.length > 0 ? (
+                  <div className="market-product-video-container">
+                    {(() => {
+                      const videoUrl = selectedProduct.videos[0].url;
+                      console.log("Video URL:", videoUrl);
+                      console.log("Show Video:", showVideo);
+                      
+                      // Check if it's a YouTube URL
+                      if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+                        // Convert YouTube URL to embed format
+                        let embedUrl = videoUrl;
+                        if (videoUrl.includes('youtube.com/watch?v=')) {
+                          const videoId = videoUrl.split('v=')[1].split('&')[0];
+                          embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                        } else if (videoUrl.includes('youtu.be/')) {
+                          const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
+                          embedUrl = `https://www.youtube.com/embed/${videoId}`;
                         }
-                        controls
-                        poster={
-                          selectedProduct.images && selectedProduct.images.length > 0
-                            ? selectedProduct.images[0].url
-                            : "/placeholder.svg?height=400&width=400"
-                        }
-                        className="market-product-video"
-                        onClick={() => setFullScreenVideo(true)}
-                      >
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  ) : (
-                    <img
-                      src={
+                        
+                        return (
+                          <iframe
+                            src={embedUrl}
+                            title="Product Video"
+                            className="market-product-video"
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            style={{ width: '100%', height: '400px', borderRadius: '8px' }}
+                          />
+                        );
+                      } else {
+                        // For regular video files
+                        return (
+                          <video
+                            src={videoUrl}
+                            controls
+                            poster={
+                              selectedProduct.images && selectedProduct.images.length > 0
+                                ? selectedProduct.images[0].url
+                                : "/placeholder.svg?height=400&width=400"
+                            }
+                            className="market-product-video"
+                            style={{ width: '100%', height: '400px', borderRadius: '8px' }}
+                          >
+                            Your browser does not support the video tag.
+                          </video>
+                        );
+                      }
+                    })()}
+                  </div>
+                ) : (
+                  <img
+                    src={
+                      selectedProduct.images && selectedProduct.images.length > 0
+                        ? selectedProduct.images[activeImageIndex].url
+                        : "/placeholder.svg?height=400&width=400"
+                    }
+                    alt={`${selectedProduct.details ? selectedProduct.details.productname : "Product"} - view ${activeImageIndex + 1}`}
+                    className="market-modal-main-image"
+                    onClick={() =>
+                      openImageModal(
                         selectedProduct.images && selectedProduct.images.length > 0
                           ? selectedProduct.images[activeImageIndex].url
-                          : "/placeholder.svg?height=400&width=400"
-                      }
-                      alt={`${selectedProduct.details ? selectedProduct.details.productname : "Product"} - view ${activeImageIndex + 1}`}
-                      className="market-modal-main-image"
-                      onClick={() =>
-                        openImageModal(
-                          selectedProduct.images && selectedProduct.images.length > 0
-                            ? selectedProduct.images[activeImageIndex].url
-                            : "/placeholder.svg?height=400&width=400",
-                          activeImageIndex,
-                        )
-                      }
-                    />
-                  )}
+                          : "/placeholder.svg?height=400&width=400",
+                        activeImageIndex,
+                      )
+                    }
+                  />
+               )}
                 </div>
                 <div className="market-modal-media-thumbnails">
                   {selectedProduct.images &&
@@ -665,15 +705,16 @@ const openImageModal = (imageUrl, index) => {
                         onClick={() => changeActiveImage(index)}
                       />
                     ))}
-                  {selectedProduct.videos && selectedProduct.videos.length > 0 && (
-                    <button
-                      className={`market-video-thumbnail ${showVideo ? "market-active" : ""}`}
-                      onClick={toggleVideo}
-                      aria-label="Show video"
-                    >
-                      <Play className="market-video-icon" />
-                    </button>
-                  )}
+                 {selectedProduct.videos && selectedProduct.videos.length > 0 && (
+                  <button
+                    className={`market-video-thumbnail ${showVideo ? "market-active" : ""}`}
+                    onClick={toggleVideo}
+                    aria-label="Show video"
+                  >
+                    <Play className="market-video-icon" />
+                    <span>Video</span>
+                  </button>
+                 )}
                 </div>
               </div>
               <div className="market-modal-product-info">
@@ -859,25 +900,52 @@ const openImageModal = (imageUrl, index) => {
       )}
 
       {/* Full Screen Video Modal */}
-      {fullScreenVideo && selectedProduct && selectedProduct.videos && selectedProduct.videos.length > 0 && (
-        <div className="market-fullscreen-modal">
-          <div className="market-fullscreen-modal-content">
-            <button onClick={() => setFullScreenVideo(false)} className="market-close-fullscreen-modal" aria-label="Close fullscreen video">
-              <X size={24} />
-            </button>
-            <div className="market-fullscreen-video-container">
-              <video
-                src={selectedProduct.videos[0].url}
-                controls
-                autoPlay
-                className="market-fullscreen-video"
-              >
-                Your browser does not support the video tag.
-              </video>
-            </div>
+     {fullScreenVideo && selectedProduct && selectedProduct.videos && selectedProduct.videos.length > 0 && (
+      <div className="market-fullscreen-modal">
+        <div className="market-fullscreen-modal-content">
+          <button onClick={() => setFullScreenVideo(false)} className="market-close-fullscreen-modal" aria-label="Close fullscreen video">
+            <X size={24} />
+          </button>
+          <div className="market-fullscreen-video-container">
+            {(() => {
+              const videoUrl = selectedProduct.videos[0].url;
+              if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
+                let embedUrl = videoUrl;
+                if (videoUrl.includes('youtube.com/watch?v=')) {
+                  const videoId = videoUrl.split('v=')[1].split('&')[0];
+                  embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                } else if (videoUrl.includes('youtu.be/')) {
+                  const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
+                  embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+                }
+                
+                return (
+                  <iframe
+                    src={embedUrl}
+                    title="Product Video Fullscreen"
+                    className="market-fullscreen-video"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                );
+              } else {
+                return (
+                  <video
+                    src={videoUrl}
+                    controls
+                    autoPlay
+                    className="market-fullscreen-video"
+                  >
+                    Your browser does not support the video tag.
+                  </video>
+                );
+              }
+            })()}
           </div>
         </div>
-      )}
+      </div>
+     )}
 
       {/* Full Screen Image Modal */}
       {imageModalOpen && (
@@ -978,10 +1046,3 @@ const openImageModal = (imageUrl, index) => {
 }
 
 export default Market
-
-
-
-
-
-
-
