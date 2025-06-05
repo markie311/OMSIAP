@@ -5974,36 +5974,56 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
                     </div>
                     
                     <div className="product-details">
+
                       <div className="product-info-primary">
                         <span className="product-name">{product.details?.productname || 'Unnamed Product'}</span>
-                        <span className="product-price">
-                          {formatCurrency(product.details?.price?.amount)}
-                        </span>
                       </div>
-                      
+                        
+                     <br/>
+
+                     <span className="product-price">
+                       {formatCurrency(product.details?.price?.amount)}
+                     </span>
+
+                     <br/>
+
                       <div className="product-info-secondary">
                         {product.details?.category && 
                           <span className="product-category">
                             <FaTag className="category-icon" /> {product.details.category}
                           </span>
                         }
-                        {product.details?.weightingrams && 
+                      </div>
+
+                      <br/>
+
+                       {product.details?.weightingrams && 
                           <span className="product-weight">
                             <FaWeight className="weight-icon" /> {product.details.weightingrams}g
                           </span>
                         }
-                        {product.quantity && 
-                          <span className="product-quantity">
-                            <FaLayerGroup className="quantity-icon" /> Qty: {product.quantity}
-                          </span>
-                        }
-                      </div>
+
+                       <br/>
+
+                      {product.quantity && 
+                      <span className="product-quantity">
+                        <FaLayerGroup className="quantity-icon" /> Qty: {product.quantity}
+                      </span>
+                      }
                       
+                      <br/>
+
                       {product.details?.description && (
                         <p className="product-description">{product.details.description}</p>
                       )}
+
+                      <br/>
+                      
+                      <p className="product-description">{product.details.webaddress}asdas</p>
+
                     </div>
-                    
+                     
+                    {/*
                     <div className="product-stock-check">
                       {!productStockStatus && !isChecking[productId] ? (
                         <button 
@@ -6033,6 +6053,8 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
                         </div>
                       )}
                     </div>
+                    */}
+
                   </div>
                 );
               })}
