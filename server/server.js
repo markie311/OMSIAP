@@ -43,7 +43,7 @@ const PORT = process.env.PORT || 4000;
 
 // Middleware Configuration
 app.use(cors({
-  origin: ['https://omsiap.onrender.com'],
+  origin: ['http://localhost:3000','https://omsiap.onrender.com/'],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
   preflightContinue: false,
   optionsSuccessStatus: 200
