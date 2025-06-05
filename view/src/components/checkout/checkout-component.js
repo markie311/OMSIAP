@@ -100,7 +100,7 @@ const CheckoutPage = (props) => {
 
   // Payment details using OMSIAPAWASTO currency
   const [paymentDetails, setPaymentDetails] = useState({
-    omsiapawastoBalance: 1000, // Example balance
+    omsiapawastoBalance: 5000, // Example balance
     selectedPaymentMethod: 'omsiapawasto'
   });
 
