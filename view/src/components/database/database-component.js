@@ -13783,6 +13783,9 @@ const handleSubmit = async (e) => {
     // Generate product ID
     const productId = `PROD-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
+    // Get the main product shipping cost to apply to all specifications
+    const mainShippingCost = productData.shippingCost || 0;
+
     // Prepare product data according to schema structure
     const productPayload = {
       authentications: {
@@ -13800,7 +13803,7 @@ const handleSubmit = async (e) => {
         price: {
           amount: parseFloat(productData.price) || 0,
           capital: parseFloat(productData.capital) || 0,
-          shipping: parseFloat(productData.shippingCost) || 0,
+          shipping: mainShippingCost,
           transactiongiveaway: parseFloat(productData.transactiongiveaway) || 0,
           profit: parseFloat(productData.omsiapprofit) || 0
         },
@@ -13826,6 +13829,7 @@ const handleSubmit = async (e) => {
             price: {
               amount: spec.details.price?.amount || 0,
               capital: spec.details.price?.capital || 0,
+              shipping: mainShippingCost, // Apply main product shipping cost to specification
               transactiongiveaway: spec.details.price?.transactiongiveaway || 0,
               profit: spec.details.price?.profit || 0
             },

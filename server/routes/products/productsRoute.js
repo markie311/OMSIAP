@@ -305,6 +305,9 @@ Router.route("/addproduct").post(upload.any(), async (req, res) => {
       });
     }
 
+    // Get the main product shipping cost to ensure it's applied to all specifications
+    const mainShippingCost = details.price.shipping || 0;
+
     // Ensure all required schema fields are present with proper defaults
     const finalProductData = {
       authentications: {
@@ -322,7 +325,7 @@ Router.route("/addproduct").post(upload.any(), async (req, res) => {
         price: {
           amount: details.price.amount,
           capital: details.price.capital || 0,
-          shipping: details.price.shipping || 0,
+          shipping: mainShippingCost,
           transactiongiveaway: details.price.transactiongiveaway || 0,
           profit: details.price.profit || 0
         },
@@ -348,6 +351,7 @@ Router.route("/addproduct").post(upload.any(), async (req, res) => {
             price: {
               amount: spec.details?.price?.amount || 0,
               capital: spec.details?.price?.capital || 0,
+              shipping: Number(mainShippingCost), // Apply main product shipping cost to specification
               transactiongiveaway: spec.details?.price?.transactiongiveaway || 0,
               profit: spec.details?.price?.profit || 0
             },
@@ -400,6 +404,7 @@ Router.route("/addproduct").post(upload.any(), async (req, res) => {
         name: details.productname,
         category: details.category,
         price: details.price.amount,
+        shipping: mainShippingCost, // Include shipping cost in response
         images: mainImages.length,
         specifications: details.specifications.length,
         features: details.features.length

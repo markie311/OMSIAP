@@ -594,7 +594,7 @@ const prevImage = () => {
                   if (props.cartcb) {
                     props.cartcb(cart)
                     navigate("/placeorder", { state: { cart } })
-                   // console.log(cart)
+                    //console.log(cart)
                   }
                 }}
               >

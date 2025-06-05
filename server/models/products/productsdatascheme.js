@@ -66,6 +66,10 @@ const productSpecificationDataSchema = new Schema({
        type: Number,
        default: 0
      },
+     shipping: {
+       type: Number,
+       default: 0
+     },
      transactiongiveaway: {
        type: Number,
        default: 0
@@ -137,7 +141,7 @@ const productDataSchema = new Schema({
       default: 0
     },
     shipping: {
-      type: 'number',
+      type: Number,
       default: 0
     },
     transactiongiveaway: {
