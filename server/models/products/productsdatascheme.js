@@ -33,6 +33,9 @@ const productSpecificationDataSchema = new Schema({
      type: String
    },
    features: [productFeaturesDataSchema],
+   webaddress: {
+     type: 'string'
+   },
    weightingrams: {
      type: Number,
      default: 0

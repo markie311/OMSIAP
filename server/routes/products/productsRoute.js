@@ -326,7 +326,43 @@ Router.route("/addproduct").post(upload.any(), async (req, res) => {
           transactiongiveaway: details.price.transactiongiveaway || 0,
           profit: details.price.profit || 0
         },
-        specifications: details.specifications || []
+        specifications: (details.specifications || []).map(spec => ({
+          authentications: {
+            producttype: spec.authentications?.producttype || "",
+            id: spec.authentications?.id || ""
+          },
+          details: {
+            productname: spec.details?.productname || "",
+            category: spec.details?.category || "",
+            description: spec.details?.description || "",
+            features: spec.details?.features || [],
+            weightingrams: spec.details?.weightingrams || 0,
+            webaddress: spec.details?.webaddress || details.webaddress || "", // Apply main webaddress to specifications
+            warranty: spec.details?.warranty || "",
+            for: {
+              age: spec.details?.for?.age || "",
+              part: spec.details?.for?.part || "",
+              gender: spec.details?.for?.gender || "",
+              reminder: spec.details?.for?.reminder || ""
+            },
+            price: {
+              amount: spec.details?.price?.amount || 0,
+              capital: spec.details?.price?.capital || 0,
+              transactiongiveaway: spec.details?.price?.transactiongiveaway || 0,
+              profit: spec.details?.price?.profit || 0
+            },
+            specifications: []
+          },
+          images: spec.images || [],
+          videos: spec.videos || [],
+          customerfeedback: {
+            rating: spec.customerfeedback?.rating || 0,
+            reviews: spec.customerfeedback?.reviews || 0
+          },
+          system: {
+            stocks: spec.system?.stocks || 0
+          }
+        }))
       },
       images: productData.images,
       videos: productData.videos || [],

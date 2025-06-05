@@ -592,9 +592,9 @@ const prevImage = () => {
                 className="market-checkout-button"
                 onClick={() => {
                   if (props.cartcb) {
-                 //   props.cartcb(cart)
-                 //   navigate("/placeorder", { state: { cart } })
-                 console.log(cart)
+                    props.cartcb(cart)
+                    navigate("/placeorder", { state: { cart } })
+                   // console.log(cart)
                   }
                 }}
               >

@@ -6018,7 +6018,7 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
                       )}
 
                       <br/>
-                      
+
                       <p className="product-description">{product.details.webaddress}asdas</p>
 
                     </div>
@@ -13815,6 +13815,7 @@ const handleSubmit = async (e) => {
             description: spec.details.description || "",
             features: spec.details.features || [],
             weightingrams: spec.details.weightingrams || 0,
+            webaddress: spec.details.webaddress || productData.webAddress || "", // Apply webaddress to specification
             warranty: spec.details.warranty || "",
             for: {
               age: spec.details.for?.age || "",

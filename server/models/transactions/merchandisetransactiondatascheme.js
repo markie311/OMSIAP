@@ -95,76 +95,91 @@ const productSpecificationDataSchema = new Schema({
 });
 
 const productDataSchema = new Schema({
- authentications: {
-   producttype: {
-    type: String
-   },
-   id: {
-    type: String
-   }
- },
- details: {
-  productname: {
-    type: String
-  },
-  category: {
-    type: String
-  },
-  description: {
-    type: String
-  },
-  features: [productFeaturesDataSchema],
-  weightingrams: {
-    type: Number,
-    default: 0
-  },
-  warranty: {
-    type: String
-  },
-  price: {
-    amount: {
-      type: Number,
-      default: 0
+  authentications: {
+    producttype: {
+     type: String
     },
-    capital: {
-      type: Number,
-      default: 0
-    },
-    transactiongiveaway: {
-      type: Number,
-      default: 0
-    },
-    profit: {
-      type: Number,
-      default: 0
+    id: {
+     type: String
     }
   },
-  specifications: [productSpecificationDataSchema]
- },
- images: [productImageDataSchema],
- videos: [productVideoDataSchema],
- customerfeedback: {
-  rating: {
+  details: {
+   productname: {
+     type: String
+   },
+   category: {
+     type: String
+   },
+   description: {
+     type: String
+   },
+   features: [productFeaturesDataSchema],
+   webaddress: {
+     type: 'string'
+   },
+   weightingrams: {
+     type: Number,
+     default: 0
+   },
+   warranty: {
+     type: String
+   },
+   for: {
+    age: {
+      type: String
+    },
+    part: {
+      type: String
+    },
+    gender: {
+      type: String
+    },
+    reminder: {
+      type: String
+    }
+   },
+   price: {
+     amount: {
+       type: Number,
+       default: 0
+     },
+     capital: {
+       type: Number,
+       default: 0
+     },
+     transactiongiveaway: {
+       type: Number,
+       default: 0
+     },
+     profit: {
+       type: Number,
+       default: 0
+     }
+   },
+   specifications: []
+  },
+  images: [productImageDataSchema],
+  videos: [productVideoDataSchema],
+  customerfeedback: {
+   rating: {
+     type: Number,
+     default: 0
+   },
+   reviews: {
+     type: Number,
+     default: 0,
+   }
+  },
+  system: {
+   stocks: {
     type: Number,
     default: 0
+   }
   },
-  reviews: {
-    type: Number,
-    default: 0,
+  quantity: {
+    type: 'number',
+    default: 0
   }
- },
- system: {
-  purchases: {
-    total: [],
-    pending: [],
-    accepted: [],
-    rejected: []
-  }
- },
- quantity: {
-  type: 'number',
-  default: 0
- }
 });
 
 const merchandisetransactiondataschemestatusesschememessagesscheme = new Schema({
