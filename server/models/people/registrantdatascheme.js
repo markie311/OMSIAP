@@ -306,6 +306,10 @@ system: {
     type: 'number',
     default: 0
     },
+    processingfee: {
+      type: Number,
+      default: 0
+    },
     totalcapital: {
     type: 'number',
     default: 0

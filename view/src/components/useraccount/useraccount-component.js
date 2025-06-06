@@ -160,6 +160,7 @@ const UserAccount = (props) => {
           typeClass: "merchandise",
           merchandisesubtotal: tx.system?.ordersummary?.merchandisetotal || 0,
           shippingsubtotal: tx.system?.ordersummary?.shippingtotal,
+          processingfee: tx.system?.ordersummary?.processingfee,
           amount: -Math.abs(totalAmount), // Negative because it's a purchase
           status: tx.statusesandlogs?.indication || "Pending",
           products: products.map((product) => ({
@@ -867,11 +868,18 @@ const UserAccount = (props) => {
                     {transaction.shippingsubtotal}
                   </span>
                 </div>
+                  <div className="transaction-modal__total-row">
+                  <span className="transaction-modal__total-label">Total processing fee:</span>
+                  <span className="transaction-modal__total-amount">
+                    ₱
+                    {transaction.processingfee}
+                  </span>
+                </div>
                 <div className="transaction-modal__total-row">
                   <span className="transaction-modal__total-label">Total Amount:</span>
                   <span className="transaction-modal__total-amount">
                     ₱
-                    { transaction.merchandisesubtotal + transaction.shippingsubtotal}
+                    { transaction.merchandisesubtotal + transaction.shippingsubtotal + transaction.processingfee}
                   </span>
                 </div>
               </div>
