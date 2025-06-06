@@ -147,6 +147,10 @@ const productDataSchema = new Schema({
        type: Number,
        default: 0
      },
+     shipping: {
+      type: Number,
+      default: 0
+     },
      transactiongiveaway: {
        type: Number,
        default: 0
@@ -315,6 +319,10 @@ system: {
     shippingtotal:{
     type: 'number',
     default: 0
+    },
+    processingfee: {
+     type: Number,
+     default: 0
     },
     totalcapital: {
     type: 'number',

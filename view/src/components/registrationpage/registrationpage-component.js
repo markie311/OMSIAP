@@ -565,6 +565,7 @@ const handleRegistration = async (e) => {
                 </div>
               </div>
               
+              {/*
               <div className="loginandregister-form-group">
                 <label>Birth Date*</label>
                 <input
@@ -576,7 +577,8 @@ const handleRegistration = async (e) => {
                 />
                 {errors.birthDate && <span className="loginandregister-error">{errors.birthDate}</span>}
               </div>
-
+              */}
+              
               <div className="loginandregister-form-row">
                 <div className="loginandregister-form-group">
                   <label>Password*</label>

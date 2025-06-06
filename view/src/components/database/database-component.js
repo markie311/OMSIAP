@@ -5882,6 +5882,7 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
   const {
     merchandisetotal = 0,
     shippingtotal = 0,
+    processingfee = 0,
     totalcapital = 0,
     totaltransactiongiveaway = 0,
     totalprofit = 0,
@@ -5891,7 +5892,7 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
   } = orderSummary;
   
   // Calculate total amount
-  const totalAmount = Number(merchandisetotal || 0) + Number(shippingtotal || 0);
+  const totalAmount = Number(merchandisetotal || 0) + Number(shippingtotal || 0) + Number(processingfee);
 
   return (
     <div className="modal-overlay" onClick={handleOverlayClick}>
@@ -6072,6 +6073,10 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
             <div className="summary-item">
               <span className="summary-label">Shipping Total:</span>
               <span className="summary-value">{formatCurrency(shippingtotal)}</span>
+            </div>
+             <div className="summary-item">
+              <span className="summary-label">Processing fee:</span>
+              <span className="summary-value">{formatCurrency(processingfee)}</span>
             </div>
             <div className="summary-item">
               <span className="summary-label">Capital:</span>

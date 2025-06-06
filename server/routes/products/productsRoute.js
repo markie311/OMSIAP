@@ -797,6 +797,7 @@ function createTransactionRecord(orderData, registrant) {
       ordersummary: {
         merchandisetotal: parseFloat(orderData.orderSummary?.merchandiseTotal || 0),
         shippingtotal: parseFloat(orderData.orderSummary?.shippingTotal || 0),
+        processingfee: parseFloat(orderData.orderSummary?.paymentProcessingFee || 0),
         totalcapital: parseFloat(orderData.orderSummary?.totalCapital || 0),
         totaltransactiongiveaway: parseFloat(orderData.orderSummary?.totalTransactionGiveaway || 0),
         totalprofit: parseFloat(orderData.orderSummary?.totalOmsiaProfit || 0),
