@@ -510,4 +510,223 @@ function getInteractionMappedType(type) {
   return typeMapping[type] || type
 }
 
+// Add Comment Route
+router.post('/comment', async (req, res) => {
+  try {
+    const { articleId, comment, userData } = req.body;
+
+    // Validate required fields
+    if (!articleId || !comment || !userData?.name || !userData.phonenumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: articleId, comment, and userData (name, phonenumber) are required'
+      });
+    }
+
+    // Find the article
+    const article = await ArticleContentModel.findOne({ id: articleId });
+    if (!article) {
+      return res.status(404).json({
+        success: false,
+        message: 'Article not found'
+      });
+    }
+
+    // Create new comment object
+    const newComment = {
+      author: {
+        name: userData.name
+      },
+      date: userData.date || new Date().toISOString(),
+      comment: comment.trim(),
+      replies: [],
+      interactions: {
+        like: [],
+        unlike: [],
+        exited: [],
+        wow: [],
+        sad: []
+      }
+    };
+
+    // Initialize comments array if it doesn't exist
+    if (!article.comments) {
+      article.comments = [];
+    }
+
+    // Add comment to article
+    article.comments.push(newComment);
+
+    // Save the article
+    await article.save();
+
+    // Return success response with the new comment
+    res.status(200).json({
+      success: true,
+      message: 'Comment added successfully',
+      comment: newComment,
+      totalComments: article.comments.length
+    });
+
+  } catch (error) {
+    console.error('Add comment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while adding comment'
+    });
+  }
+});
+
+// Add Reply Route
+router.post('/reply', async (req, res) => {
+  try {
+    const { articleId, commentIndex, reply, userData } = req.body;
+
+    // Validate required fields
+    if (articleId === undefined || commentIndex === undefined || !reply || !userData?.name || !userData.phonenumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields: articleId, commentIndex, reply, and userData (name, phonenumber) are required'
+      });
+    }
+
+    // Find the article
+    const article = await ArticleContentModel.findOne({ id: articleId });
+    if (!article) {
+      return res.status(404).json({
+        success: false,
+        message: 'Article not found'
+      });
+    }
+
+    // Check if comment exists
+    if (!article.comments || !article.comments[commentIndex]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Comment not found'
+      });
+    }
+
+    // Create new reply object
+    const newReply = {
+      name: userData.name,
+      phonenumber: userData.phonenumber,
+      date: userData.date || new Date().toISOString(),
+      reply: reply.trim()
+    };
+
+    // Initialize replies array if it doesn't exist
+    if (!article.comments[commentIndex].replies) {
+      article.comments[commentIndex].replies = [];
+    }
+
+    // Add reply to comment
+    article.comments[commentIndex].replies.push(newReply);
+
+    // Save the article
+    await article.save();
+
+    // Return success response with the new reply
+    res.status(200).json({
+      success: true,
+      message: 'Reply added successfully',
+      reply: newReply,
+      commentIndex: commentIndex,
+      totalReplies: article.comments[commentIndex].replies.length
+    });
+
+  } catch (error) {
+    console.error('Add reply error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while adding reply'
+    });
+  }
+});
+
+// Comment Interaction Route (for liking/unliking comments)
+router.post('/comment-interaction', async (req, res) => {
+  try {
+    const { articleId, commentIndex, interactionType, userData, currentInteraction } = req.body;
+
+    // Validate required fields
+    if (articleId === undefined || commentIndex === undefined || !interactionType || !userData?.phonenumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing required fields'
+      });
+    }
+
+    // Find the article
+    const article = await ArticleContentModel.findOne({ id: articleId });
+    if (!article) {
+      return res.status(404).json({
+        success: false,
+        message: 'Article not found'
+      });
+    }
+
+    // Check if comment exists
+    if (!article.comments || !article.comments[commentIndex]) {
+      return res.status(404).json({
+        success: false,
+        message: 'Comment not found'
+      });
+    }
+
+    const comment = article.comments[commentIndex];
+    const userPhone = userData.phonenumber;
+
+    // Initialize interactions if they don't exist
+    if (!comment.interactions) {
+      comment.interactions = {
+        like: [],
+        unlike: [],
+        exited: [],
+        wow: [],
+        sad: []
+      };
+    }
+
+    // Remove any existing interaction from this user
+    const interactionTypes = ['like', 'unlike', 'exited', 'wow', 'sad'];
+    interactionTypes.forEach(type => {
+      if (comment.interactions[type]) {
+        comment.interactions[type] = comment.interactions[type].filter(
+          interaction => interaction.phonenumber !== userPhone
+        );
+      }
+    });
+
+    // Add new interaction if it's different from current
+    if (interactionType !== currentInteraction) {
+      if (!comment.interactions[interactionType]) {
+        comment.interactions[interactionType] = [];
+      }
+      
+      comment.interactions[interactionType].push({
+        name: userData.name,
+        phonenumber: userData.phonenumber,
+        date: userData.date || new Date().toISOString()
+      });
+    }
+
+    // Save the article
+    await article.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Comment interaction updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Comment interaction error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error while updating comment interaction'
+    });
+  }
+});
+
+
 module.exports = router

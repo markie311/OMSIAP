@@ -160,124 +160,7 @@ function OMSIAPCoreContent() {
 
 
   const [articles, articlescb] = useState([
-    {
-      id: 1,
-      image: "../images/landingpage/articles/omsiapwebsite.png",
-      images: ["../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png"],
-      data: "Business",
-      topic: "Business growth",
-      date: "June 10, 2025",
-      title: "OMSIAP's website platform launched",
-      readTime: "6 mins read",
-      content:
-        "Detailed content about OMSIAP's website platform purpose and functionalitie's",
-       description:
-        "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
-      keytakeaways: ["Key takes aways 1"],
-      expertopinion: "Expert opinion 1",
-      interactions: {
-        like: [
-          {
-            name: "Mark Anthony Apura Beloy",
-            phonenumber: "09956777674",
-            date: "June 10 2025 at 3:57pm"
-          }
-        ],
-        unlike: [],
-        exited: [],
-        wow: [],
-        sad: [],
-      },
-      comments: [
-        {
-          author: {
-            name: "Testing Testing Testing"
-          },
-          date: "June 10 2025 at 11:29pm",
-          comment: 'It sounds good',
-          replies: [
-             {
-              name: "Mark Anthony Apura Beloy",
-              phonenumber: "09956777674",
-              date: "June 10 2025 at 3:57pm",
-              reply: "Reply 1"
-             }
-          ],
-          interactions: {
-            like: [
-              {
-              name: "Mark Anthony Apura Beloy",
-              phonenumber: "09956777674",
-              date: "June 10 2025 at 3:57pm"
-              }
-            ],
-            unlike: [],
-            exited: [],
-            wow: [],
-            sad: []
-          }
-        }
-      ]
-    },
-    {
-      id: 2,
-      image: "../images/landingpage/articles/omsiapwebsite.png",
-      images: ["../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png"],
-      data: "Leadership",
-      topic: "Business growth",
-      date: "June 10, 2025",
-      title: "OMSIAP's website platform launched",
-      readTime: "6 mins read",
-      content:
-        "Detailed content about OMSIAP's website platform purpose and functionalitie's",
-       description:
-        "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
-      keytakeaways: ["Key takes aways 1"],
-      expertopinion: "Expert opinion 1",
-      interactions: {
-        like: [
-          {
-            name: "Mark Anthony Apura Beloy",
-            phonenumber: "09956777674",
-            date: "June 10 2025 at 3:57pm"
-          }
-        ],
-        unlike: [],
-        exited: [],
-        wow: [],
-        sad: [],
-      },
-      comments: [
-        {
-          author: {
-            name: "Testing Testing Testing"
-          },
-          date: "June 10 2025 at 11:29pm",
-          comment: 'It sounds good',
-          replies: [
-             {
-              name: "Mark Anthony Apura Beloy",
-              phonenumber: "09956777674",
-              date: "June 10 2025 at 3:57pm",
-              reply: "Reply 1"
-             }
-          ],
-          interactions: {
-            like: [
-              {
-              name: "Mark Anthony Apura Beloy",
-              phonenumber: "09956777674",
-              date: "June 10 2025 at 3:57pm"
-              }
-            ],
-            unlike: [],
-            exited: [],
-            wow: [],
-            sad: []
-          }
-        }
-      ]
-    }
+
   ])
 
   // Setup viewport detection
@@ -335,8 +218,8 @@ function OMSIAPCoreContent() {
         await Promise.all([
           loadUserData(),
           loadProductData(),
+          loadContentsData(),
           loadTransactionData(),
-          loadContentsData()
         ]);
         
         // All critical data is loaded, update global state
@@ -424,185 +307,6 @@ function OMSIAPCoreContent() {
       } else {
         // Default products if none returned
         alloftheproductscb([
-         {
-          authentications: {
-            producttype: "Apparel",
-            id: ""
-          },
-          details: {
-           productname: "Lighter",
-           category: "Apparel",
-           description: "A nice red lighter",
-           features: [{data: "3 millimeters in size"},{data: "strong and durable"},{data: "stock and loaded"}],
-           weightingrams: 0,
-           warranty: "1 year warranty",
-           price: {
-             amount: 60,
-             capital: 57,
-             transactiongiveaway: 2,
-             profit: 1
-           },
-           specifications: [
-            {
-              authentications: {
-                producttype: "",
-                id: "",
-              },
-              details: {
-               productname: "Product specification name 1",
-               category: "Product category specification 1",
-               description: "A product specification and it's description",
-               features: [{data: "3 millimeters in size"},{data: "strong and durable"},{data: "stock and loaded"}],
-               weightingrams: 100,
-               warranty: 0,
-               for: {
-                age: "10 below",
-                part: "Wrist",
-                gender: "Male",
-                reminder: "Water repellant"
-               },
-               price: {
-                 amount: 60,
-                 capital: 57,
-                 transactiongiveaway: 2,
-                 profit: 1
-               },
-               specifications: []
-              },
-              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-              videos: [],
-              customerfeedback: {
-               rating: 0,
-               reviews: 0
-              },
-              system: {
-               stocks: 100
-              }
-            },
-            {
-              authentications: {
-                producttype: "",
-                id: "",
-              },
-              details: {
-               productname: "",
-               category: "",
-               description: "A product specification and it's description",
-               features: [],
-               weightingrams: 300,
-               warranty: 0,
-               for: {
-                age: 0,
-                part: "",
-                gender: "",
-                reminder: ""
-               },
-               price: {
-                 amount: 60,
-                 capital: 57,
-                 transactiongiveaway: 2,
-                 profit: 1
-               },
-               specifications: []
-              },
-              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-              videos: [],
-              customerfeedback: {
-               rating: 0,
-               reviews: 0
-              },
-              system: {
-               stocks: 100
-              }
-            },
-            {
-              authentications: {
-                producttype: "",
-                id: "",
-              },
-              details: {
-               productname: "",
-               category: "",
-               description: "A product specification and it's description",
-               features: [],
-               weightingrams: 100,
-               warranty: 0,
-               for: {
-                age: 0,
-                part: "",
-                gender: "",
-                reminder: ""
-               },
-               price: {
-                 amount: 60,
-                 capital: 57,
-                 transactiongiveaway: 2,
-                 profit: 1
-               },
-               specifications: []
-              },
-              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-              videos: [],
-              customerfeedback: {
-               rating: 0,
-               reviews: 0
-              },
-              system: {
-               stocks: 100
-              }
-            }
-           ]
-          },
-          images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-          videos: [],
-          customerfeedback: {
-           rating: 0,
-           reviews: 0
-          },
-          system: {
-           purchases: {
-             total: [],
-             pending: [],
-             accepted: [],
-             rejected: []
-           }
-          }
-         },
-         {
-          authentications: {
-            producttype: "Electronics",
-            id: ""
-          },
-          details: {
-           productname: "333",
-           category: "Electronics",
-           description: "",
-           features: [],
-           weightingrams: 0,
-           warranty: "",
-           price: {
-             amount: 0,
-             capital: 0,
-             transactiongiveaway: 0,
-             profit: 0
-           },
-           specifications: []
-          },
-          images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-          videos: [],
-          customerfeedback: {
-           rating: 0,
-           reviews: 0
-          },
-          system: {
-           purchases: {
-             total: [],
-             pending: [],
-             accepted: [],
-             rejected: []
-           }
-          }
-         },
         ]);
 
       }
@@ -615,189 +319,43 @@ function OMSIAPCoreContent() {
       updateLoadingState('products', false);
       // Set default products on error
       alloftheproductscb([
-        {
-          authentications: {
-            producttype: "Apparel",
-            id: ""
-          },
-          details: {
-           productname: "Lighter",
-           category: "Apparel",
-           description: "A nice red lighter",
-           features: [{data: "3 millimeters in size"},{data: "strong and durable"},{data: "stock and loaded"}],
-           weightingrams: 0,
-           warranty: "1 year warranty",
-           price: {
-             amount: 60,
-             capital: 57,
-             transactiongiveaway: 2,
-             profit: 1
-           },
-           specifications: [
-            {
-              authentications: {
-                producttype: "",
-                id: "",
-              },
-              details: {
-               productname: "Product specification name 1",
-               category: "Product category specification 1",
-               description: "A product specification and it's description",
-               features: [{data: "3 millimeters in size"},{data: "strong and durable"},{data: "stock and loaded"}],
-               weightingrams: 100,
-               warranty: 0,
-               for: {
-                age: "10 below",
-                part: "Wrist",
-                gender: "Male",
-                reminder: "Water repellant"
-               },
-               price: {
-                 amount: 60,
-                 capital: 57,
-                 transactiongiveaway: 2,
-                 profit: 1
-               },
-               specifications: []
-              },
-              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-              videos: [],
-              customerfeedback: {
-               rating: 0,
-               reviews: 0
-              },
-              system: {
-               stocks: 100
-              }
-            },
-            {
-              authentications: {
-                producttype: "",
-                id: "",
-              },
-              details: {
-               productname: "",
-               category: "",
-               description: "A product specification and it's description",
-               features: [],
-               weightingrams: 300,
-               warranty: 0,
-               for: {
-                age: 0,
-                part: "",
-                gender: "",
-                reminder: ""
-               },
-               price: {
-                 amount: 60,
-                 capital: 57,
-                 transactiongiveaway: 2,
-                 profit: 1
-               },
-               specifications: []
-              },
-              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-              videos: [],
-              customerfeedback: {
-               rating: 0,
-               reviews: 0
-              },
-              system: {
-               stocks: 100
-              }
-            },
-            {
-              authentications: {
-                producttype: "",
-                id: "",
-              },
-              details: {
-               productname: "",
-               category: "",
-               description: "A product specification and it's description",
-               features: [],
-               weightingrams: 100,
-               warranty: 0,
-               for: {
-                age: 0,
-                part: "",
-                gender: "",
-                reminder: ""
-               },
-               price: {
-                 amount: 60,
-                 capital: 57,
-                 transactiongiveaway: 2,
-                 profit: 1
-               },
-               specifications: []
-              },
-              images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-              videos: [],
-              customerfeedback: {
-               rating: 0,
-               reviews: 0
-              },
-              system: {
-               stocks: 100
-              }
-            }
-           ]
-          },
-          images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-          videos: [],
-          customerfeedback: {
-           rating: 0,
-           reviews: 0
-          },
-          system: {
-           purchases: {
-             total: [],
-             pending: [],
-             accepted: [],
-             rejected: []
-           }
-          }
-        },
-        {
-          authentications: {
-            producttype: "Electronics",
-            id: ""
-          },
-          details: {
-           productname: "333",
-           category: "Electronics",
-           description: "",
-           features: [],
-           weightingrams: 0,
-           warranty: "",
-           price: {
-             amount: 0,
-             capital: 0,
-             transactiongiveaway: 0,
-             profit: 0
-           },
-           specifications: []
-          },
-          images: [{url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}, {url:'../images/market/products/lighter.jpg'}],
-          videos: [],
-          customerfeedback: {
-           rating: 0,
-           reviews: 0
-          },
-          system: {
-           purchases: {
-             total: [],
-             pending: [],
-             accepted: [],
-             rejected: []
-           }
-          }
-        },
       ]);
 
     }
 
+  };
+
+  // Load contents data
+  const loadContentsData = async () => {
+
+    try {
+
+      updateLoadingState('contents', true);
+
+      // Fetch contents from the API
+      const response = await axiosCreatedInstance.get("/content/getallcontents");
+      
+      if (response.data && response.data.data) {
+        // Use the contents from the API response
+        articlescb(response.data.data)
+      } else {
+        // Set default contents if none returned
+        articlescb([
+       
+        ]);
+      }
+      
+      updateLoadingState('contents', false);
+
+    } catch (error) {
+      console.error("Error loading content data:", error);
+      updateLoadingState('contents', false);
+      
+      // Set default contents on error
+      articlescb([
+      
+      ]);
+    }
   };
 
   // Load transaction data
@@ -905,37 +463,7 @@ function OMSIAPCoreContent() {
 
   };
 
-  // Load contents data
-  const loadContentsData = async () => {
-    try {
-      updateLoadingState('contents', true);
-
-      // Fetch contents from the API
-      const response = await axiosCreatedInstance.get("/content/getallcontents");
-      
-      if (response.data && response.data.data) {
-        // Use the contents from the API response
-        articlescb(response.data.data)
-        console.log(response.data.data)
-      } else {
-        // Set default contents if none returned
-        articlescb([
-        
-        ]);
-      }
-      
-      updateLoadingState('contents', false);
-
-    } catch (error) {
-      console.error("Error loading content data:", error);
-      updateLoadingState('contents', false);
-      
-      // Set default contents on error
-      articlescb([
-       
-      ]);
-    }
-  };
+  
 
 
   function handleUserLoginStatusLoggedOut() {

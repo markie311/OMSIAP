@@ -10,6 +10,7 @@ import Footer from "../footer/footer-component.js"
 import axiosCreatedInstance from "../../../components/lib/axiosutil.js"
 
 export default function BlogPage(props) {
+
   const [showImageModal, setShowImageModal] = useState(false)
   const [modalImage, setModalImage] = useState("")
   const [animatedElements, setAnimatedElements] = useState([])
@@ -24,6 +25,10 @@ export default function BlogPage(props) {
   const [newReply, setNewReply] = useState("")
   const [isLoading, setIsLoading] = useState(true)
   const [interactionLoading, setInteractionLoading] = useState(null) // Track which button is loading
+
+  // Add these state variables to your existing useState declarations
+  const [commentLoading, setCommentLoading] = useState(false)
+  const [replyLoading, setReplyLoading] = useState(null) // Track which reply is loading
 
   // Placeholder images
   const headerImage = "../images/landingpage/articles/blog.jpg"
@@ -297,20 +302,235 @@ export default function BlogPage(props) {
     return selectedBlog?.interactionCounts?.[mappedType] || 0
   }
 
-  const handleAddComment = () => {
-    if (newComment.trim()) {
-      // Add comment logic here
-      setNewComment("")
+ // Updated handleAddComment function
+const handleAddComment = async () => {
+  // Check if user is logged in
+  if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
+    alert("Please log in to comment on articles")
+    return
+  }
+
+  // Check if user has required data
+  if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
+    alert("Please complete your profile to comment on articles")
+    return
+  }
+
+  // Validate comment content
+  if (!newComment.trim()) {
+    alert("Please enter a comment")
+    return
+  }
+
+  setCommentLoading(true)
+
+  const commentData = {
+    articleId: selectedBlog.id,
+    comment: newComment.trim(),
+    userData: {
+      name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
+      phonenumber: props.user.contact.phonenumber,
+      date: new Date().toISOString(),
     }
   }
 
-  const handleAddReply = (commentIndex) => {
-    if (newReply.trim()) {
-      // Add reply logic here
-      setNewReply("")
-      setReplyingTo(null)
+  try {
+    const response = await axiosCreatedInstance.post("/content/comment", commentData)
+    const result = response.data
+
+    if (result.success) {
+      // Update selectedBlog with new comment
+      setSelectedBlog(prevBlog => {
+        const updatedBlog = { ...prevBlog }
+        
+        // Initialize comments array if it doesn't exist
+        if (!updatedBlog.comments) {
+          updatedBlog.comments = []
+        }
+        
+        // Add the new comment
+        updatedBlog.comments.push(result.comment)
+        
+        return updatedBlog
+      })
+
+      // Clear the comment input
+      setNewComment("")
+      
+      // Show success message (optional)
+      // alert("Comment added successfully!")
+    } else {
+      alert("Failed to add comment. Please try again.")
+    }
+  } catch (error) {
+    console.error("Add comment error:", error.response?.data || error.message)
+    alert("Network error. Please try again.")
+  } finally {
+    setCommentLoading(false)
+  }
+}
+
+// Updated handleAddReply function
+const handleAddReply = async (commentIndex) => {
+  // Check if user is logged in
+  if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
+    alert("Please log in to reply to comments")
+    return
+  }
+
+  // Check if user has required data
+  if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
+    alert("Please complete your profile to reply to comments")
+    return
+  }
+
+  // Validate reply content
+  if (!newReply.trim()) {
+    alert("Please enter a reply")
+    return
+  }
+
+  setReplyLoading(commentIndex)
+
+  const replyData = {
+    articleId: selectedBlog.id,
+    commentIndex: commentIndex,
+    reply: newReply.trim(),
+    userData: {
+      name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
+      phonenumber: props.user.contact.phonenumber,
+      date: new Date().toISOString(),
     }
   }
+
+  try {
+    const response = await axiosCreatedInstance.post("/content/reply", replyData)
+    const result = response.data
+
+    if (result.success) {
+      // Update selectedBlog with new reply
+      setSelectedBlog(prevBlog => {
+        const updatedBlog = { ...prevBlog }
+        
+        // Make sure the comment and replies array exist
+        if (updatedBlog.comments && updatedBlog.comments[commentIndex]) {
+          if (!updatedBlog.comments[commentIndex].replies) {
+            updatedBlog.comments[commentIndex].replies = []
+          }
+          
+          // Add the new reply
+          updatedBlog.comments[commentIndex].replies.push(result.reply)
+        }
+        
+        return updatedBlog
+      })
+
+      // Clear the reply input and close reply form
+      setNewReply("")
+      setReplyingTo(null)
+      
+      // Show success message (optional)
+      // alert("Reply added successfully!")
+    } else {
+      alert("Failed to add reply. Please try again.")
+    }
+  } catch (error) {
+    console.error("Add reply error:", error.response?.data || error.message)
+    alert("Network error. Please try again.")
+  } finally {
+    setReplyLoading(null)
+  }
+}
+
+// Optional: Add comment interaction handler
+const handleCommentInteraction = async (commentIndex, interactionType) => {
+  // Check if user is logged in
+  if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
+    alert("Please log in to interact with comments")
+    return
+  }
+
+  // Check if user has required data
+  if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
+    alert("Please complete your profile to interact with comments")
+    return
+  }
+
+  // Get current user's interaction for this comment
+  const comment = selectedBlog.comments[commentIndex]
+  const userPhone = props.user.contact.phonenumber
+  
+  let currentInteraction = null
+  const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
+  
+  for (const type of interactionTypes) {
+    if (comment.interactions?.[type]) {
+      const hasInteraction = comment.interactions[type].some(
+        interaction => interaction.phonenumber === userPhone
+      )
+      if (hasInteraction) {
+        currentInteraction = type
+        break
+      }
+    }
+  }
+
+  const requestData = {
+    articleId: selectedBlog.id,
+    commentIndex: commentIndex,
+    interactionType: interactionType,
+    userData: {
+      name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
+      phonenumber: props.user.contact.phonenumber,
+      date: new Date().toISOString(),
+    },
+    currentInteraction: currentInteraction,
+  }
+
+  try {
+    const response = await axiosCreatedInstance.post("/content/comment-interaction", requestData)
+    const result = response.data
+
+    if (result.success) {
+      // Update the local state to reflect the interaction change
+      setSelectedBlog(prevBlog => {
+        const updatedBlog = { ...prevBlog }
+        const comment = updatedBlog.comments[commentIndex]
+        
+        // Initialize interactions if they don't exist
+        if (!comment.interactions) {
+          comment.interactions = {
+            like: [], unlike: [], exited: [], wow: [], sad: []
+          }
+        }
+
+        // Remove user's previous interaction
+        interactionTypes.forEach(type => {
+          if (comment.interactions[type]) {
+            comment.interactions[type] = comment.interactions[type].filter(
+              interaction => interaction.phonenumber !== userPhone
+            )
+          }
+        })
+
+        // Add new interaction if different from current
+        if (interactionType !== currentInteraction) {
+          if (!comment.interactions[interactionType]) {
+            comment.interactions[interactionType] = []
+          }
+          comment.interactions[interactionType].push(requestData.userData)
+        }
+
+        return updatedBlog
+      })
+    } else {
+      alert("Failed to update interaction. Please try again.")
+    }
+  } catch (error) {
+    console.error("Comment interaction error:", error.response?.data || error.message)
+    alert("Network error. Please try again.")
+  }
+}
 
   return (
     <div className="blog-container">
@@ -340,7 +560,7 @@ export default function BlogPage(props) {
           {props.articles?.map((post, index) => (
             <div
               key={post.id}
-              className={`blog-post animate-on-scroll slide-up-${index % 2 === 0 ? "right" : "left"}`}
+              className={`blog-post`}
               onClick={() => {
                 setSelectedBlog(post)
                 setShowBlogModal(true)
@@ -492,19 +712,26 @@ export default function BlogPage(props) {
                             { type: "exited", icon: "🎉", label: "Excited" },
                             { type: "sad", icon: "😢", label: "Sad" },
                             { type: "unlike", icon: "👎", label: "Unlike" },
-                          ].map(({ type, icon, label }) => (
-                            <button
-                              key={type}
-                              className={`interaction-btn ${userInteraction === type ? "active" : ""} ${interactionLoading === type ? "loading" : ""}`}
-                              onClick={() => handleInteraction(type)}
-                              disabled={interactionLoading !== null}
-                              title={`${label} this article`}
-                            >
-                              <span className="interaction-icon">{interactionLoading === type ? "⏳" : icon}</span>
-                              <span className="interaction-label">{label}</span>
-                              <span className="interaction-count">{getInteractionCount(type)}</span>
-                            </button>
-                          ))}
+                          ].map(({ type, icon, label }) => {
+                            const isActive = userInteraction === type
+                            const isLoading = interactionLoading === type
+                            const isDisabled = interactionLoading !== null
+
+                            return (
+                              <button
+                                key={type}
+                                className={`interaction-btn ${isActive ? "active" : ""} ${isLoading ? "loading" : ""}`}
+                                onClick={() => handleInteraction(type)}
+                                disabled={isDisabled}
+                                title={`${label} this article`}
+                                aria-pressed={isActive}
+                              >
+                                <span className="interaction-icon">{isLoading ? "⏳" : icon}</span>
+                                <span className="interaction-label">{label}</span>
+                                <span className="interaction-count">{getInteractionCount(type)}</span>
+                              </button>
+                            )
+                          })}
                         </>
                       )}
                     </div>
@@ -529,18 +756,19 @@ export default function BlogPage(props) {
                             placeholder="Share your thoughts about this article..."
                             className="comment-textarea"
                             rows="3"
+                            disabled={commentLoading}
                           />
                           <button
-                            className="submit-comment-btn"
+                            className={`submit-comment-btn ${commentLoading ? 'loading' : ''}`}
                             onClick={handleAddComment}
-                            disabled={!newComment.trim()}
+                            disabled={!newComment.trim() || commentLoading}
                           >
-                            Post Comment
+                            {commentLoading ? 'Posting...' : 'Post Comment'}
                           </button>
                         </div>
 
                         {/* Comments List */}
-                        <div className="comments-list">
+                         <div className="comments-list">
                           {selectedBlog?.comments?.map((comment, commentIndex) => (
                             <div key={commentIndex} className="comment-item">
                               <div className="comment-content">
@@ -555,28 +783,33 @@ export default function BlogPage(props) {
                                 </div>
                                 <p className="comment-text">{comment.comment || "No comment text"}</p>
 
-                                {/* Comment Interactions */}
+                                {/* Updated Comment Interactions with actual counts */}
                                 <div className="comment-interactions">
-                                  <button className="comment-interaction-btn">
-                                    <span>👍</span>
-                                    <span>{comment.interactions?.like?.length || 0}</span>
-                                  </button>
-                                  <button className="comment-interaction-btn">
-                                    <span>👎</span>
-                                    <span>{comment.interactions?.unlike?.length || 0}</span>
-                                  </button>
-                                  <button className="comment-interaction-btn">
-                                    <span>😮</span>
-                                    <span>{comment.interactions?.wow?.length || 0}</span>
-                                  </button>
-                                  <button className="comment-interaction-btn">
-                                    <span>🎉</span>
-                                    <span>{comment.interactions?.excited?.length || 0}</span>
-                                  </button>
-                                  <button className="comment-interaction-btn">
-                                    <span>😢</span>
-                                    <span>{comment.interactions?.sad?.length || 0}</span>
-                                  </button>
+                                  {[
+                                    { type: 'like', icon: '👍', label: 'Like' },
+                                    { type: 'unlike', icon: '👎', label: 'Unlike' },
+                                    { type: 'wow', icon: '😮', label: 'Wow' },
+                                    { type: 'exited', icon: '🎉', label: 'Excited' },
+                                    { type: 'sad', icon: '😢', label: 'Sad' }
+                                  ].map(({ type, icon, label }) => {
+                                    const count = comment.interactions?.[type]?.length || 0
+                                    const userPhone = props.user?.contact?.phonenumber
+                                    const isActive = userPhone && comment.interactions?.[type]?.some(
+                                      interaction => interaction.phonenumber === userPhone
+                                    )
+                                    
+                                    return (
+                                      <button
+                                        key={type}
+                                        className={`comment-interaction-btn ${isActive ? 'active' : ''}`}
+                                        onClick={() => handleCommentInteraction && handleCommentInteraction(commentIndex, type)}
+                                        title={`${label} this comment`}
+                                      >
+                                        <span>{icon}</span>
+                                        <span>{count}</span>
+                                      </button>
+                                    )
+                                  })}
                                   <button
                                     className="reply-btn"
                                     onClick={() => setReplyingTo(replyingTo === commentIndex ? null : commentIndex)}
@@ -585,7 +818,7 @@ export default function BlogPage(props) {
                                   </button>
                                 </div>
 
-                                {/* Reply Form */}
+                                {/* Updated Reply Form with loading state */}
                                 {replyingTo === commentIndex && (
                                   <div className="reply-form">
                                     <textarea
@@ -594,14 +827,15 @@ export default function BlogPage(props) {
                                       placeholder="Write a reply..."
                                       className="reply-textarea"
                                       rows="2"
+                                      disabled={replyLoading === commentIndex}
                                     />
                                     <div className="reply-actions">
                                       <button
-                                        className="submit-reply-btn"
+                                        className={`submit-reply-btn ${replyLoading === commentIndex ? 'loading' : ''}`}
                                         onClick={() => handleAddReply(commentIndex)}
-                                        disabled={!newReply.trim()}
+                                        disabled={!newReply.trim() || replyLoading === commentIndex}
                                       >
-                                        Post Reply
+                                        {replyLoading === commentIndex ? 'Posting...' : 'Post Reply'}
                                       </button>
                                       <button
                                         className="cancel-reply-btn"
@@ -609,6 +843,7 @@ export default function BlogPage(props) {
                                           setReplyingTo(null)
                                           setNewReply("")
                                         }}
+                                        disabled={replyLoading === commentIndex}
                                       >
                                         Cancel
                                       </button>
@@ -616,7 +851,7 @@ export default function BlogPage(props) {
                                   </div>
                                 )}
 
-                                {/* Replies */}
+                                {/* Replies remain the same */}
                                 {comment.replies && comment.replies.length > 0 && (
                                   <div className="replies-container">
                                     {comment.replies.map((reply, replyIndex) => (

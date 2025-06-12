@@ -1523,7 +1523,7 @@
 
 
 ////// new
-/* Additional CSS for interaction buttons */
+/* Interaction buttons styling */
 .interaction-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -1544,43 +1544,75 @@
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   min-width: 80px;
   justify-content: center;
+  position: relative;
+  outline: none;
 }
 
-.interaction-btn:hover {
+/* Default hover state - only applies when not active */
+.interaction-btn:not(.active):not(.loading):hover {
   border-color: #1877f2;
   background: #f0f2f5;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(24, 119, 242, 0.15);
 }
 
+/* Active state - highest priority */
 .interaction-btn.active {
-  border-color: #1877f2;
-  background: #e7f3ff;
-  color: #1877f2;
-  box-shadow: 0 2px 8px rgba(24, 119, 242, 0.2);
+  border-color: #1877f2 !important;
+  background: #e7f3ff !important;
+  color: #1877f2 !important;
+  box-shadow: 0 2px 8px rgba(24, 119, 242, 0.2) !important;
+  transform: translateY(-1px);
 }
 
+/* Active hover state - when hovering over active button */
+.interaction-btn.active:hover {
+  background: #d0e9ff !important;
+  box-shadow: 0 4px 12px rgba(24, 119, 242, 0.3) !important;
+  transform: translateY(-2px);
+}
+
+/* Loading state */
 .interaction-btn.loading {
   opacity: 0.7;
   cursor: not-allowed;
   pointer-events: none;
+  border-color: #ccc;
 }
 
+/* Disabled state */
 .interaction-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Focus state for accessibility */
+.interaction-btn:focus {
+  outline: 2px solid #1877f2;
+  outline-offset: 2px;
 }
 
 .interaction-icon {
   font-size: 18px;
   line-height: 1;
+  transition: transform 0.2s ease;
+}
+
+.interaction-btn:hover .interaction-icon {
+  transform: scale(1.1);
+}
+
+.interaction-btn.active .interaction-icon {
+  transform: scale(1.05);
 }
 
 .interaction-label {
   font-weight: 600;
+  transition: color 0.2s ease;
 }
 
 .interaction-count {
@@ -1592,11 +1624,16 @@
   font-weight: 600;
   min-width: 20px;
   text-align: center;
+  transition: all 0.2s ease;
 }
 
 .interaction-btn.active .interaction-count {
-  background: #1877f2;
-  color: white;
+  background: #1877f2 !important;
+  color: white !important;
+}
+
+.interaction-btn:not(.active):hover .interaction-count {
+  background: #e1e5e9;
 }
 
 .loading-interactions {
@@ -1638,4 +1675,180 @@
 
 .interaction-btn.loading .interaction-icon {
   animation: pulse 1.5s infinite;
+}
+
+/* Smooth transition when becoming active */
+.interaction-btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Ensure active state takes precedence */
+.interaction-btn.active {
+  z-index: 1;
+}
+
+///// new
+/* Add these styles to your existing SCSS file */
+
+/* Loading states for buttons */
+.submit-comment-btn.loading,
+.submit-reply-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  position: relative;
+}
+
+.submit-comment-btn.loading::after,
+.submit-reply-btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+@keyframes spin {
+  0% { transform: translate(-50%, -50%) rotate(0deg); }
+  100% { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+/* Disabled textarea styles */
+.comment-textarea:disabled,
+.reply-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #f5f5f5;
+}
+
+/* Active comment interaction button */
+.comment-interaction-btn.active {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.comment-interaction-btn.active:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+/* Comment interaction buttons styling */
+.comment-interaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: 1px solid #ddd;
+  background-color: #fff;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 8px;
+}
+
+.comment-interaction-btn:hover {
+  background-color: #f8f9fa;
+  border-color: #007bff;
+}
+
+/* Loading overlay for interactions */
+.loading-interactions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: #666;
+  font-style: italic;
+}
+
+/* Improved comment form styling */
+.add-comment-form {
+  margin-bottom: 20px;
+  padding: 16px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+}
+
+.comment-textarea,
+.reply-textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1.4;
+  resize: vertical;
+  margin-bottom: 10px;
+  font-family: inherit;
+}
+
+.comment-textarea:focus,
+.reply-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Reply form styling */
+.reply-form {
+  margin-top: 12px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 3px solid #007bff;
+}
+
+.reply-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.submit-reply-btn,
+.cancel-reply-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.submit-reply-btn {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+.submit-reply-btn:hover:not(:disabled) {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
+
+.cancel-reply-btn {
+  background-color: #6c757d;
+  color: white;
+  border-color: #6c757d;
+}
+
+.cancel-reply-btn:hover:not(:disabled) {
+  background-color: #545b62;
+  border-color: #545b62;
+}
+
+/* Disabled button states */
+.submit-comment-btn:disabled,
+.submit-reply-btn:disabled,
+.cancel-reply-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
