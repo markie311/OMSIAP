@@ -1520,3 +1520,122 @@
     padding: 10px !important;
   }
 }
+
+
+////// new
+/* Additional CSS for interaction buttons */
+.interaction-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 20px 0;
+  justify-content: center;
+}
+
+.interaction-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: 2px solid #e1e5e9;
+  border-radius: 25px;
+  background: white;
+  color: #65676b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+  justify-content: center;
+}
+
+.interaction-btn:hover {
+  border-color: #1877f2;
+  background: #f0f2f5;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 119, 242, 0.15);
+}
+
+.interaction-btn.active {
+  border-color: #1877f2;
+  background: #e7f3ff;
+  color: #1877f2;
+  box-shadow: 0 2px 8px rgba(24, 119, 242, 0.2);
+}
+
+.interaction-btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.interaction-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.interaction-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.interaction-label {
+  font-weight: 600;
+}
+
+.interaction-count {
+  background: #f0f2f5;
+  color: #65676b;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.interaction-btn.active .interaction-count {
+  background: #1877f2;
+  color: white;
+}
+
+.loading-interactions {
+  text-align: center;
+  padding: 20px;
+  color: #65676b;
+  font-style: italic;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .interaction-buttons {
+    gap: 8px;
+  }
+
+  .interaction-btn {
+    padding: 10px 12px;
+    font-size: 13px;
+    min-width: 70px;
+  }
+
+  .interaction-icon {
+    font-size: 16px;
+  }
+}
+
+/* Animation for loading state */
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.interaction-btn.loading .interaction-icon {
+  animation: pulse 1.5s infinite;
+}
