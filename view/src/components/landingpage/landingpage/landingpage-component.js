@@ -57,7 +57,7 @@ export default function LandingPage(props) {
         <PricingTable  citizenshipregistrationtype={props.citizenshipregistrationtype}
                        citizenshipregistrationtypecb={props.citizenshipregistrationtypecb}/>
         <MeetOurProfessional />
-        <Articles />
+        <Articles articles={props.articles}/>
         <Map />
         <Footer />
       </Col>

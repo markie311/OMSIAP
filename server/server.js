@@ -4,9 +4,10 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 
 // Import route files
-const peoplesRoute = require('./routes/people/peoplesRoute');
-const productsRoute = require('./routes/products/productsRoute');
-const omsiapRoute = require('./routes/omsiap/omsiapRoute');
+const peoplesRoute = require('./routes/people/peoplesRoute')
+const productsRoute = require('./routes/products/productsRoute')
+const omsiapRoute = require('./routes/omsiap/omsiapRoute')
+const contentRoute = require('./routes/content/contentRoute')
 
 // Reconnection attempt tracker
 let reconnectAttempts = 0;
@@ -72,9 +73,10 @@ mongoose.connection.on('disconnected', () => {
 });
 
 // Routes
-app.use('/people/', peoplesRoute);
-app.use('/products/', productsRoute);
-app.use('/omsiap/', omsiapRoute);
+app.use('/people/', peoplesRoute)
+app.use('/products/', productsRoute)
+app.use('/omsiap/', omsiapRoute)
+app.use('/content/', contentRoute)
 
 // Optional: Health Check Endpoint
 app.get('/health', (req, res) => {

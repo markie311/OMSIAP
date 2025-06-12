@@ -10,6 +10,7 @@ export function LoadingProvider({ children }) {
       user: true,
       products: true,
       transactions: true,
+      contents: true,
       // Add other resources as needed
     });
     
@@ -23,6 +24,7 @@ export function LoadingProvider({ children }) {
         user: false,
         products: false,
         transactions: false,
+        contents: false
         // Set all resources to false
       });
     };

@@ -7,7 +7,8 @@ import { useState } from "react"
 import { Row, Col, Modal, Button } from "react-bootstrap"
 import { useNavigate } from "react-router-dom"
 
-export default function Articles() {
+export default function Articles(props) {
+  
   const navigate = useNavigate()
   const [showModal, setShowModal] = useState(false)
   const [selectedArticle, setSelectedArticle] = useState(null)
@@ -44,7 +45,7 @@ export default function Articles() {
 
       <div className="articles-container">
         <Row className="articles-row">
-          {articles.map((article) => (
+          {props.articles.map((article) => (
             <Col xs={12} md={4} lg={4} key={article.id} className="article-col">
               <div className="article-card">
                 <div className="article-image-container">

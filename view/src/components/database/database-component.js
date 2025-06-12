@@ -10,6 +10,9 @@ import { Container, Row, Col, Button, Form, Spinner, Modal, Image } from "react-
 
 import { FaEye, 
          FaGlobe,
+         FaNewspaper,
+         FaLightbulb,
+         FaQuoteLeft,
          FaTruck,
          FaBarcode,
          FaList,
@@ -176,6 +179,8 @@ function DatabaseComponent() {
   const [showRegisteredRegistrantsWithVerifiedDocuments, setShowRegisteredRegistrantsWithVerifiedDocuments] = useState(false)
   const [showRegisteredRegistrantsWithPendingDocuments, setShowRegisteredRegistrantsWithPendingDocuments] = useState(false)
   const [showRegisteredRegistrantsWithRejectedDocuments, setShowRegisteredRegistrantsWithRejectedDocuments] = useState(false)
+
+  const [showCreateContent, setShowCreateContent] = useState(false)
 
   const [acceptorderloadingindication, acceptorderloadingindicationcb] = useState(false)
 
@@ -1718,6 +1723,19 @@ const fetchOmsiapData = async () => {
 
                                        setregistrantdata={setregistrantdata}
                        />
+
+         <StatisticsCardContent stats={customStats}
+                                setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                setShowCreateContent={setShowCreateContent}
+
+                                setShowCreateProduct={setShowCreateProduct}
+                                setShowProductReader={setShowProductReader}
+                                setShowCreateRegistrantForm={setShowCreateRegistrantForm}
+                                setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
+                                setShowUpdateRegistrantFormDisplay={setShowUpdateRegistrantFormDisplay}
+
+                                setregistrantdata={setregistrantdata}/>
+
      </div>
 
      {
@@ -2166,6 +2184,13 @@ const fetchOmsiapData = async () => {
                                         setShowUpdateRegistrantFormDisplay={setShowUpdateRegistrantFormDisplay}
                                         registrantdata={registrantdata}
                                         setregistrantdata={setregistrantdata}/>
+              )
+            }
+
+            {
+              showCreateContent && (
+                <CreateContent setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                               setShowCreateContent={setShowCreateContent}/>
               )
             }
 
@@ -3684,6 +3709,327 @@ const StatisticsCardRegistrantCRUD = ({
               >
                 Remove Registrant
               </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  );
+};
+
+const StatisticsCardContent = ({ 
+  setShowDatabaseConfiguration, 
+  setShowCreateContent, 
+  setShowContentDetailsDisplay,
+  setShowUpdateContentFormDisplay,
+  setContentData
+}) => {
+
+  const [readContentFieldValue, setReadContentFieldValue] = useState("");
+  const [updateContentFieldValue, setUpdateContentFieldValue] = useState("");
+  const [readContentLoadingIndication, setReadContentLoadingIndication] = useState(false);
+  const [updateContentLoadingIndication, setUpdateContentLoadingIndication] = useState(false);
+  const [deleteContentFieldValue, setDeleteContentFieldValue] = useState("");
+  const [deleteContentLoadingIndication, setDeleteContentLoadingIndication] = useState(false);
+
+  function handleReadContentIDField(evt) {
+    setReadContentFieldValue(evt.target.value);
+  }
+
+  function handleUpdateContentIDField(evt) {
+    setUpdateContentFieldValue(evt.target.value);
+  }
+
+  function handleDeleteContentIDField(evt) {
+    setDeleteContentFieldValue(evt.target.value);
+  }
+
+  const handleReadContent = async () => {
+    document.querySelectorAll(".readregistrant-responsemessage")[0].innerText = "";
+    document.querySelectorAll(".readregistrant-responsemessage")[0].style.color = "white";
+    document.querySelectorAll(".readregistrant-responsemessage")[0].style.display = "none";
+    setReadContentLoadingIndication(true);
+
+    try {
+      const response = await axiosCreatedInstance.post("/content/getcontenttobeviewed", {
+        id: readContentFieldValue
+      });
+
+      const content = response.data.data;
+      const message = response.data.message;
+
+      switch(message) {
+        case "Content found":
+          setContentData(content);
+          setReadContentLoadingIndication(false);
+          document.querySelectorAll(".readregistrant-responsemessage")[0].innerText = "Content found with the given ID";
+          document.querySelectorAll(".readregistrant-responsemessage")[0].style.color = "green";
+          document.querySelectorAll(".readregistrant-responsemessage")[0].style.display = "block";
+          setShowDatabaseConfiguration(true);
+          setShowContentDetailsDisplay(true);
+          break;
+        case "Content not found":
+          setReadContentLoadingIndication(false);
+          document.querySelectorAll(".readregistrant-responsemessage")[0].innerText = "No content found with the given ID";
+          document.querySelectorAll(".readregistrant-responsemessage")[0].style.color = "red";
+          document.querySelectorAll(".readregistrant-responsemessage")[0].style.display = "block";
+          break;
+      }
+    } catch (error) {
+      setReadContentLoadingIndication(false);
+      document.querySelectorAll(".readregistrant-responsemessage")[0].innerText = "An error occurred while fetching content";
+      document.querySelectorAll(".readregistrant-responsemessage")[0].style.color = "red";
+      document.querySelectorAll(".readregistrant-responsemessage")[0].style.display = "block";
+    }
+  };
+
+  const handleUpdateContent = async () => {
+    document.querySelectorAll(".updateregistrant-responsemessage")[0].innerText = "";
+    document.querySelectorAll(".updateregistrant-responsemessage")[0].style.color = "white";
+    document.querySelectorAll(".updateregistrant-responsemessage")[0].style.display = "none";
+    setUpdateContentLoadingIndication(true);
+
+    try {
+      const response = await axiosCreatedInstance.post("/content/getcontenttobeupdated", {
+        id: updateContentFieldValue
+      });
+
+      const content = response.data.data;
+      const message = response.data.message;
+
+      switch(message) {
+        case "Content found":
+          setContentData(content);
+          setUpdateContentLoadingIndication(false);
+          document.querySelectorAll(".updateregistrant-responsemessage")[0].innerText = "Content found with the given ID";
+          document.querySelectorAll(".updateregistrant-responsemessage")[0].style.color = "green";
+          document.querySelectorAll(".updateregistrant-responsemessage")[0].style.display = "block";
+          setShowDatabaseConfiguration(true);
+          setShowUpdateContentFormDisplay(true);
+          break;
+        case "Content not found":
+          setUpdateContentLoadingIndication(false);
+          document.querySelectorAll(".updateregistrant-responsemessage")[0].innerText = "No content found with the given ID";
+          document.querySelectorAll(".updateregistrant-responsemessage")[0].style.color = "red";
+          document.querySelectorAll(".updateregistrant-responsemessage")[0].style.display = "block";
+          break;
+      }
+    } catch (error) {
+      setUpdateContentLoadingIndication(false);
+      document.querySelectorAll(".updateregistrant-responsemessage")[0].innerText = "An error occurred while fetching content";
+      document.querySelectorAll(".updateregistrant-responsemessage")[0].style.color = "red";
+      document.querySelectorAll(".updateregistrant-responsemessage")[0].style.display = "block";
+    }
+  };
+
+  const handleDeleteContent = async () => {
+    if (!deleteContentFieldValue.trim()) {
+      alert("Please enter a content ID");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this content? This action cannot be undone.")) {
+      return;
+    }
+
+    setDeleteContentLoadingIndication(true);
+
+    try {
+      const response = await axiosCreatedInstance.post("/content/deletecontent", {
+        id: deleteContentFieldValue
+      });
+
+      const message = response.data.message;
+
+      switch(message) {
+        case "Content deleted successfully":
+          setDeleteContentLoadingIndication(false);
+          alert("Content has been successfully deleted");
+          setDeleteContentFieldValue("");
+          break;
+        case "Content not found":
+          setDeleteContentLoadingIndication(false);
+          alert("No content found with the given ID");
+          break;
+        default:
+          setDeleteContentLoadingIndication(false);
+          alert("An error occurred while deleting content");
+          break;
+      }
+    } catch (error) {
+      setDeleteContentLoadingIndication(false);
+      alert("An error occurred while deleting content");
+    }
+  };
+
+  return (
+    <div className="statistics-container">
+      <h1 className="main-title">CONTENT MANAGEMENT</h1>
+
+      <div className="statistics-grid">
+
+        {/* CREATE CONTENT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Create Content</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path>
+                  <polyline points="14,2 14,8 20,8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10,9 9,9 8,9"></polyline>
+                  <line x1="12" y1="5" x2="12" y2="11"></line>
+                  <line x1="9" y1="8" x2="15" y2="8"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <p className="card-description">Add new content to the system</p>
+              <button 
+                className="action-button"
+                onClick={() => {
+                  setShowDatabaseConfiguration(true);
+                  setShowCreateContent(true);
+                }}
+              >
+                Create Content
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* READ CONTENT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>View Content</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="view-content-id">Content ID:</label>
+                <input 
+                  type="text"
+                  id="view-content-id" 
+                  className="input-field"
+                  placeholder="Enter content ID to view" 
+                  value={readContentFieldValue}
+                  onChange={handleReadContentIDField}
+                />
+                <p className="readregistrant-responsemessage">Response message</p>
+              </div>
+              {
+                readContentLoadingIndication ? 
+                (
+                 <Spinner animation="border" variant="warning" />
+                )
+                :
+                (
+                  <button 
+                    className="action-button"
+                    onClick={handleReadContent}
+                  >
+                    View Content
+                  </button>
+                )
+              }
+            </div>
+          </div>
+        </div>
+
+        {/* UPDATE CONTENT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Edit Content</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="edit-content-id">Content ID:</label>
+                <input 
+                  type="text" 
+                  id="edit-content-id"
+                  value={updateContentFieldValue}
+                  onChange={handleUpdateContentIDField}
+                  className="input-field"
+                  placeholder="Enter content ID to edit" 
+                />
+              </div>
+              <p className="updateregistrant-responsemessage"></p>
+              {
+                updateContentLoadingIndication ? 
+                (
+                  <Spinner animation="border" variant="warning" />
+                ) 
+                :
+                (
+                <button 
+                   className="action-button"
+                   onClick={handleUpdateContent}
+                >
+                  Edit Content
+                </button>
+                )
+              }
+            </div>
+          </div>
+        </div>
+
+        {/* DELETE CONTENT */}
+        <div className="statistics-card">
+          <div className="card-inner">
+            <div className="card-header">
+              <span>Delete Content</span>
+              <div className="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="3,6 5,6 21,6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </div>
+            </div>
+            <div className="card-content">
+              <div className="input-container">
+                <label htmlFor="delete-content-id">Content ID:</label>
+                <input 
+                  type="text" 
+                  id="delete-content-id"
+                  className="input-field"
+                  placeholder="Enter content ID to delete"
+                  value={deleteContentFieldValue}
+                  onChange={handleDeleteContentIDField}
+                />
+              </div>
+              {
+                deleteContentLoadingIndication ? 
+                (
+                  <Spinner animation="border" variant="danger" />
+                ) 
+                :
+                (
+                  <button 
+                    className="action-button danger"
+                    onClick={handleDeleteContent}
+                  >
+                    Delete Content
+                  </button>
+                )
+              }
             </div>
           </div>
         </div>
@@ -18127,6 +18473,493 @@ const RegistrantDetailsDisplay = ( {setShowDatabaseConfiguration, setShowRegistr
       <footer>
         <p>© MFATIP System</p>
       </footer>
+    </div>
+  );
+};
+
+const CreateContent = ({ 
+  setShowDatabaseConfiguration, 
+  setShowCreateContent 
+}) => {
+
+  const [images, setImages] = useState([]);
+  const [keyTakeaways, setKeyTakeaways] = useState([]);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [editingImageIndex, setEditingImageIndex] = useState(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState('');
+  const [createContentLoadingIndication, createContentLoadingIndicationCb] = useState(false);
+
+  const [contentData, setContentData] = useState({
+    data: "",
+    topic: "",
+    title: "",
+    content: "",
+    description: "",
+    expertOpinion: "",
+    readTime: ""
+  });
+
+  // Handle form input changes
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setContentData({ ...contentData, [name]: value });
+  };
+
+  // Handle main image upload
+  const handleMainImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const newImage = {
+        file,
+        preview: URL.createObjectURL(file),
+      };
+      setImages([newImage]); // Only one main image
+    }
+  };
+
+  // Handle additional images upload
+  const handleAdditionalImagesUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const newImages = files.map((file) => ({
+      file,
+      preview: URL.createObjectURL(file),
+    }));
+    setImages(prev => [...prev, ...newImages]);
+  };
+
+  // Remove image
+  const removeImage = (index) => {
+    const updatedImages = [...images];
+    URL.revokeObjectURL(updatedImages[index].preview);
+    updatedImages.splice(index, 1);
+    setImages(updatedImages);
+  };
+
+  // Add key takeaway
+  const addKeyTakeaway = (e) => {
+    e.preventDefault();
+    const takeawayField = document.getElementById("takeaway-input");
+    if (takeawayField.value.trim()) {
+      setKeyTakeaways([...keyTakeaways, takeawayField.value]);
+      takeawayField.value = "";
+    }
+  };
+
+  // Remove key takeaway
+  const removeKeyTakeaway = (index) => {
+    const updatedTakeaways = [...keyTakeaways];
+    updatedTakeaways.splice(index, 1);
+    setKeyTakeaways(updatedTakeaways);
+  };
+
+  // Calculate read time based on content length
+  const calculateReadTime = (content) => {
+    const wordsPerMinute = 200;
+    const wordCount = content.trim().split(/\s+/).length;
+    const readTime = Math.ceil(wordCount / wordsPerMinute);
+    return `${readTime} mins read`;
+  };
+
+  // Handle submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const responseMessage = document.querySelectorAll(".createcontent-responsemessage")[0];
+    responseMessage.style.color = "white";
+    responseMessage.innerText = "";
+    responseMessage.style.display = "none";
+
+    createContentLoadingIndicationCb(true);
+
+    try {
+      // Validate required fields
+      if (!contentData.title || !contentData.content || !contentData.description || !contentData.data) {
+        throw new Error("Please fill in all required fields: Title, Content, Description, and Category");
+      }
+
+      const formData = new FormData();
+
+      // Generate content ID
+      const contentId = Date.now();
+
+      // Calculate read time if not provided
+      const readTime = contentData.readTime || calculateReadTime(contentData.content);
+
+      // Prepare content data according to schema structure
+      const contentPayload = {
+        id: contentId,
+        image: "", // Will be set by backend from main image
+        images: [], // Will be populated by backend from uploaded files
+        data: contentData.data,
+        topic: contentData.topic,
+        date: new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+        title: contentData.title,
+        readTime: readTime,
+        content: contentData.content,
+        description: contentData.description,
+        keytakeaways: keyTakeaways,
+        expertopinion: contentData.expertOpinion,
+        interactions: {
+          like: [],
+          unlike: [],
+          exited: [],
+          wow: [],
+          sad: []
+        },
+        comments: []
+      };
+
+      // Append the structured content data
+      formData.append("contentData", JSON.stringify(contentPayload));
+
+      // Append images
+      images.forEach((image, index) => {
+        formData.append("images", image.file);
+      });
+
+      const response = await axiosCreatedInstance.post("/content/addcontent", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      const { message, contentId: returnedContentId } = response.data;
+
+      if (response.data.success) {
+        responseMessage.style.color = "green";
+        responseMessage.innerText = `Content added successfully! Content ID: ${returnedContentId}`;
+        
+        // Reset form on success
+        resetForm();
+      } else {
+        responseMessage.style.color = "red";
+        responseMessage.innerText = message || "Unknown error occurred";
+      }
+
+      responseMessage.style.display = "block";
+      createContentLoadingIndicationCb(false);
+
+    } catch (error) {
+      createContentLoadingIndicationCb(false);
+
+      let errorText = "An unexpected error occurred";
+
+      if (error.response) {
+        errorText = `Error: ${error.response.data.message || "Server error"}`;
+      } else if (error.request) {
+        errorText = "Network error: Please check your connection and try again";
+      } else {
+        errorText = `Error: ${error.message}`;
+      }
+
+      responseMessage.style.color = "red";
+      responseMessage.innerText = errorText;
+      responseMessage.style.display = "block";
+    }
+  };
+
+  const resetForm = () => {
+    setContentData({
+      data: "",
+      topic: "",
+      title: "",
+      content: "",
+      description: "",
+      expertOpinion: "",
+      readTime: ""
+    });
+
+    setImages([]);
+    setKeyTakeaways([]);
+  };
+
+  return (
+    <div className="create-content-container">
+      <Container fluid className="create-content-view">
+        <Row className="create-content-header-row">
+          <Col xs={12} className="d-flex justify-content-between align-items-center">
+            <h1 className="create-content-title">Create New Content</h1>
+            <Button
+              variant="none"
+              className="create-content-close-button"
+              onClick={() => {
+                setShowDatabaseConfiguration(false);
+                setShowCreateContent(false);
+              }}
+            >
+              <FaTimes />
+            </Button>
+          </Col>
+        </Row>
+
+        <Form className="create-content-form">
+          <Row>
+            {/* Content Category */}
+            <Col xs={12} md={6} className="mb-4">
+              <Form.Group>
+                <Form.Label className="create-content-form-label">
+                  <FaTag className="create-content-form-icon" /> Category *
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="data"
+                  value={contentData.data}
+                  onChange={handleInputChange}
+                  className="create-content-form-control"
+                  placeholder="e.g., Business, Technology, Leadership"
+                  required
+                />
+              </Form.Group>
+            </Col>
+
+            {/* Content Topic */}
+            <Col xs={12} md={6} className="mb-4">
+              <Form.Group>
+                <Form.Label className="create-content-form-label">
+                  <FaGlobe className="create-content-form-icon" /> Topic
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="topic"
+                  value={contentData.topic}
+                  onChange={handleInputChange}
+                  className="create-content-form-control"
+                  placeholder="e.g., Business growth, Innovation"
+                />
+              </Form.Group>
+            </Col>
+
+            {/* Content Title */}
+            <Col xs={12} className="mb-4">
+              <Form.Group>
+                <Form.Label className="create-content-form-label">
+                  <FaNewspaper className="create-content-form-icon" /> Title *
+                </Form.Label>
+                <Form.Control
+                  type="text"
+                  name="title"
+                  value={contentData.title}
+                  onChange={handleInputChange}
+                  className="create-content-form-control"
+                  placeholder="Enter compelling article title"
+                  required
+                />
+              </Form.Group>
+            </Col>
+
+            {/* Image Upload Section */}
+            <Col xs={12} md={6} className="mb-4">
+              <div className="create-content-image-upload-section">
+                <h2 className="create-content-section-title">Content Images</h2>
+
+                <div className="create-content-image-upload-container">
+                  <label htmlFor="content-main-image" className="create-content-image-upload-label">
+                    <FaFileImage className="create-content-upload-icon" />
+                    <span>Select Main Image</span>
+                  </label>
+                  <input
+                    id="content-main-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleMainImageUpload}
+                    className="create-content-hidden-input"
+                  />
+                </div>
+
+                <div className="create-content-image-upload-container">
+                  <label htmlFor="content-additional-images" className="create-content-image-upload-label create-content-secondary">
+                    <FaFileImage className="create-content-upload-icon" />
+                    <span>Add More Images</span>
+                  </label>
+                  <input
+                    id="content-additional-images"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleAdditionalImagesUpload}
+                    className="create-content-hidden-input"
+                  />
+                </div>
+
+                <div className="create-content-images-preview-container">
+                  {images.length > 0 ? (
+                    <Row className="create-content-image-grid">
+                      {images.map((img, index) => (
+                        <Col xs={6} sm={4} md={6} lg={4} key={index} className="create-content-image-preview-col">
+                          <div className="create-content-image-preview-wrapper">
+                            <img
+                              src={img.preview || "/placeholder.svg"}
+                              alt={`Content preview ${index}`}
+                              className="create-content-image-preview"
+                            />
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              className="create-content-remove-image-btn"
+                              onClick={() => removeImage(index)}
+                            >
+                              <FaTrash />
+                            </Button>
+                            {index === 0 && (
+                              <div className="create-content-main-image-badge">Main</div>
+                            )}
+                          </div>
+                        </Col>
+                      ))}
+                    </Row>
+                  ) : (
+                    <div className="create-content-no-images-placeholder">
+                      <p>No images selected</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </Col>
+
+            {/* Content Details Section */}
+            <Col xs={12} md={6} className="mb-4">
+              <div className="create-content-details-section">
+                <h2 className="create-content-section-title">Content Details</h2>
+
+                <Row>
+                  <Col xs={12} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="create-content-form-label">
+                        <FaClock className="create-content-form-icon" /> Read Time
+                      </Form.Label>
+                      <Form.Control
+                        type="text"
+                        name="readTime"
+                        value={contentData.readTime}
+                        onChange={handleInputChange}
+                        className="create-content-form-control"
+                        placeholder="e.g., 5 mins read (auto-calculated if empty)"
+                      />
+                    </Form.Group>
+                  </Col>
+
+                  <Col xs={12} className="mb-3">
+                    <Form.Group>
+                      <Form.Label className="create-content-form-label">
+                        <FaNewspaper className="create-content-form-icon" /> Description *
+                      </Form.Label>
+                      <Form.Control
+                        as="textarea"
+                        rows={4}
+                        name="description"
+                        value={contentData.description}
+                        onChange={handleInputChange}
+                        className="create-content-form-control"
+                        placeholder="Brief description or summary of the content"
+                        required
+                      />
+                    </Form.Group>
+                  </Col>
+                </Row>
+              </div>
+            </Col>
+
+            {/* Main Content */}
+            <Col xs={12} className="mb-4">
+              <Form.Group>
+                <Form.Label className="create-content-form-label">
+                  <FaNewspaper className="create-content-form-icon" /> Main Content *
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={10}
+                  name="content"
+                  value={contentData.content}
+                  onChange={handleInputChange}
+                  className="create-content-form-control"
+                  placeholder="Write your detailed content here..."
+                  required
+                />
+              </Form.Group>
+            </Col>
+
+            {/* Key Takeaways Section */}
+            <Col xs={12} md={6} className="mb-4">
+              <div className="create-content-takeaways-section">
+                <h2 className="create-content-section-title">
+                  <FaLightbulb className="create-content-section-icon" /> Key Takeaways
+                </h2>
+
+                <div className="create-content-add-item-container">
+                  <Form.Control
+                    type="text"
+                    id="takeaway-input"
+                    className="create-content-form-control"
+                    placeholder="Enter key takeaway"
+                  />
+                  <Button variant="outline-light" className="create-content-add-button" onClick={addKeyTakeaway}>
+                    <FaPlus /> Add
+                  </Button>
+                </div>
+
+                {keyTakeaways.length > 0 && (
+                  <div className="create-content-items-list">
+                    {keyTakeaways.map((takeaway, index) => (
+                      <div key={index} className="create-content-item-pill">
+                        <span>{takeaway}</span>
+                        <Button
+                          variant="none"
+                          size="sm"
+                          className="create-content-remove-item-btn"
+                          onClick={() => removeKeyTakeaway(index)}
+                        >
+                          <FaTimes />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </Col>
+
+            {/* Expert Opinion */}
+            <Col xs={12} md={6} className="mb-4">
+              <Form.Group>
+                <Form.Label className="create-content-form-label">
+                  <FaQuoteLeft className="create-content-form-icon" /> Expert Opinion
+                </Form.Label>
+                <Form.Control
+                  as="textarea"
+                  rows={6}
+                  name="expertOpinion"
+                  value={contentData.expertOpinion}
+                  onChange={handleInputChange}
+                  className="create-content-form-control"
+                  placeholder="Add expert opinion or professional insight..."
+                />
+              </Form.Group>
+            </Col>
+
+            <p className="createcontent-responsemessage">Content added successfully</p>
+
+            {/* Submit Button */}
+            <Col xs={12} md={4} lg={3} className="text-center mb-4">
+              {createContentLoadingIndication ? (
+                <Spinner animation="border" variant="warning" />
+              ) : (
+                <Button type="button" className="create-content-submit-button" size="lg" onClick={handleSubmit}>
+                  Create Content
+                </Button>
+              )}
+            </Col>
+
+            <Col xs={12} md={4} lg={3} className="text-center mb-4">
+              <Button className="create-content-reset-button" size="lg" onClick={resetForm}>
+                Reset Form
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+      </Container>
     </div>
   );
 };

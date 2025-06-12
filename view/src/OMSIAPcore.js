@@ -36,6 +36,8 @@ import axiosCreatedInstance from './components/lib/axiosutil.js';
 // Import Loading Context
 import { LoadingProvider, useLoading } from './components/loadingcontext/loadingcontext.js'
 import LoadingIndicator from './components/loadingindicator/loadingindicator-component.js'
+import { propTypes } from 'react-bootstrap/esm/Image.js';
+import { m } from 'framer-motion';
 
 
 function OMSIAPCoreContent() {
@@ -156,6 +158,128 @@ function OMSIAPCoreContent() {
   /// cart 
   const [cart, cartcb] = useState([]); 
 
+
+  const [articles, articlescb] = useState([
+    {
+      id: 1,
+      image: "../images/landingpage/articles/omsiapwebsite.png",
+      images: ["../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png"],
+      data: "Business",
+      topic: "Business growth",
+      date: "June 10, 2025",
+      title: "OMSIAP's website platform launched",
+      readTime: "6 mins read",
+      content:
+        "Detailed content about OMSIAP's website platform purpose and functionalitie's",
+       description:
+        "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
+      keytakeaways: ["Key takes aways 1"],
+      expertopinion: "Expert opinion 1",
+      interactions: {
+        like: [
+          {
+            name: "Mark Anthony Apura Beloy",
+            phonenumber: "09956777674",
+            date: "June 10 2025 at 3:57pm"
+          }
+        ],
+        unlike: [],
+        exited: [],
+        wow: [],
+        sad: [],
+      },
+      comments: [
+        {
+          author: {
+            name: "Testing Testing Testing"
+          },
+          date: "June 10 2025 at 11:29pm",
+          comment: 'It sounds good',
+          replies: [
+             {
+              name: "Mark Anthony Apura Beloy",
+              phonenumber: "09956777674",
+              date: "June 10 2025 at 3:57pm",
+              reply: "Reply 1"
+             }
+          ],
+          interactions: {
+            like: [
+              {
+              name: "Mark Anthony Apura Beloy",
+              phonenumber: "09956777674",
+              date: "June 10 2025 at 3:57pm"
+              }
+            ],
+            unlike: [],
+            exited: [],
+            wow: [],
+            sad: []
+          }
+        }
+      ]
+    },
+    {
+      id: 2,
+      image: "../images/landingpage/articles/omsiapwebsite.png",
+      images: ["../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png"],
+      data: "Leadership",
+      topic: "Business growth",
+      date: "June 10, 2025",
+      title: "OMSIAP's website platform launched",
+      readTime: "6 mins read",
+      content:
+        "Detailed content about OMSIAP's website platform purpose and functionalitie's",
+       description:
+        "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
+      keytakeaways: ["Key takes aways 1"],
+      expertopinion: "Expert opinion 1",
+      interactions: {
+        like: [
+          {
+            name: "Mark Anthony Apura Beloy",
+            phonenumber: "09956777674",
+            date: "June 10 2025 at 3:57pm"
+          }
+        ],
+        unlike: [],
+        exited: [],
+        wow: [],
+        sad: [],
+      },
+      comments: [
+        {
+          author: {
+            name: "Testing Testing Testing"
+          },
+          date: "June 10 2025 at 11:29pm",
+          comment: 'It sounds good',
+          replies: [
+             {
+              name: "Mark Anthony Apura Beloy",
+              phonenumber: "09956777674",
+              date: "June 10 2025 at 3:57pm",
+              reply: "Reply 1"
+             }
+          ],
+          interactions: {
+            like: [
+              {
+              name: "Mark Anthony Apura Beloy",
+              phonenumber: "09956777674",
+              date: "June 10 2025 at 3:57pm"
+              }
+            ],
+            unlike: [],
+            exited: [],
+            wow: [],
+            sad: []
+          }
+        }
+      ]
+    }
+  ])
+
   // Setup viewport detection
   useEffect(() => {
 
@@ -211,7 +335,8 @@ function OMSIAPCoreContent() {
         await Promise.all([
           loadUserData(),
           loadProductData(),
-          loadTransactionData()
+          loadTransactionData(),
+          loadContentsData()
         ]);
         
         // All critical data is loaded, update global state
@@ -780,6 +905,265 @@ function OMSIAPCoreContent() {
 
   };
 
+  // Load contents data
+  const loadContentsData = async () => {
+    try {
+      updateLoadingState('contents', true);
+
+      // Fetch contents from the API
+      const response = await axiosCreatedInstance.get("/content/getallcontents");
+      
+      if (response.data && response.data.data) {
+        // Use the contents from the API response
+        articlescb(response.data.data)
+        console.log(response.data.data)
+      } else {
+        // Set default contents if none returned
+        articlescb([
+          {
+            id: 1,
+            image: "../images/landingpage/articles/omsiapwebsite.png",
+            images: ["../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png"],
+            data: "Business",
+            topic: "Business growth",
+            date: "June 10, 2025",
+            title: "OMSIAP's website platform launched",
+            readTime: "6 mins read",
+            content: "Detailed content about OMSIAP's website platform purpose and functionalitie's",
+            description: "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
+            keytakeaways: ["Key takes aways 1"],
+            expertopinion: "Expert opinion 1",
+            interactions: {
+              like: [
+                {
+                  name: "Mark Anthony Apura Beloy",
+                  phonenumber: "09956777674",
+                  date: "June 10 2025 at 3:57pm"
+                }
+              ],
+              unlike: [],
+              exited: [],
+              wow: [],
+              sad: [],
+            },
+            comments: [
+              {
+                author: {
+                  name: "Testing Testing Testing"
+                },
+                date: "June 10 2025 at 11:29pm",
+                comment: 'It sounds good',
+                replies: [
+                  {
+                    name: "Mark Anthony Apura Beloy",
+                    phonenumber: "09956777674",
+                    date: "June 10 2025 at 3:57pm",
+                    reply: "Reply 1"
+                  }
+                ],
+                interactions: {
+                  like: [
+                    {
+                      name: "Mark Anthony Apura Beloy",
+                      phonenumber: "09956777674",
+                      date: "June 10 2025 at 3:57pm"
+                    }
+                  ],
+                  unlike: [],
+                  exited: [],
+                  wow: [],
+                  sad: []
+                }
+              }
+            ]
+          },
+          {
+            id: 2,
+            image: "../images/landingpage/articles/omsiapwebsite.png",
+            images: ["../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png"],
+            data: "Leadership",
+            topic: "Business growth",
+            date: "June 10, 2025",
+            title: "OMSIAP's website platform launched",
+            readTime: "6 mins read",
+            content: "Detailed content about OMSIAP's website platform purpose and functionalitie's",
+            description: "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
+            keytakeaways: ["Key takes aways 1"],
+            expertopinion: "Expert opinion 1",
+            interactions: {
+              like: [
+                {
+                  name: "Mark Anthony Apura Beloy",
+                  phonenumber: "09956777674",
+                  date: "June 10 2025 at 3:57pm"
+                }
+              ],
+              unlike: [],
+              exited: [],
+              wow: [],
+              sad: [],
+            },
+            comments: [
+              {
+                author: {
+                  name: "Testing Testing Testing"
+                },
+                date: "June 10 2025 at 11:29pm",
+                comment: 'It sounds good',
+                replies: [
+                  {
+                    name: "Mark Anthony Apura Beloy",
+                    phonenumber: "09956777674",
+                    date: "June 10 2025 at 3:57pm",
+                    reply: "Reply 1"
+                  }
+                ],
+                interactions: {
+                  like: [
+                    {
+                      name: "Mark Anthony Apura Beloy",
+                      phonenumber: "09956777674",
+                      date: "June 10 2025 at 3:57pm"
+                    }
+                  ],
+                  unlike: [],
+                  exited: [],
+                  wow: [],
+                  sad: []
+                }
+              }
+            ]
+          }
+        ]);
+      }
+      
+      updateLoadingState('contents', false);
+
+    } catch (error) {
+      console.error("Error loading content data:", error);
+      updateLoadingState('contents', false);
+      
+      // Set default contents on error
+      articlescb([
+        {
+          id: 1,
+          image: "../images/landingpage/articles/omsiapwebsite.png",
+          images: ["../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png"],
+          data: "Business",
+          topic: "Business growth",
+          date: "June 10, 2025",
+          title: "OMSIAP's website platform launched",
+          readTime: "6 mins read",
+          content: "Detailed content about OMSIAP's website platform purpose and functionalitie's",
+          description: "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
+          keytakeaways: ["Key takes aways 1"],
+          expertopinion: "Expert opinion 1",
+          interactions: {
+            like: [
+              {
+                name: "Mark Anthony Apura Beloy",
+                phonenumber: "09956777674",
+                date: "June 10 2025 at 3:57pm"
+              }
+            ],
+            unlike: [],
+            exited: [],
+            wow: [],
+            sad: [],
+          },
+          comments: [
+            {
+              author: {
+                name: "Testing Testing Testing"
+              },
+              date: "June 10 2025 at 11:29pm",
+              comment: 'It sounds good',
+              replies: [
+                {
+                  name: "Mark Anthony Apura Beloy",
+                  phonenumber: "09956777674",
+                  date: "June 10 2025 at 3:57pm",
+                  reply: "Reply 1"
+                }
+              ],
+              interactions: {
+                like: [
+                  {
+                    name: "Mark Anthony Apura Beloy",
+                    phonenumber: "09956777674",
+                    date: "June 10 2025 at 3:57pm"
+                  }
+                ],
+                unlike: [],
+                exited: [],
+                wow: [],
+                sad: []
+              }
+            }
+          ]
+        },
+        {
+          id: 2,
+          image: "../images/landingpage/articles/omsiapwebsite.png",
+          images: ["../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png", "../images/landingpage/articles/omsiapwebsite.png"],
+          data: "Leadership",
+          topic: "Business growth",
+          date: "June 10, 2025",
+          title: "OMSIAP's website platform launched",
+          readTime: "6 mins read",
+          content: "Detailed content about OMSIAP's website platform purpose and functionalitie's",
+          description: "As technology continues to evolve at a rapid pace, businesses must stay ahead of the curve to remain competitive. In this post, we explore the latest trends in business technology that are set to revolutionize industries and drive growth in the coming years.",
+          keytakeaways: ["Key takes aways 1"],
+          expertopinion: "Expert opinion 1",
+          interactions: {
+            like: [
+              {
+                name: "Mark Anthony Apura Beloy",
+                phonenumber: "09956777674",
+                date: "June 10 2025 at 3:57pm"
+              }
+            ],
+            unlike: [],
+            exited: [],
+            wow: [],
+            sad: [],
+          },
+          comments: [
+            {
+              author: {
+                name: "Testing Testing Testing"
+              },
+              date: "June 10 2025 at 11:29pm",
+              comment: 'It sounds good',
+              replies: [
+                {
+                  name: "Mark Anthony Apura Beloy",
+                  phonenumber: "09956777674",
+                  date: "June 10 2025 at 3:57pm",
+                  reply: "Reply 1"
+                }
+              ],
+              interactions: {
+                like: [
+                  {
+                    name: "Mark Anthony Apura Beloy",
+                    phonenumber: "09956777674",
+                    date: "June 10 2025 at 3:57pm"
+                  }
+                ],
+                unlike: [],
+                exited: [],
+                wow: [],
+                sad: []
+              }
+            }
+          ]
+        }
+      ]);
+    }
+  };
+
+
   function handleUserLoginStatusLoggedOut() {
     usercb({
       id: "Not logged in",
@@ -904,6 +1288,8 @@ function OMSIAPCoreContent() {
                                   citizenshipregistrationtype={citizenshipregistrationtype}
                                   citizenshipregistrationtypecb={citizenshipregistrationtypecb}
 
+                                  articles={articles}
+
                                   />}>
       </Route>
       <Route path='/honestiesonconstitutionalpromisesevaluation'
@@ -936,7 +1322,10 @@ function OMSIAPCoreContent() {
             element={<ServiceDetails />}>
       </Route>
       <Route path='/readmoreaboutarticles'
-            element={<ReadMoreAboutArticles viewport={viewport}/>}>
+            element={<ReadMoreAboutArticles viewport={viewport}
+                                            user={user}
+                                            articles={articles}
+                                            articlescb={articlescb}/>}>
       </Route>
 
       <Route path='/useraccount'
