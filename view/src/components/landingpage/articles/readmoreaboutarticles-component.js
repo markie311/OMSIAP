@@ -26,6 +26,9 @@ export default function BlogPage(props) {
   const [isLoading, setIsLoading] = useState(true)
   const [interactionLoading, setInteractionLoading] = useState(null) // Track which button is loading
 
+  const [currentTopicFilter, setCurrentTopicFilter] = useState("All") // Track current topic filter
+  const [topicBrowseLoading, setTopicBrowseLoading] = useState(false) // Track topic browsing loading
+
   // Add these state variables to your existing useState declarations
   const [commentLoading, setCommentLoading] = useState(false)
   const [replyLoading, setReplyLoading] = useState(null) // Track which reply is loading
@@ -33,65 +36,81 @@ export default function BlogPage(props) {
   // Placeholder images
   const headerImage = "../images/landingpage/articles/blog.jpg"
 
+
+const getTopicCount = (topicName) => {
+  if (!props.articles || !Array.isArray(props.articles)) return 0;
+  return props.articles.filter(article => 
+    article.data?.toLowerCase() === topicName.toLowerCase()
+  ).length;
+};
+
   // Enhanced topics with summaries
-  const topics = [
-    {
-      name: "Business Strategy",
-      summary:
-        "Explore frameworks and methodologies for developing effective business strategies that drive growth and competitive advantage in today's dynamic market environment.",
-      relatedArticles: 12,
-      icon: "📊",
-    },
-    {
-      name: "Technology Trends",
-      summary:
-        "Stay updated with the latest technological innovations and trends shaping industries, from AI and machine learning to blockchain and IoT applications.",
-      relatedArticles: 24,
-      icon: "💻",
-    },
-    {
-      name: "Digital Marketing",
-      summary:
-        "Discover cutting-edge digital marketing strategies, tools, and best practices to reach your target audience and maximize ROI across various online channels.",
-      relatedArticles: 18,
-      icon: "📱",
-    },
-    {
-      name: "Leadership",
-      summary:
-        "Learn about effective leadership styles, team management techniques, and how to inspire and guide organizations through change and challenges.",
-      relatedArticles: 15,
-      icon: "👥",
-    },
-    {
-      name: "Entrepreneurship",
-      summary:
-        "Gain insights into starting and scaling businesses, from ideation and funding to growth strategies and overcoming common startup challenges.",
-      relatedArticles: 20,
-      icon: "🚀",
-    },
-    {
-      name: "Finance",
-      summary:
-        "Understand financial management principles, investment strategies, and economic trends that impact business decisions and performance.",
-      relatedArticles: 14,
-      icon: "💰",
-    },
-    {
-      name: "Sustainability",
-      summary:
-        "Explore eco-friendly business practices, ESG frameworks, and how companies are balancing profit with environmental and social responsibility.",
-      relatedArticles: 16,
-      icon: "🌱",
-    },
-    {
-      name: "Innovation",
-      summary:
-        "Discover methodologies for fostering innovation, design thinking, and creating a culture that encourages creative problem-solving and continuous improvement.",
-      relatedArticles: 22,
-      icon: "💡",
-    },
-  ]
+ const topics = [
+  {
+    name: "All",
+    summary: "Browse all articles across different topics and categories.",
+    relatedArticles: props.articles?.length || 0,
+    icon: "📚",
+    filterValue: "All"
+  },
+  {
+    name: "Business Strategy",
+    summary: "Explore frameworks and methodologies for developing effective business strategies that drive growth and competitive advantage in today's dynamic market environment.",
+    relatedArticles: getTopicCount("Business"),
+    icon: "📊",
+    filterValue: "Business"
+  },
+  {
+    name: "Technology Trends",
+    summary: "Stay updated with the latest technological innovations and trends shaping industries, from AI and machine learning to blockchain and IoT applications.",
+    relatedArticles: getTopicCount("Technology"),
+    icon: "💻",
+    filterValue: "Technology"
+  },
+  {
+    name: "Digital Marketing",
+    summary: "Discover cutting-edge digital marketing strategies, tools, and best practices to reach your target audience and maximize ROI across various online channels.",
+    relatedArticles: getTopicCount("Marketing"),
+    icon: "📱",
+    filterValue: "Marketing"
+  },
+  {
+    name: "Leadership",
+    summary: "Learn about effective leadership styles, team management techniques, and how to inspire and guide organizations through change and challenges.",
+    relatedArticles: getTopicCount("Leadership"),
+    icon: "👥",
+    filterValue: "Leadership"
+  },
+  {
+    name: "Entrepreneurship",
+    summary: "Gain insights into starting and scaling businesses, from ideation and funding to growth strategies and overcoming common startup challenges.",
+    relatedArticles: getTopicCount("Entrepreneurship"),
+    icon: "🚀",
+    filterValue: "Entrepreneurship"
+  },
+  {
+    name: "Finance",
+    summary: "Understand financial management principles, investment strategies, and economic trends that impact business decisions and performance.",
+    relatedArticles: getTopicCount("Finance"),
+    icon: "💰",
+    filterValue: "Finance"
+  },
+  {
+    name: "Sustainability",
+    summary: "Explore eco-friendly business practices, ESG frameworks, and how companies are balancing profit with environmental and social responsibility.",
+    relatedArticles: getTopicCount("Sustainability"),
+    icon: "🌱",
+    filterValue: "Sustainability"
+  },
+  {
+    name: "Innovation",
+    summary: "Discover methodologies for fostering innovation, design thinking, and creating a culture that encourages creative problem-solving and continuous improvement.",
+    relatedArticles: getTopicCount("Innovation"),
+    icon: "💡",
+    filterValue: "Innovation"
+  },
+];
+
 
   const openImageModal = (imageSrc) => {
     setModalImage(imageSrc)
@@ -572,6 +591,54 @@ const handleCommentInteraction = async (commentIndex, interactionType) => {
   }
 }
 
+const handleBrowseArticles = async (topic) => {
+  if (!props.articlescb) {
+    console.error('articlescb function not provided in props');
+    return;
+  }
+
+  setTopicBrowseLoading(true);
+  
+  try {
+    // Close the topic modal first
+    closeTopicModal();
+    
+    // Add a small delay for smooth modal closing
+    setTimeout(async () => {
+      // Set the current topic filter
+      setCurrentTopicFilter(topic.name);
+      
+      // Call the parent callback to filter articles
+      if (topic.filterValue === "All") {
+        // Show all articles
+        await props.articlescb("All");
+      } else {
+        // Filter by specific topic
+        await props.articlescb(topic.filterValue);
+      }
+      
+      // Add animation class to blog posts
+      const blogPosts = document.querySelectorAll('.blog-post');
+      blogPosts.forEach((post, index) => {
+        post.style.opacity = '0';
+        post.style.transform = 'translateY(30px)';
+        
+        setTimeout(() => {
+          post.style.transition = 'all 0.6s ease';
+          post.style.opacity = '1';
+          post.style.transform = 'translateY(0)';
+        }, index * 100);
+      });
+      
+      setTopicBrowseLoading(false);
+    }, 300);
+    
+  } catch (error) {
+    console.error('Error browsing articles:', error);
+    setTopicBrowseLoading(false);
+  }
+};
+
   return (
     <div className="blog-container">
       <NavBar />
@@ -670,6 +737,23 @@ const handleCommentInteraction = async (commentIndex, interactionType) => {
             </div>
           </div>
         </Col>
+
+        {/* Current Topic Filter Indicator */}
+        {currentTopicFilter !== "All" && (
+          <div className="current-topic-filter animate-on-scroll fade-in">
+            <div className="filter-container">
+              <span className="filter-text">Showing articles for: </span>
+              <span className="filter-topic">{currentTopicFilter}</span>
+              <button 
+                className="clear-filter-btn"
+                onClick={() => handleBrowseArticles({ name: "All", filterValue: "All" })}
+                title="Show all articles"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+        )}
       </Row>
 
       <Footer />
@@ -987,13 +1071,19 @@ const handleCommentInteraction = async (commentIndex, interactionType) => {
                   <span className="stat-label">Average Rating</span>
                 </div>
               </div>
+              {/*
               <div className="topic-modal-actions">
-                <button className="topic-action-btn primary">
-                  Browse Articles
-                  <span className="action-icon">→</span>
+                <button 
+                  className={`topic-action-btn primary ${topicBrowseLoading ? 'loading' : ''}`}
+                  onClick={() => handleBrowseArticles(selectedTopic)}
+                  disabled={topicBrowseLoading}
+                >
+                  {topicBrowseLoading ? 'Loading...' : 'Browse Articles'}
+                  {!topicBrowseLoading && <span className="action-icon">→</span>}
                 </button>
                 <button className="topic-action-btn secondary">Subscribe to Topic</button>
               </div>
+              */}
             </div>
           </div>
         </div>
