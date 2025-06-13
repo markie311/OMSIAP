@@ -159,58 +159,25 @@ export default function BlogPage(props) {
     return () => window.removeEventListener("keydown", handleEscKey)
   }, [showImageModal, showTopicModal, showBlogModal])
 
-  // Initialize user's current interaction when blog modal opens
-  useEffect(() => {
-    if (
-      selectedBlog &&
-      props.user?.registrationstatusesandlogs?.deviceloginstatus === "logged in" &&
-      props.user.contact?.phonenumber
-    ) {
-      setIsLoading(true)
 
-      // Check user's current interaction for this specific blog
-      const userPhone = props.user.contact.phonenumber
-      const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
+const handleInteraction = async (type) => {
+  // Check if user is logged in
+  if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
+    alert("Please log in to interact with articles")
+    return
+  }
 
-      let currentInteraction = null
-      for (const type of interactionTypes) {
-        if (selectedBlog.interactions?.[type]) {
-          const hasInteraction = selectedBlog.interactions[type].some(
-            (interaction) => interaction.phonenumber === userPhone,
-          )
-          if (hasInteraction) {
-            currentInteraction = type
-            break
-          }
-        }
-      }
+  // Check if user has required data
+  if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
+    alert("Please complete your profile to interact with articles")
+    return
+  }
 
-      setUserInteraction(currentInteraction)
-      setIsLoading(false)
-    } else {
-      setIsLoading(false)
-    }
-  }, [selectedBlog, props.user])
-
-  const handleInteraction = async (type) => {
-    // Check if user is logged in
-    if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
-      alert("Please log in to interact with articles")
-      return
-    }
-
-    // Check if user has required data
-    if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
-      alert("Please complete your profile to interact with articles")
-      return
-    }
-
-    // Set loading state for the specific button
+  // Check if user is trying to interact with the same type they already selected
+  if (userInteraction === type) {
+    // User is removing their interaction
     setInteractionLoading(type)
-
-    const previousInteraction = userInteraction
-    const newInteraction = type === userInteraction ? null : type
-
+    
     const requestData = {
       articleId: selectedBlog.id,
       interactionType: type,
@@ -219,88 +186,161 @@ export default function BlogPage(props) {
         phonenumber: props.user.contact.phonenumber,
         date: new Date().toISOString(),
       },
+      action: "remove", // Indicate this is a removal
       currentInteraction: userInteraction,
     }
 
     try {
-      // Optimistically update UI
-      setUserInteraction(newInteraction)
-      updateLocalInteractionCounts(newInteraction, previousInteraction)
-
-      const response = await axiosCreatedInstance.post("/content/interaction", requestData)
+      const response = await axiosCreatedInstance.post("/content/article-interaction", requestData)
       const result = response.data
 
-      if (!result.success) {
-        // Revert on failure
-        setUserInteraction(previousInteraction)
-        revertLocalInteractionCounts(newInteraction, previousInteraction)
-        alert("Failed to update interaction. Please try again.")
+      if (result.success) {
+        // Update selectedBlog state to remove the interaction
+        setSelectedBlog(prevBlog => {
+          const updatedBlog = { ...prevBlog }
+          
+          // Initialize interactions if they don't exist
+          if (!updatedBlog.interactions) {
+            updatedBlog.interactions = {
+              like: [], unlike: [], exited: [], wow: [], sad: []
+            }
+          }
+
+          // Remove user's interaction
+          const userPhone = props.user.contact.phonenumber
+          if (updatedBlog.interactions[type]) {
+            updatedBlog.interactions[type] = updatedBlog.interactions[type].filter(
+              interaction => interaction.phonenumber !== userPhone
+            )
+          }
+
+          return updatedBlog
+        })
+
+        // Clear user interaction state
+        setUserInteraction(null)
+      } else {
+        alert("Failed to remove interaction. Please try again.")
       }
     } catch (error) {
-      // Revert on error
-      setUserInteraction(previousInteraction)
-      revertLocalInteractionCounts(newInteraction, previousInteraction)
-      console.error("Interaction error:", error.response?.data || error.message)
+      console.error("Remove interaction error:", error.response?.data || error.message)
       alert("Network error. Please try again.")
     } finally {
-      // Clear loading state
       setInteractionLoading(null)
     }
+    return
   }
 
-  const updateLocalInteractionCounts = (newType, previousType) => {
-    setSelectedBlog((prevBlog) => {
-      const updatedBlog = { ...prevBlog }
+  // User is adding/changing interaction
+  setInteractionLoading(type)
 
-      // Initialize interactionCounts if it doesn't exist
-      if (!updatedBlog.interactionCounts) {
-        updatedBlog.interactionCounts = {
-          likes: 0,
-          unlikes: 0,
-          exits: 0,
-          wows: 0,
-          sads: 0,
+  const requestData = {
+    articleId: selectedBlog.id,
+    interactionType: type,
+    userData: {
+      name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
+      phonenumber: props.user.contact.phonenumber,
+      date: new Date().toISOString(),
+    },
+    action: "add", // Indicate this is an addition/change
+    currentInteraction: userInteraction, // Send current interaction to handle replacement
+  }
+
+  try {
+    const response = await axiosCreatedInstance.post("/content/article-interaction", requestData)
+    const result = response.data
+
+    if (result.success) {
+      // Update selectedBlog state to reflect the new interaction
+      setSelectedBlog(prevBlog => {
+        const updatedBlog = { ...prevBlog }
+        
+        // Initialize interactions if they don't exist
+        if (!updatedBlog.interactions) {
+          updatedBlog.interactions = {
+            like: [], unlike: [], exited: [], wow: [], sad: []
+          }
+        }
+
+        const userPhone = props.user.contact.phonenumber
+        const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
+
+        // Remove user's previous interaction (if any)
+        interactionTypes.forEach(interactionType => {
+          if (updatedBlog.interactions[interactionType]) {
+            updatedBlog.interactions[interactionType] = updatedBlog.interactions[interactionType].filter(
+              interaction => interaction.phonenumber !== userPhone
+            )
+          }
+        })
+
+        // Add new interaction
+        if (!updatedBlog.interactions[type]) {
+          updatedBlog.interactions[type] = []
+        }
+        updatedBlog.interactions[type].push(requestData.userData)
+
+        return updatedBlog
+      })
+
+      // Update user interaction state
+      setUserInteraction(type)
+    } else {
+      alert("Failed to update interaction. Please try again.")
+    }
+  } catch (error) {
+    console.error("Add interaction error:", error.response?.data || error.message)
+    alert("Network error. Please try again.")
+  } finally {
+    setInteractionLoading(null)
+  }
+}
+
+const getInteractionCount = (type) => {
+  if (!selectedBlog?.interactions?.[type]) {
+    return 0
+  }
+  return selectedBlog.interactions[type].length
+}
+
+  // Add these useEffects to your existing useEffect declarations in the component
+
+  // Set initial user interaction state when blog modal opens
+  useEffect(() => {
+    if (selectedBlog && props.user?.contact?.phonenumber) {
+      const userPhone = props.user.contact.phonenumber
+      const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
+      
+      // Find if user has any existing interaction
+      let foundInteraction = null
+      for (const type of interactionTypes) {
+        if (selectedBlog.interactions?.[type]) {
+          const hasInteraction = selectedBlog.interactions[type].some(
+            interaction => interaction.phonenumber === userPhone
+          )
+          if (hasInteraction) {
+            foundInteraction = type
+            break
+          }
         }
       }
-
-      // Remove previous interaction count
-      if (previousType) {
-        const prevMappedType = getInteractionMappedType(previousType)
-        updatedBlog.interactionCounts[prevMappedType] = Math.max(
-          0,
-          (updatedBlog.interactionCounts[prevMappedType] || 0) - 1,
-        )
-      }
-
-      // Add new interaction count
-      if (newType && newType !== previousType) {
-        const newMappedType = getInteractionMappedType(newType)
-        updatedBlog.interactionCounts[newMappedType] = (updatedBlog.interactionCounts[newMappedType] || 0) + 1
-      }
-
-      return updatedBlog
-    })
-  }
-
-  const revertLocalInteractionCounts = (newType, previousType) => {
-    updateLocalInteractionCounts(previousType, newType)
-  }
-
-  const getInteractionMappedType = (type) => {
-    const typeMapping = {
-      like: "likes",
-      wow: "wows",
-      exited: "exits",
-      sad: "sads",
-      unlike: "unlikes",
+      
+      setUserInteraction(foundInteraction)
+      setIsLoading(false) // Set loading to false when we have data
+    } else {
+      setUserInteraction(null)
+      setIsLoading(false)
     }
-    return typeMapping[type] || type
-  }
+  }, [selectedBlog, props.user])
 
-  const getInteractionCount = (type) => {
-    const mappedType = getInteractionMappedType(type)
-    return selectedBlog?.interactionCounts?.[mappedType] || 0
-  }
+  // Handle loading state when modal opens
+  useEffect(() => {
+    if (showBlogModal && selectedBlog) {
+      setIsLoading(false) // Set loading to false when blog modal opens with data
+    } else if (showBlogModal) {
+      setIsLoading(true) // Set loading to true if modal opens without data
+    }
+  }, [showBlogModal, selectedBlog])
 
  // Updated handleAddComment function
 const handleAddComment = async () => {
@@ -713,6 +753,7 @@ const handleCommentInteraction = async (commentIndex, interactionType) => {
                             { type: "sad", icon: "😢", label: "Sad" },
                             { type: "unlike", icon: "👎", label: "Unlike" },
                           ].map(({ type, icon, label }) => {
+
                             const isActive = userInteraction === type
                             const isLoading = interactionLoading === type
                             const isDisabled = interactionLoading !== null

@@ -257,42 +257,49 @@ router.get("/getallcontents", async (req, res) => {
     })
   }
 })
-
-// POST /content/interaction - Handle article interactions
-router.post("/interaction", async (req, res) => {
+// Route to handle article interactions
+router.post('/article-interaction', async (req, res) => {
   try {
-    const { articleId, interactionType, userData, currentInteraction } = req.body
+    const { 
+      articleId, 
+      interactionType, 
+      userData, 
+      action, 
+      currentInteraction 
+    } = req.body;
 
-    // Validation
+    // Validate required fields
     if (!articleId || !interactionType || !userData) {
       return res.status(400).json({
         success: false,
-        message: "Missing required fields",
-      })
+        message: 'Missing required fields: articleId, interactionType, and userData are required'
+      });
     }
 
-    const validInteractionTypes = ["like", "unlike", "exited", "wow", "sad"]
+    // Validate interaction type
+    const validInteractionTypes = ['like', 'unlike', 'exited', 'wow', 'sad'];
     if (!validInteractionTypes.includes(interactionType)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid interaction type",
-      })
+        message: 'Invalid interaction type'
+      });
     }
 
-    if (!userData.name || !userData.phonenumber) {
+    // Validate user data
+    if (!userData.phonenumber || !userData.name) {
       return res.status(400).json({
         success: false,
-        message: "User data incomplete",
-      })
+        message: 'User data must include phonenumber and name'
+      });
     }
 
-    // Find the article by id field (not _id)
-    const article = await ArticleContentModel.findOne({ id: articleId })
+    // Find the article
+    const article = await ArticleContentModel.findOne({ id: articleId });
     if (!article) {
       return res.status(404).json({
         success: false,
-        message: "Article not found",
-      })
+        message: 'Article not found'
+      });
     }
 
     // Initialize interactions object if it doesn't exist
@@ -302,213 +309,165 @@ router.post("/interaction", async (req, res) => {
         unlike: [],
         exited: [],
         wow: [],
-        sad: [],
-      }
+        sad: []
+      };
     }
 
-    // Helper function to remove user from all interaction types
-    const removeUserFromAllInteractions = (phoneNumber) => {
-      const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
-      interactionTypes.forEach((type) => {
-        if (article.interactions[type]) {
-          article.interactions[type] = article.interactions[type].filter(
-            (interaction) => interaction.phonenumber !== phoneNumber,
-          )
-        }
-      })
-    }
-
-    // Check if user already has an interaction
-    const userPhone = userData.phonenumber
-    let hasExistingInteraction = false
-    let existingInteractionType = null
-
-    // Find existing interaction
-    const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
-    for (const type of interactionTypes) {
-      if (article.interactions[type]) {
-        const existingIndex = article.interactions[type].findIndex(
-          (interaction) => interaction.phonenumber === userPhone,
-        )
-        if (existingIndex !== -1) {
-          hasExistingInteraction = true
-          existingInteractionType = type
-          break
-        }
+    // Ensure all interaction arrays exist
+    validInteractionTypes.forEach(type => {
+      if (!article.interactions[type]) {
+        article.interactions[type] = [];
       }
-    }
+    });
 
-    // Logic for handling interactions
-    if (hasExistingInteraction && existingInteractionType === interactionType) {
-      // User is removing their current interaction (toggle off)
-      removeUserFromAllInteractions(userPhone)
-    } else {
-      // User is adding new interaction or changing existing one
-      removeUserFromAllInteractions(userPhone)
+    const userPhone = userData.phonenumber;
 
-      // Add to the new interaction type
-      if (!article.interactions[interactionType]) {
-        article.interactions[interactionType] = []
-      }
+    // Remove user's previous interaction from all types
+    validInteractionTypes.forEach(type => {
+      article.interactions[type] = article.interactions[type].filter(
+        interaction => interaction.phonenumber !== userPhone
+      );
+    });
 
+    // If action is 'add', add the new interaction
+    if (action === 'add') {
       article.interactions[interactionType].push({
         name: userData.name,
         phonenumber: userData.phonenumber,
-        date: userData.date || new Date().toISOString(),
-      })
+        date: userData.date || new Date().toISOString()
+      });
     }
+    // If action is 'remove', we've already removed it above
 
     // Save the updated article
-    await article.save()
+    await article.save();
 
-    // Return updated article with interaction counts
-    const interactionCounts = {}
-    interactionTypes.forEach((type) => {
-      interactionCounts[getInteractionMappedType(type)] = article.interactions[type]
-        ? article.interactions[type].length
-        : 0
-    })
-
-    // Determine user's current interaction after update
-    let newUserInteraction = null
-    for (const type of interactionTypes) {
-      if (article.interactions[type]) {
-        const hasInteraction = article.interactions[type].some((interaction) => interaction.phonenumber === userPhone)
-        if (hasInteraction) {
-          newUserInteraction = type
-          break
+    // Return success response
+    res.json({
+      success: true,
+      message: action === 'add' ? 'Interaction added successfully' : 'Interaction removed successfully',
+      data: {
+        articleId: articleId,
+        interactionType: interactionType,
+        action: action,
+        interactionCounts: {
+          like: article.interactions.like.length,
+          unlike: article.interactions.unlike.length,
+          exited: article.interactions.exited.length,
+          wow: article.interactions.wow.length,
+          sad: article.interactions.sad.length
         }
       }
-    }
+    });
 
-    res.status(200).json({
-      success: true,
-      message: "Interaction updated successfully",
-      data: {
-        articleId: article.id,
-        interactionCounts: interactionCounts,
-        userInteraction: newUserInteraction,
-        totalInteractions: Object.values(interactionCounts).reduce((sum, count) => sum + count, 0),
-      },
-    })
   } catch (error) {
-    console.error("Error updating article interaction:", error)
+    console.error('Article interaction error:', error);
     res.status(500).json({
       success: false,
-      message: "Internal server error",
-      error: error.message,
-    })
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
-})
+});
 
-// GET user's interaction for a specific article
-router.get("/user-interaction/:articleId/:phoneNumber", async (req, res) => {
+// Optional: Route to get interaction counts for an article
+router.get('/article-interactions/:articleId', async (req, res) => {
   try {
-    const { articleId, phoneNumber } = req.params
+    const { articleId } = req.params;
 
-    if (!articleId || !phoneNumber) {
-      return res.status(400).json({
-        success: false,
-        message: "Article ID and phone number are required",
-      })
-    }
-
-    // Find the article and check user's interaction
-    const article = await ArticleContentModel.findOne({ id: articleId })
-
+    const article = await Article.findOne({ id: articleId });
     if (!article) {
       return res.status(404).json({
         success: false,
-        message: "Article not found",
-      })
+        message: 'Article not found'
+      });
     }
 
-    let userInteraction = null
-    const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
+    // Initialize interactions if they don't exist
+    const interactions = article.interactions || {
+      like: [],
+      unlike: [],
+      exited: [],
+      wow: [],
+      sad: []
+    };
 
-    for (const type of interactionTypes) {
-      if (article.interactions?.[type]) {
-        const hasInteraction = article.interactions[type].some((interaction) => interaction.phonenumber === phoneNumber)
-        if (hasInteraction) {
-          userInteraction = {
-            type: type,
-            date: article.interactions[type].find((interaction) => interaction.phonenumber === phoneNumber)?.date,
-          }
-          break
-        }
+    res.json({
+      success: true,
+      data: {
+        articleId: articleId,
+        interactionCounts: {
+          like: interactions.like?.length || 0,
+          unlike: interactions.unlike?.length || 0,
+          exited: interactions.exited?.length || 0,
+          wow: interactions.wow?.length || 0,
+          sad: interactions.sad?.length || 0
+        },
+        totalInteractions: Object.values(interactions).reduce((total, arr) => total + (arr?.length || 0), 0)
+      }
+    });
+
+  } catch (error) {
+    console.error('Get article interactions error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// Optional: Route to get user's interaction for a specific article
+router.get('/user-article-interaction/:articleId/:phoneNumber', async (req, res) => {
+  try {
+    const { articleId, phoneNumber } = req.params;
+
+    const article = await Article.findOne({ id: articleId });
+    if (!article) {
+      return res.status(404).json({
+        success: false,
+        message: 'Article not found'
+      });
+    }
+
+    const interactions = article.interactions || {
+      like: [],
+      unlike: [],
+      exited: [],
+      wow: [],
+      sad: []
+    };
+
+    // Find user's interaction
+    let userInteraction = null;
+    const validInteractionTypes = ['like', 'unlike', 'exited', 'wow', 'sad'];
+    
+    for (const type of validInteractionTypes) {
+      if (interactions[type]?.some(interaction => interaction.phonenumber === phoneNumber)) {
+        userInteraction = type;
+        break;
       }
     }
 
-    return res.json({
+    res.json({
       success: true,
-      interaction: userInteraction,
-      message: userInteraction ? "User interaction found" : "No interaction found for this user and article",
-    })
+      data: {
+        articleId: articleId,
+        phoneNumber: phoneNumber,
+        userInteraction: userInteraction
+      }
+    });
+
   } catch (error) {
-    console.error("Error fetching user interaction:", error)
-    return res.status(500).json({
+    console.error('Get user article interaction error:', error);
+    res.status(500).json({
       success: false,
-      message: "Internal server error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    })
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
-})
+});
 
-// GET all interactions for a specific article
-router.get("/article-interactions/:articleId", async (req, res) => {
-  try {
-    const { articleId } = req.params
-
-    if (!articleId) {
-      return res.status(400).json({
-        success: false,
-        message: "Article ID is required",
-      })
-    }
-
-    const article = await ArticleContentModel.findOne({ id: articleId })
-
-    if (!article) {
-      return res.status(404).json({
-        success: false,
-        message: "Article not found",
-      })
-    }
-
-    const interactionCounts = {
-      likes: article.interactions?.like?.length || 0,
-      unlikes: article.interactions?.unlike?.length || 0,
-      wows: article.interactions?.wow?.length || 0,
-      exits: article.interactions?.exited?.length || 0,
-      sads: article.interactions?.sad?.length || 0,
-    }
-
-    return res.json({
-      success: true,
-      interactionCounts: interactionCounts,
-      totalInteractions: Object.values(interactionCounts).reduce((sum, count) => sum + count, 0),
-    })
-  } catch (error) {
-    console.error("Error fetching article interactions:", error)
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
-    })
-  }
-})
-
-// Helper function to map interaction types
-function getInteractionMappedType(type) {
-  const typeMapping = {
-    like: "likes",
-    wow: "wows",
-    exited: "exits",
-    sad: "sads",
-    unlike: "unlikes",
-  }
-  return typeMapping[type] || type
-}
 
 // Add Comment Route
 router.post('/comment', async (req, res) => {
