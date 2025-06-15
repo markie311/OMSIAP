@@ -2,23 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import {
-  Search,
-  ShoppingCart,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Star,
-  Play,
-  Heart,
-  Plus,
-  Minus,
-  ShoppingBag,
-  Info,
-  Facebook,
-  Twitter,
-  Instagram,
-} from "lucide-react"
+import { Search, ShoppingCart, X, ChevronLeft, ChevronRight, Star, Play, Heart, Plus, Minus, ShoppingBag, Info, Facebook, Twitter, Instagram } from 'lucide-react'
 
 import "../../styles/market/market.scss"
 
@@ -834,7 +818,7 @@ const prevImage = () => {
                                       <img 
                                         key={specImageIndex}
                                         className="specimages"
-                                        src={specImage.url} 
+                                        src={specImage.url || "/placeholder.svg"} 
                                         alt="Product Specification Image"
                                         onClick={() => openImageModal(specImage.url, 0)}
                                         style={{ cursor: 'pointer' }}
