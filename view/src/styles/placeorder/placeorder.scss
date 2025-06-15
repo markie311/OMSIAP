@@ -748,3 +748,107 @@
   align-items: flex-end;
   gap: 3px;
 }
+
+//// new
+/* Enhanced shipping calculation example with better contrast */
+.placeorder-page .shipping-calculation-example {
+  background: #f8fafc;
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  border-left: 4px solid #4f46e5;
+}
+
+.placeorder-page .shipping-calculation-example h4 {
+  margin: 0 0 10px 0;
+  color: #1e293b; /* Darker color for better contrast */
+  font-weight: 700; /* Make it bolder */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Fix for shipping calculation content text */
+.placeorder-page .shipping-calculation-example p,
+.placeorder-page .shipping-calculation-example div,
+.placeorder-page .shipping-calculation-example span {
+  color: #374151; /* Much darker text for better readability */
+  font-weight: 500; /* Medium weight for better visibility */
+  line-height: 1.5; /* Better line spacing */
+}
+
+/* Specific styling for calculation steps */
+.placeorder-page .shipping-calculation-example .calculation-step {
+  background: #ffffff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin: 5px 0;
+  border: 1px solid #e5e7eb;
+  color: #111827; /* Very dark text */
+  font-weight: 600;
+}
+
+/* Formula display */
+.placeorder-page .shipping-calculation-example .formula {
+  background: #f3f4f6;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-family: 'Courier New', monospace;
+  color: #1f2937; /* Dark text for formulas */
+  font-weight: 600;
+  margin: 8px 0;
+}
+
+/* Result highlight */
+.placeorder-page .shipping-calculation-example .result {
+  background: #dbeafe;
+  color: #1e40af; /* Blue color for results */
+  font-weight: 700;
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid #3b82f6;
+  margin: 8px 0;
+}
+
+/* Enhanced weight limit note */
+.placeorder-page .weight-limit-note {
+  background: #fef3c7;
+  padding: 12px;
+  border-radius: 8px;
+  color: #92400e; /* Keep the amber color but ensure it's dark enough */
+  font-size: 0.9rem;
+  font-weight: 600; /* Make it bolder */
+  border: 1px solid #f59e0b; /* Add border for definition */
+}
+
+.placeorder-page .note-icon {
+  color: #f59e0b;
+  font-weight: bold;
+}
+
+/* Enhanced item shipping cost display */
+.placeorder-page .item-shipping-cost {
+  font-size: 0.9rem;
+  color: #1e40af; /* Keep blue but ensure it's dark enough */
+  font-weight: 700; /* Make it bolder */
+  background: #dbeafe;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 2px;
+  border: 1px solid #3b82f6; /* Add border for better definition */
+}
+
+/* Enhanced weight multiplier display */
+.placeorder-page .item-weight-multiplier {
+  font-size: 0.8rem;
+  color: #7c2d12; /* Keep brown but ensure it's dark enough */
+  font-weight: 600; /* Make it bolder */
+  background: #fed7aa;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-top: 2px;
+  border: 1px solid #ea580c; /* Add border for better definition */
+}

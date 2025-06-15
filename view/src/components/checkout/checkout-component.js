@@ -640,6 +640,8 @@ const CheckoutPage = (props) => {
                   <span className="checkout-label">Amount to Pay:</span>
                   <span className="checkout-value checkout-highlight">₱{orderSummary.total.toFixed(2)}</span>
                 </div>
+
+                 <span className="checkout-value checkout-highlight">MAKE SURE TO PROVIDE YOUR CURRENT PHONE NUMBER IN THE PERSONAL SECTION SO THAT THE SHIPPING COMPANY WILL CALL YOU TO RECIEVE YOUR PARCELS</span>
                 
                 {paymentDetails.omsiapawastoBalance < orderSummary.total && (
                   <div className="checkout-insufficient-funds">
