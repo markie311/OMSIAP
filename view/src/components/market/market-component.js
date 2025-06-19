@@ -124,65 +124,135 @@ const closeFullScreenVideo = () => {
     return matchesCategory && matchesPrice && matchesSearch
   })
 
-  // Cart functions
-  const addToCart = (product, quantity = 1) => {
-    const existingItem = cart.find(
-      (item) =>
-        item.authentications && product.authentications && item.authentications.id === product.authentications.id,
-    )
-
-    if (existingItem) {
-      // Increase quantity if already in cart
-      setCart(
-        cart.map((item) =>
-          item.authentications && product.authentications && item.authentications.id === product.authentications.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item,
-        ),
-      )
+  // Enhanced Cart functions - Groups specifications under main products
+  const addToCart = (specificationProduct, mainProduct, quantity = 1) => {
+    console.log('Specification Product:', specificationProduct);
+    console.log('Main Product:', mainProduct);
+    
+    const mainProductId = mainProduct.authentications?.id;
+    const specificationId = specificationProduct.authentications?.id;
+    
+    // Find if main product already exists in cart
+    const existingMainProduct = cart.find(item => item.mainProductId === mainProductId);
+    
+    if (existingMainProduct) {
+      // Check if this specific specification already exists under this main product
+      const existingSpec = existingMainProduct.specifications.find(spec => spec.id === specificationId);
+      
+      if (existingSpec) {
+        // Increase quantity of existing specification
+        setCart(cart.map(item => 
+          item.mainProductId === mainProductId 
+            ? {
+                ...item,
+                specifications: item.specifications.map(spec =>
+                  spec.id === specificationId
+                    ? { ...spec, quantity: spec.quantity + quantity }
+                    : spec
+                )
+              }
+            : item
+        ));
+      } else {
+        // Add new specification to existing main product
+        const newSpecification = {
+          id: specificationId,
+          data: specificationProduct,
+          quantity: quantity,
+          name: specificationProduct.details?.productname || 'Default Specification',
+          price: specificationProduct.details?.price?.amount || 0,
+          images: specificationProduct.images || []
+        };
+        
+        setCart(cart.map(item => 
+          item.mainProductId === mainProductId
+            ? {
+                ...item,
+                specifications: [...item.specifications, newSpecification]
+              }
+            : item
+        ));
+      }
     } else {
-      // Add new item to cart
-      setCart([...cart, { ...product, quantity: quantity }])
+      // Create new main product entry with first specification
+      const newCartItem = {
+        mainProductId: mainProductId,
+        mainProduct: mainProduct,
+        productName: mainProduct.details?.productname || 'Unnamed Product',
+        mainProductImages: mainProduct.images || [],
+        specifications: [{
+          id: specificationId,
+          data: specificationProduct,
+          quantity: quantity,
+          name: specificationProduct.details?.productname || 'Default Specification',
+          price: specificationProduct.details?.price?.amount || 0,
+          images: specificationProduct.images || []
+        }]
+      };
+      
+      setCart([...cart, newCartItem]);
     }
 
     // Show cart after adding item
-    setIsCartOpen(true)
+    setIsCartOpen(true);
 
     // Animation for added to cart
-    const productElement = document.getElementById(`product-${product.authentications.id}`)
+    const productElement = document.getElementById(`product-${mainProductId}`);
     if (productElement) {
-      productElement.classList.add("market-added-to-cart")
+      productElement.classList.add("market-added-to-cart");
       setTimeout(() => {
-        productElement.classList.remove("market-added-to-cart")
-      }, 1000)
+        productElement.classList.remove("market-added-to-cart");
+      }, 1000);
     }
-  }
+  };
 
-  const removeFromCart = (productId) => {
-    setCart(cart.filter((item) => !(item.authentications && item.authentications.id === productId)))
-  }
+  const removeFromCart = (mainProductId, specificationId = null) => {
+    if (specificationId) {
+      // Remove specific specification from main product
+      setCart(cart.map(item => {
+        if (item.mainProductId === mainProductId) {
+          const updatedSpecs = item.specifications.filter(spec => spec.id !== specificationId);
+          // If no specifications left, remove the entire main product
+          return updatedSpecs.length > 0 ? { ...item, specifications: updatedSpecs } : null;
+        }
+        return item;
+      }).filter(Boolean)); // Remove null entries
+    } else {
+      // Remove entire main product
+      setCart(cart.filter(item => item.mainProductId !== mainProductId));
+    }
+  };
 
-  const updateQuantity = (productId, newQuantity) => {
-    // Use integer quantities
-    const intQuantity = Math.max(1, newQuantity)
+  const updateQuantity = (mainProductId, specificationId, newQuantity) => {
+    const intQuantity = Math.max(1, newQuantity);
 
     if (intQuantity < 1) {
-      removeFromCart(productId)
-      return
+      removeFromCart(mainProductId, specificationId);
+      return;
     }
 
-    setCart(
-      cart.map((item) =>
-        item.authentications && item.authentications.id === productId ? { ...item, quantity: intQuantity } : item,
-      ),
-    )
-  }
+    setCart(cart.map(item => 
+      item.mainProductId === mainProductId
+        ? {
+            ...item,
+            specifications: item.specifications.map(spec =>
+              spec.id === specificationId
+                ? { ...spec, quantity: intQuantity }
+                : spec
+            )
+          }
+        : item
+    ));
+  };
 
   // Calculate cart total
   const cartTotal = cart.reduce((total, item) => {
-    const itemPrice = item.details && item.details.price && item.details.price.amount ? item.details.price.amount : 0
-    return total + itemPrice * item.quantity
-  }, 0)
+    const itemTotal = item.specifications.reduce((specTotal, spec) => {
+      return specTotal + (spec.price * spec.quantity);
+    }, 0);
+    return total + itemTotal;
+  }, 0);
+
 
   // Open product detail modal
   const openProductModal = (product) => {
@@ -364,12 +434,17 @@ const prevImage = () => {
           />
           <Search className="market-search-icon" />
         </div>
-        <div className="market-cart-icon">
-          <button onClick={toggleCart} aria-label="Open cart">
-            <ShoppingCart />
-            <span className="market-cart-count">{cart.reduce((total, item) => total + item.quantity, 0)}</span>
-          </button>
-        </div>
+       <div className="market-cart-icon">
+        <button onClick={toggleCart} aria-label="Open cart">
+          <ShoppingCart />
+          <span className="market-cart-count">
+            {cart.reduce((total, item) => 
+              total + item.specifications.reduce((specTotal, spec) => specTotal + spec.quantity, 0), 0
+            )}
+          </span>
+        </button>
+      </div>
+
       </header>
 
       <main className="market-main-content">
@@ -522,52 +597,99 @@ const prevImage = () => {
           <>
             <div className="market-cart-items">
               {cart.map((item) => {
-                const itemId = item.authentications && item.authentications.id ? item.authentications.id : ""
-                const itemName = item.details && item.details.productname ? item.details.productname : "Unnamed Product"
-                const itemPrice =
-                  item.details && item.details.price && item.details.price.amount ? item.details.price.amount : 0
-                const itemImages =
-                  item.images && item.images.length > 0
-                    ? item.images.map((img) => img.url)
-                    : ["/placeholder.svg?height=100&width=100"]
+                const mainProductImages = item.mainProductImages && item.mainProductImages.length > 0
+                  ? item.mainProductImages.map((img) => img.url)
+                  : ["/placeholder.svg?height=100&width=100"];
 
                 return (
-                  <div key={itemId} className="market-cart-item">
-                    <div className="market-cart-item-image">
-                      <img src={itemImages[0] || "/placeholder.svg?height=100&width=100"} alt={itemName} />
-                    </div>
-                    <div className="market-cart-item-details">
-                      <h4>{itemName}</h4>
-                      <p>{formatPrice(itemPrice)}</p>
-                    </div>
-                    <div className="market-cart-item-quantity">
+                  <div key={item.mainProductId} className="market-cart-main-product">
+                    {/* Main Product Header */}
+                    <div className="market-cart-product-header">
+                      <div className="market-cart-product-image">
+                        <img 
+                          src={mainProductImages[0] || "/placeholder.svg?height=80&width=80"} 
+                          alt={item.productName} 
+                        />
+                      </div>
+                      <div className="market-cart-product-info">
+                        <h4 className="market-cart-product-name">{item.productName}</h4>
+                        {item.mainProduct?.details?.category && (
+                          <p className="market-cart-category">
+                            <small>Category: {item.mainProduct.details.category}</small>
+                          </p>
+                        )}
+                        <p className="market-cart-spec-count">
+                          <small>{item.specifications.length} specification{item.specifications.length > 1 ? 's' : ''} selected</small>
+                        </p>
+                      </div>
                       <button
-                        onClick={() => updateQuantity(itemId, item.quantity - 1)}
-                        aria-label="Decrease quantity"
-                        className="market-quantity-btn"
+                        onClick={() => removeFromCart(item.mainProductId)}
+                        className="market-remove-main-product"
+                        aria-label="Remove entire product"
+                        title="Remove entire product"
                       >
-                        <Minus size={14} />
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(itemId, item.quantity + 1)}
-                        aria-label="Increase quantity"
-                        className="market-quantity-btn"
-                      >
-                        <Plus size={14} />
+                        <X className="market-remove-icon" />
                       </button>
                     </div>
-                    <button
-                      onClick={() => removeFromCart(itemId)}
-                      className="market-remove-item"
-                      aria-label="Remove item"
-                    >
-                      <X className="market-remove-icon" />
-                    </button>
+
+                    {/* Specifications List */}
+                    <div className="market-cart-specifications">
+                      {item.specifications.map((spec) => {
+                        const specImages = spec.images && spec.images.length > 0
+                          ? spec.images.map((img) => img.url)
+                          : mainProductImages;
+
+                        return (
+                          <div key={spec.id} className="market-cart-specification">
+                            <div className="market-cart-spec-image">
+                              <img 
+                                src={specImages[0] || "/placeholder.svg?height=60&width=60"} 
+                                alt={spec.name} 
+                              />
+                            </div>
+                            <div className="market-cart-spec-details">
+                              <p className="market-cart-spec-name">{spec.name}</p>
+                              <p className="market-cart-spec-price">{formatPrice(spec.price)}</p>
+                              {spec.data?.details?.weightingrams && (
+                                <p className="market-cart-weight">
+                                  <small>Weight: {spec.data.details.weightingrams}g</small>
+                                </p>
+                              )}
+                            </div>
+                            <div className="market-cart-spec-quantity">
+                              <button
+                                onClick={() => updateQuantity(item.mainProductId, spec.id, spec.quantity - 1)}
+                                aria-label="Decrease quantity"
+                                className="market-quantity-btn"
+                              >
+                                <Minus size={12} />
+                              </button>
+                              <span>{spec.quantity}</span>
+                              <button
+                                onClick={() => updateQuantity(item.mainProductId, spec.id, spec.quantity + 1)}
+                                aria-label="Increase quantity"
+                                className="market-quantity-btn"
+                              >
+                                <Plus size={12} />
+                              </button>
+                            </div>
+                            <button
+                              onClick={() => removeFromCart(item.mainProductId, spec.id)}
+                              className="market-remove-specification"
+                              aria-label="Remove specification"
+                              title="Remove this specification"
+                            >
+                              <X size={14} />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
-                )
+                );
               })}
             </div>
+
             <div className="market-cart-footer">
               <div className="market-cart-total">
                 <h3>Total: {formatPrice(cartTotal)}</h3>
@@ -767,7 +889,7 @@ const prevImage = () => {
                               )
                               :
                               (
-                              <button className="market-add-spec-to-cart" onClick={() => addToCart(spec)}>
+                              <button className="market-add-spec-to-cart" onClick={() => addToCart(spec, selectedProduct)}>
                                 <Plus size={14} />
                                 Add to Cart
                               </button>

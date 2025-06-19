@@ -13,9 +13,11 @@ import {
   FaTrashAlt,
   FaCreditCard,
   FaInfoCircle,
+  FaBox,
+  FaTag,
 } from "react-icons/fa"
 
-import '../../styles/placeorder/placeorder.scss'
+import "../../styles/placeorder/placeorder.scss"
 
 const PlaceOrderPage = () => {
   const navigate = useNavigate()
@@ -40,40 +42,17 @@ const PlaceOrderPage = () => {
   const MAX_WEIGHT_LIMIT = 20
   const PAYMENT_PROCESSING_FEE_RATE = 0.02 // 2%
 
-  // Initialize cart from location state
+  // Initialize cart from location state - Updated to handle market component's cart structure
   useEffect(() => {
     const cart = location.state?.cart || []
+    console.log("Received cart from market:", cart)
 
     if (cart.length > 0) {
-      const normalizedCart = cart.map((item) => {
-        const normalizedItem = { ...item }
-
-        if (normalizedItem.quantity) {
-          normalizedItem.quantity = Math.floor(normalizedItem.quantity)
-          if (normalizedItem.quantity < 1) normalizedItem.quantity = 1
-        } else {
-          normalizedItem.quantity = 1
-        }
-
-        return normalizedItem
-      })
-
-      setCartItems(normalizedCart)
-
-      // Debug cart data structure
-      console.log("Cart Items Debug:", normalizedCart)
-      normalizedCart.forEach((item, index) => {
-        console.log(`Item ${index + 1}:`, {
-          name: item.details?.productname || "Unknown",
-          baseShipping: item.details?.price?.shipping,
-          weight: item.details?.weightingrams,
-          fullItem: item,
-        })
-      })
+      setCartItems(cart)
     }
   }, [location.state])
 
-  // Calculate cart statistics whenever cartItems changes
+  // Calculate cart statistics for the new cart structure
   useEffect(() => {
     if (cartItems.length === 0) {
       setCartStats({
@@ -89,17 +68,12 @@ const PlaceOrderPage = () => {
       return
     }
 
-    const { totalSummary } = calculateProductDetails(cartItems)
-
-    const totalItemCount = cartItems.reduce((count, product) => count + (product.quantity || 1), 0)
-
-    const totalWeightGrams = totalSummary.totalWeightInGrams
-    const totalWeightKilos = totalSummary.totalWeightInKilos
-    const shippingCost = calculateShippingCost(cartItems)
-    const subtotal = totalSummary.totalPrice
+    const { totalSummary } = calculateCartTotals(cartItems)
+    const totalItemCount = getTotalItemCount(cartItems)
+    const shippingCost = calculateMainProductShipping(cartItems)
 
     // Calculate 2% payment processing fee on subtotal + shipping
-    const subtotalPlusShipping = preciseAdd(subtotal, shippingCost)
+    const subtotalPlusShipping = preciseAdd(totalSummary.totalPrice, shippingCost)
     const paymentProcessingFee = Math.round(preciseMultiply(subtotalPlusShipping, PAYMENT_PROCESSING_FEE_RATE))
 
     // Calculate final total
@@ -107,111 +81,150 @@ const PlaceOrderPage = () => {
 
     setCartStats({
       totalItems: totalItemCount,
-      totalWeightGrams: formatDecimal(totalWeightGrams, 2),
-      totalWeightKilos: formatDecimal(totalWeightKilos, 3),
+      totalWeightGrams: formatDecimal(totalSummary.totalWeightInGrams, 2),
+      totalWeightKilos: formatDecimal(totalSummary.totalWeightInKilos, 3),
       shippingCost: formatDecimal(shippingCost, 2),
-      subtotal: formatDecimal(subtotal, 2),
+      subtotal: formatDecimal(totalSummary.totalPrice, 2),
       paymentProcessingFee: paymentProcessingFee,
       total: total,
-      exceedsWeightLimit: totalWeightKilos > MAX_WEIGHT_LIMIT,
+      exceedsWeightLimit: totalSummary.totalWeightInKilos > MAX_WEIGHT_LIMIT,
     })
   }, [cartItems])
+
+  // Calculate totals for the new cart structure
+  const calculateCartTotals = (cartItems) => {
+    const totalSummary = {
+      totalPrice: 0,
+      totalWeightInGrams: 0,
+      totalWeightInKilos: 0,
+    }
+
+    cartItems.forEach((mainProduct) => {
+      mainProduct.specifications.forEach((spec) => {
+        const quantity = spec.quantity || 1
+        const price = spec.price || 0
+        const weightInGrams = spec.data?.details?.weightingrams || 0
+
+        const specTotal = preciseMultiply(price, quantity)
+        const specWeightGrams = preciseMultiply(weightInGrams, quantity)
+        const specWeightKilos = preciseMultiply(specWeightGrams, 0.001)
+
+        totalSummary.totalPrice = preciseAdd(totalSummary.totalPrice, specTotal)
+        totalSummary.totalWeightInGrams = preciseAdd(totalSummary.totalWeightInGrams, specWeightGrams)
+        totalSummary.totalWeightInKilos = preciseAdd(totalSummary.totalWeightInKilos, specWeightKilos)
+      })
+    })
+
+    return { totalSummary }
+  }
+
+  // Get total item count
+  const getTotalItemCount = (cartItems) => {
+    return cartItems.reduce((total, mainProduct) => {
+      return (
+        total +
+        mainProduct.specifications.reduce((specTotal, spec) => {
+          return specTotal + (spec.quantity || 1)
+        }, 0)
+      )
+    }, 0)
+  }
+
+  // NEW: Calculate shipping based on main products with weight-based multiplication
+  const calculateMainProductShipping = (cartItems) => {
+    if (cartItems.length === 0) return 0
+
+    let totalShippingCost = 0
+
+    console.log("=== MAIN PRODUCT SHIPPING CALCULATION ===")
+
+    cartItems.forEach((mainProduct, index) => {
+      console.log(`\n--- Main Product ${index + 1}: ${mainProduct.productName} ---`)
+
+      // Get main product's base shipping rate
+      let baseShippingRate = mainProduct.mainProduct?.details?.price?.shipping || 0
+      const hasFallback = baseShippingRate === 0 || isNaN(baseShippingRate)
+
+      if (hasFallback) {
+        baseShippingRate = 50 // Fallback rate per kg
+      }
+
+      console.log(`Base shipping rate: ₱${baseShippingRate}/kg ${hasFallback ? "(Fallback)" : ""}`)
+
+      // Calculate total weight for this main product (all specifications combined)
+      let totalMainProductWeightGrams = 0
+      let totalMainProductQuantity = 0
+
+      mainProduct.specifications.forEach((spec) => {
+        const quantity = spec.quantity || 1
+        const weightInGrams = spec.data?.details?.weightingrams || 0
+        const specWeightGrams = preciseMultiply(weightInGrams, quantity)
+
+        totalMainProductWeightGrams = preciseAdd(totalMainProductWeightGrams, specWeightGrams)
+        totalMainProductQuantity += quantity
+
+        console.log(`  - ${spec.name}: ${quantity} × ${weightInGrams}g = ${specWeightGrams}g`)
+      })
+
+      const totalMainProductWeightKilos = preciseMultiply(totalMainProductWeightGrams, 0.001)
+
+      // Weight-based multiplication: if weight is 1kg = 1x rate, 2kg = 2x rate, etc.
+      const weightMultiplier = Math.min(Math.ceil(totalMainProductWeightKilos), MAX_WEIGHT_LIMIT)
+
+      // Calculate shipping cost for this main product
+      const mainProductShippingCost = preciseMultiply(baseShippingRate, weightMultiplier)
+
+      console.log(`Total weight: ${totalMainProductWeightGrams}g (${totalMainProductWeightKilos}kg)`)
+      console.log(`Weight multiplier: ${weightMultiplier}x (capped at ${MAX_WEIGHT_LIMIT}kg)`)
+      console.log(`Shipping cost: ₱${baseShippingRate} × ${weightMultiplier} = ₱${mainProductShippingCost}`)
+
+      totalShippingCost = preciseAdd(totalShippingCost, mainProductShippingCost)
+    })
+
+    console.log(`\nTotal Shipping Cost: ₱${totalShippingCost}`)
+    console.log("=== END SHIPPING CALCULATION ===")
+
+    return totalShippingCost
+  }
+
+  // Helper function to get main product shipping details
+  const getMainProductShippingDetails = (mainProduct) => {
+    // Get main product's base shipping rate
+    let baseShippingRate = mainProduct.mainProduct?.details?.price?.shipping || 0
+    const hasFallback = baseShippingRate === 0 || isNaN(baseShippingRate)
+
+    if (hasFallback) {
+      baseShippingRate = 50 // Fallback rate per kg
+    }
+
+    // Calculate total weight for this main product
+    let totalMainProductWeightGrams = 0
+    mainProduct.specifications.forEach((spec) => {
+      const quantity = spec.quantity || 1
+      const weightInGrams = spec.data?.details?.weightingrams || 0
+      const specWeightGrams = preciseMultiply(weightInGrams, quantity)
+      totalMainProductWeightGrams = preciseAdd(totalMainProductWeightGrams, specWeightGrams)
+    })
+
+    const totalMainProductWeightKilos = preciseMultiply(totalMainProductWeightGrams, 0.001)
+    const weightMultiplier = Math.min(Math.ceil(totalMainProductWeightKilos), MAX_WEIGHT_LIMIT)
+    const shippingCost = preciseMultiply(baseShippingRate, weightMultiplier)
+
+    return {
+      baseRate: baseShippingRate,
+      totalWeightGrams: totalMainProductWeightGrams,
+      totalWeightKilos: totalMainProductWeightKilos,
+      weightMultiplier,
+      shippingCost,
+      hasFallback,
+    }
+  }
 
   // Enhanced decimal formatting without toFixed
   const formatDecimal = (number, decimalPlaces) => {
     const factor = Math.pow(10, decimalPlaces)
     return Math.round(number * factor) / factor
   }
-
-// Calculate shipping cost per product based on individual product weight
-const calculateShippingCost = (cartItems) => {
-  if (cartItems.length === 0) return 0
-
-  let totalShippingCost = 0
-
-  console.log("=== DETAILED SHIPPING CALCULATION DEBUG ===")
-
-  cartItems.forEach((item, index) => {
-    console.log(`\n--- Item ${index + 1} Debug ---`)
-    console.log("Full item object:", item)
-    console.log("item.details:", item.details)
-    console.log("item.details?.price:", item.details?.price)
-    console.log("item.details?.price?.shipping:", item.details?.price?.shipping)
-    console.log("typeof shipping:", typeof item.details?.price?.shipping)
-    
-    const quantity = Math.floor(item.quantity || 1)
-    const itemWeightGrams = preciseMultiply(Number.parseFloat(item.details?.weightingrams || 0), quantity)
-    const itemWeightKilos = preciseMultiply(itemWeightGrams, 0.001)
-
-    // Get base shipping rate (this is the rate per 1kg)
-    let rawShippingRate = item.details?.price?.shipping
-    let baseShippingRate = Number.parseFloat(rawShippingRate || 0)
-
-    console.log("Raw shipping rate:", rawShippingRate)
-    console.log("Parsed shipping rate:", baseShippingRate)
-    console.log("Is NaN?", isNaN(baseShippingRate))
-    console.log("Is zero?", baseShippingRate === 0)
-
-    // If no shipping rate is set, use fallback calculation
-    if (baseShippingRate === 0 || isNaN(baseShippingRate)) {
-      console.log("*** USING FALLBACK RATE ***")
-      baseShippingRate = 50
-    } else {
-      console.log("*** USING ACTUAL RATE ***")
-    }
-
-    // Calculate weight multiplier (rounded up, max 20kg)
-    const actualWeightKilos = Math.ceil(itemWeightKilos)
-    const weightMultiplier = Math.min(actualWeightKilos, MAX_WEIGHT_LIMIT)
-
-    // Calculate shipping cost: base rate × weight in kg
-    const productShippingCost = preciseMultiply(baseShippingRate, weightMultiplier)
-
-    console.log(`Final calculation: ${baseShippingRate} × ${weightMultiplier} = ${productShippingCost}`)
-
-    // Add to total shipping cost
-    totalShippingCost = preciseAdd(totalShippingCost, productShippingCost)
-  })
-
-  console.log("\nFinal Total Shipping Cost:", totalShippingCost)
-  console.log("=== END DETAILED DEBUG ===")
-
-  return totalShippingCost
-}
-
-// Helper function to get individual product shipping cost
-const getProductShippingCost = (item) => {
-  const quantity = Math.floor(item.quantity || 1)
-  const itemWeightGrams = preciseMultiply(Number.parseFloat(item.details?.weightingrams || 0), quantity)
-  const itemWeightKilos = preciseMultiply(itemWeightGrams, 0.001)
-
-  // Get base shipping rate (rate per 1kg)
-  let baseShippingRate = Number.parseFloat(item.details?.price?.shipping || 0)
-
-  // If no shipping rate is set, use fallback calculation
-  if (baseShippingRate === 0 || isNaN(baseShippingRate)) {
-    // Fallback: ₱50 per kg
-    baseShippingRate = 50
-  }
-
-  // Calculate weight multiplier (rounded up, max 20kg)
-  const actualWeightKilos = Math.ceil(itemWeightKilos)
-  const weightMultiplier = Math.min(actualWeightKilos, MAX_WEIGHT_LIMIT)
-
-  // Calculate shipping cost: base rate × weight in kg
-  const productShippingCost = preciseMultiply(baseShippingRate, weightMultiplier)
-
-  return {
-    baseRate: baseShippingRate,
-    weightMultiplier,
-    shippingCost: productShippingCost,
-    itemWeightKilos,
-    actualWeightKilos,
-    hasFallback:
-      Number.parseFloat(item.details?.price?.shipping || 0) === 0 ||
-      isNaN(Number.parseFloat(item.details?.price?.shipping || 0)),
-  }
-}
 
   // Enhanced precise multiplication without floating point errors
   const preciseMultiply = (a, b) => {
@@ -249,55 +262,61 @@ const getProductShippingCost = (item) => {
     return (Math.round(a * factor) + Math.round(b * factor)) / factor
   }
 
-  // Enhanced precise subtraction
-  const preciseSubtract = (a, b) => {
-    if (b === 0) return a
-    if (a === 0) return -b
-
-    const aStr = a.toString()
-    const bStr = b.toString()
-
-    const aDecimals = aStr.includes(".") ? aStr.split(".")[1].length : 0
-    const bDecimals = bStr.includes(".") ? bStr.split(".")[1].length : 0
-
-    const maxDecimals = Math.max(aDecimals, bDecimals)
-    const factor = Math.pow(10, maxDecimals)
-
-    return (Math.round(a * factor) - Math.round(b * factor)) / factor
-  }
-
-  // Update cart item quantity with precise integer handling
-  const updateQuantity = (itemId, newQuantity) => {
-    const intQuantity = Math.floor(newQuantity)
-
-    if (intQuantity < 1) return
+  // Update quantity for specifications
+  const updateSpecificationQuantity = (mainProductId, specificationId, newQuantity) => {
+    const intQuantity = Math.max(1, Math.floor(newQuantity))
 
     setCartItems((prevItems) =>
-      prevItems.map((item) => {
-        if (item.authentications?.id === itemId) {
-          return { ...item, quantity: intQuantity }
+      prevItems.map((mainProduct) => {
+        if (mainProduct.mainProductId === mainProductId) {
+          return {
+            ...mainProduct,
+            specifications: mainProduct.specifications.map((spec) =>
+              spec.id === specificationId ? { ...spec, quantity: intQuantity } : spec,
+            ),
+          }
         }
-        return item
+        return mainProduct
       }),
     )
   }
 
-  const increaseQuantity = (itemId) => {
-    const item = cartItems.find((item) => item.authentications?.id === itemId)
-    const currentQty = Math.floor(item.quantity || 1)
-    updateQuantity(itemId, currentQty + 1)
-  }
-
-  const decreaseQuantity = (itemId) => {
-    const item = cartItems.find((item) => item.authentications?.id === itemId)
-    const currentQty = Math.floor(item.quantity || 1)
-    if (currentQty > 1) {
-      updateQuantity(itemId, currentQty - 1)
+  // Remove specification or entire main product
+  const removeFromCart = (mainProductId, specificationId = null) => {
+    if (specificationId) {
+      // Remove specific specification
+      setCartItems((prevItems) =>
+        prevItems
+          .map((mainProduct) => {
+            if (mainProduct.mainProductId === mainProductId) {
+              const updatedSpecs = mainProduct.specifications.filter((spec) => spec.id !== specificationId)
+              return updatedSpecs.length > 0 ? { ...mainProduct, specifications: updatedSpecs } : null
+            }
+            return mainProduct
+          })
+          .filter(Boolean),
+      )
+    } else {
+      // Remove entire main product
+      setCartItems((prevItems) => prevItems.filter((mainProduct) => mainProduct.mainProductId !== mainProductId))
     }
   }
 
-  const removeItem = (itemId) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.authentications?.id !== itemId))
+  // Helper function to get image URL with fallback
+  const getImageUrl = (imageArray, fallbackUrl = "/placeholder.svg?height=80&width=80") => {
+    if (!imageArray || !Array.isArray(imageArray) || imageArray.length === 0) {
+      return fallbackUrl
+    }
+
+    // Handle both string URLs and objects with url property
+    const firstImage = imageArray[0]
+    if (typeof firstImage === "string") {
+      return firstImage
+    } else if (firstImage && firstImage.url) {
+      return firstImage.url
+    }
+
+    return fallbackUrl
   }
 
   // Enhanced validation
@@ -354,71 +373,6 @@ const getProductShippingCost = (item) => {
         window.updateCheckoutComponent()
       }
     }
-  }
-
-  // Enhanced product details calculation
-  function calculateProductDetails(products) {
-    const updatedProducts = JSON.parse(JSON.stringify(products))
-
-    const totalSummary = {
-      totalPrice: 0,
-      totalCapital: 0,
-      totalTransactionGiveaway: 0,
-      totalOmsiaProfit: 0,
-      totalWeightInGrams: 0,
-      totalWeightInKilos: 0,
-    }
-
-    updatedProducts.forEach((product) => {
-      let quantity = Math.floor(product.quantity || 1)
-      if (quantity < 1) quantity = 1
-
-      const price = product.details?.price?.amount || 0
-      const capital = product.details?.price?.capital || 0
-      const transactionGiveaway = product.details?.price?.transactiongiveaway || 0
-      const profit = product.details?.price?.profit || 0
-
-      const productPrice = preciseMultiply(price, quantity)
-      const productCapital = preciseMultiply(capital, quantity)
-      const productTransactionGiveaway = preciseMultiply(transactionGiveaway, quantity)
-      const productOmsiaProfit = preciseMultiply(profit, quantity)
-
-      const weightInGrams = preciseMultiply(Number.parseFloat(product.details?.weightingrams || 0), quantity)
-      const weightInKilos = preciseMultiply(weightInGrams, 0.001)
-
-      totalSummary.totalPrice = preciseAdd(totalSummary.totalPrice, productPrice)
-      totalSummary.totalCapital = preciseAdd(totalSummary.totalCapital, productCapital)
-      totalSummary.totalTransactionGiveaway = preciseAdd(
-        totalSummary.totalTransactionGiveaway,
-        productTransactionGiveaway,
-      )
-      totalSummary.totalOmsiaProfit = preciseAdd(totalSummary.totalOmsiaProfit, productOmsiaProfit)
-      totalSummary.totalWeightInGrams = preciseAdd(totalSummary.totalWeightInGrams, weightInGrams)
-      totalSummary.totalWeightInKilos = preciseAdd(totalSummary.totalWeightInKilos, weightInKilos)
-    })
-
-    return {
-      updatedProducts,
-      totalSummary,
-    }
-  }
-
-  // Helper functions
-  const getProductImage = (item) => {
-    if (item.images && item.images.length > 0) return item.images[0].url
-    return "../images/market/products/watch.jpg"
-  }
-
-  const getProductName = (item) => {
-    return item.details?.productname || "Unnamed Product"
-  }
-
-  const getProductPrice = (item) => {
-    return item.details?.price?.amount || 0
-  }
-
-  const getProductShippingRate = (item) => {
-    return item.details?.price?.shipping || 0
   }
 
   // Enhanced Weight Limit Modal
@@ -552,7 +506,7 @@ const getProductShippingCost = (item) => {
         <form onSubmit={handleSubmit}>
           <div className="placeorder-layout">
             <div className="placeorder-main">
-              {/* Enhanced Cart Summary */}
+              {/* Enhanced Cart Summary for Market Component Structure */}
               <motion.section
                 className="card cart-summary"
                 initial={{ opacity: 0, y: 20 }}
@@ -564,7 +518,7 @@ const getProductShippingCost = (item) => {
                     <FaShoppingCart className="section-icon" /> Cart Summary
                   </h2>
                   <span className="item-count">
-                    {cartItems.length} products ({cartStats.totalItems} items)
+                    {cartItems.length} main products ({cartStats.totalItems} total items)
                   </span>
                 </div>
 
@@ -585,89 +539,170 @@ const getProductShippingCost = (item) => {
                   </div>
                 ) : (
                   <div className="cart-items">
-                    {cartItems.map((item, index) => (
-                      <motion.div
-                        key={item.authentications?.id}
-                        className="cart-item"
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.1 * index }}
-                      >
-                        <div className="item-image">
-                          <img src={getProductImage(item) || "/placeholder.svg"} alt={getProductName(item)} />
-                        </div>
+                    {cartItems.map((mainProduct, mainIndex) => {
+                      const shippingDetails = getMainProductShippingDetails(mainProduct)
 
-                        <div className="item-details">
-                          <div className="item-name">{getProductName(item)}</div>
-                          <div className="item-price">₱{formatDecimal(getProductPrice(item), 2)}</div>
-                          <div className="item-shipping-rate">
-                            Base shipping: ₱{formatDecimal(getProductShippingRate(item), 2)}
-                            {getProductShippingCost(item).hasFallback && (
-                              <span style={{ color: "#f59e0b", fontSize: "0.8rem", marginLeft: "5px" }}>
-                                (Auto-calculated)
-                              </span>
-                            )}
-                          </div>
-                          <div className="item-weight">
-                            Weight: {formatDecimal(Number.parseFloat(item.details?.weightingrams || 0), 2)}g per unit
-                          </div>
-
-                          <div className="item-actions">
-                            <div className="quantity-control">
-                              <motion.button
-                                type="button"
-                                className="quantity-btn"
-                                onClick={() => decreaseQuantity(item.authentications?.id)}
-                                whileTap={{ scale: 0.9 }}
-                              >
-                                -
-                              </motion.button>
-                              <span className="quantity" style={{color:'black'}}>{Math.floor(item.quantity || 1)}</span>
-                              <motion.button
-                                type="button"
-                                className="quantity-btn"
-                                onClick={() => increaseQuantity(item.authentications?.id)}
-                                whileTap={{ scale: 0.9 }}
-                              >
-                                +
-                              </motion.button>
+                      return (
+                        <motion.div
+                          key={mainProduct.mainProductId}
+                          className="main-product-group"
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ delay: 0.1 * mainIndex }}
+                        >
+                          {/* Main Product Header */}
+                          <div className="main-product-header">
+                            <div className="main-product-image">
+                              <img
+                                src={
+                                  getImageUrl(mainProduct.mainProductImages, "/placeholder.svg?height=80&width=80") ||
+                                  "/placeholder.svg"
+                                }
+                                alt={mainProduct.productName}
+                                onError={(e) => {
+                                  e.target.src = "/placeholder.svg?height=80&width=80"
+                                }}
+                              />
                             </div>
-
-                            <motion.button
+                            <div className="main-product-info">
+                              <h3 className="main-product-name">
+                                <FaBox className="product-icon" />
+                                {mainProduct.productName}
+                              </h3>
+                              <p className="specification-count">
+                                {mainProduct.specifications.length} specification
+                                {mainProduct.specifications.length > 1 ? "s" : ""} selected
+                              </p>
+                              {mainProduct.mainProduct?.details?.category && (
+                                <p className="main-product-category">
+                                  <FaTag className="category-icon" />
+                                  {mainProduct.mainProduct.details.category}
+                                </p>
+                              )}
+                              <div className="main-product-shipping-summary">
+                                <p className="shipping-rate">
+                                  <FaTruck className="shipping-icon" />
+                                  Shipping: ₱{formatDecimal(shippingDetails.baseRate, 2)}/kg
+                                  {shippingDetails.hasFallback && (
+                                    <span className="fallback-indicator">(Auto-calculated)</span>
+                                  )}
+                                </p>
+                                <p className="total-shipping">
+                                  Total: ₱{formatDecimal(shippingDetails.shippingCost, 2)}
+                                  <span className="weight-info">
+                                    ({formatDecimal(shippingDetails.totalWeightKilos, 2)}kg ×{" "}
+                                    {shippingDetails.weightMultiplier})
+                                  </span>
+                                </p>
+                              </div>
+                            </div>
+                            <button
                               type="button"
-                              className="remove-btn"
-                              onClick={() => removeItem(item.authentications?.id)}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
+                              className="remove-main-product-btn"
+                              onClick={() => removeFromCart(mainProduct.mainProductId)}
+                              title="Remove entire product"
                             >
-                              <FaTrashAlt /> Remove
-                            </motion.button>
+                              <FaTrashAlt />
+                            </button>
                           </div>
-                        </div>
 
-                        <div className="item-total">
-                          <div className="item-subtotal">
-                            ₱{formatDecimal(preciseMultiply(getProductPrice(item), Math.floor(item.quantity || 1)), 2)}
+                          {/* Specifications List */}
+                          <div className="specifications-list">
+                            {mainProduct.specifications.map((spec, specIndex) => {
+                              const specTotal = preciseMultiply(spec.price, spec.quantity)
+                              const specWeight = preciseMultiply(spec.data?.details?.weightingrams || 0, spec.quantity)
+
+                              return (
+                                <motion.div
+                                  key={spec.id}
+                                  className="specification-item"
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 0.05 * specIndex }}
+                                >
+                                  <div className="spec-image">
+                                    <img
+                                      src={
+                                        getImageUrl(
+                                          spec.images,
+                                          getImageUrl(
+                                            mainProduct.mainProductImages,
+                                            "/placeholder.svg?height=80&width=80",
+                                          ),
+                                        ) || "/placeholder.svg"
+                                      }
+                                      alt={spec.name}
+                                      onError={(e) => {
+                                        e.target.src = "/placeholder.svg?height=80&width=80"
+                                      }}
+                                    />
+                                  </div>
+
+                                  <div className="spec-details">
+                                    <h4 className="spec-name">{spec.name}</h4>
+                                    <div className="spec-meta">
+                                      <span className="spec-price">₱{formatDecimal(spec.price, 2)} each</span>
+                                      <span className="spec-weight">
+                                        {formatDecimal(spec.data?.details?.weightingrams || 0, 2)}g per unit
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="spec-quantity-controls">
+                                    <div className="quantity-control">
+                                      <motion.button
+                                        type="button"
+                                        className="quantity-btn"
+                                        onClick={() =>
+                                          updateSpecificationQuantity(
+                                            mainProduct.mainProductId,
+                                            spec.id,
+                                            spec.quantity - 1,
+                                          )
+                                        }
+                                        whileTap={{ scale: 0.9 }}
+                                        disabled={spec.quantity <= 1}
+                                      >
+                                        -
+                                      </motion.button>
+                                      <span className="quantity">{spec.quantity}</span>
+                                      <motion.button
+                                        type="button"
+                                        className="quantity-btn"
+                                        onClick={() =>
+                                          updateSpecificationQuantity(
+                                            mainProduct.mainProductId,
+                                            spec.id,
+                                            spec.quantity + 1,
+                                          )
+                                        }
+                                        whileTap={{ scale: 0.9 }}
+                                      >
+                                        +
+                                      </motion.button>
+                                    </div>
+                                  </div>
+
+                                  <div className="spec-totals">
+                                    <div className="spec-subtotal">₱{formatDecimal(specTotal, 2)}</div>
+                                    <div className="spec-total-weight">{formatDecimal(specWeight, 2)}g</div>
+                                  </div>
+
+                                  <button
+                                    type="button"
+                                    className="remove-spec-btn"
+                                    onClick={() => removeFromCart(mainProduct.mainProductId, spec.id)}
+                                    title="Remove this specification"
+                                  >
+                                    <FaTrashAlt />
+                                  </button>
+                                </motion.div>
+                              )
+                            })}
                           </div>
-                          <div className="item-shipping-cost">
-                            Shipping: ₱{formatDecimal(getProductShippingCost(item).shippingCost, 2)}
-                          </div>
-                          <div className="item-total-weight">
-                            {formatDecimal(
-                              preciseMultiply(
-                                Number.parseFloat(item.details?.weightingrams || 0),
-                                Math.floor(item.quantity || 1),
-                              ),
-                              2,
-                            )}
-                            g ({formatDecimal(getProductShippingCost(item).itemWeightKilos, 3)}kg)
-                          </div>
-                          <div className="item-weight-multiplier">
-                            Multiplier: {getProductShippingCost(item).weightMultiplier}x
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
+                        </motion.div>
+                      )
+                    })}
                   </div>
                 )}
               </motion.section>
@@ -686,12 +721,12 @@ const getProductShippingCost = (item) => {
                 </div>
 
                 <div className="shipping-details">
-                 <div className="shipping-info-row">
-                  <span>
-                    <FaTruck /> Weight-based shipping calculation:
-                  </span>
-                  <span className="shipping-value highlighted">₱{cartStats.shippingCost}</span>
-                 </div>
+                  <div className="shipping-info-row">
+                    <span>
+                      <FaTruck /> Total shipping cost:
+                    </span>
+                    <span className="shipping-value highlighted">₱{cartStats.shippingCost}</span>
+                  </div>
 
                   <div className="shipping-info-row">
                     <span>
@@ -709,71 +744,71 @@ const getProductShippingCost = (item) => {
                     </span>
                   </div>
 
-                  <div className="shipping-calculation-example">
+                  <div className="shipping-calculation-breakdown">
                     <h4>
-                      <FaInfoCircle /> Individual Product Shipping Calculation:
+                      <FaInfoCircle /> Main Product Shipping Calculation:
                     </h4>
-                    <div style={{ fontSize: "0.85rem", marginBottom: "10px", color: "#64748b" }}>
-                      Formula: Base Shipping Rate (per kg) × Weight (rounded up, max 20kg)
+                    <div className="breakdown-note">
+                      New Formula: Base Shipping Rate × Total Weight (per main product, rounded up, max 20kg)
                     </div>
-                    {cartItems.map((item, index) => {
-                      const shippingInfo = getProductShippingCost(item)
-                      const quantity = Math.floor(item.quantity || 1)
+
+                    {cartItems.map((mainProduct) => {
+                      const shippingDetails = getMainProductShippingDetails(mainProduct)
 
                       return (
-                        <div
-                          key={index}
-                          style={{
-                            padding: "10px",
-                            background: shippingInfo.hasFallback ? "#fef3c7" : "#f1f5f9",
-                            margin: "8px 0",
-                            borderRadius: "6px",
-                            fontSize: "0.85rem",
-                            border: shippingInfo.hasFallback ? "1px solid #f59e0b" : "1px solid #e2e8f0",
-                          }}
-                        >
-                          <div style={{ fontWeight: "600", marginBottom: "4px" }}>
-                            {getProductName(item)} (Qty: {quantity})
-                            {shippingInfo.hasFallback && (
-                              <span style={{ color: "#f59e0b", fontSize: "0.8rem", marginLeft: "8px" }}>
-                                (Fallback: ₱50/kg)
-                              </span>
-                            )}
-                          </div>
-                          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "4px", fontSize: "0.8rem" }}>
-                            <div>Rate: ₱{formatDecimal(shippingInfo.baseRate, 2)}/kg</div>
-                            <div>Actual Weight: {formatDecimal(shippingInfo.itemWeightKilos, 3)}kg</div>
-                            <div>Billing Weight: {shippingInfo.weightMultiplier}kg</div>
-                            <div style={{ fontWeight: "600", color: "#059669" }}>
-                              Shipping: ₱{formatDecimal(shippingInfo.shippingCost, 2)}
+                        <div key={mainProduct.mainProductId} className="main-product-shipping-breakdown">
+                          <h5 className="breakdown-product-name">{mainProduct.productName}</h5>
+                          <div
+                            className={`main-product-shipping-details ${shippingDetails.hasFallback ? "fallback" : ""}`}
+                          >
+                            <div className="shipping-breakdown-header">
+                              <span className="product-breakdown-name">Combined Weight Calculation</span>
+                              {shippingDetails.hasFallback && <span className="fallback-badge">Fallback Rate</span>}
                             </div>
-                          </div>
-                          <div style={{ 
-                            marginTop: "6px", 
-                            padding: "4px 8px", 
-                            background: "#e0f2fe", 
-                            borderRadius: "4px",
-                            fontSize: "0.75rem",
-                            color: "#0369a1"
-                          }}>
-                            Calculation: ₱{formatDecimal(shippingInfo.baseRate, 2)}/kg × {shippingInfo.weightMultiplier}kg = ₱{formatDecimal(shippingInfo.shippingCost, 2)}
+                            <div className="shipping-breakdown-content">
+                              <div className="breakdown-row">
+                                <span>Base Rate: ₱{formatDecimal(shippingDetails.baseRate, 2)}/kg</span>
+                                <span>Total Weight: {formatDecimal(shippingDetails.totalWeightKilos, 3)}kg</span>
+                              </div>
+                              <div className="breakdown-row">
+                                <span>Weight Multiplier: {shippingDetails.weightMultiplier}kg (rounded up)</span>
+                                <span className="breakdown-total">
+                                  Shipping: ₱{formatDecimal(shippingDetails.shippingCost, 2)}
+                                </span>
+                              </div>
+                              <div className="calculation-formula">
+                                Calculation: ₱{formatDecimal(shippingDetails.baseRate, 2)}/kg ×{" "}
+                                {shippingDetails.weightMultiplier}kg = ₱{formatDecimal(shippingDetails.shippingCost, 2)}
+                              </div>
+
+                              {/* Show individual specification weights */}
+                              <div className="spec-weight-breakdown">
+                                <h6>Specification Weights:</h6>
+                                {mainProduct.specifications.map((spec) => {
+                                  const specWeight = preciseMultiply(
+                                    spec.data?.details?.weightingrams || 0,
+                                    spec.quantity,
+                                  )
+                                  return (
+                                    <div key={spec.id} className="spec-weight-item">
+                                      <span>
+                                        {spec.name} (×{spec.quantity}): {formatDecimal(specWeight, 2)}g
+                                      </span>
+                                    </div>
+                                  )
+                                })}
+                                <div className="spec-weight-total">
+                                  <strong>
+                                    Total: {formatDecimal(shippingDetails.totalWeightGrams, 2)}g (
+                                    {formatDecimal(shippingDetails.totalWeightKilos, 3)}kg)
+                                  </strong>
+                                </div>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       )
                     })}
-                    <div
-                      style={{
-                        marginTop: "12px",
-                        fontWeight: "bold",
-                        background: "#dcfce7",
-                        padding: "10px",
-                        borderRadius: "6px",
-                        border: "1px solid #16a34a",
-                        color: "#15803d"
-                      }}
-                    >
-                      <strong>Total Shipping Cost: ₱{cartStats.shippingCost}</strong>
-                    </div>
                   </div>
 
                   <div className="shipping-info-row weight-limit-note">
@@ -785,7 +820,7 @@ const getProductShippingCost = (item) => {
             </div>
 
             <div className="placeorder-sidebar">
-              {/* Enhanced Order Summary with Payment Processing Fee */}
+              {/* Enhanced Order Summary */}
               <motion.section
                 className="card order-summary"
                 initial={{ opacity: 0, y: 20 }}
@@ -800,8 +835,15 @@ const getProductShippingCost = (item) => {
 
                 <div className="summary-content">
                   <div className="summary-row">
-                    <span>Products</span>
-                    <span>{cartItems.length} items</span>
+                    <span>Main Products</span>
+                    <span>{cartItems.length}</span>
+                  </div>
+
+                  <div className="summary-row">
+                    <span>Total Specifications</span>
+                    <span>
+                      {cartItems.reduce((total, mainProduct) => total + mainProduct.specifications.length, 0)}
+                    </span>
                   </div>
 
                   <div className="summary-row">
@@ -829,7 +871,6 @@ const getProductShippingCost = (item) => {
                     <span>₱{cartStats.shippingCost}</span>
                   </div>
 
-                  {/* New Payment Processing Fee Section */}
                   <div className="summary-row payment-fee-row">
                     <span>
                       <FaCreditCard className="fee-icon" />
@@ -851,7 +892,6 @@ const getProductShippingCost = (item) => {
                     <span>₱{cartStats.total}</span>
                   </motion.div>
 
-                  {/* Payment Breakdown */}
                   <div className="payment-breakdown">
                     <h4>
                       <FaInfoCircle /> Payment Breakdown:
@@ -877,7 +917,7 @@ const getProductShippingCost = (item) => {
                   <motion.button
                     type="submit"
                     className="checkout-button"
-                    disabled={cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT}
+                    disabled={cartStats.totalWeightKilos > MAX_WEIGHT_LIMIT || cartItems.length === 0}
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                   >
@@ -885,6 +925,11 @@ const getProductShippingCost = (item) => {
                       <>
                         <FaExclamationTriangle className="button-icon" />
                         Order Exceeds {MAX_WEIGHT_LIMIT}kg Weight Limit
+                      </>
+                    ) : cartItems.length === 0 ? (
+                      <>
+                        <FaShoppingCart className="button-icon" />
+                        Cart is Empty
                       </>
                     ) : (
                       <>

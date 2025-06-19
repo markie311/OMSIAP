@@ -2019,3 +2019,163 @@
   color: white !important;
   border-color: var(--danger-color) !important;
 }
+
+/// new 
+// Enhanced cart styles for grouped display
+.market-cart-main-product {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  overflow: hidden;
+  
+  .market-cart-product-header {
+    display: flex;
+    align-items: center;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #e0e0e0;
+    
+    .market-cart-product-image {
+      flex-shrink: 0;
+      margin-right: 12px;
+      
+      img {
+        width: 60px;
+        height: 60px;
+        object-fit: cover;
+        border-radius: 6px;
+      }
+    }
+    
+    .market-cart-product-info {
+      flex-grow: 1;
+      
+      .market-cart-product-name {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 4px 0;
+        color: #2c5aa0;
+      }
+      
+      .market-cart-category,
+      .market-cart-spec-count {
+        margin: 2px 0;
+        
+        small {
+          color: #666;
+          font-size: 0.75rem;
+        }
+      }
+    }
+    
+    .market-remove-main-product {
+      background: #ff6b6b;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      padding: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      
+      &:hover {
+        background: #ff5252;
+      }
+    }
+  }
+  
+  .market-cart-specifications {
+    .market-cart-specification {
+      display: flex;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid #f0f0f0;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+      
+      .market-cart-spec-image {
+        flex-shrink: 0;
+        margin-right: 10px;
+        
+        img {
+          width: 45px;
+          height: 45px;
+          object-fit: cover;
+          border-radius: 4px;
+        }
+      }
+      
+      .market-cart-spec-details {
+        flex-grow: 1;
+        
+        .market-cart-spec-name {
+          font-size: 0.9rem;
+          font-weight: 500;
+          margin: 0 0 2px 0;
+          color: #333;
+        }
+        
+        .market-cart-spec-price {
+          font-size: 0.85rem;
+          font-weight: 600;
+          color: #2c5aa0;
+          margin: 0 0 2px 0;
+        }
+        
+        .market-cart-weight {
+          margin: 0;
+          
+          small {
+            color: #888;
+            font-size: 0.75rem;
+          }
+        }
+      }
+      
+      .market-cart-spec-quantity {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 12px;
+        
+        .market-quantity-btn {
+          background: #f0f0f0;
+          border: 1px solid #ddd;
+          border-radius: 3px;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          
+          &:hover {
+            background: #e0e0e0;
+          }
+        }
+        
+        span {
+          min-width: 20px;
+          text-align: center;
+          font-weight: 500;
+        }
+      }
+      
+      .market-remove-specification {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        
+        &:hover {
+          background: #c82333;
+        }
+      }
+    }
+  }
+}

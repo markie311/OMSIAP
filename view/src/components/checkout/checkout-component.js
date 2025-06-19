@@ -1,87 +1,108 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import '../../styles/checkout/checkout.scss';
-import axiosCreatedInstance from '../lib/axiosutil.js';
-import { FaUser, FaPhone, FaHome, FaCity, FaGlobe, FaMapMarkerAlt, FaBox, FaShoppingCart, FaMoneyBillWave, FaTruck, FaLock, FaLandmark, FaMapPin, FaMapMarkedAlt, FaEnvelope } from 'react-icons/fa';
+"use client"
+
+import { useState, useEffect, useMemo } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import "../../styles/checkout/checkout.scss"
+import axiosCreatedInstance from "../lib/axiosutil.js"
+import {
+  FaUser,
+  FaPhone,
+  FaHome,
+  FaCity,
+  FaGlobe,
+  FaMapMarkerAlt,
+  FaBox,
+  FaShoppingCart,
+  FaMoneyBillWave,
+  FaTruck,
+  FaLock,
+  FaLandmark,
+  FaMapPin,
+  FaMapMarkedAlt,
+  FaEnvelope,
+  FaTag,
+  FaWeight,
+  FaInfoCircle,
+} from "react-icons/fa"
 
 // Move decimal precision utility outside the component to prevent recreation on each render
 const decimalPrecision = {
   // Convert a number to a precise decimal string representation
   toDecimal: (num, precision = 10) => {
-    return Number(parseFloat(num).toFixed(precision));
+    return Number(Number.parseFloat(num).toFixed(precision))
   },
-  
+
   // Add two numbers with precise decimal handling
   add: (a, b) => {
     // Convert to strings to determine decimal places
-    const aStr = a.toString();
-    const bStr = b.toString();
-    
+    const aStr = a.toString()
+    const bStr = b.toString()
+
     // Determine decimal places
-    const aDecimals = aStr.includes('.') ? aStr.split('.')[1].length : 0;
-    const bDecimals = bStr.includes('.') ? bStr.split('.')[1].length : 0;
-    const maxDecimals = Math.max(aDecimals, bDecimals);
-    
+    const aDecimals = aStr.includes(".") ? aStr.split(".")[1].length : 0
+    const bDecimals = bStr.includes(".") ? bStr.split(".")[1].length : 0
+    const maxDecimals = Math.max(aDecimals, bDecimals)
+
     // Use a multiplier based on the maximum decimal places
-    const multiplier = Math.pow(10, maxDecimals);
-    
+    const multiplier = Math.pow(10, maxDecimals)
+
     // Convert to integers, perform addition, then convert back
-    const result = (Math.round(a * multiplier) + Math.round(b * multiplier)) / multiplier;
-    return result;
+    const result = (Math.round(a * multiplier) + Math.round(b * multiplier)) / multiplier
+    return result
   },
-  
+
   // Multiply two numbers with precise decimal handling
   multiply: (a, b) => {
     // Convert to strings
-    const aStr = a.toString();
-    const bStr = b.toString();
-    
+    const aStr = a.toString()
+    const bStr = b.toString()
+
     // Determine decimal places
-    const aDecimals = aStr.includes('.') ? aStr.split('.')[1].length : 0;
-    const bDecimals = bStr.includes('.') ? bStr.split('.')[1].length : 0;
-    
+    const aDecimals = aStr.includes(".") ? aStr.split(".")[1].length : 0
+    const bDecimals = bStr.includes(".") ? bStr.split(".")[1].length : 0
+
     // Calculate combined decimal places
-    const totalDecimals = aDecimals + bDecimals;
-    
+    const totalDecimals = aDecimals + bDecimals
+
     // Remove decimal points, multiply as integers, then adjust the result
-    const aInt = parseInt(aStr.replace('.', ''));
-    const bInt = parseInt(bStr.replace('.', ''));
-    
-    let result = (aInt * bInt) / Math.pow(10, totalDecimals);
-    return result;
+    const aInt = Number.parseInt(aStr.replace(".", ""))
+    const bInt = Number.parseInt(bStr.replace(".", ""))
+
+    const result = (aInt * bInt) / Math.pow(10, totalDecimals)
+    return result
   },
-  
+
   // Format currency to 2 decimal places correctly
   formatCurrency: (amount) => {
-    return parseFloat(amount.toFixed(2));
-  }
-};
+    return Number.parseFloat(amount.toFixed(2))
+  },
+}
 
 const CheckoutPage = (props) => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  
+  const location = useLocation()
+  const navigate = useNavigate()
+
   // Use useMemo to stabilize orderData reference
   const orderData = useMemo(() => {
-    const data = location.state?.orderData || { cartItems: [], cartStats: {} };
-    console.log("Received order data:", data);
-    return data;
-  }, [location.state]);
-  
+    const data = location.state?.orderData || { cartItems: [], cartStats: {} }
+    console.log("Received order data from place order:", data)
+    return data
+  }, [location.state])
+
   // Form data for personal and shipping information with corrected schema field names
   const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
-    phoneNumber: '',
-    street: '',        // Matches schema
-    trademark: '',     // Matches schema
-    baranggay: '',     // Updated from barangay to baranggay to match schema
-    city: '',          // Matches schema
-    province: '',      // Matches schema
-    zipCode: '',       // Note: schema uses zipcode (lowercase) in shippinginfo
-    country: ''        // Matches schema
-  });
+    firstName: "",
+    middleName: "",
+    lastName: "",
+    phoneNumber: "",
+    street: "", // Matches schema
+    trademark: "", // Matches schema
+    baranggay: "", // Updated from barangay to baranggay to match schema
+    city: "", // Matches schema
+    province: "", // Matches schema
+    zipCode: "", // Note: schema uses zipcode (lowercase) in shippinginfo
+    country: "", // Matches schema
+  })
 
   // Order summary state that will be calculated from orderData
   const [orderSummary, setOrderSummary] = useState({
@@ -93,132 +114,192 @@ const CheckoutPage = (props) => {
     totalCapital: 0,
     totalItems: 0,
     totalProducts: 0,
+    totalMainProducts: 0,
+    totalSpecifications: 0,
     totalWeightGrams: 0,
     totalWeightKilos: 0,
-    total: 0
-  });
+    total: 0,
+  })
 
   // Payment details using OMSIAPAWASTO currency
   const [paymentDetails, setPaymentDetails] = useState({
     omsiapawastoBalance: 5000, // Example balance
-    selectedPaymentMethod: 'omsiapawasto'
-  });
+    selectedPaymentMethod: "omsiapawasto",
+  })
 
   // Animation states
-  const [showSummary, setShowSummary] = useState(false);
-  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [showSummary, setShowSummary] = useState(false)
+  const [formSubmitted, setFormSubmitted] = useState(false)
 
   useEffect(() => {
     // Trigger animations after component mount
     setTimeout(() => {
-      setShowSummary(true);
-    }, 300);
-  }, []);
+      setShowSummary(true)
+    }, 300)
+  }, [])
 
- const calculatedSummary = useMemo(() => {
-  if (orderData && orderData.cartItems && orderData.cartItems.length > 0) {
-    // Get values from paymentBreakdown if available, otherwise fallback to cartStats
-    const subtotal = orderData.paymentBreakdown?.subtotal || orderData.cartStats?.subtotal || 0;
-    const shippingTotal = orderData.paymentBreakdown?.shipping || orderData.cartStats?.shippingCost || 0;
-    const paymentProcessingFee = orderData.paymentBreakdown?.paymentProcessingFee || orderData.cartStats?.paymentProcessingFee || 0;
-    const total = orderData.paymentBreakdown?.total || orderData.cartStats?.total || 0;
-    
-    const totalWeightGrams = orderData.cartStats?.totalWeightGrams || 0;
-    const totalWeightKilos = orderData.cartStats?.totalWeightKilos || 0;
-    const totalItems = orderData.cartStats?.totalItems || 0;
-    
-    // Initialize other totals that may not be in cartStats
-    let totalTransactionGiveaway = 0;
-    let totalOmsiaProfit = 0;
-    let totalCapital = 0;
-    
-    // Process each item to get financial breakdown
-    orderData.cartItems.forEach(item => {
-      const quantity = item.quantity || 1;
-      
-      // Extract values from the item's details.price structure
-      const itemTransactionGiveaway = item.details?.price?.transactiongiveaway || 0;
-      const itemProfit = item.details?.price?.profit || 0;
-      const itemCapital = item.details?.price?.capital || 0;
-      
-      // Multiply values by quantity using precise decimal multiplication
-      const totalItemTransactionGiveaway = decimalPrecision.multiply(itemTransactionGiveaway, quantity);
-      const totalItemOmsiaProfit = decimalPrecision.multiply(itemProfit, quantity);
-      const totalItemCapital = decimalPrecision.multiply(itemCapital, quantity);
-      
-      // Add to running totals using precise decimal addition
-      totalTransactionGiveaway = decimalPrecision.add(totalTransactionGiveaway, totalItemTransactionGiveaway);
-      totalOmsiaProfit = decimalPrecision.add(totalOmsiaProfit, totalItemOmsiaProfit);
-      totalCapital = decimalPrecision.add(totalCapital, totalItemCapital);
-    });
-    
-    // Return formatted values
-    return {
-      merchandiseTotal: decimalPrecision.formatCurrency(subtotal),
-      shippingTotal: decimalPrecision.formatCurrency(shippingTotal),
-      paymentProcessingFee: decimalPrecision.formatCurrency(paymentProcessingFee),
-      totalTransactionGiveaway: decimalPrecision.formatCurrency(totalTransactionGiveaway),
-      totalOmsiaProfit: decimalPrecision.formatCurrency(totalOmsiaProfit),
-      totalCapital: decimalPrecision.formatCurrency(totalCapital),
-      totalItems,
-      totalProducts: orderData.cartItems.length,
-      totalWeightGrams: parseFloat(totalWeightGrams.toFixed(2)),
-      totalWeightKilos: parseFloat(totalWeightKilos.toFixed(3)),
-      total: decimalPrecision.formatCurrency(total)
-    };
+  // Helper function to get image URL with fallback
+  const getImageUrl = (imageArray, fallbackUrl = "/placeholder.svg?height=60&width=60") => {
+    if (!imageArray || !Array.isArray(imageArray) || imageArray.length === 0) {
+      return fallbackUrl
+    }
+
+    // Handle both string URLs and objects with url property
+    const firstImage = imageArray[0]
+    if (typeof firstImage === "string") {
+      return firstImage
+    } else if (firstImage && firstImage.url) {
+      return firstImage.url
+    }
+
+    return fallbackUrl
   }
-  
-  // Return default values if no cart items
-  return {
-    merchandiseTotal: 0,
-    shippingTotal: 0,
-    paymentProcessingFee: 0,
-    totalTransactionGiveaway: 0,
-    totalOmsiaProfit: 0,
-    totalCapital: 0,
-    totalItems: 0,
-    totalProducts: 0,
-    totalWeightGrams: 0,
-    totalWeightKilos: 0,
-    total: 0
-  };
-}, [orderData]);
+
+  // NEW: Convert new cart structure to flat array for database compatibility
+  const convertCartToFlatStructure = (cartItems) => {
+    const flatItems = []
+
+    cartItems.forEach((mainProduct) => {
+      mainProduct.specifications.forEach((spec) => {
+        // Create a flat item structure that matches the original database schema
+        const flatItem = {
+          // Keep the specification data as the main item data
+          ...spec.data,
+          // Override quantity with the cart quantity
+          quantity: spec.quantity,
+          // Add reference to main product
+          mainProductId: mainProduct.mainProductId,
+          mainProductName: mainProduct.productName,
+          // Keep specification-specific data
+          specificationId: spec.id,
+          specificationName: spec.name,
+          // Ensure price structure is correct
+          details: {
+            ...spec.data.details,
+            price: {
+              ...spec.data.details.price,
+              amount: spec.price, // Use the cart price
+            },
+          },
+        }
+
+        flatItems.push(flatItem)
+      })
+    })
+
+    console.log("Converted cart to flat structure:", flatItems)
+    return flatItems
+  }
+
+  const calculatedSummary = useMemo(() => {
+    if (orderData && orderData.cartItems && orderData.cartItems.length > 0) {
+      // Get values from paymentBreakdown if available, otherwise fallback to cartStats
+      const subtotal = orderData.paymentBreakdown?.subtotal || orderData.cartStats?.subtotal || 0
+      const shippingTotal = orderData.paymentBreakdown?.shipping || orderData.cartStats?.shippingCost || 0
+      const paymentProcessingFee =
+        orderData.paymentBreakdown?.paymentProcessingFee || orderData.cartStats?.paymentProcessingFee || 0
+      const total = orderData.paymentBreakdown?.total || orderData.cartStats?.total || 0
+
+      const totalWeightGrams = orderData.cartStats?.totalWeightGrams || 0
+      const totalWeightKilos = orderData.cartStats?.totalWeightKilos || 0
+      const totalItems = orderData.cartStats?.totalItems || 0
+
+      // Initialize other totals that may not be in cartStats
+      let totalTransactionGiveaway = 0
+      let totalOmsiaProfit = 0
+      let totalCapital = 0
+      let totalMainProducts = 0
+      let totalSpecifications = 0
+
+      // Process the new cart structure (main products with specifications)
+      orderData.cartItems.forEach((mainProduct) => {
+        totalMainProducts++
+
+        mainProduct.specifications.forEach((spec) => {
+          totalSpecifications++
+          const quantity = spec.quantity || 1
+
+          // Extract values from the specification's data structure
+          const itemTransactionGiveaway = spec.data?.details?.price?.transactiongiveaway || 0
+          const itemProfit = spec.data?.details?.price?.profit || 0
+          const itemCapital = spec.data?.details?.price?.capital || 0
+
+          // Multiply values by quantity using precise decimal multiplication
+          const totalItemTransactionGiveaway = decimalPrecision.multiply(itemTransactionGiveaway, quantity)
+          const totalItemOmsiaProfit = decimalPrecision.multiply(itemProfit, quantity)
+          const totalItemCapital = decimalPrecision.multiply(itemCapital, quantity)
+
+          // Add to running totals using precise decimal addition
+          totalTransactionGiveaway = decimalPrecision.add(totalTransactionGiveaway, totalItemTransactionGiveaway)
+          totalOmsiaProfit = decimalPrecision.add(totalOmsiaProfit, totalItemOmsiaProfit)
+          totalCapital = decimalPrecision.add(totalCapital, totalItemCapital)
+        })
+      })
+
+      // Return formatted values
+      return {
+        merchandiseTotal: decimalPrecision.formatCurrency(subtotal),
+        shippingTotal: decimalPrecision.formatCurrency(shippingTotal),
+        paymentProcessingFee: decimalPrecision.formatCurrency(paymentProcessingFee),
+        totalTransactionGiveaway: decimalPrecision.formatCurrency(totalTransactionGiveaway),
+        totalOmsiaProfit: decimalPrecision.formatCurrency(totalOmsiaProfit),
+        totalCapital: decimalPrecision.formatCurrency(totalCapital),
+        totalItems,
+        totalProducts: totalSpecifications, // Total individual specifications
+        totalMainProducts, // Number of main products
+        totalSpecifications, // Number of specifications
+        totalWeightGrams: Number.parseFloat(totalWeightGrams.toFixed(2)),
+        totalWeightKilos: Number.parseFloat(totalWeightKilos.toFixed(3)),
+        total: decimalPrecision.formatCurrency(total),
+      }
+    }
+
+    // Return default values if no cart items
+    return {
+      merchandiseTotal: 0,
+      shippingTotal: 0,
+      paymentProcessingFee: 0,
+      totalTransactionGiveaway: 0,
+      totalOmsiaProfit: 0,
+      totalCapital: 0,
+      totalItems: 0,
+      totalProducts: 0,
+      totalMainProducts: 0,
+      totalSpecifications: 0,
+      totalWeightGrams: 0,
+      totalWeightKilos: 0,
+      total: 0,
+    }
+  }, [orderData])
 
   // Update order summary state only when calculated summary changes
   useEffect(() => {
-    setOrderSummary(calculatedSummary);
-  }, [calculatedSummary]);
+    setOrderSummary(calculatedSummary)
+  }, [calculatedSummary])
 
   // Handle form input changes
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prevState => ({
+    const { name, value } = e.target
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
-    }));
-  };
-
-  // Get product name consistently
-  const getProductName = (item) => {
-    return item.details?.productname || "Unnamed Product";
-  };
-
-  // Get product price consistently
-  const getProductPrice = (item) => {
-    return item.details?.price?.amount || 0;
-  };
+      [name]: value,
+    }))
+  }
 
   // Handle order submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFormSubmitted(true);
-    
+    e.preventDefault()
+    setFormSubmitted(true)
+
     if (paymentDetails.omsiapawastoBalance < orderSummary.total) {
-      alert('Insufficient OMSIAPAWASTO balance. Please add funds before placing your order.');
-      setFormSubmitted(false);
-      return;
+      alert("Insufficient OMSIAPAWASTO balance. Please add funds before placing your order.")
+      setFormSubmitted(false)
+      return
     }
-    
+
+    // Convert new cart structure to flat structure for database compatibility
+    const flatCartItems = convertCartToFlatStructure(orderData.cartItems)
+
     // Prepare complete order data
     const completeOrderData = {
       personal: formData,
@@ -226,69 +307,91 @@ const CheckoutPage = (props) => {
         ...orderSummary,
         // Include data from original cartStats that might be useful
         shippingMethod: "weight-based",
-        paymentMethod: orderData.paymentMethod || 'omsiapawasto'
+        paymentMethod: orderData.paymentMethod || "omsiapawasto",
       },
       paymentMethod: paymentDetails.selectedPaymentMethod,
-      cartItems: orderData.cartItems,
-      orderDate: new Date().toISOString()
-    };
-    
+      cartItems: flatCartItems, // Use flattened structure
+      originalCartStructure: orderData.cartItems, // Keep original for reference
+      orderDate: new Date().toISOString(),
+    }
+
     const order = {
-       registrantid: props.user._id,
-       products: orderData.cartItems,
-       personalInfo: formData,
-       paymentInfo: {
-         method: paymentDetails.selectedPaymentMethod,
-         amount: orderSummary.total
-       },
-       orderSummary
+      registrantid: props.user._id,
+      products: flatCartItems, // Use flattened structure for database
+      personalInfo: formData,
+      paymentInfo: {
+        method: paymentDetails.selectedPaymentMethod,
+        amount: orderSummary.total,
+      },
+      orderSummary,
     }
 
     try {
-      // Example API call
+      // API call with flattened cart structure (maintains database compatibility)
       await axiosCreatedInstance.post("/products/order", {
         $order: {
-          // registrantid: props.user?.id,
           registrantid: props.user._id,
-          products: orderData.cartItems,
+          products: flatCartItems, // Flattened structure for database
           personalInfo: formData,
           paymentInfo: {
             method: paymentDetails.selectedPaymentMethod,
-            amount: orderSummary.total
+            amount: orderSummary.total,
           },
-          orderSummary
+          orderSummary,
         },
-      });
+      })
 
-      console.log(order)
-      
+      console.log("Order submitted:", order)
+
       // Show success message
-      alert('Order successfully placed using OMSIAPAWASTO currency!');
+      alert("Order successfully placed using OMSIAPAWASTO currency!")
       // Navigate to order confirmation page or dashboard
       // navigate('/order-confirmation', { state: { orderReference: 'ORD' + Date.now() } });
     } catch (error) {
-      console.error('Error placing order:', error);
-      alert('There was an error processing your order. Please try again.');
+      console.error("Error placing order:", error)
+      alert("There was an error processing your order. Please try again.")
     } finally {
-      setFormSubmitted(false);
+      setFormSubmitted(false)
     }
-  };
+  }
 
-  // Memoize item calculations to prevent recalculation on each render
-  const cartItemsWithCalculatedPrices = useMemo(() => {
-    return orderData.cartItems.map(item => {
-      const itemPrice = getProductPrice(item);
-      const quantity = item.quantity || 1;
-      const totalPrice = decimalPrecision.multiply(itemPrice, quantity);
-      
-      return {
-        ...item,
-        calculatedPrice: totalPrice,
-        calculatedQuantity: quantity,
-        displayName: getProductName(item)
-      };
-    });
-  }, [orderData.cartItems]);
+  // Memoize cart display items for the UI
+  const cartDisplayItems = useMemo(() => {
+    const displayItems = []
+
+    orderData.cartItems.forEach((mainProduct) => {
+      // Add main product header
+      displayItems.push({
+        type: "mainProduct",
+        id: mainProduct.mainProductId,
+        name: mainProduct.productName,
+        category: mainProduct.mainProduct?.details?.category,
+        image: getImageUrl(mainProduct.mainProductImages),
+        specCount: mainProduct.specifications.length,
+      })
+
+      // Add specifications
+      mainProduct.specifications.forEach((spec) => {
+        const itemPrice = spec.price || 0
+        const quantity = spec.quantity || 1
+        const totalPrice = decimalPrecision.multiply(itemPrice, quantity)
+
+        displayItems.push({
+          type: "specification",
+          id: spec.id,
+          name: spec.name,
+          price: itemPrice,
+          quantity: quantity,
+          totalPrice: totalPrice,
+          weight: spec.data?.details?.weightingrams || 0,
+          image: getImageUrl(spec.images, getImageUrl(mainProduct.mainProductImages)),
+          mainProductId: mainProduct.mainProductId,
+        })
+      })
+    })
+
+    return displayItems
+  }, [orderData.cartItems])
 
   // If there's no order data, show a message
   if (!orderData || !orderData.cartItems || orderData.cartItems.length === 0) {
@@ -298,29 +401,26 @@ const CheckoutPage = (props) => {
         <div className="checkout-empty-cart">
           <FaShoppingCart className="checkout-empty-icon" />
           <p>No order data available. Please go back to your cart.</p>
-          <button 
-            className="checkout-back-button"
-            onClick={() => navigate('/checkout')}
-          >
-            Return to Cart
+          <button className="checkout-back-button" onClick={() => navigate("/market")}>
+            Return to Market
           </button>
         </div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="checkout-container">
-      <h1 className="checkout-title" style={{color:'black'}}>
+      <h1 className="checkout-title" style={{ color: "black" }}>
         <FaLock className="checkout-secure-icon" /> Secure Checkout
       </h1>
-      
+
       <div className="checkout-grid-layout">
         {/* Left Column: Shipping & Personal Information */}
         <div className="checkout-shipping-column">
           <div className="checkout-info-card checkout-fade-in">
             <h2 className="checkout-card-header">
-              <FaUser className="checkout-header-icon" /> 
+              <FaUser className="checkout-header-icon" />
               Shipping & Personal Information
             </h2>
             <form onSubmit={handleSubmit} className="checkout-form">
@@ -405,7 +505,7 @@ const CheckoutPage = (props) => {
                       placeholder="House/Unit No., Street Name"
                     />
                   </div>
-                  
+
                   <div className="checkout-form-group checkout-full-width">
                     <label htmlFor="trademark">
                       <FaLandmark className="checkout-input-icon" /> Landmark/Trademark
@@ -420,7 +520,7 @@ const CheckoutPage = (props) => {
                       placeholder="Near landmark or building (optional)"
                     />
                   </div>
-                  
+
                   <div className="checkout-form-group">
                     <label>
                       <FaMapPin className="checkout-input-icon" /> Baranggay*
@@ -435,7 +535,7 @@ const CheckoutPage = (props) => {
                       className="checkout-input"
                     />
                   </div>
-                  
+
                   <div className="checkout-form-group">
                     <label>
                       <FaCity className="checkout-input-icon" /> City/Municipality*
@@ -450,7 +550,7 @@ const CheckoutPage = (props) => {
                       className="checkout-input"
                     />
                   </div>
-                  
+
                   <div className="checkout-form-group">
                     <label>
                       <FaMapMarkedAlt className="checkout-input-icon" /> Province*
@@ -465,7 +565,7 @@ const CheckoutPage = (props) => {
                       className="checkout-input"
                     />
                   </div>
-                  
+
                   <div className="checkout-form-group">
                     <label>
                       <FaEnvelope className="checkout-input-icon" /> Postal Zipcode*
@@ -480,7 +580,7 @@ const CheckoutPage = (props) => {
                       className="checkout-input"
                     />
                   </div>
-                  
+
                   <div className="checkout-form-group">
                     <label>
                       <FaGlobe className="checkout-input-icon" /> Country*
@@ -499,59 +599,115 @@ const CheckoutPage = (props) => {
                 </div>
               </div>
 
-              <button 
-                type="submit" 
-                className={`checkout-button ${formSubmitted ? 'checkout-loading' : ''}`}
+              <button
+                type="submit"
+                className={`checkout-button ${formSubmitted ? "checkout-loading" : ""}`}
                 disabled={formSubmitted}
               >
-                {formSubmitted ? (
-                  <>Processing Order...</>
-                ) : (
-                  <>Confirm Order & Pay with OMSIAPAWASTO</>
-                )}
+                {formSubmitted ? <>Processing Order...</> : <>Confirm Order & Pay with OMSIAPAWASTO</>}
               </button>
             </form>
           </div>
         </div>
 
         {/* Right Column: Order Summary */}
-        <div className={`checkout-summary-column ${showSummary ? 'checkout-slide-in' : ''}`}>
+        <div className={`checkout-summary-column ${showSummary ? "checkout-slide-in" : ""}`}>
           <div className="checkout-info-card">
             <h2 className="checkout-card-header">
               <FaShoppingCart className="checkout-header-icon" /> Order Summary
             </h2>
-            
+
             <div className="checkout-summary-section">
               <h3 className="checkout-section-heading">
-                <FaBox className="checkout-section-icon" /> Products ({orderSummary.totalProducts})
+                <FaBox className="checkout-section-icon" />
+                Products ({orderSummary.totalMainProducts} main products, {orderSummary.totalSpecifications}{" "}
+                specifications)
               </h3>
               <div className="checkout-cart-items">
-                {cartItemsWithCalculatedPrices.map((item, index) => (
-                  <div key={item.authentications?.id || index} className="checkout-cart-item">
-                    <div className="checkout-item-info">
-                      <span className="checkout-item-name">{item.displayName}</span>
-                      <span className="checkout-item-quantity">x{item.calculatedQuantity}</span>
-                    </div>
-                    <span className="checkout-item-price">
-                      ₱{item.calculatedPrice.toFixed(2)}
-                    </span>
-                  </div>
-                ))}
+                {cartDisplayItems.map((item, index) => {
+                  if (item.type === "mainProduct") {
+                    return (
+                      <div key={`main-${item.id}`} className="checkout-main-product-header">
+                        <div className="checkout-main-product-info">
+                          <img
+                            src={item.image || "/placeholder.svg"}
+                            alt={item.name}
+                            className="checkout-main-product-image"
+                            onError={(e) => {
+                              e.target.src = "/placeholder.svg?height=40&width=40"
+                            }}
+                          />
+                          <div className="checkout-main-product-details">
+                            <span className="checkout-main-product-name">
+                              <FaBox className="checkout-product-icon" />
+                              {item.name}
+                            </span>
+                            {item.category && (
+                              <span className="checkout-main-product-category">
+                                <FaTag className="checkout-category-icon" />
+                                {item.category}
+                              </span>
+                            )}
+                            <span className="checkout-spec-count">
+                              {item.specCount} specification{item.specCount > 1 ? "s" : ""}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  } else {
+                    return (
+                      <div key={`spec-${item.id}`} className="checkout-cart-item checkout-specification-item">
+                        <div className="checkout-item-image-container">
+                          <img
+                            src={item.image || "/placeholder.svg"}
+                            alt={item.name}
+                            className="checkout-item-image"
+                            onError={(e) => {
+                              e.target.src = "/placeholder.svg?height=50&width=50"
+                            }}
+                          />
+                        </div>
+                        <div className="checkout-item-info">
+                          <span className="checkout-item-name">{item.name}</span>
+                          <div className="checkout-item-meta">
+                            <span className="checkout-item-quantity">×{item.quantity}</span>
+                            <span className="checkout-item-weight">
+                              <FaWeight className="checkout-weight-icon" />
+                              {item.weight}g each
+                            </span>
+                          </div>
+                        </div>
+                        <span className="checkout-item-price">₱{item.totalPrice.toFixed(2)}</span>
+                      </div>
+                    )
+                  }
+                })}
               </div>
             </div>
-            
+
             <div className="checkout-summary-section">
               <h3 className="checkout-section-heading">
                 <FaTruck className="checkout-section-icon" /> Order Details
               </h3>
               <div className="checkout-summary-grid">
                 <div className="checkout-summary-item">
+                  <span className="checkout-label">Main Products:</span>
+                  <span className="checkout-value">{orderSummary.totalMainProducts}</span>
+                </div>
+                <div className="checkout-summary-item">
+                  <span className="checkout-label">Total Specifications:</span>
+                  <span className="checkout-value">{orderSummary.totalSpecifications}</span>
+                </div>
+                <div className="checkout-summary-item">
                   <span className="checkout-label">Total Items:</span>
                   <span className="checkout-value">{orderSummary.totalItems} units</span>
                 </div>
                 <div className="checkout-summary-item">
                   <span className="checkout-label">Total Weight:</span>
-                  <span className="checkout-value">{orderSummary.totalWeightGrams}g ({orderSummary.totalWeightKilos}kg)</span>
+                  <span className="checkout-value">
+                    {orderSummary.totalWeightGrams}g ({orderSummary.totalWeightKilos}kg)
+                  </span>
                 </div>
                 <div className="checkout-summary-item">
                   <span className="checkout-label">Merchandise Total:</span>
@@ -561,23 +717,25 @@ const CheckoutPage = (props) => {
                   <span className="checkout-label">Shipping Total:</span>
                   <span className="checkout-value">₱{orderSummary.shippingTotal.toFixed(2)}</span>
                 </div>
-                <div className="checkout-summary-item">
-                  <span className="checkout-label">Shipping Total:</span>
-                  <span className="checkout-value">₱{orderSummary.shippingTotal.toFixed(2)}</span>
-                </div>
-                <div className="checkout-summary-item" style={{
-                  borderBottom: '1px solid #e2e8f0',
-                  paddingBottom: '8px',
-                  marginBottom: '8px'
-                }}>
-                  <span className="checkout-label" style={{ color: '#3b82f6', fontWeight: '500' }}>
+                <div
+                  className="checkout-summary-item"
+                  style={{
+                    borderBottom: "1px solid #e2e8f0",
+                    paddingBottom: "8px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <span className="checkout-label" style={{ color: "#3b82f6", fontWeight: "500" }}>
                     Payment Processing Fee:
                   </span>
-                  <span className="checkout-value" style={{ 
-                    color: '#3b82f6', 
-                    fontWeight: '600',
-                    fontSize: '0.95em'
-                  }}>
+                  <span
+                    className="checkout-value"
+                    style={{
+                      color: "#3b82f6",
+                      fontWeight: "600",
+                      fontSize: "0.95em",
+                    }}
+                  >
                     ₱{orderSummary.paymentProcessingFee.toFixed(2)}
                   </span>
                 </div>
@@ -605,14 +763,14 @@ const CheckoutPage = (props) => {
                 */}
               </div>
             </div>
-            
+
             <div className="checkout-divider"></div>
-            
+
             <div className="checkout-summary-item checkout-total">
               <span className="checkout-label">Total Amount:</span>
               <span className="checkout-value checkout-highlight">₱{orderSummary.total.toFixed(2)}</span>
             </div>
-            
+
             <div className="checkout-payment-details">
               <h3 className="checkout-section-heading">
                 <FaMoneyBillWave className="checkout-section-icon" /> Payment Method
@@ -623,26 +781,34 @@ const CheckoutPage = (props) => {
                     type="radio"
                     name="paymentMethod"
                     value="omsiapawasto"
-                    checked={paymentDetails.selectedPaymentMethod === 'omsiapawasto'}
-                    onChange={() => setPaymentDetails({...paymentDetails, selectedPaymentMethod: 'omsiapawasto'})}
+                    checked={paymentDetails.selectedPaymentMethod === "omsiapawasto"}
+                    onChange={() => setPaymentDetails({ ...paymentDetails, selectedPaymentMethod: "omsiapawasto" })}
                   />
                   <div className="checkout-method-info">
                     <div className="checkout-method-name">OMSIAPAWASTO Currency</div>
-                    <div className="checkout-method-balance">Balance: ₱{paymentDetails.omsiapawastoBalance.toFixed(2)}</div>
+                    <div className="checkout-method-balance">
+                      Balance: ₱{paymentDetails.omsiapawastoBalance.toFixed(2)}
+                    </div>
                   </div>
                 </label>
               </div>
-              
+
               <div className="checkout-divider"></div>
-              
+
               <div className="checkout-payment-confirmation">
                 <div className="checkout-summary-item checkout-total">
                   <span className="checkout-label">Amount to Pay:</span>
                   <span className="checkout-value checkout-highlight">₱{orderSummary.total.toFixed(2)}</span>
                 </div>
 
-                 <span className="checkout-value checkout-highlight">MAKE SURE TO PROVIDE YOUR CURRENT PHONE NUMBER IN THE PERSONAL SECTION SO THAT THE SHIPPING COMPANY WILL CALL YOU TO RECIEVE YOUR PARCELS</span>
-                
+                <div className="checkout-important-notice">
+                  <FaInfoCircle className="checkout-notice-icon" />
+                  <span className="checkout-notice-text">
+                    MAKE SURE TO PROVIDE YOUR CURRENT PHONE NUMBER IN THE PERSONAL SECTION SO THAT THE SHIPPING COMPANY
+                    WILL CALL YOU TO RECEIVE YOUR PARCELS
+                  </span>
+                </div>
+
                 {paymentDetails.omsiapawastoBalance < orderSummary.total && (
                   <div className="checkout-insufficient-funds">
                     <span className="checkout-warning-icon">⚠️</span>
@@ -655,7 +821,7 @@ const CheckoutPage = (props) => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default CheckoutPage;
+export default CheckoutPage
