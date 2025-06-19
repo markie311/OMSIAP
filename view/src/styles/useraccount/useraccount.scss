@@ -2786,3 +2786,364 @@
 .userdashboard-omsiapawastransfer-form input:valid {
   border-color: #27ae60;
 }
+
+
+//// new
+/* Add these styles to your CSS file */
+
+/* Action Section Styles */
+.transaction-modal__action-section {
+  margin: 20px 0;
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.transaction-modal__receive-btn {
+  background: linear-gradient(135deg, #28a745, #20c997);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 200px;
+  justify-content: center;
+}
+
+.transaction-modal__receive-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #218838, #1ea080);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.transaction-modal__receive-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.transaction-modal__receive-btn.processing {
+  background: linear-gradient(135deg, #6c757d, #5a6268);
+}
+
+/* Spinner Animation */
+.transaction-modal__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid transparent;
+  border-top: 2px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Success Message Styles */
+.transaction-modal__success-message {
+  margin: 20px 0;
+  padding: 15px;
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  border: 1px solid #c3e6cb;
+  border-radius: 8px;
+  text-align: center;
+  color: #155724;
+}
+
+.transaction-modal__success-icon {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  line-height: 32px;
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+/* Giveaway Section Styles */
+.transaction-modal__giveaway-section {
+  margin-top: 30px;
+  padding: 24px;
+  background: linear-gradient(135deg, #e3f2fd, #f3e5f5);
+  border-radius: 12px;
+  border: 2px solid #e1bee7;
+}
+
+.transaction-modal__giveaway-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.transaction-modal__giveaway-header h4 {
+  margin: 0;
+  color: #4a148c;
+  font-size: 18px;
+}
+
+.transaction-modal__giveaway-badge {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.transaction-modal__giveaway-content {
+  space-y: 20px;
+}
+
+.transaction-modal__giveaway-summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.transaction-modal__giveaway-card {
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: transform 0.3s ease;
+}
+
+.transaction-modal__giveaway-card:hover {
+  transform: translateY(-2px);
+}
+
+.transaction-modal__giveaway-card.primary {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+}
+
+.transaction-modal__giveaway-card.secondary {
+  background: linear-gradient(135deg, #f093fb, #f5576c);
+  color: white;
+}
+
+.transaction-modal__giveaway-icon {
+  font-size: 24px;
+  width: 40px;
+  text-align: center;
+}
+
+.transaction-modal__giveaway-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.transaction-modal__giveaway-label {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.transaction-modal__giveaway-amount {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.transaction-modal__giveaway-breakdown {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+.transaction-modal__breakdown-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.transaction-modal__breakdown-row:last-child {
+  border-bottom: none;
+}
+
+.transaction-modal__breakdown-row.total {
+  border-top: 2px solid #dee2e6;
+  margin-top: 8px;
+  padding-top: 12px;
+  font-weight: 600;
+}
+
+.transaction-modal__breakdown-label {
+  color: #6c757d;
+  font-size: 14px;
+}
+
+.transaction-modal__breakdown-value {
+  font-weight: 600;
+  color: #495057;
+}
+
+.transaction-modal__breakdown-value.success {
+  color: #28a745;
+}
+
+.transaction-modal__processing-status {
+  text-align: center;
+}
+
+.transaction-modal__status-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-weight: 600;
+}
+
+.transaction-modal__status-indicator.success {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.transaction-modal__status-icon {
+  width: 20px;
+  height: 20px;
+  background: #28a745;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+}
+
+/* Animations */
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.slide-down {
+  animation: slideDown 0.8s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+    max-height: 1000px;
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .transaction-modal__giveaway-summary {
+    grid-template-columns: 1fr;
+  }
+  
+  .transaction-modal__giveaway-card {
+    padding: 16px;
+  }
+  
+  .transaction-modal__giveaway-amount {
+    font-size: 18px;
+  }
+}
+
+//// new
+.transaction-modal__status-message {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.transaction-modal__status-message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.transaction-modal__status-message.warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.transaction-modal__giveaway-badge.warning {
+  background-color: #ffc107;
+  color: #000;
+}
+
+.transaction-modal__giveaway-badge.success {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.transaction-modal__breakdown-row.warning {
+  background-color: #fff3cd;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+.transaction-modal__status-indicator.warning {
+  background-color: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.transaction-modal__transaction-reference {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
+
+.transaction-modal__reference-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.transaction-modal__reference-label {
+  font-weight: 600;
+  color: #495057;
+}
+
+.transaction-modal__reference-value {
+  font-family: monospace;
+  font-size: 0.9em;
+  color: #007bff;
+}

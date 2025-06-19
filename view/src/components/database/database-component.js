@@ -82,6 +82,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 import axiosCreatedInstance from '../lib/axiosutil.js';
 
+import { timestamp } from '../lib/timestamps.js';
+
 // Example data for pending registrations
 const sampleRegistrants = [
   {
@@ -149,9 +151,9 @@ function DatabaseComponent() {
       pendingRegistrations: { count: 32 }
     };
 
-  const [showDatabaseConfiguration, setShowDatabaseConfiguration] = useState(false);
-  const [showPendingPublicRegistrationModal, setShowPendingPublicRegistrationModal] = useState(false);
-  const [showPendingPrivateRegistrationModal, setShowPendingPrivateRegistrationModal] = useState(false);
+  const [showDatabaseConfiguration, setShowDatabaseConfiguration] = useState(false)
+  const [showPendingPublicRegistrationModal, setShowPendingPublicRegistrationModal] = useState(false)
+  const [showPendingPrivateRegistrationModal, setShowPendingPrivateRegistrationModal] = useState(false)
 
 
   const [showTotalOrders, setShowTotalOrders] = useState(false)
@@ -162,6 +164,8 @@ function DatabaseComponent() {
   const [showSuccessfulOrders, setShowSuccessfulOrders] = useState(false)
   const [showRejectedOrders, setShowRejectedOrders] = useState(false)
   const [showOrderDetails, setShowOrderDetails] = useState(false)
+
+  const [showOrderRejectForm, setShowOrderRejectForm] = useState(false)
 
   const [showTotalCurrencyExchange, setShowTotalCurrencyExchange] = useState(false)
   const [showPendingCurrencyExchange, setShowPendingCurrencyExchange] = useState(false)
@@ -419,6 +423,8 @@ function DatabaseComponent() {
   const [shippedorders, shippedorderscb] = useState([])
   const [successfulorders, successfulorderscb] = useState([])
   const [rejectedorders, rejectedorderscb] = useState([])
+
+  const [orderrejectformtransaction, orderrejectformtransactioncb] = useState({})
 
   const [totalcurrencyexchange, totalcurrencyexchangecb] = useState([])
   const [pendingcurrencyexchange, pendingcurrencyexchangecb] = useState([])
@@ -1771,6 +1777,9 @@ const fetchOmsiapData = async () => {
                              setShowPendingOrders={setShowPendingOrders}
                              setShowOrderDetails={setShowOrderDetails}
 
+                             setShowOrderRejectForm={setShowOrderRejectForm}
+                             orderrejectformtransactioncb={orderrejectformtransactioncb}
+
                              acceptorderloadingindication={acceptorderloadingindication}
                              acceptorderloadingindicationcb={acceptorderloadingindicationcb}
 
@@ -1869,6 +1878,14 @@ const fetchOmsiapData = async () => {
               showOrderDetails && (
                 <OrderDetailsModal transaction={orderDetailsObject} 
                                    setShowOrderDetails={setShowOrderDetails}/>
+              )
+            }
+
+            {
+              showOrderRejectForm && (
+                <OrderRejectForm setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                 setShowOrderRejectForm={setShowOrderRejectForm}
+                                 orderrejectformtransaction={orderrejectformtransaction}/>
               )
             }
 
@@ -4076,7 +4093,7 @@ const ConfirmOrderButton = ({ order, onConfirm }) => {
   const handleConfirmOrder = async () => {
     setIsLoading(true);
     try {
-      await onConfirm(order._id);
+      await onConfirm(order._id, order.id);
     } catch (error) {
       console.error('Error accepting order:', error);
     } finally {
@@ -4106,7 +4123,7 @@ const OrderForShippingButton = ({ order, onOrderForShipping }) => {
   const handleOrderForShipping = async () => {
     setIsLoading(true);
     try {
-      await onOrderForShipping(order._id);
+      await onOrderForShipping(order._id, order.id);
     } catch (error) {
       console.error('Error accepting order:', error);
     } finally {
@@ -4136,7 +4153,7 @@ const OrderShippedButton = ({ order, onOrderShipped }) => {
   const handleOrderShipped = async () => {
     setIsLoading(true);
     try {
-      await onOrderShipped(order._id);
+      await onOrderShipped(order._id, order.id);
     } catch (error) {
       console.error('Error accepting order:', error);
     } finally {
@@ -4454,6 +4471,9 @@ const PendingOrders = ({
 
   setShowOrderDetails,
 
+  setShowOrderRejectForm,
+  orderrejectformtransactioncb,
+
   acceptorderloadingindication,
   acceptorderloadingindicationcb,
   
@@ -4506,7 +4526,7 @@ const PendingOrders = ({
   };
 
 // Improved handleConfirmOrder function with robust error handling
-const handleConfirmOrder = async (_id) => {
+const handleConfirmOrder = async (_id, id) => {
   // Prevent multiple simultaneous requests
   if (acceptorderloadingindicationcb) {
     acceptorderloadingindicationcb(true);
@@ -4520,7 +4540,7 @@ const handleConfirmOrder = async (_id) => {
     }
     
     // Send request to backend to accept the order
-    const response = await axiosCreatedInstance.post("/omsiap/confirmorder", { _id });
+    const response = await axiosCreatedInstance.post("/omsiap/confirmorder", { _id, id });
     
     // Show success status message based on backend response
     showStatusMessage(
@@ -4695,7 +4715,11 @@ const handleConfirmOrder = async (_id) => {
 
                   <button 
                     className="reject-btn" 
-                    onClick={() => handleRejectOrder(transaction.id)}
+                    onClick={() => {
+                      setShowPendingOrders(false)
+                      setShowOrderRejectForm(true)
+                      orderrejectformtransactioncb(transaction)
+                    }}
                   >
                     Reject
                   </button>
@@ -4787,7 +4811,7 @@ const ConfirmedOrders = ({
   };
 
 // Improved handleOrderForShipping function with shipping-specific messaging
-const handleOrderForShipping = async (_id) => {
+const handleOrderForShipping = async (_id, id) => {
   // Prevent multiple simultaneous requests
   if (onorderforshippingloadingindicationcb) {
     onorderforshippingloadingindicationcb(true);
@@ -4801,7 +4825,7 @@ const handleOrderForShipping = async (_id) => {
     }
     
     // Send request to backend to mark the order for shipping
-    const response = await axiosCreatedInstance.post("/omsiap/orderforshipping", { _id });
+    const response = await axiosCreatedInstance.post("/omsiap/orderforshipping", { _id, id });
     
     // Show success status message based on backend response
     showStatusMessage(
@@ -5071,7 +5095,7 @@ const OrdersForShipping = ({
   };
 
   // Improved handleOrderShipped function with shipping-specific messaging
-const handleOrderShipped = async (_id) => {
+const handleOrderShipped = async (_id, id) => {
   // Prevent multiple simultaneous requests
   if (ordershippedloadingindicationcb) {
     ordershippedloadingindicationcb(true);
@@ -5085,7 +5109,7 @@ const handleOrderShipped = async (_id) => {
     }
     
     // Send request to backend to mark the order as shipped
-    const response = await axiosCreatedInstance.post("/omsiap/ordershipped", { _id });
+    const response = await axiosCreatedInstance.post("/omsiap/ordershipped", { _id, id });
     
     // Show success status message based on backend response
     showStatusMessage(
@@ -6494,6 +6518,498 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
             </div>
           </div>
         )}
+      </div>
+    </div>
+  );
+};
+
+const OrderRejectForm = ({ 
+
+  setShowDatabaseConfiguration, 
+  setShowOrderRejectForm, 
+  orderrejectformtransaction 
+
+}) => {
+
+  const [transaction, setTransaction] = useState(orderrejectformtransaction);
+  const [status, setStatus] = useState('');
+  const [indication, setIndication] = useState('');
+  const [message, setMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [refundDetails, setRefundDetails] = useState({
+   merchandiseRefund: 0,
+   shippingRefund: 0,
+   processingFeeRefund: 0,
+   totalRefund: 0
+  });
+
+  // Calculate order summary whenever merchandise list changes
+  useEffect(() => {
+    updateOrderSummary();
+  }, [transaction.details.merchandise.list]);
+
+ const updateOrderSummary = () => {
+  const merchandiseList = transaction.details.merchandise.list;
+  
+  const merchandisetotal = merchandiseList.reduce((total, item) => 
+    total + (item.details.price.amount * item.quantity), 0
+  );
+  
+  const shippingtotal = merchandiseList.reduce((total, item) => 
+    total + (item.details.price.shipping * item.quantity), 0
+  );
+  
+  const totalcapital = merchandiseList.reduce((total, item) => 
+    total + (item.details.price.capital * item.quantity), 0
+  );
+  
+  const totaltransactiongiveaway = merchandiseList.reduce((total, item) => 
+    total + (item.details.price.transactiongiveaway * item.quantity), 0
+  );
+  
+  const totalprofit = merchandiseList.reduce((total, item) => 
+    total + (item.details.price.profit * item.quantity), 0
+  );
+  
+  const totalitems = merchandiseList.reduce((total, item) => 
+    total + item.quantity, 0
+  );
+  
+  const totalweightgrams = merchandiseList.reduce((total, item) => 
+    total + (item.details.weightingrams * item.quantity), 0
+  );
+  
+  const totalweightkilos = totalweightgrams / 1000;
+
+  // Calculate processing fee as 2% of total payment (merchandise + shipping)
+  const subtotal = merchandisetotal + shippingtotal;
+  const processingfee = subtotal * 0.02; // 2% of merchandise + shipping total
+
+  // Calculate refund amounts (original - current)
+  const originalMerchandiseTotal = orderrejectformtransaction.system.ordersummary.merchandisetotal || 0;
+  const originalShippingTotal = orderrejectformtransaction.system.ordersummary.shippingtotal || 0;
+  const originalProcessingFee = orderrejectformtransaction.system.ordersummary.processingfee || 0;
+
+  const merchandiseRefund = originalMerchandiseTotal - merchandisetotal;
+  const shippingRefund = originalShippingTotal - shippingtotal;
+  const processingFeeRefund = originalProcessingFee - processingfee;
+  const totalRefund = merchandiseRefund + shippingRefund + processingFeeRefund;
+
+  // Update refund details
+  setRefundDetails({
+    merchandiseRefund: Math.max(0, merchandiseRefund),
+    shippingRefund: Math.max(0, shippingRefund),
+    processingFeeRefund: Math.max(0, processingFeeRefund),
+    totalRefund: Math.max(0, totalRefund)
+  });
+
+  setTransaction(prev => ({
+    ...prev,
+    system: {
+      ...prev.system,
+      ordersummary: {
+        merchandisetotal,
+        shippingtotal,
+        processingfee,
+        totalcapital,
+        totaltransactiongiveaway,
+        totalprofit,
+        totalitems,
+        totalweightgrams,
+        totalweightkilos
+      }
+    }
+  }));
+ };
+
+  const removeMerchandise = (indexToRemove) => {
+    setTransaction(prev => ({
+      ...prev,
+      details: {
+        ...prev.details,
+        merchandise: {
+          ...prev.details.merchandise,
+          list: prev.details.merchandise.list.filter((_, index) => index !== indexToRemove)
+        }
+      }
+    }));
+  };
+
+  const updateMerchandiseQuantity = (index, newQuantity) => {
+    if (newQuantity <= 0) {
+      removeMerchandise(index);
+      return;
+    }
+
+    setTransaction(prev => ({
+      ...prev,
+      details: {
+        ...prev.details,
+        merchandise: {
+          ...prev.details.merchandise,
+          list: prev.details.merchandise.list.map((item, i) => 
+            i === index ? { ...item, quantity: newQuantity } : item
+          )
+        }
+      }
+    }));
+  };
+
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  setIsSubmitting(true);
+
+  try {
+    const currentDate = timestamp.getFormattedDate();
+    
+    // Prepare the updated transaction data with refund details
+    const updatedTransaction = {
+      ...transaction,
+      statusesandlogs: {
+        ...transaction.statusesandlogs,
+        status: status || transaction.statusesandlogs.status,
+        indication: indication || transaction.statusesandlogs.indication,
+        date: currentDate,
+        logs: [
+          ...transaction.statusesandlogs.logs,
+          {
+            date: currentDate,
+            type: 'rejection',
+            indication: indication,
+            messages: [{ message: message }],
+            // Add refund details to the log entry
+            refundDetails: {
+              originalAmounts: {
+                merchandiseTotal: orderrejectformtransaction.system.ordersummary.merchandisetotal || 0,
+                shippingTotal: orderrejectformtransaction.system.ordersummary.shippingtotal || 0,
+                processingFee: orderrejectformtransaction.system.ordersummary.processingfee || 0,
+                grandTotal: (orderrejectformtransaction.system.ordersummary.merchandisetotal || 0) + 
+                           (orderrejectformtransaction.system.ordersummary.shippingtotal || 0) + 
+                           (orderrejectformtransaction.system.ordersummary.processingfee || 0)
+              },
+              currentAmounts: {
+                merchandiseTotal: transaction.system.ordersummary.merchandisetotal,
+                shippingTotal: transaction.system.ordersummary.shippingtotal,
+                processingFee: transaction.system.ordersummary.processingfee,
+                grandTotal: transaction.system.ordersummary.merchandisetotal + 
+                           transaction.system.ordersummary.shippingtotal + 
+                           transaction.system.ordersummary.processingfee
+              },
+              refundAmounts: {
+                merchandiseRefund: refundDetails.merchandiseRefund,
+                shippingRefund: refundDetails.shippingRefund,
+                processingFeeRefund: refundDetails.processingFeeRefund,
+                totalRefund: refundDetails.totalRefund
+              },
+              refundRequired: refundDetails.totalRefund > 0,
+              refundStatus: refundDetails.totalRefund > 0 ? 'pending' : 'not_required'
+            }
+          }
+        ]
+      },
+      // Add refund details as a separate field in the transaction
+      refundDetails: {
+        hasRefund: refundDetails.totalRefund > 0,
+        refundStatus: refundDetails.totalRefund > 0 ? 'pending' : 'not_required',
+        refundProcessedDate: null, // Will be updated when refund is processed
+        refundMethod: null, // Will be updated when refund is processed
+        refundReference: null, // Will be updated when refund is processed
+        amounts: {
+          merchandiseRefund: refundDetails.merchandiseRefund,
+          shippingRefund: refundDetails.shippingRefund,
+          processingFeeRefund: refundDetails.processingFeeRefund,
+          totalRefund: refundDetails.totalRefund
+        },
+        originalOrder: {
+          merchandiseTotal: orderrejectformtransaction.system.ordersummary.merchandisetotal || 0,
+          shippingTotal: orderrejectformtransaction.system.ordersummary.shippingtotal || 0,
+          processingFee: orderrejectformtransaction.system.ordersummary.processingfee || 0,
+          grandTotal: (orderrejectformtransaction.system.ordersummary.merchandisetotal || 0) + 
+                     (orderrejectformtransaction.system.ordersummary.shippingtotal || 0) + 
+                     (orderrejectformtransaction.system.ordersummary.processingfee || 0)
+        },
+        finalOrder: {
+          merchandiseTotal: transaction.system.ordersummary.merchandisetotal,
+          shippingTotal: transaction.system.ordersummary.shippingtotal,
+          processingFee: transaction.system.ordersummary.processingfee,
+          grandTotal: transaction.system.ordersummary.merchandisetotal + 
+                     transaction.system.ordersummary.shippingtotal + 
+                     transaction.system.ordersummary.processingfee
+        },
+        calculatedAt: currentDate,
+        currency: 'PHP'
+      }
+    };
+
+    // Send the updated transaction to the database
+    const response = await axiosCreatedInstance.put(`/omsiap/productrejection/${transaction.id}`, updatedTransaction);
+    
+    if (response.status === 200) {
+      const refundMessage = refundDetails.totalRefund > 0 
+        ? `Order rejection processed successfully! A refund of ₱${refundDetails.totalRefund.toFixed(2)} needs to be processed.`
+        : 'Order rejection processed successfully! No refund required.';
+      
+      alert(refundMessage);
+      setShowDatabaseConfiguration(false);
+      setShowOrderRejectForm(false);
+    }
+  } catch (error) {
+    console.error('Error submitting order rejection:', error);
+    alert('Failed to process order rejection. Please try again.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+  const formatCurrency = (amount) => {
+    return new Intl.NumberFormat('en-PH', {
+      style: 'currency',
+      currency: 'PHP'
+    }).format(amount);
+  };
+
+  return (
+    <div className="order-reject-overlay">
+      <div className="order-reject-container">
+        <div className="order-reject-header">
+          <h1>Order Rejection Form</h1>
+          <button
+            className="close-btn"
+            onClick={() => {
+              setShowDatabaseConfiguration(false);
+              setShowOrderRejectForm(false);
+            }}
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="transaction-info">
+          <p><strong>Transaction ID:</strong> {transaction._id}</p>
+          <p><strong>Order ID:</strong> {transaction.id}</p>
+          <p><strong>Date:</strong> {transaction.date}</p>
+          <p><strong>Current Status:</strong> {transaction.statusesandlogs.status}</p>
+        </div>
+
+        {/* Merchandise List */}
+        <div className="merchandise-section">
+          <h2>
+            Merchandise List ({transaction.details.merchandise.list.length} items)
+          </h2>
+          
+          {transaction.details.merchandise.list.length === 0 ? (
+            <p className="empty-message">
+              No merchandise items remaining
+            </p>
+          ) : (
+            <div className="merchandise-list">
+              {transaction.details.merchandise.list.map((item, index) => (
+                <div key={index} className="merchandise-item">
+                  <div className="item-content">
+                    {/* Product Image */}
+                    <div className="product-image">
+                      {item.images && item.images.length > 0 ? (
+                        <img
+                          src={item.images[0].url}
+                          alt={item.details.productname}
+                        />
+                      ) : (
+                        <div className="no-image">
+                          No Image
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Product Details */}
+                    <div className="product-details">
+                      <h3>{item.details.productname}</h3>
+                      <p><strong>Category:</strong> {item.details.category}</p>
+                      <p><strong>Description:</strong> {item.details.description}</p>
+                      
+                      {/* Pricing Details */}
+                      <div className="pricing-details">
+                        <div className="pricing-grid">
+                          <p><strong>Price:</strong> {formatCurrency(item.details.price.amount)}</p>
+                          <p><strong>Capital:</strong> {formatCurrency(item.details.price.capital)}</p>
+                          <p><strong>Shipping:</strong> {formatCurrency(item.details.price.shipping)}</p>
+                          <p><strong>Profit:</strong> {formatCurrency(item.details.price.profit)}</p>
+                        </div>
+                      </div>
+
+                      {/* Quantity Controls */}
+                      <div className="quantity-controls">
+                        <label><strong>Quantity:</strong></label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={item.quantity}
+                          onChange={(e) => updateMerchandiseQuantity(index, parseInt(e.target.value) || 0)}
+                          className="quantity-input"
+                        />
+                        <span className="subtotal">
+                          Subtotal: {formatCurrency(item.details.price.amount * item.quantity)}
+                        </span>
+                      </div>
+
+                      <p><strong>Weight:</strong> {item.details.weightingrams}g per item</p>
+                    </div>
+
+                    {/* Remove Button */}
+                    <div className="remove-section">
+                      <button
+                        className="remove-btn"
+                        onClick={() => removeMerchandise(index)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Order Summary */}
+        <div className="order-summary">
+          <h2>Order Summary</h2>
+          <div className="summary-grid">
+            <p><strong>Merchandise Total:</strong> {formatCurrency(transaction.system.ordersummary.merchandisetotal)}</p>
+            <p><strong>Shipping Total:</strong> {formatCurrency(transaction.system.ordersummary.shippingtotal)}</p>
+            <p><strong>Processing Fee:</strong> {formatCurrency(transaction.system.ordersummary.processingfee)}</p>
+            <p><strong>Total Capital:</strong> {formatCurrency(transaction.system.ordersummary.totalcapital)}</p>
+            <p><strong>Total Giveaway:</strong> {formatCurrency(transaction.system.ordersummary.totaltransactiongiveaway)}</p>
+            <p><strong>Total Profit:</strong> {formatCurrency(transaction.system.ordersummary.totalprofit)}</p>
+            <p><strong>Total Items:</strong> {transaction.system.ordersummary.totalitems}</p>
+            <p><strong>Total Weight:</strong> {transaction.system.ordersummary.totalweightkilos.toFixed(2)} kg</p>
+          </div>
+          <div className="grand-total">
+            <p>
+              <strong>Grand Total:</strong> {formatCurrency(
+                transaction.system.ordersummary.merchandisetotal + 
+                transaction.system.ordersummary.shippingtotal + 
+                transaction.system.ordersummary.processingfee
+              )}
+            </p>
+          </div>
+        </div>
+
+        {/* Price Refund Details */}
+<div className="refund-details">
+  <h2>Price Refund Details</h2>
+  <div className="refund-comparison">
+    <div className="refund-grid">
+      <div className="original-amounts">
+        <h3>Original Order</h3>
+        <p><strong>Merchandise:</strong> {formatCurrency(orderrejectformtransaction.system.ordersummary.merchandisetotal || 0)}</p>
+        <p><strong>Shipping:</strong> {formatCurrency(orderrejectformtransaction.system.ordersummary.shippingtotal || 0)}</p>
+        <p><strong>Processing Fee:</strong> {formatCurrency(orderrejectformtransaction.system.ordersummary.processingfee || 0)}</p>
+        <p className="original-total">
+          <strong>Original Total:</strong> {formatCurrency(
+            (orderrejectformtransaction.system.ordersummary.merchandisetotal || 0) + 
+            (orderrejectformtransaction.system.ordersummary.shippingtotal || 0) + 
+            (orderrejectformtransaction.system.ordersummary.processingfee || 0)
+          )}
+        </p>
+      </div>
+      
+      <div className="current-amounts">
+        <h3>Current Order</h3>
+        <p><strong>Merchandise:</strong> {formatCurrency(transaction.system.ordersummary.merchandisetotal)}</p>
+        <p><strong>Shipping:</strong> {formatCurrency(transaction.system.ordersummary.shippingtotal)}</p>
+        <p><strong>Processing Fee:</strong> {formatCurrency(transaction.system.ordersummary.processingfee)}</p>
+        <p className="current-total">
+          <strong>Current Total:</strong> {formatCurrency(
+            transaction.system.ordersummary.merchandisetotal + 
+            transaction.system.ordersummary.shippingtotal + 
+            transaction.system.ordersummary.processingfee
+          )}
+        </p>
+      </div>
+      
+      <div className="refund-amounts">
+        <h3>Refund Amount</h3>
+        <p><strong>Merchandise Refund:</strong> {formatCurrency(refundDetails.merchandiseRefund)}</p>
+        <p><strong>Shipping Refund:</strong> {formatCurrency(refundDetails.shippingRefund)}</p>
+        <p><strong>Processing Fee Refund:</strong> {formatCurrency(refundDetails.processingFeeRefund)}</p>
+        <p className={`total-refund ${refundDetails.totalRefund > 0 ? 'positive-refund' : 'no-refund'}`}>
+          <strong>Total Refund:</strong> {formatCurrency(refundDetails.totalRefund)}
+        </p>
+      </div>
+    </div>
+    
+    {refundDetails.totalRefund > 0 && (
+      <div className="refund-notice">
+        <p><strong>⚠️ Notice:</strong> A refund of {formatCurrency(refundDetails.totalRefund)} needs to be processed for this order rejection.</p>
+      </div>
+    )}
+    
+    {refundDetails.totalRefund === 0 && (
+      <div className="no-refund-notice">
+        <p><strong>ℹ️ Info:</strong> No refund is required as no items were removed from the original order.</p>
+      </div>
+    )}
+  </div>
+</div>
+
+        {/* Rejection Form */}
+        <form onSubmit={handleSubmit} className="rejection-form">
+          <h2>Rejection Details</h2>
+          
+          <div className="form-group">
+            <label>Status:</label>
+            <input
+              type="text"
+              value={status}
+              onChange={(e) => setStatus(e.target.value)}
+              placeholder="Enter new status (e.g., rejected, cancelled)"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Indication:</label>
+            <input
+              type="text"
+              value={indication}
+              onChange={(e) => setIndication(e.target.value)}
+              placeholder="Enter indication (e.g., customer_request, out_of_stock)"
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Rejection Message:</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Enter detailed rejection reason..."
+              rows="4"
+              required
+            />
+          </div>
+
+          <div className="form-actions">
+            <button
+              type="button"
+              className="cancel-btn"
+              onClick={() => {
+                setShowDatabaseConfiguration(false);
+                setShowOrderRejectForm(false);
+              }}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className={`submit-btn ${isSubmitting ? 'submitting' : ''}`}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Processing..." : "Submit Rejection"}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -209,6 +209,9 @@ const merchandisetransactiondatascheme = new Schema({
 id: {
 type: 'string'
 },
+date: {
+ type: String
+},
 intent: {
 type: 'string'
 },

@@ -158,11 +158,12 @@ const UserAccount = (props) => {
           date: tx.statusesandlogs?.date || new Date().toISOString().split("T")[0],
           type: "Merchandise",
           typeClass: "merchandise",
+          status: tx.statusesandlogs?.status,
+          indication: tx.statusesandlogs?.indication,
           merchandisesubtotal: tx.system?.ordersummary?.merchandisetotal || 0,
           shippingsubtotal: tx.system?.ordersummary?.shippingtotal,
           processingfee: tx.system?.ordersummary?.processingfee,
           amount: -Math.abs(totalAmount), // Negative because it's a purchase
-          status: tx.statusesandlogs?.indication || "Pending",
           products: products.map((product) => ({
             id: product.authentications?.id || `PRD-${generateRandomId()}`,
             name: product.details?.productname || "Unknown Product",
@@ -798,99 +799,332 @@ const UserAccount = (props) => {
     }
   }
 
+  // Add these state variables to your component (at the top with other useState declarations)
+  const [isProcessingOrder, setIsProcessingOrder] = useState(false);
+  const [showGiveawayDetails, setShowGiveawayDetails] = useState(false);
+  const [orderReceived, setOrderReceived] = useState(false);
+
+  // Add this function to handle order receive (place it with your other functions)
+  // ========================================
+// UPDATED handleOrderReceive FUNCTION
+// ========================================
+
+// Updated handleOrderReceive function to communicate with the route
+// Updated handleOrderReceive function to communicate with the route
+const handleOrderReceive = async (transactionId, transaction) => {
+  setIsProcessingOrder(true);
+  
+  try {
+    const response = await axiosCreatedInstance.post('/omsiap/order-receive', {
+      transactionId
+    });
+    
+    const data = response.data;
+    
+    // Success - update UI state and store API data in transaction object
+    setOrderReceived(true);
+    
+    // Enhance the transaction object with real giveaway data
+    transaction.giveawayApiData = {
+      success: data.success,
+      message: data.message,
+      transactionId: data.transactionId,
+      currentUserGiveaway: data.currentUserGiveaway,
+      distributionAmount: data.distributionAmount,
+      distributionCount: data.distributionCount,
+      totalGiveaway: data.totalGiveaway,
+      pendingFundsNotification: data.pendingFundsNotification
+    };
+    
+    // Show success message with real giveaway details
+    console.log('Order received successfully:', {
+      transactionId: data.transactionId,
+      totalGiveaway: data.totalGiveaway,
+      yourGiveaway: data.currentUserGiveaway,
+      distributedAmount: data.distributionAmount,
+      distributedToUsers: data.distributionCount,
+      pendingFundsInfo: data.pendingFundsNotification
+    });
+    
+    // Show giveaway details after a short delay
+    setTimeout(() => {
+      setShowGiveawayDetails(true);
+    }, 500);
+    
+  } catch (error) {
+    console.error('Error processing order receive:', error);
+    
+    // Handle axios error response
+    const errorMessage = error.response?.data?.error || error.message || 'Failed to process order receive';
+    
+    // Reset states on error
+    setOrderReceived(false);
+    setShowGiveawayDetails(false);
+    
+    // Clear any stored giveaway data
+    if (transaction.giveawayApiData) {
+      delete transaction.giveawayApiData;
+    }
+    
+  } finally {
+    setIsProcessingOrder(false);
+  }
+};
+
+// Updated calculateGiveawayDetails function to use data from transaction object
+const calculateGiveawayDetails = (transaction) => {
+  // Check if we have real giveaway data from the API stored in transaction
+  if (transaction.giveawayApiData) {
+    const apiData = transaction.giveawayApiData;
+    return {
+      totalAmount: apiData.totalGiveaway,
+      registrantShare: apiData.currentUserGiveaway,
+      communityShare: apiData.pendingFundsNotification.transactionGiveaway,
+      perUserShare: apiData.distributionAmount,
+      totalUsers: apiData.distributionCount,
+      totalEligibleUsers: apiData.pendingFundsNotification.totalEligibleUsers,
+      processingDeduction: 0,
+      isNegativeDistribution: apiData.pendingFundsNotification.isNegativeDistribution,
+      pendingFunds: apiData.pendingFundsNotification.pendingFunds,
+      message: apiData.message,
+      transactionId: apiData.transactionId
+    };
+  }
+  
+  // Fallback calculation if no real data available
+  const totalAmount = Math.abs(transaction.amount);
+  const registrantShare = totalAmount * 0.6;
+  const communityShare = totalAmount * 0.4;
+  const totalUsers = 100; // Replace with actual user count
+  const perUserShare = communityShare / totalUsers;
+  
+  return {
+    totalAmount,
+    registrantShare,
+    communityShare,
+    perUserShare,
+    totalUsers,
+    totalEligibleUsers: totalUsers,
+    processingDeduction: 0,
+    isNegativeDistribution: false,
+    pendingFunds: 0,
+    message: "Order received and giveaways distributed successfully",
+    transactionId: transaction.id
+  };
+};
+
   const renderTransactionDetails = (transaction) => {
+
   if (!transaction) return null
 
   switch (transaction.type) {
-    case "Merchandise":
-      return (
-        <div className="transaction-modal__product-details">
-          <h4 className="transaction-modal__section-title">Purchased Merchandise</h4>
-          {transaction.products && transaction.products.length > 0 ? (
-            <div className="transaction-modal__table-container">
-              <table className="transaction-modal__product-table">
-                <thead>
-                  <tr>
-                    <th>Product</th>
-                    <th>Image</th>
-                    <th>Quantity</th>
-                    <th>Price</th>
-                    <th>Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {transaction.products.map((product, index) => (
-                    <tr key={product.id || index} className="transaction-modal__product-row">
-                      <td className="transaction-modal__product-name">
-                        <span className="transaction-modal__product-title">{product.name}</span>
-                      </td>
-                      <td className="transaction-modal__product-image-cell">
-                        {product.image ? (
-                          <div className="transaction-modal__product-image-container">
-                            <img
-                              src={product.image}
-                              alt={product.name}
-                              className="transaction-modal__product-image"
-                              onClick={() => openImageModal(product.image)}
-                            />
-                          </div>
-                        ) : (
-                          <div className="transaction-modal__product-image-placeholder">
-                            <span>No Image</span>
-                          </div>
-                        )}
-                      </td>
-                      <td className="transaction-modal__product-quantity">
-                        <span className="transaction-modal__quantity-badge">{product.quantity || 1}</span>
-                      </td>
-                      <td className="transaction-modal__product-price">₱{product.price.toFixed(2)}</td>
-                      <td className="transaction-modal__product-subtotal">
-                        <strong>₱{((product.price || 0) * (product.quantity || 1)).toFixed(2)}</strong>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div className="transaction-modal__total-section">
-                <div className="transaction-modal__total-row">
-                  <span className="transaction-modal__total-label">Total merchandise purchase amount: </span>
-                  <span className="transaction-modal__total-amount">
-                    ₱
-                    {transaction.products
-                      .reduce((sum, product) => sum + (product.price || 0) * (product.quantity || 1), 0)
-                      .toFixed(2)}
-                  </span>
+
+   // Enhanced merchandise case for renderTransactionDetails function
+   case "Merchandise":
+  const giveawayDetails = calculateGiveawayDetails(transaction);
+  
+  return (
+    <div className="transaction-modal__product-details">
+      <h4 className="transaction-modal__section-title">Purchased Merchandise</h4>
+      
+      {/* Product Table */}
+      {transaction.products && transaction.products.length > 0 ? (
+        <div className="transaction-modal__table-container">
+          <table className="transaction-modal__product-table">
+            <thead>
+              <tr>
+                <th>Product</th>
+                <th>Image</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Subtotal</th>
+              </tr>
+            </thead>
+            <tbody>
+              {transaction.products.map((product, index) => (
+                <tr key={product.id || index} className="transaction-modal__product-row">
+                  <td className="transaction-modal__product-name">
+                    <span className="transaction-modal__product-title">{product.name}</span>
+                  </td>
+                  <td className="transaction-modal__product-image-cell">
+                    {product.image ? (
+                      <div className="transaction-modal__product-image-container">
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="transaction-modal__product-image"
+                          onClick={() => openImageModal(product.image)}
+                        />
+                      </div>
+                    ) : (
+                      <div className="transaction-modal__product-image-placeholder">
+                        <span>No Image</span>
+                      </div>
+                    )}
+                  </td>
+                  <td className="transaction-modal__product-quantity">
+                    <span className="transaction-modal__quantity-badge">{product.quantity || 1}</span>
+                  </td>
+                  <td className="transaction-modal__product-price">₱{product.price.toFixed(2)}</td>
+                  <td className="transaction-modal__product-subtotal">
+                    <strong>₱{((product.price || 0) * (product.quantity || 1)).toFixed(2)}</strong>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          
+          {/* Total Section */}
+          <div className="transaction-modal__total-section">
+            <div className="transaction-modal__total-row">
+              <span className="transaction-modal__total-label">Total merchandise purchase amount: </span>
+              <span className="transaction-modal__total-amount">
+                ₱{transaction.products.reduce((sum, product) => sum + (product.price || 0) * (product.quantity || 1), 0).toFixed(2)}
+              </span>
+            </div>
+            <div className="transaction-modal__total-row">
+              <span className="transaction-modal__total-label">Total shipping amount:</span>
+              <span className="transaction-modal__total-amount">₱{transaction.shippingsubtotal}</span>
+            </div>
+            <div className="transaction-modal__total-row">
+              <span className="transaction-modal__total-label">Total processing fee:</span>
+              <span className="transaction-modal__total-amount">₱{transaction.processingfee}</span>
+            </div>
+            <div className="transaction-modal__total-row">
+              <span className="transaction-modal__total-label">Total Amount:</span>
+              <span className="transaction-modal__total-amount">
+                ₱{(transaction.merchandisesubtotal + transaction.shippingsubtotal + transaction.processingfee).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="transaction-modal__no-data">
+          <p>No product details available</p>
+        </div>
+      )}
+
+      {/* Order Receive Button - Show only if status is "shipped to customer" */}
+      {transaction.status?.toLowerCase().includes('shipped') && !orderReceived && (
+        <div className="transaction-modal__action-section">
+          <button 
+            className={`transaction-modal__receive-btn ${isProcessingOrder ? 'processing' : ''}`}
+            onClick={() => handleOrderReceive(transaction.id, transaction)}
+            disabled={isProcessingOrder}
+          >
+            {isProcessingOrder ? (
+              <>
+                <div className="transaction-modal__spinner"></div>
+                Processing Order...
+              </>
+            ) : (
+              'Confirm Order Received'
+            )}
+          </button>
+        </div>
+      )}
+
+      {/* Order Received Success Message */}
+      {orderReceived && (
+        <div className="transaction-modal__success-message fade-in">
+          <div className="transaction-modal__success-icon">✓</div>
+          <p>{giveawayDetails.message}</p>
+        </div>
+      )}
+
+      {/* Enhanced Transaction Giveaway Details with Real Data */}
+      {showGiveawayDetails && transaction.giveawayApiData && (
+        <div className="transaction-modal__giveaway-section slide-down">
+          <div className="transaction-modal__giveaway-header">
+            <h4 className="transaction-modal__section-title">🎉 Transaction Giveaway Details</h4>
+            <div className={`transaction-modal__giveaway-badge ${giveawayDetails.isNegativeDistribution ? 'warning' : 'success'}`}>
+              {giveawayDetails.isNegativeDistribution ? 'Pending' : 'Distributed'}
+            </div>
+          </div>
+          
+          <div className="transaction-modal__giveaway-content">
+            {/* Status Message */}
+            <div className={`transaction-modal__status-message ${giveawayDetails.isNegativeDistribution ? 'warning' : 'success'}`}>
+              <div className="transaction-modal__status-icon">
+                {giveawayDetails.isNegativeDistribution ? '⏳' : '✓'}
+              </div>
+              <span>{giveawayDetails.message}</span>
+            </div>
+
+            <div className="transaction-modal__giveaway-summary">
+              <div className="transaction-modal__giveaway-card primary">
+                <div className="transaction-modal__giveaway-icon">👤</div>
+                <div className="transaction-modal__giveaway-info">
+                  <span className="transaction-modal__giveaway-label">Your Share (60%)</span>
+                  <span className="transaction-modal__giveaway-amount">₱{giveawayDetails.registrantShare.toFixed(2)}</span>
                 </div>
-                <div className="transaction-modal__total-row">
-                  <span className="transaction-modal__total-label">Total shipping amount:</span>
-                  <span className="transaction-modal__total-amount">
-                    ₱
-                    {transaction.shippingsubtotal}
-                  </span>
-                </div>
-                  <div className="transaction-modal__total-row">
-                  <span className="transaction-modal__total-label">Total processing fee:</span>
-                  <span className="transaction-modal__total-amount">
-                    ₱
-                    {transaction.processingfee}
-                  </span>
-                </div>
-                <div className="transaction-modal__total-row">
-                  <span className="transaction-modal__total-label">Total Amount:</span>
-                  <span className="transaction-modal__total-amount">
-                    ₱
-                    { transaction.merchandisesubtotal + transaction.shippingsubtotal + transaction.processingfee}
-                  </span>
+              </div>
+              
+              <div className="transaction-modal__giveaway-card secondary">
+                <div className="transaction-modal__giveaway-icon">👥</div>
+                <div className="transaction-modal__giveaway-info">
+                  <span className="transaction-modal__giveaway-label">Community Pool (40%)</span>
+                  <span className="transaction-modal__giveaway-amount">₱{giveawayDetails.communityShare.toFixed(2)}</span>
                 </div>
               </div>
             </div>
-          ) : (
-            <div className="transaction-modal__no-data">
-              <p>No product details available</p>
+            
+            <div className="transaction-modal__giveaway-breakdown">
+              <div className="transaction-modal__breakdown-row">
+                <span className="transaction-modal__breakdown-label">Total Giveaway Amount:</span>
+                <span className="transaction-modal__breakdown-value">₱{giveawayDetails.totalAmount.toFixed(2)}</span>
+              </div>
+              <div className="transaction-modal__breakdown-row">
+                <span className="transaction-modal__breakdown-label">Eligible Users Found:</span>
+                <span className="transaction-modal__breakdown-value">{giveawayDetails.totalEligibleUsers} users</span>
+              </div>
+              
+              {!giveawayDetails.isNegativeDistribution ? (
+                <>
+                  <div className="transaction-modal__breakdown-row">
+                    <span className="transaction-modal__breakdown-label">Users Received Distribution:</span>
+                    <span className="transaction-modal__breakdown-value">{giveawayDetails.totalUsers} users</span>
+                  </div>
+                  <div className="transaction-modal__breakdown-row">
+                    <span className="transaction-modal__breakdown-label">Amount Per User:</span>
+                    <span className="transaction-modal__breakdown-value">₱{giveawayDetails.perUserShare.toFixed(2)}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="transaction-modal__breakdown-row warning">
+                  <span className="transaction-modal__breakdown-label">Pending Funds Amount:</span>
+                  <span className="transaction-modal__breakdown-value">₱{Math.abs(giveawayDetails.pendingFunds).toFixed(2)}</span>
+                </div>
+              )}
             </div>
-          )}
+            
+            {/* Distribution Status */}
+            <div className="transaction-modal__distribution-status">
+              {!giveawayDetails.isNegativeDistribution ? (
+                <div className="transaction-modal__status-indicator success">
+                  <div className="transaction-modal__status-icon">✓</div>
+                  <span>Successfully distributed ₱{giveawayDetails.perUserShare.toFixed(2)} to {giveawayDetails.totalUsers} users</span>
+                </div>
+              ) : (
+                <div className="transaction-modal__status-indicator warning">
+                  <div className="transaction-modal__status-icon">⏳</div>
+                  <span>Distribution amount was negative - stored as pending funds for future distribution</span>
+                </div>
+              )}
+            </div>
+
+            {/* Transaction Reference */}
+            <div className="transaction-modal__transaction-reference">
+              <div className="transaction-modal__reference-row">
+                <span className="transaction-modal__reference-label">Transaction ID:</span>
+                <span className="transaction-modal__reference-value">{giveawayDetails.transactionId}</span>
+              </div>
+            </div>
+          </div>
         </div>
-      )
+      )}
+    </div>
+  );
 
     case "Currency Exchange":
       return (
@@ -1478,19 +1712,19 @@ const handleOmsiapawasTransferSubmit = async (e) => {
             className={`userdashboard-tab-btn ${activeTab === "currencyexchange" ? "userdashboard-active" : ""}`}
             onClick={() => setActiveTab("currencyexchange")}
           >
-            Exchange Currency
+            Cash in
           </button>
           <button
             className={`userdashboard-tab-btn ${activeTab === "withdrawal" ? "userdashboard-active" : ""}`}
             onClick={() => setActiveTab("withdrawal")}
           >
-            Withdrawal
+            Cash out
           </button>
             <button
             className={`userdashboard-tab-btn ${activeTab === "omsiapawastransfer" ? "userdashboard-active" : ""}`}
             onClick={() => setActiveTab("omsiapawastransfer")}
           >
-            Omsiapawas transfer
+            OMSIAPAWAS transfer
           </button>
           <button
             className={`userdashboard-tab-btn ${activeTab === "transactions" ? "userdashboard-active" : ""}`}
@@ -1709,7 +1943,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
 
         {/* Currency Exchange Tab */}
         {activeTab === "currencyexchange" && (
-          <div className="userdashboard-exchange-panel">
+         <div className="userdashboard-exchange-panel">
             <section className="userdashboard-exchange-user-info">
               <h2>Your Information</h2>
               <br />
@@ -1734,16 +1968,16 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                     <span className="info-label">
                       Current&nbsp;
                       <span className="tooltip-container">
-                        OMSIAPAWAS
-                        <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
+                        PESOS
+                        <span className="tooltip-text"></span>
                       </span>{" "}
                       &nbsp; Balance:
                     </span>
                     <span className="info-value omsiapas-balance">
                       {props.user.credits.omsiapawas.amount}
                       <span className="tooltip-container">
-                        &nbsp;OMSIAPAWAS
-                        <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
+                        &nbsp;PESOS
+                        <span className="tooltip-text"></span>
                       </span>
                     </span>
                   </div>
@@ -1752,68 +1986,68 @@ const handleOmsiapawasTransferSubmit = async (e) => {
             </section>
 
             <section className="userdashboard-exchange-notice">
-              <h2>Important Notice</h2>
+              <h2>Cash In Information</h2>
               <div className="userdashboard-notice-content">
                 <ul className="exchange-info">
                   <li style={{ color: "white" }} className="exchange-rate fade-in">
-                    The exchange rate is{" "}
+                    The cash in rate is{" "}
                     <strong>
-                      210 PESO CURRENCY = 200{" "}
+                      210 PHP = 200{" "}
                       <span className="tooltip-container">
-                        OMSIAPAWAS
-                        <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
+                        PESOS
+                        <span className="tooltip-text"></span>
                       </span>
                     </strong>
                     ,{" "}
                     <strong>
-                      525 PESO CURRENCY = 500{" "}
+                      525 PHP = 500{" "}
                       <span className="tooltip-container">
-                        OMSIAPAWAS
-                        <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
+                        PESOS
+                        <span className="tooltip-text"></span>
                       </span>
                     </strong>
                     ,{" "}
                     <strong>
-                      1050 PESO CURRENCY = 1000{" "}
+                      1050 PHP = 1000{" "}
                       <span className="tooltip-container">
-                        OMSIAPAWAS
-                        <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
+                        PESOS
+                        <span className="tooltip-text"></span>
                       </span>
                     </strong>
                     ,{" "}
                     <strong>
-                      1575 PESO CURRENCY = 1500{" "}
+                      1575 PHP = 1500{" "}
                       <span className="tooltip-container">
-                        OMSIAPAWAS
-                        <span className="tooltip-text">Of Macky's Ink And Paper And Wood And Stone Currency</span>
+                        PESOS
+                        <span className="tooltip-text"></span>
                       </span>
                     </strong>
-                    , and so on until reaching the maximum transaction exchange amount.
+                    , and so on until reaching the maximum cash in amount.
                   </li>
                   <li className="min-amount slide-in">
                     <FaInfoCircle className="icon" />
-                    Minimum transaction amount is <strong>210 PHP</strong> equivalent to <strong>200 OMSIAPAWAS</strong>{" "}
-                    per exchange.
+                    Minimum cash in amount is <strong>210 PHP</strong> equivalent to <strong>200 peso's</strong>{" "}
+                    per transaction.
                   </li>
                   <li className="max-amount slide-in">
                     <FaInfoCircle className="icon" />
-                    Maximum transaction amount is <strong>5,250 PHP</strong> equivalent to{" "}
-                    <strong>5,000 OMSIAPAWAS</strong> per exchange.
+                    Maximum cash in amount is <strong>5,250 PHP</strong> equivalent to{" "}
+                    <strong>5,000 peso's</strong> per transaction.
                   </li>
                   <li className="process-info bounce-in">
                     <FaMoneyBillWave className="icon" />
-                    All exchanges are processed through GCash payment integration and will be validated by OMSIAP
+                    All cash in transactions are processed through GCash payment integration and will be validated by OMSIAP
                     personnel through the OMSIAP database management system.
                   </li>
                   <li style={{ color: "green" }} className="important-notice pulse">
                     <FaExclamationTriangle className="icon warning" />
-                    Failure to send the exact amounts specified in the form will result in your money being returned to
+                    Failure to send the exact amounts specified in the cash in form will result in your money being returned to
                     your GCash account with a 50-peso deduction for processing, or disciplinary action for not following
                     instructions.
                   </li>
                   <li style={{ color: "white" }} className="receipt-info fade-in">
                     <FaReceipt className="icon" />
-                    All transactions require a valid GCash receipt screenshot for validation and comparison by OMSIAP
+                    All cash in transactions require a valid GCash receipt screenshot for validation and comparison by OMSIAP
                     personnel.
                   </li>
                   <li className="reference-info slide-in">
@@ -1822,80 +2056,82 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                   </li>
                   <li className="processing-time bounce-in">
                     <FaClock className="icon" />
-                    Processing may take up to 24 hours during business days.
+                    Cash in processing may take up to 24 hours during business days.
                   </li>
                 </ul>
               </div>
             </section>
 
             <section className="userdashboard-exchange-form-section">
-              <h2>Currency Exchange Form</h2>
+              <h2>Cash In Form</h2>
               <form className="userdashboard-exchange-form">
                 <div className="userdashboard-preset-amounts">
-                  <h3>Select Amount to Exchange</h3>
+                  <h3>Select Amount to Cash In</h3>
                   <div className="userdashboard-preset-buttons">
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 210 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(210)}
                     >
-                      ₱210 = 200 OMSIAPAWAS
+                      ₱210 = 200 PESOS
                     </button>
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 525 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(525)}
                     >
-                      ₱525 = 500 OMSIAPAWAS
+                      ₱525 = 500 PESOS
+ 
                     </button>
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 1050 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(1050)}
                     >
-                      ₱1,050 = 1,000 OMSIAPAWAS
+                      ₱1,050 = 1,000 PESOS
+ 
                     </button>
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 1260 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(1260)}
                     >
-                      ₱1,260 = 1,200 OMSIAPAWAS
+                      ₱1,260 = 1,200 PESOS
                     </button>
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 1575 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(1575)}
                     >
-                      ₱1,575 = 1,500 OMSIAPAWAS
+                      ₱1,575 = 1,500 PESOS
                     </button>
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 2100 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(2100)}
                     >
-                      ₱2,100 = 2,000 OMSIAPAWAS
+                      ₱2,100 = 2,000 PESOS
                     </button>
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 3150 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(3150)}
                     >
-                      ₱3,150 = 3,000 OMSIAPAWAS
+                      ₱3,150 = 3,000 PESOS
                     </button>
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 4200 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(4200)}
                     >
-                      ₱4,200 = 4,000 OMSIAPAWAS
+                      ₱4,200 = 4,000 PESOS
                     </button>
                     <button
                       type="button"
                       className={`preset-btn ${exchangeForm.phpAmount === 5250 ? "active" : ""}`}
                       onClick={() => handlePresetAmountClick(5250)}
                     >
-                      ₱5,250 = 5,000 OMSIAPAWAS
+                      ₱5,250 = 5,000 PESOS
                     </button>
                   </div>
                 </div>
@@ -1903,7 +2139,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                 <div className="userdashboard-payment-instructions">
                   <h3>Payment Instructions</h3>
                   <p>
-                    Please send <strong>₱{exchangeForm.phpAmount || 0}</strong> to the GCash accounts:
+                    Please send <strong>₱{exchangeForm.phpAmount || 0}</strong> to the GCash account:
                     <strong> Of Macky'S Ink And Paper</strong> (OMSIAP)
                   </p>
                   <ul style={{ color: "black" }}>
@@ -1914,14 +2150,12 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                 </div>
                 <p style={{ color: "black" }}>After sending the amount,</p>
                 <p style={{ color: "black" }}>
-                  1. Copy and paste the reference number in your transaction reciept and paste it on the gcash reference
-                  number field
+                  1. Copy and paste the reference number in your GCash transaction receipt and paste it in the GCash reference
+                  number field below
                 </p>
-                <p style={{ color: "black" }}>2. Take a screenshot of the Gcash transaction and upload it here</p>
+                <p style={{ color: "black" }}>2. Take a screenshot of your GCash transaction and upload it here</p>
                 <p style={{ color: "black" }}>
-                  3. The process exchange button will be available after selecting an amount on the currency exchange
-                  form, click process exchange after following the procedure 1 and 2. The process exchange button will
-                  be not be summited if procedure 1 and 2 is not followed.
+                  3. The process cash in button will be available after selecting an amount in the cash in form. Click process cash in after following procedures 1 and 2. The process cash in button will not be submitted if procedures 1 and 2 are not followed.
                 </p>
                 <div className="userdashboard-form-row">
                   <div className="userdashboard-form-group">
@@ -1980,7 +2214,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                     disabled={!exchangeForm.phpAmount || exchangeForm.phpAmount < 210 || exchangeForm.phpAmount > 5250}
                     onClick={(e) => handleExchangeSubmit(e)}
                   >
-                    Process Exchange
+                    Process Cash In
                   </button>
                 )}
               </form>
@@ -1992,7 +2226,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
         {activeTab === "withdrawal" && (
           <div className="userdashboard-withdrawal-panel">
             <section className="userdashboard-withdrawal-section">
-              <h2>Make a Withdrawal</h2>
+              <h2>Make a Cash out ( amounts will be sent to your gcash accounts )</h2>
               <form className="userdashboard-withdrawal-form" onSubmit={handleWithdrawalSubmit}>
                 <div className="userdashboard-form-row">
                   <div className="userdashboard-form-group">
@@ -2045,7 +2279,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
 
                 <div className="userdashboard-form-row">
                   <div className="userdashboard-form-group">
-                    <label>Withdrawal Amount</label>
+                    <label>Cash out Amount</label>
                     <input
                       type="number"
                       id="w-amount"
@@ -2078,7 +2312,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                   <Spinner animation="border" variant="success" style={{ marginLeft: "auto", marginRight: "auto" }} />
                 ) : (
                   <button type="submit" className="userdashboard-withdrawal-btn">
-                    Submit Withdrawal
+                    Submit Cash out
                   </button>
                 )}
               </form>
@@ -2597,6 +2831,14 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                           >
                             {formatCurrency(selectedTransaction.amount, selectedTransaction.type)}
                           </span>
+                        </div>
+                         <div className="transaction-modal__summary-item">
+                          <span className="transaction-modal__summary-label">Status</span>
+                          <span className="transaction-modal__summary-value">{selectedTransaction.status}</span>
+                        </div>
+                         <div className="transaction-modal__summary-item">
+                          <span className="transaction-modal__summary-label">Indication</span>
+                          <span className="transaction-modal__summary-value">{selectedTransaction.indication}</span>
                         </div>
                       </div>
                     </div>

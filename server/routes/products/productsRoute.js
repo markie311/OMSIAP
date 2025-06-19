@@ -18,8 +18,6 @@ const ProductDataModel = require('../../models/products/productsdatascheme.js')
 const MerchandiseTransactionDataModel = require('../../models/transactions/merchandisetransactiondatascheme.js')
 const PendingFundsDataModel = require('../../models/pendingfunds/pendingfundsdatascheme.js')
 
-
-
 const timestamps = require('../../lib/timestamps/timestamps');
 
 // Configure multer storage
@@ -707,10 +705,13 @@ Router.route("/deleteproduct").post(async (req, res) => {
   }
 });
 
-// Corrected Helper function to create a transaction record (updated for quantity field in schema)
+// Updated Helper function to create a transaction record with proper dates
 function createTransactionRecord(orderData, registrant) {
   // Generate a unique transaction ID
   const transactionId = generateUniqueTransactionId();
+  
+  // Get current formatted date
+  const currentDate = timestamps.getFormattedDate();
   
   // Process products from the order data
   const productList = orderData.products.map(product => {
@@ -737,14 +738,15 @@ function createTransactionRecord(orderData, registrant) {
   return {
     id: transactionId,
     // DO NOT add _id field - let MongoDB handle it automatically
+    date: currentDate, // Add main transaction date
     intent: "Purchase merchandise",
     statusesandlogs: {
       status: "pending",
       indication: "Processing",
-      date: timestamps.getFormattedDate(),
+      date: currentDate, // Add date to status
       logs: [
         {
-          date: timestamps.getFormattedDate(),
+          date: currentDate, // Add date to log entry
           type: "Order submitted",
           indication: "Processing",
           messages: [
@@ -818,353 +820,7 @@ function createTransactionRecord(orderData, registrant) {
   };
 }
 
-// Helper function to generate a unique transaction ID
-function generateUniqueTransactionId() {
-  // Use a combination of timestamp, random number, and a counter
-  const timestamp = timestamps.dateNow();
-  const randomPart = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
-  const counter = process.memoryUsage().heapUsed % 10000; // Use memory usage as a pseudo-unique counter
-  
-  return `TXN-${timestamp}-${randomPart}-${counter}`;
-}
-
-// Helper function to find full product details
-function findFullProductDetails(productId) {
-  // This would typically involve a database lookup
-  // For now, we'll return a placeholder that matches the productDataSchema
-  return {
-    authentications: {
-      producttype: '',  // You'd look up the actual product type
-      id: productId
-    },
-    details: {
-      productname: '',  // Look up product name
-      category: '',     // Look up category
-      description: '',  // Look up description
-      features: [],     // Look up features (array of productfeaturesdatascheme)
-      weightingrams: 0, // Look up weight in grams
-      warranty: '',     // Look up warranty
-      price: {
-        amount: 0,      // Look up price amount
-        capital: 0,     // Look up capital
-        transactiongiveaway: 0, // Look up transaction giveaway
-        profit: 0       // Look up profit
-      },
-      specifications: [] // Look up specifications
-    },
-    images: [],         // Look up images (array of productimagedatascheme)
-    videos: [],         // Look up videos (array of productvideodatascheme)
-    customerfeedback: {
-      rating: 0,        // Look up rating
-      reviews: 0        // Look up number of reviews
-    },
-    system: {
-      purchases: {
-        total: [],
-        pending: [],
-        accepted: [],
-        rejected: []
-      }
-    },
-    // Initialize quantity to 0 - will be set from order data
-    quantity: 0
-  };
-}
-
-// Helper function for precise decimal operations
-function precise(operation, num1, num2, precision = 10) {
-  // Convert to integers by multiplying by 10^precision to avoid floating-point errors
-  const factor = Math.pow(10, precision);
-  
-  // Convert to integers, perform operation, then convert back to decimal
-  const intNum1 = Math.round(parseFloat(num1) * factor);
-  const intNum2 = Math.round(parseFloat(num2) * factor);
-  
-  let result;
-  switch(operation) {
-    case 'add':
-      result = (intNum1 + intNum2) / factor;
-      break;
-    case 'sub':
-      result = (intNum1 - intNum2) / factor;
-      break;
-    case 'mul':
-      result = (intNum1 * intNum2) / (factor * factor);
-      break;
-    case 'div':
-      result = (intNum1 / intNum2);
-      break;
-    default:
-      throw new Error('Unknown operation');
-  }
-  
-  return parseFloat(result.toFixed(precision));
-}
-
-// Simplified helper functions for common operations
-function preciseAdd(num1, num2) {
-  return precise('add', num1, num2);
-}
-
-function preciseSub(num1, num2) {
-  return precise('sub', num1, num2);
-}
-
-function preciseMul(num1, num2) {
-  return precise('mul', num1, num2);
-}
-
-// Helper function to ensure credits structure exists - updated for schema match
-function ensureCreditsStructure(user) {
-  if (!user.credits) {
-    user.credits = {};
-  }
-  
-  if (!user.credits.omsiapawas) {
-    user.credits.omsiapawas = {
-      id: `OMSIAPAWAS-${user._id || user.id}`,
-      amount: 0,
-      transactions: {
-        currencyexchange: [],
-        widthdrawals: [],
-        omsiapawastransfer: []
-      }
-    };
-  }
-  
-  // Ensure amount is a number
-  user.credits.omsiapawas.amount = parseFloat(user.credits.omsiapawas.amount || 0);
-  
-  return user;
-}
-
-// Helper function to create a deposit record - removed as per requirement
-
-// Helper function to distribute funds to eligible users - updated for schema match
-async function distributeToEligibleUsers(eligibleUsers, totalAmount) {
-  // Get total eligible users count
-  const totalUsers = eligibleUsers.length;
-  
-  if (totalUsers === 0) {
-    console.log("No eligible users found to distribute funds to");
-    return [];
-  }
-  
-  // Calculate per-user share with high precision
-  let perUserShare = preciseMul(totalAmount, 1/totalUsers);
-  
-  // Track the total actually distributed to ensure no money is lost
-  let totalDistributed = 0;
-  let updatedUsers = [];
-  
-  // Distribute to all eligible users except the last one
-  for (let i = 0; i < eligibleUsers.length - 1; i++) {
-    let user = eligibleUsers[i];
-    
-    // Ensure credits structure exists
-    user = ensureCreditsStructure(user);
-    
-    // Update user's balance with precise addition
-    user.credits.omsiapawas.amount = preciseAdd(
-      user.credits.omsiapawas.amount, 
-      perUserShare
-    );
-    
-    // Track the running total of distributions
-    totalDistributed = preciseAdd(totalDistributed, perUserShare);
-    
-    // Add to array of updated users
-    updatedUsers.push(user);
-    
-    // Save the user document
-    await user.save();
-  }
-  
-  // For the last user, add the remainder to ensure the total is exactly correct
-  if (eligibleUsers.length > 0) {
-    let lastUser = eligibleUsers[eligibleUsers.length - 1];
-    
-    // Ensure credits structure exists
-    lastUser = ensureCreditsStructure(lastUser);
-    
-    let lastUserShare = preciseSub(totalAmount, totalDistributed);
-    
-    // Update last user's balance with precise addition
-    lastUser.credits.omsiapawas.amount = preciseAdd(
-      lastUser.credits.omsiapawas.amount, 
-      lastUserShare
-    );
-    
-    // Add to array of updated users
-    updatedUsers.push(lastUser);
-    
-    // Save the last user document
-    await lastUser.save();
-  }
-  
-  console.log(`Distributed ${totalAmount} to eligible users. Each received approximately ${perUserShare}`);
-  
-  return updatedUsers;
-}
-
-// Implementation of the distribution system - updated for schema match
-async function distributeTransactionGiveaway(currentRegistrant, totalGiveaway, pendingFundDoc) {
-  // Ensure totalGiveaway is a properly parsed float
-  totalGiveaway = parseFloat(totalGiveaway);
-  
-  if (isNaN(totalGiveaway) || totalGiveaway <= 0) {
-    console.log("Invalid giveaway amount:", totalGiveaway);
-    return { updatedRegistrant: currentRegistrant, updatedPendingFund: pendingFundDoc.amount }; // Skip distribution for invalid amounts
-  }
-  
-  // Ensure data structures exist
-  currentRegistrant = ensureCreditsStructure(currentRegistrant);
-  
-  // 60% goes to the current registrant - using precise multiplication
-  const currentRegistrantShare = preciseMul(totalGiveaway, 0.6);
-  
-  // Update current registrant's omsiapawas amount with precise addition
-  currentRegistrant.credits.omsiapawas.amount = preciseAdd(
-    currentRegistrant.credits.omsiapawas.amount, 
-    currentRegistrantShare
-  );
-  
-  // 40% for distribution based on registrant status type
-  const distributionShare = preciseMul(totalGiveaway, 0.4);
-  
-  // Determine which users to distribute to based on the registrant's status type
-  const registrantStatusType = currentRegistrant.registrationstatusesandlogs.type;
-  
-  // Define eligible recipients based on registrant status
-  let eligibleRecipients = [];
-  
-  try {
-    if (registrantStatusType === "Month Financial Allocation To Individual People ( MFATIP )") {
-      // Distribute to Public and Private citizens
-      eligibleRecipients = await RegistrantDataModel.find({
-        "registrationstatusesandlogs.type": { $in: ["Public citizen", "Private citizen"] }
-      });
-    } else if (registrantStatusType === "Public citizen") {
-      // Distribute only to Private citizens
-      eligibleRecipients = await RegistrantDataModel.find({
-        "registrationstatusesandlogs.type": "Private citizen"
-      });
-    } else if (registrantStatusType === "Private citizen") {
-      // Distribute only to Private citizens
-      eligibleRecipients = await RegistrantDataModel.find({
-        "registrationstatusesandlogs.type": "Private citizen"
-      });
-    } else {
-      // Unknown status type, log and return
-      console.log("Unknown registrant status type:", registrantStatusType);
-      // Just add to pending funds in this case
-      pendingFundDoc.amount = preciseAdd(pendingFundDoc.amount || 0, distributionShare);
-      return { 
-        updatedRegistrant: currentRegistrant, 
-        updatedPendingFund: pendingFundDoc.amount 
-      };
-    }
-    
-    // Check if there are eligible recipients
-    if (eligibleRecipients.length === 0) {
-      console.log("No eligible recipients found for distribution");
-      // Store the funds for future distribution
-      pendingFundDoc.amount = preciseAdd(pendingFundDoc.amount || 0, distributionShare);
-      return { 
-        updatedRegistrant: currentRegistrant, 
-        updatedPendingFund: pendingFundDoc.amount 
-      };
-    }
-    
-    // Calculate per-user share
-    const perUserShare = preciseMul(distributionShare, 1/eligibleRecipients.length);
-    
-    // Check if the amount per user meets the minimum threshold (1)
-    if (perUserShare >= 1) {
-      // If each user gets at least 1, distribute to eligible recipients
-      await distributeToEligibleUsers(eligibleRecipients, distributionShare);
-    } else {
-      // Otherwise, add to pending funds for future distribution
-      pendingFundDoc.amount = preciseAdd(pendingFundDoc.amount || 0, distributionShare);
-      console.log(`Added ${distributionShare} to pending funds. New total: ${pendingFundDoc.amount}`);
-    }
-    
-  } catch (error) {
-    console.error("Error in distributeTransactionGiveaway:", error);
-    // In case of error, add to pending funds
-    pendingFundDoc.amount = preciseAdd(pendingFundDoc.amount || 0, distributionShare);
-  }
-  
-  return { 
-    updatedRegistrant: currentRegistrant, 
-    updatedPendingFund: pendingFundDoc.amount 
-  };
-}
-
-// Helper function to check and distribute pending funds - updated for schema match
-async function checkAndDistributePendingFunds(pendingFundDoc, currentRegistrant) {
-  try {
-    // Ensure pendingfunds exists and is a number
-    pendingFundDoc.amount = parseFloat(pendingFundDoc.amount || 0);
-    
-    // Determine which users to distribute to based on the registrant's status type
-    const registrantStatusType = currentRegistrant.registrationstatusesandlogs.type;
-    
-    // Define eligible recipients based on registrant status
-    let eligibleRecipients = [];
-    
-    if (registrantStatusType === "Month Financial Allocation To Individual People ( MFATIP )") {
-      // Distribute to Public and Private citizens
-      eligibleRecipients = await RegistrantDataModel.find({
-        "registrationstatusesandlogs.type": { $in: ["Public citizen", "Private citizen"] }
-      });
-    } else if (registrantStatusType === "Public citizen") {
-      // Distribute only to Private citizens
-      eligibleRecipients = await RegistrantDataModel.find({
-        "registrationstatusesandlogs.type": "Private citizen"
-      });
-    } else if (registrantStatusType === "Private citizen") {
-      // Distribute only to Private citizens
-      eligibleRecipients = await RegistrantDataModel.find({
-        "registrationstatusesandlogs.type": "Private citizen"
-      });
-    } else {
-      // Unknown status type, default to all users
-      console.log("Unknown registrant status type:", registrantStatusType);
-      eligibleRecipients = await RegistrantDataModel.find({});
-    }
-    
-    if (eligibleRecipients.length === 0) {
-      console.log("No eligible recipients found to distribute pending funds to");
-      return pendingFundDoc;
-    }
-    
-    // Calculate the per-user amount if we were to distribute pending funds
-    const perUserAmount = preciseMul(pendingFundDoc.amount, 1/eligibleRecipients.length);
-    
-    // Only distribute if each user would receive at least 1
-    if (perUserAmount >= 1) {
-      console.log(`Pending funds can now be distributed. Amount per user: ${perUserAmount}`);
-      
-      // Distribute the pending funds
-      const amountToDistribute = pendingFundDoc.amount;
-      await distributeToEligibleUsers(eligibleRecipients, amountToDistribute);
-      
-      // Reset pending funds to zero
-      pendingFundDoc.amount = 0;
-    } else {
-      console.log(`Pending funds (${pendingFundDoc.amount}) not yet sufficient to distribute. Need ${eligibleRecipients.length} to give 1 to each eligible user.`);
-    }
-    
-    return pendingFundDoc;
-    
-  } catch (error) {
-    console.error("Error in checkAndDistributePendingFunds:", error);
-    return pendingFundDoc;
-  }
-}
-
-// Updated to handle the schema match
+// Fixed processOrder function with proper async/await handling
 async function processOrder(req, res) {
   try {
     // Validate input
@@ -1202,15 +858,239 @@ async function processOrder(req, res) {
       return res.status(404).json({ error: "Registrant not found" });
     }
     
-    // Get or create pendingFund document
-    let pendingFund = await PendingFundsDataModel.findOne({});
-    if (!pendingFund) {
-      pendingFund = new PendingFundsDataModel({ amount: 0 });
-      await pendingFund.save();
+    // Ensure credits structure exists
+    registrant = ensureCreditsStructure(registrant);
+    
+    // Calculate total payment amount
+    const totalPayment = calculateTotalPayment(orderData.orderSummary);
+    
+    // Check if registrant has sufficient balance
+    if (registrant.credits.omsiapawas.amount < totalPayment) {
+      return res.status(400).json({ 
+        error: "Insufficient balance", 
+        required: totalPayment,
+        available: registrant.credits.omsiapawas.amount
+      });
     }
     
-    // Create the transaction record following the schema
-    const newTransaction = createTransactionRecord(orderData, registrant);
+    // IMPORTANT: Await the createTransactionRecord function since it's now async
+    const newTransaction = await createTransactionRecord(orderData, registrant);
+    
+    // Save the transaction to the MerchandiseTransaction collection
+    const merchandiseTransaction = new MerchandiseTransactionDataModel(newTransaction);
+    await merchandiseTransaction.save();
+    
+    // Ensure the transactions structure exists in the registrant
+    if (!registrant.transactions) {
+      registrant.transactions = { merchandise: [] };
+    }
+    if (!registrant.transactions.merchandise) {
+      registrant.transactions.merchandise = [];
+    }
+    
+    // Add transaction to registrant's transactions with the actual data (not the Promise)
+    registrant.transactions.merchandise.push(newTransaction);
+    
+    // Deduct the total payment from registrant's omsiapawas amount using precise subtraction
+    registrant.credits.omsiapawas.amount = preciseSub(registrant.credits.omsiapawas.amount, totalPayment);
+    
+    // Save the updated registrant
+    await registrant.save();
+    
+    // Log the transaction and payment deduction
+    console.log("Order processed successfully. Product quantities:");
+    newTransaction.details.merchandise.list.forEach((product, index) => {
+      console.log(`Product ${index + 1}: ID=${product.authentications.id}, Quantity=${product.quantity}`);
+    });
+    console.log(`Payment deducted: ${totalPayment}, Remaining balance: ${registrant.credits.omsiapawas.amount}`);
+    console.log(`Transaction date: ${newTransaction.date}`);
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: "Order processed successfully",
+      transactionId: newTransaction.id,
+      transactionDate: newTransaction.date,
+      totalQuantity: newTransaction.details.merchandise.list.reduce((total, product) => total + (product.quantity || 0), 0),
+      totalPayment: totalPayment,
+      remainingBalance: registrant.credits.omsiapawas.amount
+    });
+    
+  } catch (error) {
+    console.error("Error processing order:", error);
+    return res.status(500).json({ error: "Failed to process order", details: error.message });
+  }
+}
+
+// Alternative approach: Make createTransactionRecord synchronous and generateUniqueTransactionId async
+function createTransactionRecordSync(orderData, registrant, transactionId) {
+  // Get current formatted date
+  const currentDate = timestamps.getFormattedDate();
+  
+  // Process products from the order data
+  const productList = orderData.products.map(product => {
+    let productRecord;
+    
+    // If the product already has full details, use them
+    if (product.authentications && product.details) {
+      productRecord = product;
+    } else {
+      // Otherwise find full product details for each product in the order
+      productRecord = findFullProductDetails(product.id);
+    }
+    
+    // Ensure quantity is set according to the schema location
+    productRecord.quantity = product.quantity || 1;
+    
+    return productRecord;
+  });
+  
+  // Calculate total quantity for the transaction
+  const totalQuantity = productList.reduce((total, product) => total + (product.quantity || 0), 0);
+  
+  // Create the transaction record following the merchandisetransactiondatascheme
+  return {
+    id: transactionId, // Use the pre-generated transaction ID
+    // DO NOT add _id field - let MongoDB handle it automatically
+    date: currentDate, // Add main transaction date
+    intent: "Purchase merchandise",
+    statusesandlogs: {
+      status: "pending",
+      indication: "Processing",
+      date: currentDate, // Add date to status
+      logs: [
+        {
+          date: currentDate, // Add date to log entry
+          type: "Order submitted",
+          indication: "Processing",
+          messages: [
+            { message: "Order received and is being processed" }
+          ]
+        }
+      ]
+    },
+    details: {
+      merchandise: {
+        list: productList // Each product in this list now has the quantity field set
+      },
+      paymentmethod: orderData.paymentInfo.method || "N/A"
+    },
+    system: {
+      thistransactionismadeby: {
+        id: registrant._id.toString() || registrant.id,
+        name: {
+          firstname: registrant.name?.firstname || "",
+          middlename: registrant.name?.middlename || "",
+          lastname: registrant.name?.lastname || ""
+        },
+        address: registrant.contact?.address || {
+          street: "",
+          trademark: "",
+          baranggay: "",
+          city: "",
+          province: "",
+          postal_zip_code: "",
+          country: ""
+        }
+      },
+      thistransactionismainlyintendedto: {
+        id: registrant._id.toString() || registrant.id,
+        name: {
+          firstname: orderData.personalInfo?.firstName || registrant.name?.firstname || "",
+          middlename: orderData.personalInfo?.middleName || registrant.name?.middlename || "",
+          lastname: orderData.personalInfo?.lastName || registrant.name?.lastname || ""
+        },
+        address: {
+          street: orderData.personalInfo?.street || "",
+          trademark: orderData.personalInfo?.trademark || "",
+          baranggay: orderData.personalInfo?.baranggay || "",
+          city: orderData.personalInfo?.city || "",
+          province: orderData.personalInfo?.province || "",
+          postal_zip_code: orderData.personalInfo?.zipCode || "",
+          country: orderData.personalInfo?.country || ""
+        }
+      },
+      ordersummary: {
+        merchandisetotal: parseFloat(orderData.orderSummary?.merchandiseTotal || 0),
+        shippingtotal: parseFloat(orderData.orderSummary?.shippingTotal || 0),
+        processingfee: parseFloat(orderData.orderSummary?.paymentProcessingFee || 0),
+        totalcapital: parseFloat(orderData.orderSummary?.totalCapital || 0),
+        totaltransactiongiveaway: parseFloat(orderData.orderSummary?.totalTransactionGiveaway || 0),
+        totalprofit: parseFloat(orderData.orderSummary?.totalOmsiaProfit || 0),
+        totalitems: orderData.orderSummary?.totalItems || totalQuantity,
+        totalweightgrams: parseFloat(orderData.orderSummary?.totalWeightGrams || 0),
+        totalweightkilos: parseFloat(orderData.orderSummary?.totalWeightKilos || 0)
+      },
+      shippinginfo: {
+        street: orderData.personalInfo?.street || "",
+        trademark: orderData.personalInfo?.trademark || "",
+        baranggay: orderData.personalInfo?.baranggay || "",
+        city: orderData.personalInfo?.city || "",
+        province: orderData.personalInfo?.province || "",
+        zipcode: orderData.personalInfo?.zipCode || "",
+        country: orderData.personalInfo?.country || ""
+      }
+    }
+  };
+}
+
+// Alternative processOrder using the synchronous approach
+async function processOrderAlternative(req, res) {
+  try {
+    // Validate input
+    if (!req.body || !req.body.$order) {
+      return res.status(400).json({ error: "Invalid order data" });
+    }
+    
+    const orderData = req.body.$order;
+    
+    // Validate required fields
+    if (!orderData.registrantid || !orderData.products || !orderData.personalInfo || 
+        !orderData.paymentInfo || !orderData.orderSummary) {
+      return res.status(400).json({ error: "Missing required order information" });
+    }
+    
+    // Try to find the registrant by MongoDB ObjectID first
+    let registrant;
+
+    try {
+      // First try to use it as an ObjectID
+      registrant = await RegistrantDataModel.findById(orderData.registrantid);
+    } catch (e) {
+      // If that fails (not a valid ObjectID), try as a string ID
+      console.log("Not a valid ObjectID, trying as string ID");
+    }
+    
+    // If not found by ObjectID, try using the custom id field
+    if (!registrant) {
+      registrant = await RegistrantDataModel.findOne({ _id: new mongoose.Types.ObjectId(orderData.registrantid) });
+    }
+    
+    // Check if registrant exists
+    if (!registrant) {
+      console.log("No registrant found with ID:", orderData.registrantid);
+      return res.status(404).json({ error: "Registrant not found" });
+    }
+    
+    // Ensure credits structure exists
+    registrant = ensureCreditsStructure(registrant);
+    
+    // Calculate total payment amount
+    const totalPayment = calculateTotalPayment(orderData.orderSummary);
+    
+    // Check if registrant has sufficient balance
+    if (registrant.credits.omsiapawas.amount < totalPayment) {
+      return res.status(400).json({ 
+        error: "Insufficient balance", 
+        required: totalPayment,
+        available: registrant.credits.omsiapawas.amount
+      });
+    }
+    
+    // Generate unique transaction ID first
+    const transactionId = await generateUniqueTransactionId();
+    
+    // Create the transaction record with the generated ID
+    const newTransaction = createTransactionRecordSync(orderData, registrant, transactionId);
     
     // Save the transaction to the MerchandiseTransaction collection
     const merchandiseTransaction = new MerchandiseTransactionDataModel(newTransaction);
@@ -1227,44 +1107,28 @@ async function processOrder(req, res) {
     // Add transaction to registrant's transactions
     registrant.transactions.merchandise.push(newTransaction);
     
-    // Calculate the transaction give away
-    const transactionGiveaway = parseFloat(orderData.orderSummary.totalTransactionGiveaway);
-    
-    if (!isNaN(transactionGiveaway)) {
-      if (transactionGiveaway < 0) {
-        // If negative, add to pending funds (absolute value)
-        pendingFund.amount = preciseAdd(pendingFund.amount || 0, Math.abs(transactionGiveaway));
-      } else {
-        // If not negative, process distribution
-        const result = await distributeTransactionGiveaway(registrant, transactionGiveaway, pendingFund);
-        // Update with the results from distribution
-        Object.assign(registrant, result.updatedRegistrant);
-        pendingFund.amount = result.updatedPendingFund;
-      }
-      
-      // Check if accumulated pending funds can be distributed
-      pendingFund = await checkAndDistributePendingFunds(pendingFund, registrant);
-    } else {
-      console.log("Invalid transaction giveaway value:", orderData.orderSummary.totalTransactionGiveaway);
-    }
+    // Deduct the total payment from registrant's omsiapawas amount using precise subtraction
+    registrant.credits.omsiapawas.amount = preciseSub(registrant.credits.omsiapawas.amount, totalPayment);
     
     // Save the updated registrant
     await registrant.save();
     
-    // Save the updated pending fund
-    await pendingFund.save();
-    
-    // Log the quantity information for verification
+    // Log the transaction and payment deduction
     console.log("Order processed successfully. Product quantities:");
     newTransaction.details.merchandise.list.forEach((product, index) => {
       console.log(`Product ${index + 1}: ID=${product.authentications.id}, Quantity=${product.quantity}`);
     });
+    console.log(`Payment deducted: ${totalPayment}, Remaining balance: ${registrant.credits.omsiapawas.amount}`);
+    console.log(`Transaction date: ${newTransaction.date}`);
     
     return res.status(200).json({ 
       success: true, 
       message: "Order processed successfully",
       transactionId: newTransaction.id,
-      totalQuantity: newTransaction.details.merchandise.list.reduce((total, product) => total + (product.quantity || 0), 0)
+      transactionDate: newTransaction.date,
+      totalQuantity: newTransaction.details.merchandise.list.reduce((total, product) => total + (product.quantity || 0), 0),
+      totalPayment: totalPayment,
+      remainingBalance: registrant.credits.omsiapawas.amount
     });
     
   } catch (error) {
@@ -1273,7 +1137,428 @@ async function processOrder(req, res) {
   }
 }
 
-// Define the router endpoint using the processOrder function
+// Helper function to add status log with date
+function addTransactionStatusLog(transaction, type, indication, message) {
+  const currentDate = timestamps.getFormattedDate();
+  
+  // Update main status
+  transaction.statusesandlogs.status = indication.toLowerCase();
+  transaction.statusesandlogs.indication = indication;
+  transaction.statusesandlogs.date = currentDate;
+  
+  // Add to logs array
+  transaction.statusesandlogs.logs.push({
+    date: currentDate,
+    type: type,
+    indication: indication,
+    messages: [{ message: message }]
+  });
+  
+  return transaction;
+}
+
+// Helper function to update transaction status (example usage)
+async function updateTransactionStatus(transactionId, newStatus, indication, message) {
+  try {
+    const transaction = await MerchandiseTransactionDataModel.findOne({ id: transactionId });
+    
+    if (!transaction) {
+      throw new Error("Transaction not found");
+    }
+    
+    // Add status log with current date
+    addTransactionStatusLog(transaction, newStatus, indication, message);
+    
+    // Save updated transaction
+    await transaction.save();
+    
+    // Also update the transaction in the registrant's record
+    const registrant = await RegistrantDataModel.findOne({ 
+      "transactions.merchandise.id": transactionId 
+    });
+    
+    if (registrant) {
+      const transactionIndex = registrant.transactions.merchandise.findIndex(
+        t => t.id === transactionId
+      );
+      
+      if (transactionIndex !== -1) {
+        registrant.transactions.merchandise[transactionIndex] = transaction.toObject();
+        await registrant.save();
+      }
+    }
+    
+    return transaction;
+    
+  } catch (error) {
+    console.error("Error updating transaction status:", error);
+    throw error;
+  }
+}
+
+// Enhanced function to generate unique transaction IDs with database check
+async function generateUniqueTransactionId() {
+  const maxAttempts = 10;
+  let attempts = 0;
+  
+  while (attempts < maxAttempts) {
+    // Create a more robust ID with multiple entropy sources
+    const timestamp = Date.now();
+    const randomPart = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
+    const processId = process.pid || Math.floor(Math.random() * 10000);
+    const counter = (global.transactionCounter || 0) + 1;
+    
+    // Update global counter
+    global.transactionCounter = counter;
+    
+    // Create the transaction ID
+    const transactionId = `TXN-${timestamp}-${randomPart}-${processId}-${counter}`;
+    
+    try {
+      // Check if this ID already exists in the database
+      const existingTransaction = await MerchandiseTransactionDataModel.findOne({ 
+        id: transactionId 
+      });
+      
+      if (!existingTransaction) {
+        // ID is unique, return it
+        return transactionId;
+      }
+      
+      // If ID exists, increment attempts and try again
+      attempts++;
+      console.warn(`Transaction ID collision detected: ${transactionId}. Attempt ${attempts}/${maxAttempts}`);
+      
+      // Add a small delay to avoid rapid collisions
+      await new Promise(resolve => setTimeout(resolve, 10));
+      
+    } catch (error) {
+      console.error("Error checking transaction ID uniqueness:", error);
+      // If database check fails, still increment attempts to avoid infinite loop
+      attempts++;
+    }
+  }
+  
+  // If we've exhausted all attempts, throw an error
+  throw new Error(`Failed to generate unique transaction ID after ${maxAttempts} attempts`);
+}
+
+// Alternative approach using MongoDB's atomic operations
+async function generateUniqueTransactionIdWithAtomic() {
+  try {
+    // Use MongoDB's atomic findOneAndUpdate to create a counter
+    const counterDoc = await mongoose.connection.db.collection('counters').findOneAndUpdate(
+      { _id: 'transactionId' },
+      { $inc: { sequence: 1 } },
+      { 
+        upsert: true, 
+        returnDocument: 'after' 
+      }
+    );
+    
+    const sequence = counterDoc.sequence;
+    const timestamp = Date.now();
+    const randomPart = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
+    
+    return `TXN-${timestamp}-${sequence.toString().padStart(8, '0')}-${randomPart}`;
+    
+  } catch (error) {
+    console.error("Error generating atomic transaction ID:", error);
+    // Fallback to the previous method
+    return await generateUniqueTransactionId();
+  }
+}
+
+// Enhanced function using UUID for maximum uniqueness
+const crypto = require('crypto');
+
+function generateUniqueTransactionIdWithUUID() {
+  // Generate a UUID v4 for maximum uniqueness
+  const uuid = crypto.randomUUID();
+  const timestamp = Date.now();
+  
+  // Create a shorter, more readable format while maintaining uniqueness
+  const shortUuid = uuid.replace(/-/g, '').substring(0, 12).toUpperCase();
+  
+  return `TXN-${timestamp}-${shortUuid}`;
+}
+
+// Updated createTransactionRecord function with enhanced ID generation
+async function createTransactionRecord(orderData, registrant) {
+  // Generate a unique transaction ID with database validation
+  const transactionId = await generateUniqueTransactionId();
+  
+  // Get current formatted date
+  const currentDate = timestamps.getFormattedDate();
+  
+  // Process products from the order data
+  const productList = orderData.products.map(product => {
+    let productRecord;
+    
+    // If the product already has full details, use them
+    if (product.authentications && product.details) {
+      productRecord = product;
+    } else {
+      // Otherwise find full product details for each product in the order
+      productRecord = findFullProductDetails(product.id);
+    }
+    
+    // Ensure quantity is set according to the schema location
+    productRecord.quantity = product.quantity || 1;
+    
+    return productRecord;
+  });
+  
+  // Calculate total quantity for the transaction
+  const totalQuantity = productList.reduce((total, product) => total + (product.quantity || 0), 0);
+  
+  // Create the transaction record following the merchandisetransactiondatascheme
+  return {
+    id: transactionId,
+    // DO NOT add _id field - let MongoDB handle it automatically
+    date: currentDate, // Add main transaction date
+    intent: "Purchase merchandise",
+    statusesandlogs: {
+      status: "pending",
+      indication: "Processing",
+      date: currentDate, // Add date to status
+      logs: [
+        {
+          date: currentDate, // Add date to log entry
+          type: "Order submitted",
+          indication: "Processing",
+          messages: [
+            { message: "Order received and is being processed" }
+          ]
+        }
+      ]
+    },
+    details: {
+      merchandise: {
+        list: productList // Each product in this list now has the quantity field set
+      },
+      paymentmethod: orderData.paymentInfo.method || "N/A"
+    },
+    system: {
+      thistransactionismadeby: {
+        id: registrant._id.toString() || registrant.id,
+        name: {
+          firstname: registrant.name?.firstname || "",
+          middlename: registrant.name?.middlename || "",
+          lastname: registrant.name?.lastname || ""
+        },
+        address: registrant.contact?.address || {
+          street: "",
+          trademark: "",
+          baranggay: "",
+          city: "",
+          province: "",
+          postal_zip_code: "",
+          country: ""
+        }
+      },
+      thistransactionismainlyintendedto: {
+        id: registrant._id.toString() || registrant.id,
+        name: {
+          firstname: orderData.personalInfo?.firstName || registrant.name?.firstname || "",
+          middlename: orderData.personalInfo?.middleName || registrant.name?.middlename || "",
+          lastname: orderData.personalInfo?.lastName || registrant.name?.lastname || ""
+        },
+        address: {
+          street: orderData.personalInfo?.street || "",
+          trademark: orderData.personalInfo?.trademark || "",
+          baranggay: orderData.personalInfo?.baranggay || "",
+          city: orderData.personalInfo?.city || "",
+          province: orderData.personalInfo?.province || "",
+          postal_zip_code: orderData.personalInfo?.zipCode || "",
+          country: orderData.personalInfo?.country || ""
+        }
+      },
+      ordersummary: {
+        merchandisetotal: parseFloat(orderData.orderSummary?.merchandiseTotal || 0),
+        shippingtotal: parseFloat(orderData.orderSummary?.shippingTotal || 0),
+        processingfee: parseFloat(orderData.orderSummary?.paymentProcessingFee || 0),
+        totalcapital: parseFloat(orderData.orderSummary?.totalCapital || 0),
+        totaltransactiongiveaway: parseFloat(orderData.orderSummary?.totalTransactionGiveaway || 0),
+        totalprofit: parseFloat(orderData.orderSummary?.totalOmsiaProfit || 0),
+        totalitems: orderData.orderSummary?.totalItems || totalQuantity,
+        totalweightgrams: parseFloat(orderData.orderSummary?.totalWeightGrams || 0),
+        totalweightkilos: parseFloat(orderData.orderSummary?.totalWeightKilos || 0)
+      },
+      shippinginfo: {
+        street: orderData.personalInfo?.street || "",
+        trademark: orderData.personalInfo?.trademark || "",
+        baranggay: orderData.personalInfo?.baranggay || "",
+        city: orderData.personalInfo?.city || "",
+        province: orderData.personalInfo?.province || "",
+        zipcode: orderData.personalInfo?.zipCode || "",
+        country: orderData.personalInfo?.country || ""
+      }
+    }
+  };
+}
+
+// Database index creation function to ensure uniqueness at database level
+async function createTransactionIdIndex() {
+  try {
+    // Create a unique index on the 'id' field in the MerchandiseTransaction collection
+    await MerchandiseTransactionDataModel.collection.createIndex(
+      { id: 1 }, 
+      { 
+        unique: true, 
+        background: true,
+        name: 'transaction_id_unique_index'
+      }
+    );
+    
+    console.log("Unique index created for transaction IDs");
+  } catch (error) {
+    if (error.code === 11000) {
+      console.log("Unique index already exists for transaction IDs");
+    } else {
+      console.error("Error creating unique index:", error);
+    }
+  }
+}
+
+// Utility function to validate transaction ID uniqueness
+async function validateTransactionIdUniqueness(transactionId) {
+  try {
+    const existingTransaction = await MerchandiseTransactionDataModel.findOne({ 
+      id: transactionId 
+    });
+    
+    return !existingTransaction; // Returns true if unique, false if duplicate
+  } catch (error) {
+    console.error("Error validating transaction ID uniqueness:", error);
+    return false;
+  }
+}
+
+// Initialize the database index when the application starts
+// Call this function during your application initialization
+async function initializeTransactionSystem() {
+  await createTransactionIdIndex();
+  
+  // Initialize the global counter if it doesn't exist
+  if (typeof global.transactionCounter === 'undefined') {
+    global.transactionCounter = 0;
+  }
+  
+  console.log("Transaction system initialized");
+}
+
+function findFullProductDetails(productId) {
+  return {
+    authentications: {
+      producttype: '',
+      id: productId
+    },
+    details: {
+      productname: '',
+      category: '',
+      description: '',
+      features: [],
+      weightingrams: 0,
+      warranty: '',
+      price: {
+        amount: 0,
+        capital: 0,
+        transactiongiveaway: 0,
+        profit: 0
+      },
+      specifications: []
+    },
+    images: [],
+    videos: [],
+    customerfeedback: {
+      rating: 0,
+      reviews: 0
+    },
+    system: {
+      purchases: {
+        total: [],
+        pending: [],
+        accepted: [],
+        rejected: []
+      }
+    },
+    quantity: 0
+  };
+}
+
+function precise(operation, num1, num2, precision = 10) {
+  const factor = Math.pow(10, precision);
+  const intNum1 = Math.round(parseFloat(num1) * factor);
+  const intNum2 = Math.round(parseFloat(num2) * factor);
+  
+  let result;
+  switch(operation) {
+    case 'add':
+      result = (intNum1 + intNum2) / factor;
+      break;
+    case 'sub':
+      result = (intNum1 - intNum2) / factor;
+      break;
+    case 'mul':
+      result = (intNum1 * intNum2) / (factor * factor);
+      break;
+    case 'div':
+      result = (intNum1 / intNum2);
+      break;
+    default:
+      throw new Error('Unknown operation');
+  }
+  
+  return parseFloat(result.toFixed(precision));
+}
+
+function preciseAdd(num1, num2) {
+  return precise('add', num1, num2);
+}
+
+function preciseSub(num1, num2) {
+  return precise('sub', num1, num2);
+}
+
+function preciseMul(num1, num2) {
+  return precise('mul', num1, num2);
+}
+
+function ensureCreditsStructure(user) {
+  if (!user.credits) {
+    user.credits = {};
+  }
+  
+  if (!user.credits.omsiapawas) {
+    user.credits.omsiapawas = {
+      id: `OMSIAPAWAS-${user._id || user.id}`,
+      amount: 0,
+      transactions: {
+        currencyexchange: [],
+        widthdrawals: [],
+        omsiapawastransfer: []
+      }
+    };
+  }
+  
+  user.credits.omsiapawas.amount = parseFloat(user.credits.omsiapawas.amount || 0);
+  
+  return user;
+}
+
+function calculateTotalPayment(orderSummary) {
+  const merchandiseTotal = parseFloat(orderSummary.merchandiseTotal || 0);
+  const shippingTotal = parseFloat(orderSummary.shippingTotal || 0);
+  const processingFee = parseFloat(orderSummary.paymentProcessingFee || 0);
+  
+  let total = preciseAdd(merchandiseTotal, shippingTotal);
+  total = preciseAdd(total, processingFee);
+  
+  return total;
+}
+
+// Define the router endpoint
 Router.route("/order").post(processOrder);
 
 

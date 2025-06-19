@@ -8,10 +8,11 @@ const { v4: uuidv4 } = require('uuid');
 const bcrypt = require('bcryptjs');
 
 // Import models - consolidated at the top
-const RegistrantDataModel = require('../../models/people/registrantdatascheme.js');
-const MerchandiseTransactionDataModel = require('../../models/transactions/merchandisetransactiondatascheme.js');
-const CurrencyExchangeTransactionDataModel = require('../../models/transactions/currencyexchangetransactiondatascheme.js');
-const WidthdrawalTransactionDataModel = require('../../models/transactions/withdrawaltransactiondatascheme.js');
+const RegistrantDataModel = require('../../models/people/registrantdatascheme.js')
+const MerchandiseTransactionDataModel = require('../../models/transactions/merchandisetransactiondatascheme.js')
+const CurrencyExchangeTransactionDataModel = require('../../models/transactions/currencyexchangetransactiondatascheme.js')
+const WidthdrawalTransactionDataModel = require('../../models/transactions/withdrawaltransactiondatascheme.js')
+const PendingFundsDataModel = require('../../models/pendingfunds/pendingfundsdatascheme.js')
 
 // Import utilities
 const timestamps = require('../../lib/timestamps/timestamps');
@@ -233,7 +234,7 @@ Router.get("/getomsiapdata", async (req, res) => {
       rejected: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected'),
       forshipping: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'forshipping'),
       shipped: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'shipped'),
-      successful: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'successful')
+      successful: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'completed')
     };
         
     // Fetch currency exchange transactions
@@ -280,9 +281,10 @@ Router.get("/getomsiapdata", async (req, res) => {
 
 // Confirm Order Route
 Router.post('/confirmorder', async (req, res) => {
+
   try {
-    const { _id } = req.body;
-    
+    const { _id, id } = req.body;
+
     // Input validation
     if (!_id) {
       return res.status(400).json({
@@ -318,15 +320,35 @@ Router.post('/confirmorder', async (req, res) => {
       });
     }
 
+    // Get the registrant ID from the transaction
+    const registrantId = merchandiseTransaction.system.thistransactionismadeby.id;
+    
+    if (!registrantId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registrant ID not found in transaction'
+      });
+    }
+
+    // Find the registrant by ID
+    const registrant = await RegistrantDataModel.findById(registrantId);
+    
+    if (!registrant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registrant not found'
+      });
+    }
+
     // Generate timestamp for the confirmation
     const formattedDate = timestamps.getFormattedDate();
     
-    // Update the statusesandlogs
+    // Update the merchandise transaction statusesandlogs
     merchandiseTransaction.statusesandlogs.status = 'confirmed';
     merchandiseTransaction.statusesandlogs.indication = 'confirmed and processing';
     merchandiseTransaction.statusesandlogs.date = formattedDate;
     
-    // Add a new log entry
+    // Add a new log entry to merchandise transaction
     merchandiseTransaction.statusesandlogs.logs.push({
       date: formattedDate,
       type: 'confirmed',
@@ -337,14 +359,53 @@ Router.post('/confirmorder', async (req, res) => {
       ]
     });
 
-    // Save the updated transaction
-    await merchandiseTransaction.save();
+    // Find the corresponding merchandise transaction in registrant's transactions
+    // Use the id field to match the transaction
+    const merchandiseTransactionIndex = registrant.transactions.merchandise.findIndex(
+      transaction => transaction.id === id
+    );
+
+    if (merchandiseTransactionIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found in registrant records'
+      });
+    }
+
+    // Update the registrant's merchandise transaction status and indication
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.status = 'confirmed';
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.indication = 'confirmed and processing';
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.date = formattedDate;
+
+    // Add log entry to registrant's transaction (if logs array exists)
+    if (registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.logs) {
+      registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.logs.push({
+        date: formattedDate,
+        type: 'confirmed',
+        indication: 'Order has been confirmed and is now being processed',
+        messages: [
+          { message: 'Order has been confirmed by administrator' },
+          { message: 'Your order is being prepared for shipping' }
+        ]
+      });
+    }
+
+    // Save both documents
+    await Promise.all([
+      merchandiseTransaction.save(),
+      registrant.save()
+    ]);
 
     // Return success response
     return res.status(200).json({
       success: true,
       message: `Order ${_id} has been confirmed successfully`,
-      updatedTransaction: merchandiseTransaction
+      updatedTransaction: merchandiseTransaction,
+      updatedRegistrant: {
+        id: registrant._id,
+        name: registrant.name,
+        updatedTransactionStatus: registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.status
+      }
     });
     
   } catch (err) {
@@ -368,9 +429,13 @@ Router.post('/confirmorder', async (req, res) => {
 
 // Order For Shipping Route
 Router.post('/orderforshipping', async (req, res) => {
+
   try {
-    const { _id } = req.body;
-    
+    const { _id, id } = req.body;
+
+    console.log(_id)
+    console.log(id)
+
     // Input validation
     if (!_id) {
       return res.status(400).json({
@@ -389,7 +454,7 @@ Router.post('/orderforshipping', async (req, res) => {
         message: 'Order not found. Please refresh and try again.'
       });
     }
-    
+
     // Check if transaction is already for shipping
     if (merchandiseTransaction.statusesandlogs.status === 'forshipping') {
       return res.status(400).json({
@@ -397,7 +462,7 @@ Router.post('/orderforshipping', async (req, res) => {
         message: 'This order is already marked for shipping'
       });
     }
-    
+
     // Check if transaction is in confirmed status
     if (merchandiseTransaction.statusesandlogs.status !== 'confirmed') {
       return res.status(400).json({
@@ -405,16 +470,36 @@ Router.post('/orderforshipping', async (req, res) => {
         message: `Cannot mark order for shipping when in ${merchandiseTransaction.statusesandlogs.status} status. Order must be confirmed first.`
       });
     }
+
+    // Get the registrant ID from the transaction
+    const registrantId = merchandiseTransaction.system.thistransactionismadeby.id;
     
+    if (!registrantId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registrant ID not found in transaction'
+      });
+    }
+
+    // Find the registrant by ID
+    const registrant = await RegistrantDataModel.findById(registrantId);
+    
+    if (!registrant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registrant not found'
+      });
+    }
+
     // Generate timestamp for the status update
     const formattedDate = timestamps.getFormattedDate();
     
-    // Update the statusesandlogs
+    // Update the merchandise transaction statusesandlogs
     merchandiseTransaction.statusesandlogs.status = 'forshipping';
     merchandiseTransaction.statusesandlogs.indication = 'ready for shipping';
     merchandiseTransaction.statusesandlogs.date = formattedDate;
     
-    // Add a new log entry
+    // Add a new log entry to merchandise transaction
     merchandiseTransaction.statusesandlogs.logs.push({
       date: formattedDate,
       type: 'forshipping',
@@ -425,14 +510,53 @@ Router.post('/orderforshipping', async (req, res) => {
       ]
     });
 
-    // Save the updated transaction
-    await merchandiseTransaction.save();
+    // Find the corresponding merchandise transaction in registrant's transactions
+    // Use the id field to match the transaction
+    const merchandiseTransactionIndex = registrant.transactions.merchandise.findIndex(
+      transaction => transaction.id === id
+    );
+
+    if (merchandiseTransactionIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found in registrant records'
+      });
+    }
+
+    // Update the registrant's merchandise transaction status and indication
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.status = 'forshipping';
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.indication = 'ready for shipping';
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.date = formattedDate;
+
+    // Add log entry to registrant's transaction (if logs array exists)
+    if (registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.logs) {
+      registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.logs.push({
+        date: formattedDate,
+        type: 'forshipping',
+        indication: 'Order has been marked for shipping',
+        messages: [
+          { message: 'Order has been prepared and is ready for shipping' },
+          { message: 'Your order will be dispatched soon' }
+        ]
+      });
+    }
+
+    // Save both documents
+    await Promise.all([
+      merchandiseTransaction.save(),
+      registrant.save()
+    ]);
 
     // Return success response
     return res.status(200).json({
       success: true,
       message: `Order ${_id} has been marked for shipping successfully`,
-      updatedTransaction: merchandiseTransaction
+      updatedTransaction: merchandiseTransaction,
+      updatedRegistrant: {
+        id: registrant._id,
+        name: registrant.name,
+        updatedTransactionStatus: registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.status
+      }
     });
     
   } catch (err) {
@@ -456,9 +580,10 @@ Router.post('/orderforshipping', async (req, res) => {
 
 // Order Shipped Route
 Router.post('/ordershipped', async (req, res) => {
+
   try {
-    const { _id } = req.body;
-    
+    const { _id, id } = req.body;
+
     // Input validation
     if (!_id) {
       return res.status(400).json({
@@ -477,7 +602,7 @@ Router.post('/ordershipped', async (req, res) => {
         message: 'Order not found. Please refresh and try again.'
       });
     }
-    
+
     // Check if transaction is already shipped
     if (merchandiseTransaction.statusesandlogs.status === 'shipped') {
       return res.status(400).json({
@@ -485,7 +610,7 @@ Router.post('/ordershipped', async (req, res) => {
         message: 'This order has already been marked as shipped'
       });
     }
-    
+
     // Check if transaction is in forshipping status
     if (merchandiseTransaction.statusesandlogs.status !== 'forshipping') {
       return res.status(400).json({
@@ -493,16 +618,36 @@ Router.post('/ordershipped', async (req, res) => {
         message: `Cannot mark order as shipped when in ${merchandiseTransaction.statusesandlogs.status} status. Order must be prepared for shipping first.`
       });
     }
+
+    // Get the registrant ID from the transaction
+    const registrantId = merchandiseTransaction.system.thistransactionismadeby.id;
     
+    if (!registrantId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registrant ID not found in transaction'
+      });
+    }
+
+    // Find the registrant by ID
+    const registrant = await RegistrantDataModel.findById(registrantId);
+    
+    if (!registrant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registrant not found'
+      });
+    }
+
     // Generate timestamp for the status update
     const formattedDate = timestamps.getFormattedDate();
     
-    // Update the statusesandlogs
+    // Update the merchandise transaction statusesandlogs
     merchandiseTransaction.statusesandlogs.status = 'shipped';
     merchandiseTransaction.statusesandlogs.indication = 'shipped to customer';
     merchandiseTransaction.statusesandlogs.date = formattedDate;
     
-    // Add a new log entry
+    // Add a new log entry to merchandise transaction
     merchandiseTransaction.statusesandlogs.logs.push({
       date: formattedDate,
       type: 'shipped',
@@ -510,18 +655,58 @@ Router.post('/ordershipped', async (req, res) => {
       messages: [
         { message: 'Order has been dispatched to shipping carrier' },
         { message: 'Your order is on its way to you' },
-        { message: "Don't forget to set your shipped order into accepted once order was recieved to update the status of the order into successful" }
+        { message: "Don't forget to set your shipped order into accepted once order was received to update the status of the order into successful" }
       ]
     });
 
-    // Save the updated transaction
-    await merchandiseTransaction.save();
+    // Find the corresponding merchandise transaction in registrant's transactions
+    // Use the id field to match the transaction
+    const merchandiseTransactionIndex = registrant.transactions.merchandise.findIndex(
+      transaction => transaction.id === id
+    );
+
+    if (merchandiseTransactionIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found in registrant records'
+      });
+    }
+
+    // Update the registrant's merchandise transaction status and indication
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.status = 'shipped';
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.indication = 'shipped to customer';
+    registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.date = formattedDate;
+
+    // Add log entry to registrant's transaction (if logs array exists)
+    if (registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.logs) {
+      registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.logs.push({
+        date: formattedDate,
+        type: 'shipped',
+        indication: 'Order has been shipped',
+        messages: [
+          { message: 'Order has been dispatched to shipping carrier' },
+          { message: 'Your order is on its way to you' },
+          { message: "Don't forget to set your shipped order into accepted once order was received to update the status of the order into successful" }
+        ]
+      });
+    }
+
+    // Save both documents
+    await Promise.all([
+      merchandiseTransaction.save(),
+      registrant.save()
+    ]);
 
     // Return success response
     return res.status(200).json({
       success: true,
       message: `Order ${_id} has been marked as shipped successfully`,
-      updatedTransaction: merchandiseTransaction
+      updatedTransaction: merchandiseTransaction,
+      updatedRegistrant: {
+        id: registrant._id,
+        name: registrant.name,
+        updatedTransactionStatus: registrant.transactions.merchandise[merchandiseTransactionIndex].statusesandlogs.status
+      }
     });
     
   } catch (err) {
@@ -539,6 +724,243 @@ Router.post('/ordershipped', async (req, res) => {
     return res.status(500).json({
       success: false,
       message: 'Server error occurred while marking order as shipped'
+    });
+  }
+});
+
+// Add this helper function before your router
+const calculatePartialRefund = (removedItems) => {
+  return removedItems.reduce((total, item) => {
+    return total + (item.details.price.amount * item.quantity) + 
+           ((item.details.price.shipping || 0) * item.quantity);
+  }, 0);
+};
+
+// order rejection
+Router.put('/productrejection/:id', async (req, res) => {
+  try {
+    const transactionId = req.params.id;
+    const updatedTransactionData = req.body;
+
+    // Validate required fields
+    if (!updatedTransactionData.statusesandlogs || !updatedTransactionData.statusesandlogs.status) {
+      return res.status(400).json({
+        success: false,
+        message: 'Status is required in statusesandlogs'
+      });
+    }
+
+    if (!updatedTransactionData.refundDetails) {
+      return res.status(400).json({
+        success: false,
+        message: 'Refund details are required for product rejection'
+      });
+    }
+
+    // Find the current transaction
+    const currentTransaction = await MerchandiseTransactionDataModel.findOne({ id: transactionId });
+    
+    if (!currentTransaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found'
+      });
+    }
+
+    // Extract registrant ID from the transaction
+    const registrantId = currentTransaction.system.thistransactionismadeby.id;
+
+    if (!registrantId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Registrant ID not found in transaction'
+      });
+    }
+
+    // Find the registrant
+    const registrant = await RegistrantDataModel.findById(registrantId);
+
+    if (!registrant) {
+      return res.status(404).json({
+        success: false,
+        message: 'Registrant not found'
+      });
+    }
+
+    // Find the transaction in registrant's merchandise transactions
+    const transactionIndex = registrant.transactions.merchandise.findIndex(
+      transaction => transaction.id === transactionId
+    );
+
+    if (transactionIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found in registrant records'
+      });
+    }
+
+    // Calculate refund amount from refund details
+    const refundAmount = updatedTransactionData.refundDetails.amounts.totalRefund;
+    const hasRefund = updatedTransactionData.refundDetails.hasRefund;
+
+    // Update the main transaction document
+    const updatedTransaction = await MerchandiseTransactionDataModel.findOneAndUpdate(
+      { id: transactionId },
+      {
+        ...updatedTransactionData,
+        // Update refund status to processed
+        refundDetails: {
+          ...updatedTransactionData.refundDetails,
+          refundStatus: hasRefund ? 'processed' : 'not_required',
+          refundProcessedDate: hasRefund ? new Date().toISOString() : null,
+          refundMethod: hasRefund ? 'omsiapawas_credit' : null,
+          refundReference: hasRefund ? `REFUND_${transactionId}_${Date.now()}` : null
+        }
+      },
+      {
+        new: true,
+        runValidators: true
+      }
+    );
+
+    // Update the transaction in registrant's records
+    registrant.transactions.merchandise[transactionIndex] = {
+      ...registrant.transactions.merchandise[transactionIndex].toObject(),
+      ...updatedTransactionData,
+      refundDetails: {
+        ...updatedTransactionData.refundDetails,
+        refundStatus: hasRefund ? 'processed' : 'not_required',
+        refundProcessedDate: hasRefund ? new Date().toISOString() : null,
+        refundMethod: hasRefund ? 'omsiapawas_credit' : null,
+        refundReference: hasRefund ? `REFUND_${transactionId}_${Date.now()}` : null
+      }
+    };
+
+    // Process refund if there is one
+    let refundTransaction = null;
+    if (hasRefund && refundAmount > 0) {
+      // Add refund amount to registrant's credits
+      registrant.credits.omsiapawas.amount += refundAmount;
+
+      // Create refund transaction record
+      refundTransaction = {
+        id: `refund_${transactionId}_${Date.now()}`,
+        intent: 'product_rejection_refund',
+        statusesandlogs: {
+          status: 'completed',
+          indication: 'automatic_refund',
+          logs: [{
+            date: new Date().toISOString(),
+            type: 'refund_processed',
+            indication: 'product_rejection_refund',
+            messages: [{
+              message: `Refund processed for rejected/removed products from order ${transactionId}. Amount: ₱${refundAmount.toFixed(2)}`
+            }]
+          }]
+        },
+        details: {
+          paymentmethod: 'omsiapawas_credit',
+          thistransactionismadeby: updatedTransaction.system.thistransactionismadeby,
+          thistransactionismainlyintendedto: updatedTransaction.system.thistransactionismadeby,
+          amounts: {
+            intent: refundAmount,
+            phppurchaseorexchangeamount: refundAmount,
+            deductions: {
+              successfulprocessing: {
+                amount: 0,
+                reasons: 'No deduction for refund'
+              },
+              rejectionprocessing: {
+                amount: 0,
+                reasons: 'No deduction for refund'
+              }
+            },
+            profit: 0,
+            omsiapawasamounttorecieve: refundAmount
+          },
+          referrence: {
+            number: `REFUND_${transactionId}`,
+            gcashtransactionrecieptimage: ''
+          },
+          refundDetails: {
+            originalTransactionId: transactionId,
+            refundReason: 'Product rejection - items removed from order',
+            refundBreakdown: {
+              merchandiseRefund: updatedTransactionData.refundDetails.amounts.merchandiseRefund,
+              shippingRefund: updatedTransactionData.refundDetails.amounts.shippingRefund,
+              processingFeeRefund: updatedTransactionData.refundDetails.amounts.processingFeeRefund,
+              totalRefund: updatedTransactionData.refundDetails.amounts.totalRefund
+            }
+          }
+        }
+      };
+
+      // Add refund transaction to registrant's currency exchange transactions
+      registrant.credits.omsiapawas.transactions.currencyexchange.push(refundTransaction);
+
+      // Add refund processing log to the main transaction
+      const refundLog = {
+        date: new Date().toISOString(),
+        type: 'refund_processed',
+        indication: 'product_rejection_refund',
+        messages: [{
+          message: `Refund of ₱${refundAmount.toFixed(2)} processed automatically for rejected products. New credit balance: ₱${registrant.credits.omsiapawas.amount.toFixed(2)}`
+        }]
+      };
+
+      updatedTransaction.statusesandlogs.logs.push(refundLog);
+      registrant.transactions.merchandise[transactionIndex].statusesandlogs.logs.push(refundLog);
+    }
+
+    // Save the updated registrant
+    await registrant.save();
+
+    // Save the updated transaction
+    await updatedTransaction.save();
+
+    // Prepare response data
+    const responseData = {
+      transaction: updatedTransaction,
+      registrantUpdated: true,
+      refundProcessed: hasRefund,
+      refundAmount: refundAmount,
+      newCreditBalance: registrant.credits.omsiapawas.amount,
+      refundTransaction: refundTransaction,
+      refundDetails: updatedTransactionData.refundDetails
+    };
+
+    // Return success response
+    res.status(200).json({
+      success: true,
+      message: `Product rejection processed successfully${hasRefund ? ` with refund of ₱${refundAmount.toFixed(2)}` : ''}`,
+      data: responseData
+    });
+
+  } catch (error) {
+    console.error('Error processing product rejection:', error);
+    
+    // Handle specific mongoose validation errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: Object.values(error.errors).map(err => err.message)
+      });
+    }
+
+    // Handle mongoose cast errors (invalid ObjectId)
+    if (error.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid ID format'
+      });
+    }
+
+    // Generic server error
+    res.status(500).json({
+      success: false,
+      message: 'Internal server error',
+      error: process.env.NODE_ENV === 'development' ? error.message : 'Something went wrong'
     });
   }
 });
@@ -2223,4 +2645,463 @@ Router.post('/rejectmfatipregistrant', async (req, res) => {
   }
 });
 
-module.exports = Router;
+
+Router.post('/order-receive', async (req, res) => {
+
+  try {
+    
+    // Validate input
+    if (!req.body || !req.body.transactionId) {
+      return res.status(400).json({ error: "Transaction ID is required" });
+    }
+    
+    const { transactionId } = req.body;
+    
+    // Find the transaction in the MerchandiseTransaction collection
+    const transaction = await MerchandiseTransactionDataModel.findOne({ 
+      id: transactionId 
+    });
+    
+    if (!transaction) {
+      return res.status(404).json({ error: "Transaction not found" });
+    }
+
+    // Add this check after finding the transaction
+    if (transaction.statusesandlogs.status === 'completed') {
+      return res.status(400).json({ 
+        error: "Transaction already processed" 
+      });
+    }
+
+    // Find the current registrant (the one receiving the order)
+    let currentRegistrant;
+    const recipientId = transaction.system.thistransactionismadeby.id;
+    
+    try {
+      // Try to find by MongoDB ObjectID first
+      currentRegistrant = await RegistrantDataModel.findById(recipientId);
+    } catch (e) {
+      // If that fails, try as custom id field
+      currentRegistrant = await RegistrantDataModel.findOne({ id: recipientId });
+    }
+    
+    if (!currentRegistrant) {
+      return res.status(404).json({ error: "Recipient registrant not found" });
+    }
+
+    // Enhanced debugging
+    console.log('Current Registrant Details:');
+    console.log('- ID:', currentRegistrant._id);
+    console.log('- Custom ID:', currentRegistrant.id);
+    console.log('- Type:', currentRegistrant.registrationstatusesandlogs.type);
+    console.log('- Indication:', currentRegistrant.registrationstatusesandlogs.indication);
+
+    // Ensure credits structure exists
+    currentRegistrant = ensureCreditsStructure(currentRegistrant);
+
+    // Calculate total transaction giveaway from all merchandise
+    let totalTransactionGiveaway = 0;
+    
+    transaction.details.merchandise.list.forEach(product => {
+      // Use precise calculation - multiply giveaway by quantity
+      const productGiveaway = preciseMultiply(
+        product.details.price.transactiongiveaway, 
+        product.quantity
+      );
+      totalTransactionGiveaway = preciseAdd(totalTransactionGiveaway, productGiveaway);
+    });
+
+    if (totalTransactionGiveaway <= 0) {
+      return res.status(400).json({ 
+        error: "No transaction giveaway amount to distribute" 
+      });
+    }
+
+    // Calculate precise distribution amounts (60% to current user, 40% to distribute)
+    const currentUserAmount = preciseMultiply(totalTransactionGiveaway, 0.6);
+    const distributionPoolAmount = preciseSub(totalTransactionGiveaway, currentUserAmount);
+
+    // Update current registrant's credits (60% share)
+    currentRegistrant.credits.omsiapawas.amount = preciseAdd(
+      currentRegistrant.credits.omsiapawas.amount, 
+      currentUserAmount
+    );
+
+    // Add transaction record to current user's omsiapawas transfers
+    if (!currentRegistrant.credits.omsiapawas.transactions) {
+      currentRegistrant.credits.omsiapawas.transactions = {
+        currencyexchange: [],
+        widthdrawals: [],
+        omsiapawastransfer: []
+      };
+    }
+    
+    currentRegistrant.credits.omsiapawas.transactions.omsiapawastransfer.push({
+      id: generateTransactionId(),
+      type: 'giveaway_receive',
+      amount: currentUserAmount,
+      from: 'system',
+      transactionReference: transactionId,
+      date: new Date().toISOString(),
+      description: `Transaction giveaway - 60% share from order ${transactionId}`
+    });
+
+    // Save current registrant updates
+    await currentRegistrant.save();
+
+    // GET OR CREATE PENDING FUNDS
+    let pendingFunds = await PendingFundsDataModel.findOne();
+    if (!pendingFunds) {
+      pendingFunds = new PendingFundsDataModel({ amount: 0 });
+      await pendingFunds.save();
+    }
+
+    console.log('Pending Funds before distribution:', pendingFunds.amount);
+
+    // Calculate total amount available for distribution (40% + pending funds)
+    const totalDistributionAmount = preciseAdd(distributionPoolAmount, pendingFunds.amount);
+    
+    console.log('Distribution Pool (40%):', distributionPoolAmount);
+    console.log('Previous Pending Funds:', pendingFunds.amount);
+    console.log('Total Distribution Amount:', totalDistributionAmount);
+
+    // Determine distribution strategy based on current user type
+    let distributionQuery = {};
+    const currentUserType = currentRegistrant.registrationstatusesandlogs.type;
+
+    console.log('Distribution Query Setup:');
+    console.log('- Current User Type:', currentUserType);
+    console.log('- Current User _id:', currentRegistrant._id);
+
+    switch (currentUserType) {
+      case 'Month Financial Allocation To Individual People ( MFATIP )':
+        // MFATIP: distribute to all users (no type restriction)
+        distributionQuery = {
+          _id: { $ne: currentRegistrant._id } // Exclude current user
+        };
+        console.log('- Using MFATIP distribution query');
+        break;
+        
+      case 'public':
+        // Public: distribute to both public and private users
+        distributionQuery = {
+          _id: { $ne: currentRegistrant._id },
+          'registrationstatusesandlogs.type': { $in: ['public', 'private'] }
+        };
+        console.log('- Using public distribution query');
+        break;
+        
+      case 'private':
+        // Private: distribute only to private users
+        distributionQuery = {
+          _id: { $ne: currentRegistrant._id },
+          'registrationstatusesandlogs.type': 'private'
+        };
+        console.log('- Using private distribution query');
+        break;
+        
+      default:
+        // Default: distribute to all users with active indication
+        distributionQuery = {
+          _id: { $ne: currentRegistrant._id },
+          'registrationstatusesandlogs.indication': 'active'
+        };
+        console.log('- Using default distribution query');
+    }
+
+    console.log('Final Distribution Query:', JSON.stringify(distributionQuery, null, 2));
+
+    // Get eligible users for distribution
+    const eligibleUsers = await RegistrantDataModel.find(distributionQuery);
+    const eligibleUsersCount = eligibleUsers.length;
+
+    console.log('Eligible users found:', eligibleUsersCount);
+    
+    // Variables for UI notification
+    let isNegativeDistribution = false;
+    let newPendingFundsAmount = 0;
+    let amountPerUser = 0;
+    let distributionCount = 0;
+
+    if (eligibleUsersCount === 0) {
+      console.log("No eligible users found for distribution");
+      
+      // Since no users to distribute to, add the distribution amount to pending funds
+      newPendingFundsAmount = preciseAdd(pendingFunds.amount, distributionPoolAmount);
+      pendingFunds.amount = newPendingFundsAmount;
+      await pendingFunds.save();
+      
+      // Update transaction status and return
+      await updateTransactionStatus(transactionId, 'completed');
+      await updateUserTransactionStatus(currentRegistrant._id, transactionId, 'completed');
+      
+      return res.status(200).json({
+        success: true,
+        message: "Order received successfully - no users eligible for distribution",
+        transactionId: transactionId,
+        currentUserGiveaway: currentUserAmount,
+        distributionAmount: 0,
+        distributionCount: 0,
+        totalGiveaway: totalTransactionGiveaway,
+        pendingFundsNotification: {
+          isNegativeDistribution: false,
+          pendingFunds: newPendingFundsAmount,
+          transactionGiveaway: distributionPoolAmount,
+          totalEligibleUsers: 0
+        }
+      });
+    }
+
+    // Calculate amount per user using total distribution amount
+    amountPerUser = preciseDiv(totalDistributionAmount, eligibleUsersCount);
+    
+    console.log('Amount per user:', amountPerUser);
+
+    // Check if distribution amount per user is negative
+    if (amountPerUser < 0) {
+      isNegativeDistribution = true;
+      console.log('Negative distribution detected - storing as pending funds');
+      
+      // Store the negative amount as new pending funds
+      newPendingFundsAmount = totalDistributionAmount; // This will be negative
+      pendingFunds.amount = newPendingFundsAmount;
+      await pendingFunds.save();
+      
+      // Don't distribute negative amounts to users
+      amountPerUser = 0;
+    } else {
+      // Positive distribution - reset pending funds to 0
+      newPendingFundsAmount = 0;
+      pendingFunds.amount = 0;
+      await pendingFunds.save();
+      
+      // Distribute to eligible users
+      const distributionTransactionId = generateTransactionId();
+      
+      for (const user of eligibleUsers) {
+        try {
+          // Ensure credits structure exists for each user
+          const userWithCredits = ensureCreditsStructure(user);
+          
+          // Add amount to user's balance
+          userWithCredits.credits.omsiapawas.amount = preciseAdd(
+            userWithCredits.credits.omsiapawas.amount, 
+            amountPerUser
+          );
+
+          // Add transaction record
+          if (!userWithCredits.credits.omsiapawas.transactions) {
+            userWithCredits.credits.omsiapawas.transactions = {
+              currencyexchange: [],
+              widthdrawals: [],
+              omsiapawastransfer: []
+            };
+          }
+          
+          userWithCredits.credits.omsiapawas.transactions.omsiapawastransfer.push({
+            id: `${distributionTransactionId}_${distributionCount}`,
+            type: 'giveaway_distribution',
+            amount: amountPerUser,
+            from: 'system',
+            transactionReference: transactionId,
+            date: new Date().toISOString(),
+            description: `Transaction giveaway distribution - 40% pool share from order ${transactionId}${pendingFunds.amount !== 0 ? ' (including pending funds)' : ''}`
+          });
+
+          await userWithCredits.save();
+          distributionCount++;
+          
+        } catch (error) {
+          console.error(`Error updating user ${user.id}:`, error);
+          // Continue with other users even if one fails
+        }
+      }
+    }
+
+    // Update transaction status to completed
+    await updateTransactionStatus(transactionId, 'completed');
+    await updateUserTransactionStatus(currentRegistrant._id, transactionId, 'completed');
+
+    console.log(`Order receive processed successfully:`);
+    console.log(`- Transaction ID: ${transactionId}`);
+    console.log(`- Total giveaway: ${totalTransactionGiveaway}`);
+    console.log(`- Current user (60%): ${currentUserAmount}`);
+    console.log(`- Distribution pool (40%): ${distributionPoolAmount}`);
+    console.log(`- Previous pending funds: ${pendingFunds.amount}`);
+    console.log(`- Total distribution amount: ${totalDistributionAmount}`);
+    console.log(`- Amount per user: ${amountPerUser}`);
+    console.log(`- Users updated: ${distributionCount}`);
+    console.log(`- Is negative distribution: ${isNegativeDistribution}`);
+    console.log(`- New pending funds: ${newPendingFundsAmount}`);
+
+    return res.status(200).json({
+      success: true,
+      message: isNegativeDistribution ? 
+        "Order received - distribution was negative and stored as pending funds" :
+        "Order received and giveaways distributed successfully",
+      transactionId: transactionId,
+      currentUserGiveaway: currentUserAmount,
+      distributionAmount: amountPerUser,
+      distributionCount: distributionCount,
+      totalGiveaway: totalTransactionGiveaway,
+      pendingFundsNotification: {
+        isNegativeDistribution: isNegativeDistribution,
+        pendingFunds: newPendingFundsAmount,
+        transactionGiveaway: distributionPoolAmount,
+        totalEligibleUsers: eligibleUsersCount
+      }
+    });
+
+  } catch (error) {
+    console.error("Error processing order receive:", error);
+    return res.status(500).json({ 
+      error: "Failed to process order receive", 
+      details: error.message 
+    });
+  }
+});
+
+function ensureCreditsStructure(registrant) {
+  if (!registrant.credits) {
+    registrant.credits = {
+      omsiapawas: {
+        id: generateOmsiapawasId(),
+        amount: 0,
+        transactions: {
+          currencyexchange: [],
+          widthdrawals: [],
+          omsiapawastransfer: []
+        }
+      }
+    };
+  }
+  
+  if (!registrant.credits.omsiapawas) {
+    registrant.credits.omsiapawas = {
+      id: generateOmsiapawasId(),
+      amount: 0,
+      transactions: {
+        currencyexchange: [],
+        widthdrawals: [],
+        omsiapawastransfer: []
+      }
+    };
+  }
+  
+  if (!registrant.credits.omsiapawas.transactions) {
+    registrant.credits.omsiapawas.transactions = {
+      currencyexchange: [],
+      widthdrawals: [],
+      omsiapawastransfer: []
+    };
+  }
+  
+  return registrant;
+}
+
+// Helper function to update transaction status in user's transaction history
+async function updateUserTransactionStatus(userId, transactionId, status) {
+  try {
+    const indication = status === 'completed' ? 'success' : 'updated';
+    
+    // Create log entry for user's transaction
+    const logEntry = {
+      date: new Date().toISOString(),
+      type: 'status_update',
+      indication: status,
+      messages: [{
+        message: `Order ${status} - giveaways distributed`
+      }]
+    };
+
+    // Update the transaction in user's transactions.merchandise array
+    await RegistrantDataModel.updateOne(
+      { 
+        _id: userId,
+        'transactions.merchandise.id': transactionId 
+      },
+      { 
+        $set: {
+          'transactions.merchandise.$.statusesandlogs.status': status,
+          'transactions.merchandise.$.statusesandlogs.indication': indication,
+          'transactions.merchandise.$.statusesandlogs.date': new Date().toISOString()
+        },
+        $push: { 
+          'transactions.merchandise.$.statusesandlogs.logs': logEntry 
+        }
+      }
+    );
+    
+    console.log(`Updated transaction ${transactionId} status to ${status} in user ${userId} transaction history`);
+    
+  } catch (error) {
+    console.error('Error updating user transaction status:', error);
+  }
+}
+
+// Helper function to update transaction status
+async function updateTransactionStatus(transactionId, status) {
+  try {
+    const updateData = {
+      'statusesandlogs.status': status,
+      'statusesandlogs.indication': status === 'completed' ? 'success' : 'updated',
+      'statusesandlogs.date': new Date().toISOString()
+    };
+    
+    // Add log entry
+    const logEntry = {
+      date: new Date().toISOString(),
+      type: 'status_update',
+      indication: status,
+      messages: [{
+        message: `Order ${status} - giveaways distributed`
+      }]
+    };
+    
+    await MerchandiseTransactionDataModel.updateOne(
+      { id: transactionId },
+      { 
+        $set: updateData,
+        $push: { 'statusesandlogs.logs': logEntry }
+      }
+    );
+    
+  } catch (error) {
+    console.error('Error updating transaction status:', error);
+  }
+}
+
+// Precise arithmetic functions to avoid floating point errors
+function preciseAdd(a, b) {
+  const factor = 100; // Work with cents
+  return Math.round(a * factor + b * factor) / factor;
+}
+
+function preciseSub(a, b) {
+  const factor = 100; // Work with cents
+  return Math.round(a * factor - b * factor) / factor;
+}
+
+function preciseMultiply(a, b) {
+  const factor = 100; // Work with cents
+  return Math.round(a * factor * b) / factor;
+}
+
+function preciseDiv(a, b) {
+  if (b === 0) return 0;
+  const factor = 100; // Work with cents
+  return Math.round((a * factor) / b) / factor;
+}
+
+// Helper function to generate transaction ID
+function generateTransactionId() {
+  return 'TXN_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Helper function to generate omsiapawas ID
+function generateOmsiapawasId() {
+  return 'OMS_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// Export the router
+module.exports = Router ;

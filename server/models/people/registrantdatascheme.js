@@ -195,6 +195,9 @@ type: 'string'
 _id: {
   type: "string"
 },
+date: {
+ type: String
+},
 intent: {
 type: 'string'
 },
