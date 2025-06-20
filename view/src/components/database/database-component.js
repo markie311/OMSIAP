@@ -7022,7 +7022,7 @@ const CurrencyExchangeAcceptButton = ({ order, onAccept }) => {
   const handleAccept = async () => {
     setIsLoading(true);
     try {
-      await onAccept(order._id);
+      await onAccept(order._id, order.id);
     } catch (error) {
       console.error('Error accepting order:', error);
     } finally {
@@ -7465,7 +7465,7 @@ const PendingCurrencyExchange = ({
     }, 300);
   };
 
-  const handleAcceptCurrencyExchange = async (id) => {
+  const handleAcceptCurrencyExchange = async (_id, id) => {
     try {
       // Initialize status message
       showStatusMessage("Processing request...");
@@ -7476,7 +7476,7 @@ const PendingCurrencyExchange = ({
       setAnimateRow(id);
       
       // Make API call to accept the currency exchange
-      const response = await axiosCreatedInstance.post("/omsiap/acceptcurrencyexchange/accept", { id });
+      const response = await axiosCreatedInstance.post("/omsiap/acceptcurrencyexchange/accept", { _id, id });
       
       // Handle different response statuses
       switch(response.data.status) {
@@ -8463,7 +8463,7 @@ const CurrencyExchangeApprovalModal = ({
   const recipientFullName = `${recipient.name.firstname} ${recipient.name.middlename} ${recipient.name.lastname}`;
 
   // Enhanced handleApprove function with proper error handling
-  const handleApprove = async (_id) => {
+  const handleApprove = async (_id, id) => {
     // Validate inputs
     if (!currencyexchangeapprovalphpamountvalidationfield || 
         !currencyexchangeapprovalomsiapamounttorecievevalidationfield || 
@@ -8478,7 +8478,8 @@ const CurrencyExchangeApprovalModal = ({
     try {
       // Prepare data for API request
       const approvalData = {
-        id: _id, // Use _id as it appears to be the MongoDB document ID
+        _id: _id, // Use _id as it appears to be the MongoDB document ID
+        id: id,
         phpAmountVerification: Number(currencyexchangeapprovalphpamountvalidationfield),
         omsiapAmountVerification: Number(currencyexchangeapprovalomsiapamounttorecievevalidationfield),
         successfulDeductionAmount: Number(successfulDeductionField),
@@ -8787,7 +8788,7 @@ const CurrencyExchangeApprovalModal = ({
                 </button>
                 <button 
                   className="ce-approve-button"
-                  onClick={()=> handleApprove(currencyexchangeapprovaltransactiondata._id)}
+                  onClick={()=> handleApprove(currencyexchangeapprovaltransactiondata._id, currencyexchangeapprovaltransactiondata.id)}
                 >
                   Approve
                 </button>

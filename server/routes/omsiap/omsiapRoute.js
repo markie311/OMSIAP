@@ -1138,6 +1138,7 @@ Router.post('/withdrawals/cleanup', async (req, res) => {
 
 // Currency Exchange Route
 Router.post('/currencyexchange', multerInstances.currencyExchange.single('transactionImage'), async (req, res) => {
+
   try {
     // Get request data
     const {
@@ -1283,7 +1284,7 @@ Router.post('/currencyexchange', multerInstances.currencyExchange.single('transa
       details: {
         paymentmethod: 'GCASH',
         thistransactionismadeby: {
-          id: userDataObj.id,
+          id: userDataObj._id,
           name: {
             firstname: userDataObj.name.firstname,
             middlename: userDataObj.name.middlename || '',
@@ -1305,7 +1306,7 @@ Router.post('/currencyexchange', multerInstances.currencyExchange.single('transa
           }
         },
         thistransactionismainlyintendedto: {
-          id: 'system',
+          id: userDataObj._id,
           name: {
             firstname: 'OMSIAP',
             middlename: '',
@@ -1403,6 +1404,7 @@ Router.post('/currencyexchange', multerInstances.currencyExchange.single('transa
 Router.post('/approvecurrencyexchange', async (req, res) => {
   try {
     const {
+      _id,
       id,
       phpAmountVerification,
       omsiapAmountVerification,
@@ -1411,7 +1413,7 @@ Router.post('/approvecurrencyexchange', async (req, res) => {
     } = req.body;
 
     // Validate request data
-    if (!id) {
+    if (!_id && !id) {
       return res.status(400).json({ success: false, message: 'Transaction ID is required' });
     }
 
@@ -1419,20 +1421,145 @@ Router.post('/approvecurrencyexchange', async (req, res) => {
       return res.status(400).json({ success: false, message: 'All verification amounts are required' });
     }
 
-    // Find the transaction
-    const transaction = await CurrencyExchangeTransactionDataModel.findOne({ _id: id });
-    
+    // Use _id if provided, otherwise use id
+    const transactionId = _id || id;
+
+    // Find the transaction in the main collection
+    const transaction = await CurrencyExchangeTransactionDataModel.findOne({ _id: transactionId });
+        
     // Check if transaction exists
     if (!transaction) {
       return res.status(404).json({ success: false, message: 'Transaction not found' });
     }
 
     // Check if transaction is already approved
-    if (transaction.statusesandlogs.status === 'approved') {
+    if (transaction.statusesandlogs.status === 'approved' || transaction.statusesandlogs.status === 'successful') {
       return res.status(409).json({ success: false, message: 'Transaction has already been approved' });
     }
+
+    // Get the recipient's ID from the transaction
+    let recipientId = null;
     
-    // Update transaction status and details
+    console.log('=== RECIPIENT ID EXTRACTION DEBUG ===');
+    console.log('Transaction ID:', transaction.id);
+    console.log('Full transaction object keys:', Object.keys(transaction));
+    
+    // Try different possible paths based on your schema
+    if (transaction.details?.thistransactionismainlyintendedto?.id) {
+      recipientId = transaction.details.thistransactionismainlyintendedto.id;
+      console.log('Found recipient ID in details.thistransactionismainlyintendedto.id:', recipientId);
+    } else if (transaction.system?.thistransactionismainlyintendedto?.id) {
+      recipientId = transaction.system.thistransactionismainlyintendedto.id;
+      console.log('Found recipient ID in system.thistransactionismainlyintendedto.id:', recipientId);
+    } else if (transaction.details?.system?.thistransactionismainlyintendedto?.id) {
+      recipientId = transaction.details.system.thistransactionismainlyintendedto.id;
+      console.log('Found recipient ID in details.system.thistransactionismainlyintendedto.id:', recipientId);
+    } else {
+      // Recursive search for user ID
+      const findUserIdInObject = (obj, path = '') => {
+        if (!obj || typeof obj !== 'object') return null;
+        
+        for (const [key, value] of Object.entries(obj)) {
+          const currentPath = path ? `${path}.${key}` : key;
+          
+          if (key === 'id' && typeof value === 'string' && value !== 'system' && value.length > 3) {
+            console.log(`Potential user ID found at ${currentPath}:`, value);
+            return value;
+          }
+          
+          if (typeof value === 'object' && value !== null) {
+            const result = findUserIdInObject(value, currentPath);
+            if (result) return result;
+          }
+        }
+        return null;
+      };
+      
+      recipientId = findUserIdInObject(transaction);
+      console.log('Recursive search result:', recipientId);
+    }
+    
+    if (!recipientId || recipientId === 'system') {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Valid recipient ID not found in transaction',
+        debug: {
+          transactionKeys: Object.keys(transaction),
+          detailsKeys: Object.keys(transaction.details || {}),
+          extractedId: recipientId
+        }
+      });
+    }
+
+    // Find the registrant
+    console.log('=== REGISTRANT SEARCH DEBUG ===');
+    console.log('Searching for registrant with ID:', recipientId);
+    
+    let registrant = await RegistrantDataModel.findOne({ id: recipientId });
+    
+    if (!registrant && /^[0-9a-fA-F]{24}$/.test(recipientId)) {
+      console.log('Trying with _id field (ObjectId format detected)...');
+      try {
+        registrant = await RegistrantDataModel.findById(recipientId);
+      } catch (err) {
+        console.log('ObjectId search failed:', err.message);
+      }
+    }
+    
+    if (!registrant) {
+      // Try to find registrant by transaction reference
+      registrant = await RegistrantDataModel.findOne({
+        'credits.omsiapawas.transactions.currencyexchange.id': transaction.id
+      });
+      
+      if (registrant) {
+        console.log('Found registrant by transaction reference:', registrant.id);
+        recipientId = registrant.id; // Update recipientId to match found registrant
+      }
+    }
+    
+    if (!registrant) {
+      const sampleRegistrants = await RegistrantDataModel.find({}).limit(3).select('id _id name');
+      return res.status(404).json({ 
+        success: false, 
+        message: `Recipient registrant not found with ID: ${recipientId}`,
+        debug: {
+          searchedId: recipientId,
+          transactionId: transaction.id,
+          sampleRegistrantIds: sampleRegistrants.map(r => ({ id: r.id, _id: r._id }))
+        }
+      });
+    }
+
+    console.log('=== TRANSACTION VERIFICATION DEBUG ===');
+    console.log('Found registrant ID:', registrant.id);
+    console.log('Looking for transaction ID in registrant:', transaction.id);
+    
+    // Find the transaction index in registrant's records
+    const currencyExchangeTransactions = registrant.credits?.omsiapawas?.transactions?.currencyexchange || [];
+    console.log('Total currency exchange transactions for registrant:', currencyExchangeTransactions.length);
+    
+    const transactionIndex = currencyExchangeTransactions.findIndex(tx => tx.id === transaction.id);
+    console.log('Transaction index found:', transactionIndex);
+    
+    if (transactionIndex === -1) {
+      // Log all transaction IDs for debugging
+      const existingTxIds = currencyExchangeTransactions.map(tx => tx.id);
+      console.log('Existing transaction IDs in registrant:', existingTxIds);
+      
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found in registrant\'s currency exchange records',
+        debug: {
+          searchedTransactionId: transaction.id,
+          registrantId: registrant.id,
+          existingTransactionIds: existingTxIds,
+          totalTransactions: currencyExchangeTransactions.length
+        }
+      });
+    }
+
+    // Create new status log
     const newStatusLog = {
       date: timestamps.getFormattedDate(),
       type: 'approval',
@@ -1440,52 +1567,157 @@ Router.post('/approvecurrencyexchange', async (req, res) => {
       messages: [{ message: 'Transaction approved by administrator' }]
     };
 
-    // Update the transaction
-    const updatedTransaction = await CurrencyExchangeTransactionDataModel.findByIdAndUpdate(
-      id,
-      {
-        $set: {
-          'statusesandlogs.status': 'successful',
-          'statusesandlogs.indication': 'The currency exchange has been approved and converted the sent PHP currency into OMSIAPAWASTO',
-          'details.amounts.deductions.successfulprocessing.amount': successfulDeductionAmount,
-          'details.amounts.deductions.rejectionprocessing.amount': rejectedDeductionAmount || 0,
-          'details.amounts.phppurchaseorexchangeamount': phpAmountVerification,
-          'details.amounts.omsiapawasamounttorecieve': omsiapAmountVerification
-        },
-        $push: {
-          'statusesandlogs.logs': newStatusLog
-        }
-      },
-      { new: true }
-    );
+    // Start a session for transaction consistency
+    const session = await mongoose.startSession();
+    
+    try {
+      await session.withTransaction(async () => {
+        console.log('=== STARTING DATABASE UPDATES ===');
+        
+        // Update the main transaction collection
+        console.log('Updating main transaction with ID:', transactionId);
+        const updatedTransaction = await CurrencyExchangeTransactionDataModel.findByIdAndUpdate(
+          transactionId,
+          {
+            $set: {
+              'statusesandlogs.status': 'successful',
+              'statusesandlogs.indication': 'The currency exchange has been approved and converted the sent PHP currency into OMSIAPAWASTO',
+              'details.amounts.deductions.successfulprocessing.amount': successfulDeductionAmount,
+              'details.amounts.deductions.successfulprocessing.reasons': 'Approved by administrator',
+              'details.amounts.deductions.rejectionprocessing.amount': rejectedDeductionAmount || 0,
+              'details.amounts.phppurchaseorexchangeamount': phpAmountVerification,
+              'details.amounts.omsiapawasamounttorecieve': omsiapAmountVerification
+            },
+            $push: {
+              'statusesandlogs.logs': newStatusLog
+            }
+          },
+          { new: true, session }
+        );
 
-    if (!updatedTransaction) {
-      return res.status(500).json({ success: false, message: 'Failed to update transaction' });
+        if (!updatedTransaction) {
+          throw new Error('Failed to update main transaction');
+        }
+        console.log('Main transaction updated successfully');
+
+        // Update the registrant's transaction
+        console.log('Updating registrant transaction...');
+        console.log('Registrant ID:', registrant.id);
+        console.log('Transaction ID:', transaction.id);
+        console.log('Transaction Index:', transactionIndex);
+        
+        // First, let's verify the registrant and transaction exist before update
+        const preUpdateCheck = await RegistrantDataModel.findOne(
+          { 
+            id: registrant.id,
+            'credits.omsiapawas.transactions.currencyexchange.id': transaction.id
+          },
+          { 'credits.omsiapawas.transactions.currencyexchange.$': 1 },
+          { session }
+        );
+        
+        console.log('Pre-update check result:', preUpdateCheck ? 'Found' : 'Not found');
+        
+        if (!preUpdateCheck) {
+          throw new Error(`Cannot find registrant ${registrant.id} with transaction ${transaction.id} for update`);
+        }
+
+        // Perform the registrant update using the confirmed data
+        const updateQuery = {
+          id: registrant.id,
+          'credits.omsiapawas.transactions.currencyexchange.id': transaction.id
+        };
+        
+        const updateDoc = {
+          $set: {
+            [`credits.omsiapawas.transactions.currencyexchange.${transactionIndex}.statusesandlogs.status`]: 'successful',
+            [`credits.omsiapawas.transactions.currencyexchange.${transactionIndex}.statusesandlogs.indication`]: 'The currency exchange has been approved and converted the sent PHP currency into OMSIAPAWASTO',
+            [`credits.omsiapawas.transactions.currencyexchange.${transactionIndex}.details.amounts.deductions.successfulprocessing.amount`]: successfulDeductionAmount,
+            [`credits.omsiapawas.transactions.currencyexchange.${transactionIndex}.details.amounts.deductions.successfulprocessing.reasons`]: 'Approved by administrator',
+            [`credits.omsiapawas.transactions.currencyexchange.${transactionIndex}.details.amounts.deductions.rejectionprocessing.amount`]: rejectedDeductionAmount || 0,
+            [`credits.omsiapawas.transactions.currencyexchange.${transactionIndex}.details.amounts.phppurchaseorexchangeamount`]: phpAmountVerification,
+            [`credits.omsiapawas.transactions.currencyexchange.${transactionIndex}.details.amounts.omsiapawasamounttorecieve`]: omsiapAmountVerification
+          },
+          $push: {
+            [`credits.omsiapawas.transactions.currencyexchange.${transactionIndex}.statusesandlogs.logs`]: newStatusLog
+          },
+          $inc: {
+            'credits.omsiapawas.amount': omsiapAmountVerification
+          }
+        };
+        
+        console.log('Update query:', JSON.stringify(updateQuery, null, 2));
+        console.log('Update document keys:', Object.keys(updateDoc.$set));
+        
+        const updateResult = await RegistrantDataModel.updateOne(
+          updateQuery,
+          updateDoc,
+          { session }
+        );
+
+        console.log('Update result:', {
+          acknowledged: updateResult.acknowledged,
+          matchedCount: updateResult.matchedCount,
+          modifiedCount: updateResult.modifiedCount,
+          upsertedCount: updateResult.upsertedCount
+        });
+
+        if (updateResult.matchedCount === 0) {
+          throw new Error(`No registrant found matching query. Registrant ID: ${registrant.id}, Transaction ID: ${transaction.id}`);
+        }
+
+        if (updateResult.modifiedCount === 0) {
+          throw new Error(`Registrant document was matched but not modified. This might indicate the transaction is already in the target state.`);
+        }
+        
+        console.log('Registrant transaction updated successfully');
+      });
+
+      // Return success response
+      return res.status(200).json({
+        success: true,
+        message: 'Currency exchange transaction approved successfully',
+        approvedAt: timestamps.getFormattedDate(),
+        transaction: {
+          id: transactionId,
+          status: 'successful',
+          omsiapAmountAdded: omsiapAmountVerification,
+          recipientId: recipientId
+        }
+      });
+
+    } catch (transactionError) {
+      console.error('=== TRANSACTION ERROR ===');
+      console.error('Error details:', transactionError);
+      console.error('Error message:', transactionError.message);
+      console.error('Error stack:', transactionError.stack);
+      
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to complete approval process: ' + transactionError.message,
+        debug: {
+          errorType: transactionError.constructor.name,
+          registrantId: recipientId,
+          transactionId: transactionId
+        }
+      });
+    } finally {
+      await session.endSession();
     }
 
-    // Return success response with formatted date
-    return res.status(200).json({
-      success: true,
-      message: 'Currency exchange transaction approved successfully',
-      approvedAt: timestamps.getFormattedDate(),
-      transaction: {
-        id: updatedTransaction._id,
-        status: updatedTransaction.statusesandlogs.status,
-        indication: updatedTransaction.statusesandlogs.indication
-      }
-    });
   } catch (error) {
+    console.error('=== GENERAL ERROR ===');
     console.error('Error approving currency exchange:', error);
-    
+        
     // Handle specific error types
     if (error instanceof mongoose.Error.CastError) {
       return res.status(400).json({ success: false, message: 'Invalid transaction ID format' });
     }
-    
+        
     if (error instanceof mongoose.Error.ValidationError) {
       return res.status(400).json({ success: false, message: 'Validation error', errors: error.errors });
     }
-    
+        
     return res.status(500).json({ success: false, message: 'Server error while processing approval' });
   }
 });

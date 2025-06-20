@@ -551,6 +551,7 @@ const UserAccount = (props) => {
   }
 
   const handleExchangeSubmit = async (e) => {
+
     e.preventDefault()
 
     // Get response message element and reset it
