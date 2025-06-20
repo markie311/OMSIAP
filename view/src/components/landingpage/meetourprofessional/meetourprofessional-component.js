@@ -6,11 +6,11 @@ const professionals = [
   {
     id: 1,
     name: "Mark Anthony Beloy",
-    position: "Owner",
+    position: "HEAD SOFTWARE ENGINEER",
     image: "../images/landingpage/meetourprofessionals/tuxedo.jpg",
-    bio: "Mark is the founder of OMSIAP with over 15 years of industry experience. He specializes in strategic planning and business development.",
-    education: "MBA, Harvard Business School",
-    contact: "mark@omsiap.com"
+    bio: "Mark is the head software engineer of OMSIAP with over 5 years of industry experience. He specializes in strategic planning and business development.",
+    education: "Mapua Malayan Colleges Mindanao",
+    contact: "markiebeloy@gmail.com"
   },
   {
     id: 2,

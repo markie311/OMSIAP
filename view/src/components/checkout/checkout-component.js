@@ -23,58 +23,99 @@ import {
   FaTag,
   FaWeight,
   FaInfoCircle,
+  FaCalculator,
+  FaReceipt,
 } from "react-icons/fa"
 
-// Move decimal precision utility outside the component to prevent recreation on each render
-const decimalPrecision = {
-  // Convert a number to a precise decimal string representation
-  toDecimal: (num, precision = 10) => {
-    return Number(Number.parseFloat(num).toFixed(precision))
+// Enhanced decimal precision utility with no rounding for display
+const preciseCalculator = {
+  // Convert number to precise decimal representation with specified precision
+  toPreciseDecimal: (num, precision = 12) => {
+    if (typeof num !== "number" || isNaN(num)) return 0
+    // Use parseFloat to handle string inputs, then multiply/divide to maintain precision
+    const factor = Math.pow(10, precision)
+    return Math.round(Number.parseFloat(num) * factor) / factor
   },
 
-  // Add two numbers with precise decimal handling
-  add: (a, b) => {
-    // Convert to strings to determine decimal places
-    const aStr = a.toString()
-    const bStr = b.toString()
+  // Add two numbers with maximum precision
+  add: (...numbers) => {
+    return numbers.reduce((sum, num) => {
+      const a = Number.parseFloat(sum) || 0
+      const b = Number.parseFloat(num) || 0
 
-    // Determine decimal places
+      // Convert to strings to find decimal places
+      const aStr = a.toString()
+      const bStr = b.toString()
+
+      const aDecimals = aStr.includes(".") ? aStr.split(".")[1].length : 0
+      const bDecimals = bStr.includes(".") ? bStr.split(".")[1].length : 0
+      const maxDecimals = Math.max(aDecimals, bDecimals, 2) // Minimum 2 for currency
+
+      const multiplier = Math.pow(10, maxDecimals)
+      return (Math.round(a * multiplier) + Math.round(b * multiplier)) / multiplier
+    }, 0)
+  },
+
+  // Subtract two numbers with precision
+  subtract: (a, b) => {
+    const numA = Number.parseFloat(a) || 0
+    const numB = Number.parseFloat(b) || 0
+
+    const aStr = numA.toString()
+    const bStr = numB.toString()
+
     const aDecimals = aStr.includes(".") ? aStr.split(".")[1].length : 0
     const bDecimals = bStr.includes(".") ? bStr.split(".")[1].length : 0
-    const maxDecimals = Math.max(aDecimals, bDecimals)
+    const maxDecimals = Math.max(aDecimals, bDecimals, 2)
 
-    // Use a multiplier based on the maximum decimal places
     const multiplier = Math.pow(10, maxDecimals)
-
-    // Convert to integers, perform addition, then convert back
-    const result = (Math.round(a * multiplier) + Math.round(b * multiplier)) / multiplier
-    return result
+    return (Math.round(numA * multiplier) - Math.round(numB * multiplier)) / multiplier
   },
 
-  // Multiply two numbers with precise decimal handling
+  // Multiply two numbers with precision
   multiply: (a, b) => {
-    // Convert to strings
-    const aStr = a.toString()
-    const bStr = b.toString()
+    const numA = Number.parseFloat(a) || 0
+    const numB = Number.parseFloat(b) || 0
 
-    // Determine decimal places
+    if (numA === 0 || numB === 0) return 0
+
+    const aStr = numA.toString()
+    const bStr = numB.toString()
+
     const aDecimals = aStr.includes(".") ? aStr.split(".")[1].length : 0
     const bDecimals = bStr.includes(".") ? bStr.split(".")[1].length : 0
-
-    // Calculate combined decimal places
     const totalDecimals = aDecimals + bDecimals
 
-    // Remove decimal points, multiply as integers, then adjust the result
+    // Remove decimal points and multiply as integers
     const aInt = Number.parseInt(aStr.replace(".", ""))
     const bInt = Number.parseInt(bStr.replace(".", ""))
 
-    const result = (aInt * bInt) / Math.pow(10, totalDecimals)
-    return result
+    return (aInt * bInt) / Math.pow(10, totalDecimals)
   },
 
-  // Format currency to 2 decimal places correctly
-  formatCurrency: (amount) => {
-    return Number.parseFloat(amount.toFixed(2))
+  // Divide two numbers with precision
+  divide: (a, b) => {
+    const numA = Number.parseFloat(a) || 0
+    const numB = Number.parseFloat(b) || 1
+
+    if (numB === 0) return 0
+
+    return preciseCalculator.toPreciseDecimal(numA / numB, 6)
+  },
+
+  // Format for currency display without rounding
+  formatCurrency: (amount, showSymbol = true) => {
+    const num = Number.parseFloat(amount) || 0
+    const formatted = num.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 6, // Show up to 6 decimal places for precision
+    })
+    return showSymbol ? `₱${formatted}` : formatted
+  },
+
+  // Get exact decimal representation
+  getExactValue: (amount) => {
+    return Number.parseFloat(amount) || 0
   },
 }
 
@@ -89,22 +130,22 @@ const CheckoutPage = (props) => {
     return data
   }, [location.state])
 
-  // Form data for personal and shipping information with corrected schema field names
+  // Form data for personal and shipping information
   const [formData, setFormData] = useState({
     firstName: "",
     middleName: "",
     lastName: "",
     phoneNumber: "",
-    street: "", // Matches schema
-    trademark: "", // Matches schema
-    baranggay: "", // Updated from barangay to baranggay to match schema
-    city: "", // Matches schema
-    province: "", // Matches schema
-    zipCode: "", // Note: schema uses zipcode (lowercase) in shippinginfo
-    country: "", // Matches schema
+    street: "",
+    trademark: "",
+    baranggay: "",
+    city: "",
+    province: "",
+    zipCode: "",
+    country: "",
   })
 
-  // Order summary state that will be calculated from orderData
+  // Enhanced order summary state with precise calculations
   const [orderSummary, setOrderSummary] = useState({
     merchandiseTotal: 0,
     shippingTotal: 0,
@@ -118,13 +159,24 @@ const CheckoutPage = (props) => {
     totalSpecifications: 0,
     totalWeightGrams: 0,
     totalWeightKilos: 0,
-    total: 0,
+    subtotal: 0, // Merchandise + Shipping
+    taxAmount: 0,
+    discountAmount: 0,
+    finalTotal: 0,
+    // Precise calculation breakdown
+    calculationBreakdown: {
+      itemCalculations: [],
+      feeCalculations: [],
+      totalCalculations: [],
+    },
   })
 
-  // Payment details using OMSIAPAWASTO currency
+  // Enhanced payment details
   const [paymentDetails, setPaymentDetails] = useState({
-    omsiapawastoBalance: 5000, // Example balance
+    omsiapawastoBalance: 5000.123456, // Example balance with decimals
     selectedPaymentMethod: "omsiapawasto",
+    balanceAfterPayment: 0,
+    transactionFee: 0,
   })
 
   // Animation states
@@ -132,7 +184,6 @@ const CheckoutPage = (props) => {
   const [formSubmitted, setFormSubmitted] = useState(false)
 
   useEffect(() => {
-    // Trigger animations after component mount
     setTimeout(() => {
       setShowSummary(true)
     }, 300)
@@ -144,7 +195,6 @@ const CheckoutPage = (props) => {
       return fallbackUrl
     }
 
-    // Handle both string URLs and objects with url property
     const firstImage = imageArray[0]
     if (typeof firstImage === "string") {
       return firstImage
@@ -155,34 +205,27 @@ const CheckoutPage = (props) => {
     return fallbackUrl
   }
 
-  // NEW: Convert new cart structure to flat array for database compatibility
+  // Convert new cart structure to flat array for database compatibility
   const convertCartToFlatStructure = (cartItems) => {
     const flatItems = []
 
     cartItems.forEach((mainProduct) => {
       mainProduct.specifications.forEach((spec) => {
-        // Create a flat item structure that matches the original database schema
         const flatItem = {
-          // Keep the specification data as the main item data
           ...spec.data,
-          // Override quantity with the cart quantity
           quantity: spec.quantity,
-          // Add reference to main product
           mainProductId: mainProduct.mainProductId,
           mainProductName: mainProduct.productName,
-          // Keep specification-specific data
           specificationId: spec.id,
           specificationName: spec.name,
-          // Ensure price structure is correct
           details: {
             ...spec.data.details,
             price: {
               ...spec.data.details.price,
-              amount: spec.price, // Use the cart price
+              amount: spec.price,
             },
           },
         }
-
         flatItems.push(flatItem)
       })
     })
@@ -191,66 +234,120 @@ const CheckoutPage = (props) => {
     return flatItems
   }
 
+  // Enhanced calculation with precise arithmetic
   const calculatedSummary = useMemo(() => {
     if (orderData && orderData.cartItems && orderData.cartItems.length > 0) {
-      // Get values from paymentBreakdown if available, otherwise fallback to cartStats
-      const subtotal = orderData.paymentBreakdown?.subtotal || orderData.cartStats?.subtotal || 0
-      const shippingTotal = orderData.paymentBreakdown?.shipping || orderData.cartStats?.shippingCost || 0
-      const paymentProcessingFee =
-        orderData.paymentBreakdown?.paymentProcessingFee || orderData.cartStats?.paymentProcessingFee || 0
-      const total = orderData.paymentBreakdown?.total || orderData.cartStats?.total || 0
+      // Initialize calculation breakdown
+      const calculationBreakdown = {
+        itemCalculations: [],
+        feeCalculations: [],
+        totalCalculations: [],
+      }
 
-      const totalWeightGrams = orderData.cartStats?.totalWeightGrams || 0
-      const totalWeightKilos = orderData.cartStats?.totalWeightKilos || 0
-      const totalItems = orderData.cartStats?.totalItems || 0
+      // Get base values with precise handling
+      const baseMerchandiseTotal = preciseCalculator.toPreciseDecimal(
+        orderData.paymentBreakdown?.subtotal || orderData.cartStats?.subtotal || 0,
+      )
+      const baseShippingTotal = preciseCalculator.toPreciseDecimal(
+        orderData.paymentBreakdown?.shipping || orderData.cartStats?.shippingCost || 0,
+      )
+      const basePaymentProcessingFee = preciseCalculator.toPreciseDecimal(
+        orderData.paymentBreakdown?.paymentProcessingFee || orderData.cartStats?.paymentProcessingFee || 0,
+      )
 
-      // Initialize other totals that may not be in cartStats
-      let totalTransactionGiveaway = 0
-      let totalOmsiaProfit = 0
-      let totalCapital = 0
+      const totalWeightGrams = preciseCalculator.toPreciseDecimal(orderData.cartStats?.totalWeightGrams || 0)
+      const totalWeightKilos = preciseCalculator.toPreciseDecimal(orderData.cartStats?.totalWeightKilos || 0)
+      const totalItems = Number.parseInt(orderData.cartStats?.totalItems || 0)
+
+      // Initialize precise totals
+      let preciseTotalTransactionGiveaway = 0
+      let preciseTotalOmsiaProfit = 0
+      let preciseTotalCapital = 0
       let totalMainProducts = 0
       let totalSpecifications = 0
 
-      // Process the new cart structure (main products with specifications)
+      // Process cart items with precise calculations
       orderData.cartItems.forEach((mainProduct) => {
         totalMainProducts++
 
         mainProduct.specifications.forEach((spec) => {
           totalSpecifications++
-          const quantity = spec.quantity || 1
+          const quantity = Number.parseInt(spec.quantity) || 1
+          const itemPrice = preciseCalculator.toPreciseDecimal(spec.price || 0)
 
-          // Extract values from the specification's data structure
-          const itemTransactionGiveaway = spec.data?.details?.price?.transactiongiveaway || 0
-          const itemProfit = spec.data?.details?.price?.profit || 0
-          const itemCapital = spec.data?.details?.price?.capital || 0
+          // Extract precise values from specification data
+          const itemTransactionGiveaway = preciseCalculator.toPreciseDecimal(
+            spec.data?.details?.price?.transactiongiveaway || 0,
+          )
+          const itemProfit = preciseCalculator.toPreciseDecimal(spec.data?.details?.price?.profit || 0)
+          const itemCapital = preciseCalculator.toPreciseDecimal(spec.data?.details?.price?.capital || 0)
 
-          // Multiply values by quantity using precise decimal multiplication
-          const totalItemTransactionGiveaway = decimalPrecision.multiply(itemTransactionGiveaway, quantity)
-          const totalItemOmsiaProfit = decimalPrecision.multiply(itemProfit, quantity)
-          const totalItemCapital = decimalPrecision.multiply(itemCapital, quantity)
+          // Calculate totals with precise multiplication
+          const totalItemTransactionGiveaway = preciseCalculator.multiply(itemTransactionGiveaway, quantity)
+          const totalItemOmsiaProfit = preciseCalculator.multiply(itemProfit, quantity)
+          const totalItemCapital = preciseCalculator.multiply(itemCapital, quantity)
+          const totalItemPrice = preciseCalculator.multiply(itemPrice, quantity)
 
-          // Add to running totals using precise decimal addition
-          totalTransactionGiveaway = decimalPrecision.add(totalTransactionGiveaway, totalItemTransactionGiveaway)
-          totalOmsiaProfit = decimalPrecision.add(totalOmsiaProfit, totalItemOmsiaProfit)
-          totalCapital = decimalPrecision.add(totalCapital, totalItemCapital)
+          // Add to running totals with precise addition
+          preciseTotalTransactionGiveaway = preciseCalculator.add(
+            preciseTotalTransactionGiveaway,
+            totalItemTransactionGiveaway,
+          )
+          preciseTotalOmsiaProfit = preciseCalculator.add(preciseTotalOmsiaProfit, totalItemOmsiaProfit)
+          preciseTotalCapital = preciseCalculator.add(preciseTotalCapital, totalItemCapital)
+
+          // Store item calculation for breakdown
+          calculationBreakdown.itemCalculations.push({
+            name: spec.name,
+            unitPrice: itemPrice,
+            quantity: quantity,
+            totalPrice: totalItemPrice,
+            transactionGiveaway: totalItemTransactionGiveaway,
+            profit: totalItemOmsiaProfit,
+            capital: totalItemCapital,
+          })
         })
       })
 
-      // Return formatted values
+      // Calculate subtotal (merchandise + shipping)
+      const subtotal = preciseCalculator.add(baseMerchandiseTotal, baseShippingTotal)
+
+      // Calculate final total with all fees
+      const finalTotal = preciseCalculator.add(subtotal, basePaymentProcessingFee)
+
+      // Store fee calculations
+      calculationBreakdown.feeCalculations = [
+        { name: "Merchandise Total", amount: baseMerchandiseTotal },
+        { name: "Shipping Total", amount: baseShippingTotal },
+        { name: "Payment Processing Fee", amount: basePaymentProcessingFee },
+      ]
+
+      // Store total calculations
+      calculationBreakdown.totalCalculations = [
+        { name: "Subtotal (Merchandise + Shipping)", amount: subtotal },
+        { name: "Payment Processing Fee", amount: basePaymentProcessingFee },
+        { name: "Final Total", amount: finalTotal },
+      ]
+
       return {
-        merchandiseTotal: decimalPrecision.formatCurrency(subtotal),
-        shippingTotal: decimalPrecision.formatCurrency(shippingTotal),
-        paymentProcessingFee: decimalPrecision.formatCurrency(paymentProcessingFee),
-        totalTransactionGiveaway: decimalPrecision.formatCurrency(totalTransactionGiveaway),
-        totalOmsiaProfit: decimalPrecision.formatCurrency(totalOmsiaProfit),
-        totalCapital: decimalPrecision.formatCurrency(totalCapital),
+        merchandiseTotal: baseMerchandiseTotal,
+        shippingTotal: baseShippingTotal,
+        paymentProcessingFee: basePaymentProcessingFee,
+        totalTransactionGiveaway: preciseTotalTransactionGiveaway,
+        totalOmsiaProfit: preciseTotalOmsiaProfit,
+        totalCapital: preciseTotalCapital,
         totalItems,
-        totalProducts: totalSpecifications, // Total individual specifications
-        totalMainProducts, // Number of main products
-        totalSpecifications, // Number of specifications
-        totalWeightGrams: Number.parseFloat(totalWeightGrams.toFixed(2)),
-        totalWeightKilos: Number.parseFloat(totalWeightKilos.toFixed(3)),
-        total: decimalPrecision.formatCurrency(total),
+        totalProducts: totalSpecifications,
+        totalMainProducts,
+        totalSpecifications,
+        totalWeightGrams,
+        totalWeightKilos,
+        subtotal,
+        taxAmount: 0, // Can be calculated if needed
+        discountAmount: 0, // Can be calculated if needed
+        finalTotal,
+        total: finalTotal, // Keep for backward compatibility
+        calculationBreakdown,
       }
     }
 
@@ -268,14 +365,35 @@ const CheckoutPage = (props) => {
       totalSpecifications: 0,
       totalWeightGrams: 0,
       totalWeightKilos: 0,
+      subtotal: 0,
+      taxAmount: 0,
+      discountAmount: 0,
+      finalTotal: 0,
       total: 0,
+      calculationBreakdown: {
+        itemCalculations: [],
+        feeCalculations: [],
+        totalCalculations: [],
+      },
     }
   }, [orderData])
 
-  // Update order summary state only when calculated summary changes
+  // Update order summary and payment details when calculations change
   useEffect(() => {
     setOrderSummary(calculatedSummary)
-  }, [calculatedSummary])
+
+    // Calculate balance after payment
+    const balanceAfterPayment = preciseCalculator.subtract(
+      paymentDetails.omsiapawastoBalance,
+      calculatedSummary.finalTotal,
+    )
+
+    setPaymentDetails((prev) => ({
+      ...prev,
+      balanceAfterPayment,
+      transactionFee: calculatedSummary.paymentProcessingFee,
+    }))
+  }, [calculatedSummary, paymentDetails.omsiapawastoBalance])
 
   // Handle form input changes
   const handleChange = (e) => {
@@ -291,62 +409,51 @@ const CheckoutPage = (props) => {
     e.preventDefault()
     setFormSubmitted(true)
 
-    if (paymentDetails.omsiapawastoBalance < orderSummary.total) {
-      alert("Insufficient OMSIAPAWASTO balance. Please add funds before placing your order.")
+    if (paymentDetails.omsiapawastoBalance < orderSummary.finalTotal) {
+      alert(
+        `Insufficient OMSIAPAWASTO balance. You need ${preciseCalculator.formatCurrency(orderSummary.finalTotal)} but only have ${preciseCalculator.formatCurrency(paymentDetails.omsiapawastoBalance)}.`,
+      )
       setFormSubmitted(false)
       return
     }
 
-    // Convert new cart structure to flat structure for database compatibility
     const flatCartItems = convertCartToFlatStructure(orderData.cartItems)
 
-    // Prepare complete order data
     const completeOrderData = {
       personal: formData,
       orderSummary: {
         ...orderSummary,
-        // Include data from original cartStats that might be useful
         shippingMethod: "weight-based",
         paymentMethod: orderData.paymentMethod || "omsiapawasto",
       },
       paymentMethod: paymentDetails.selectedPaymentMethod,
-      cartItems: flatCartItems, // Use flattened structure
-      originalCartStructure: orderData.cartItems, // Keep original for reference
+      cartItems: flatCartItems,
+      originalCartStructure: orderData.cartItems,
       orderDate: new Date().toISOString(),
+      preciseCalculations: orderSummary.calculationBreakdown,
     }
 
     const order = {
       registrantid: props.user._id,
-      products: flatCartItems, // Use flattened structure for database
+      products: flatCartItems,
       personalInfo: formData,
       paymentInfo: {
         method: paymentDetails.selectedPaymentMethod,
-        amount: orderSummary.total,
+        amount: orderSummary.finalTotal,
+        exactAmount: preciseCalculator.getExactValue(orderSummary.finalTotal),
+        balanceBefore: paymentDetails.omsiapawastoBalance,
+        balanceAfter: paymentDetails.balanceAfterPayment,
       },
       orderSummary,
     }
 
     try {
-      // API call with flattened cart structure (maintains database compatibility)
       await axiosCreatedInstance.post("/products/order", {
-        $order: {
-          registrantid: props.user._id,
-          products: flatCartItems, // Flattened structure for database
-          personalInfo: formData,
-          paymentInfo: {
-            method: paymentDetails.selectedPaymentMethod,
-            amount: orderSummary.total,
-          },
-          orderSummary,
-        },
+        $order: order,
       })
 
       console.log("Order submitted:", order)
-
-      // Show success message
-      alert("Order successfully placed using OMSIAPAWASTO currency!")
-      // Navigate to order confirmation page or dashboard
-      // navigate('/order-confirmation', { state: { orderReference: 'ORD' + Date.now() } });
+      alert(`Order successfully placed! Total: ${preciseCalculator.formatCurrency(orderSummary.finalTotal)}`)
     } catch (error) {
       console.error("Error placing order:", error)
       alert("There was an error processing your order. Please try again.")
@@ -360,7 +467,6 @@ const CheckoutPage = (props) => {
     const displayItems = []
 
     orderData.cartItems.forEach((mainProduct) => {
-      // Add main product header
       displayItems.push({
         type: "mainProduct",
         id: mainProduct.mainProductId,
@@ -370,11 +476,10 @@ const CheckoutPage = (props) => {
         specCount: mainProduct.specifications.length,
       })
 
-      // Add specifications
       mainProduct.specifications.forEach((spec) => {
-        const itemPrice = spec.price || 0
-        const quantity = spec.quantity || 1
-        const totalPrice = decimalPrecision.multiply(itemPrice, quantity)
+        const itemPrice = preciseCalculator.toPreciseDecimal(spec.price || 0)
+        const quantity = Number.parseInt(spec.quantity) || 1
+        const totalPrice = preciseCalculator.multiply(itemPrice, quantity)
 
         displayItems.push({
           type: "specification",
@@ -383,7 +488,7 @@ const CheckoutPage = (props) => {
           price: itemPrice,
           quantity: quantity,
           totalPrice: totalPrice,
-          weight: spec.data?.details?.weightingrams || 0,
+          weight: preciseCalculator.toPreciseDecimal(spec.data?.details?.weightingrams || 0),
           image: getImageUrl(spec.images, getImageUrl(mainProduct.mainProductImages)),
           mainProductId: mainProduct.mainProductId,
         })
@@ -604,7 +709,11 @@ const CheckoutPage = (props) => {
                 className={`checkout-button ${formSubmitted ? "checkout-loading" : ""}`}
                 disabled={formSubmitted}
               >
-                {formSubmitted ? <>Processing Order...</> : <>Confirm Order & Pay with OMSIAPAWASTO</>}
+                {formSubmitted ? (
+                  <>Processing Order...</>
+                ) : (
+                  <>Confirm Order & Pay {preciseCalculator.formatCurrency(orderSummary.finalTotal)} with OMSIAPAWASTO</>
+                )}
               </button>
             </form>
           </div>
@@ -674,11 +783,11 @@ const CheckoutPage = (props) => {
                             <span className="checkout-item-quantity">×{item.quantity}</span>
                             <span className="checkout-item-weight">
                               <FaWeight className="checkout-weight-icon" />
-                              {item.weight}g each
+                              {preciseCalculator.formatCurrency(item.weight, false)}g each
                             </span>
                           </div>
                         </div>
-                        <span className="checkout-item-price">₱{item.totalPrice.toFixed(2)}</span>
+                        <span className="checkout-item-price">{preciseCalculator.formatCurrency(item.totalPrice)}</span>
                       </div>
                     )
                   }
@@ -706,37 +815,41 @@ const CheckoutPage = (props) => {
                 <div className="checkout-summary-item">
                   <span className="checkout-label">Total Weight:</span>
                   <span className="checkout-value">
-                    {orderSummary.totalWeightGrams}g ({orderSummary.totalWeightKilos}kg)
+                    {preciseCalculator.formatCurrency(orderSummary.totalWeightGrams, false)}g (
+                    {preciseCalculator.formatCurrency(orderSummary.totalWeightKilos, false)}kg)
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* Enhanced Calculation Breakdown */}
+            <div className="checkout-summary-section">
+              <h3 className="checkout-section-heading">
+                <FaCalculator className="checkout-section-icon" /> Precise Calculation Breakdown
+              </h3>
+              <div className="checkout-summary-grid">
                 <div className="checkout-summary-item">
                   <span className="checkout-label">Merchandise Total:</span>
-                  <span className="checkout-value">₱{orderSummary.merchandiseTotal.toFixed(2)}</span>
+                  <span className="checkout-value">
+                    {preciseCalculator.formatCurrency(orderSummary.merchandiseTotal)}
+                  </span>
                 </div>
                 <div className="checkout-summary-item">
                   <span className="checkout-label">Shipping Total:</span>
-                  <span className="checkout-value">₱{orderSummary.shippingTotal.toFixed(2)}</span>
+                  <span className="checkout-value">{preciseCalculator.formatCurrency(orderSummary.shippingTotal)}</span>
                 </div>
-                <div
-                  className="checkout-summary-item"
-                  style={{
-                    borderBottom: "1px solid #e2e8f0",
-                    paddingBottom: "8px",
-                    marginBottom: "8px",
-                  }}
-                >
-                  <span className="checkout-label" style={{ color: "#3b82f6", fontWeight: "500" }}>
-                    Payment Processing Fee:
+                <div className="checkout-summary-item" style={{ borderTop: "1px solid #e2e8f0", paddingTop: "8px" }}>
+                  <span className="checkout-label" style={{ fontWeight: "600" }}>
+                    Subtotal:
                   </span>
-                  <span
-                    className="checkout-value"
-                    style={{
-                      color: "#3b82f6",
-                      fontWeight: "600",
-                      fontSize: "0.95em",
-                    }}
-                  >
-                    ₱{orderSummary.paymentProcessingFee.toFixed(2)}
+                  <span className="checkout-value" style={{ fontWeight: "600" }}>
+                    {preciseCalculator.formatCurrency(orderSummary.subtotal)}
+                  </span>
+                </div>
+                <div className="checkout-summary-item" style={{ color: "#3b82f6" }}>
+                  <span className="checkout-label">Payment Processing Fee:</span>
+                  <span className="checkout-value">
+                    {preciseCalculator.formatCurrency(orderSummary.paymentProcessingFee)}
                   </span>
                 </div>
               </div>
@@ -749,31 +862,39 @@ const CheckoutPage = (props) => {
               <div className="checkout-summary-grid">
                 <div className="checkout-summary-item">
                   <span className="checkout-label">Transaction Giveaway:</span>
-                  <span className="checkout-value">₱{orderSummary.totalTransactionGiveaway.toFixed(2)}</span>
+                  <span className="checkout-value">
+                    {preciseCalculator.formatCurrency(orderSummary.totalTransactionGiveaway)}
+                  </span>
                 </div>
-                {/*
-                <div className="checkout-summary-item">
-                  <span className="checkout-label">Omsia Profit:</span>
-                  <span className="checkout-value">₱{orderSummary.totalOmsiaProfit.toFixed(2)}</span>
-                </div>
-                <div className="checkout-summary-item">
-                  <span className="checkout-label">Capital Cost:</span>
-                  <span className="checkout-value">₱{orderSummary.totalCapital.toFixed(2)}</span>
-                </div>
-                */}
               </div>
             </div>
 
             <div className="checkout-divider"></div>
 
-            <div className="checkout-summary-item checkout-total">
-              <span className="checkout-label">Total Amount:</span>
-              <span className="checkout-value checkout-highlight">₱{orderSummary.total.toFixed(2)}</span>
+            {/* Enhanced Total Payment Information */}
+            <div className="checkout-summary-section">
+              <h3 className="checkout-section-heading">
+                <FaReceipt className="checkout-section-icon" /> Total Payment Information
+              </h3>
+              <div className="checkout-summary-grid">
+                <div className="checkout-summary-item checkout-total">
+                  <span className="checkout-label" style={{ fontSize: "1.1em", fontWeight: "700" }}>
+                    Final Total Amount:
+                  </span>
+                  <span className="checkout-value checkout-highlight" style={{ fontSize: "1.2em", fontWeight: "700" }}>
+                    {preciseCalculator.formatCurrency(orderSummary.finalTotal)}
+                  </span>
+                </div>
+                <div className="checkout-summary-item" style={{ fontSize: "0.9em", color: "#666" }}>
+                  <span className="checkout-label">Exact Amount:</span>
+                  <span className="checkout-value">{preciseCalculator.getExactValue(orderSummary.finalTotal)} PHP</span>
+                </div>
+              </div>
             </div>
 
             <div className="checkout-payment-details">
               <h3 className="checkout-section-heading">
-                <FaMoneyBillWave className="checkout-section-icon" /> Payment Method
+                <FaMoneyBillWave className="checkout-section-icon" /> Payment Method & Balance
               </h3>
               <div className="checkout-payment-selection">
                 <label className="checkout-payment-method">
@@ -787,7 +908,13 @@ const CheckoutPage = (props) => {
                   <div className="checkout-method-info">
                     <div className="checkout-method-name">OMSIAPAWASTO Currency</div>
                     <div className="checkout-method-balance">
-                      Balance: ₱{paymentDetails.omsiapawastoBalance.toFixed(2)}
+                      Current Balance: {preciseCalculator.formatCurrency(paymentDetails.omsiapawastoBalance)}
+                    </div>
+                    <div
+                      className="checkout-method-balance"
+                      style={{ color: paymentDetails.balanceAfterPayment >= 0 ? "#10b981" : "#ef4444" }}
+                    >
+                      Balance After Payment: {preciseCalculator.formatCurrency(paymentDetails.balanceAfterPayment)}
                     </div>
                   </div>
                 </label>
@@ -796,9 +923,19 @@ const CheckoutPage = (props) => {
               <div className="checkout-divider"></div>
 
               <div className="checkout-payment-confirmation">
-                <div className="checkout-summary-item checkout-total">
-                  <span className="checkout-label">Amount to Pay:</span>
-                  <span className="checkout-value checkout-highlight">₱{orderSummary.total.toFixed(2)}</span>
+                <div className="checkout-summary-grid">
+                  <div className="checkout-summary-item">
+                    <span className="checkout-label">Amount to Deduct:</span>
+                    <span className="checkout-value checkout-highlight">
+                      {preciseCalculator.formatCurrency(orderSummary.finalTotal)}
+                    </span>
+                  </div>
+                  <div className="checkout-summary-item">
+                    <span className="checkout-label">Transaction Fee Included:</span>
+                    <span className="checkout-value">
+                      {preciseCalculator.formatCurrency(paymentDetails.transactionFee)}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="checkout-important-notice">
@@ -809,10 +946,15 @@ const CheckoutPage = (props) => {
                   </span>
                 </div>
 
-                {paymentDetails.omsiapawastoBalance < orderSummary.total && (
+                {paymentDetails.omsiapawastoBalance < orderSummary.finalTotal && (
                   <div className="checkout-insufficient-funds">
                     <span className="checkout-warning-icon">⚠️</span>
-                    Warning: Insufficient OMSIAPAWASTO balance. Please add funds before placing your order.
+                    Warning: Insufficient OMSIAPAWASTO balance. You need{" "}
+                    {preciseCalculator.formatCurrency(orderSummary.finalTotal)} but only have{" "}
+                    {preciseCalculator.formatCurrency(paymentDetails.omsiapawastoBalance)}. Shortage:{" "}
+                    {preciseCalculator.formatCurrency(
+                      preciseCalculator.subtract(orderSummary.finalTotal, paymentDetails.omsiapawastoBalance),
+                    )}
                   </div>
                 )}
               </div>

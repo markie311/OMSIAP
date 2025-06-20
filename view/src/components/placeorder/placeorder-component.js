@@ -762,28 +762,28 @@ const PlaceOrderPage = () => {
                             className={`main-product-shipping-details ${shippingDetails.hasFallback ? "fallback" : ""}`}
                           >
                             <div className="shipping-breakdown-header">
-                              <span className="product-breakdown-name">Combined Weight Calculation</span>
-                              {shippingDetails.hasFallback && <span className="fallback-badge">Fallback Rate</span>}
+                              <span className="product-breakdown-name" style={{color: 'black'}}>Combined Weight Calculation</span>
+                              {shippingDetails.hasFallback && <span className="fallback-badge" style={{color: 'black'}}>Fallback Rate</span>}
                             </div>
                             <div className="shipping-breakdown-content">
                               <div className="breakdown-row">
-                                <span>Base Rate: ₱{formatDecimal(shippingDetails.baseRate, 2)}/kg</span>
-                                <span>Total Weight: {formatDecimal(shippingDetails.totalWeightKilos, 3)}kg</span>
+                                <span style={{color: 'black'}}>Base Rate: ₱{formatDecimal(shippingDetails.baseRate, 2)}/kg</span>
+                                <span style={{color: 'black'}}>Total Weight: {formatDecimal(shippingDetails.totalWeightKilos, 3)}kg</span>
                               </div>
                               <div className="breakdown-row">
                                 <span>Weight Multiplier: {shippingDetails.weightMultiplier}kg (rounded up)</span>
-                                <span className="breakdown-total">
+                                <span className="breakdown-total" style={{color: 'black'}}>
                                   Shipping: ₱{formatDecimal(shippingDetails.shippingCost, 2)}
                                 </span>
                               </div>
-                              <div className="calculation-formula">
+                              <div className="calculation-formula" style={{color: 'black'}}>
                                 Calculation: ₱{formatDecimal(shippingDetails.baseRate, 2)}/kg ×{" "}
                                 {shippingDetails.weightMultiplier}kg = ₱{formatDecimal(shippingDetails.shippingCost, 2)}
                               </div>
 
                               {/* Show individual specification weights */}
                               <div className="spec-weight-breakdown">
-                                <h6>Specification Weights:</h6>
+                                <h6 style={{color: 'black'}}>Specification Weights:</h6>
                                 {mainProduct.specifications.map((spec) => {
                                   const specWeight = preciseMultiply(
                                     spec.data?.details?.weightingrams || 0,
@@ -791,14 +791,14 @@ const PlaceOrderPage = () => {
                                   )
                                   return (
                                     <div key={spec.id} className="spec-weight-item">
-                                      <span>
+                                      <span style={{color: 'black'}}>
                                         {spec.name} (×{spec.quantity}): {formatDecimal(specWeight, 2)}g
                                       </span>
                                     </div>
                                   )
                                 })}
                                 <div className="spec-weight-total">
-                                  <strong>
+                                  <strong style={{color: 'black'}}>
                                     Total: {formatDecimal(shippingDetails.totalWeightGrams, 2)}g (
                                     {formatDecimal(shippingDetails.totalWeightKilos, 3)}kg)
                                   </strong>
