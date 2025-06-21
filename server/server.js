@@ -44,11 +44,13 @@ const PORT = process.env.PORT || 4000;
 
 // Middleware Configuration
 app.use(cors({
-  origin: ['http://localhost:3000','https://omsiap.onrender.com'],
+  origin: ['http://localhost:3000','https://omsiap.onrender.com', 'https://omsiapwebservice.onrender.com'],
   methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
   preflightContinue: false,
-  optionsSuccessStatus: 200
+  optionsSuccessStatus: 200,
+  credentials: true
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
