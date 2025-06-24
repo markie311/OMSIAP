@@ -374,6 +374,7 @@ const prevImage = () => {
   return (
     <div className="market-container">
 
+
       {/* Marketing Carousel Header */}
       <div className="market-carousel-container">
         <div className="market-carousel-track" ref={carouselRef}>
