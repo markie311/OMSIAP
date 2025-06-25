@@ -656,6 +656,7 @@ const prevImage = () => {
                                 </p>
                               )}
                             </div>
+                            {/*
                             <div className="market-cart-spec-quantity">
                               <button
                                 onClick={() => updateQuantity(item.mainProductId, spec.id, spec.quantity - 1)}
@@ -673,6 +674,7 @@ const prevImage = () => {
                                 <Plus size={12} />
                               </button>
                             </div>
+                            */}
                             <button
                               onClick={() => removeFromCart(item.mainProductId, spec.id)}
                               className="market-remove-specification"
