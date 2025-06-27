@@ -1010,6 +1010,58 @@
   width: 100%;
 }
 
+market-product-video-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  min-height: 250px;
+}
+
+.market-product-video,
+.market-fullscreen-video {
+  width: 100%;
+  height: 100%;
+  min-height: 250px;
+  border-radius: 8px;
+  object-fit: cover;
+  
+  &.market-fullscreen-video {
+    height: 80vh;
+    max-height: 600px;
+  }
+}
+
+@media (max-width: 768px) {
+  .market-modal-media-main {
+    height: 250px;
+  }
+  
+  .market-product-video-container {
+    min-height: 250px;
+  }
+  
+  .market-product-video {
+    height: 250px !important;
+    min-height: 250px;
+    max-height: 250px;
+  }
+}
+
+@media (max-width: 480px) {
+  .market-modal-media-main {
+    height: 200px;
+  }
+  
+  .market-product-video-container {
+    min-height: 200px;
+  }
+  
+  .market-product-video {
+    height: 200px !important;
+    min-height: 200px;
+    max-height: 200px;
+  }
+}
 .market-modal-media-thumbnails {
   display: flex;
   gap: 0.5rem;
