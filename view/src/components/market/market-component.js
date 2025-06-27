@@ -929,7 +929,7 @@ const prevImage = () => {
                                 {formatPrice(spec.details && spec.details.price ? spec.details.price.amount : 0)}
                               </p>
 
-                              <p>TRANSACTION GIVE AWAY TO BE SHARED AMONG MFATIP USERS</p>
+                              <p>TRANSACTION GIVE AWAY TO BE SHARED AMONG MONTHLY FINANCIAL ALLOCATION TO INDIVIDUAL PEOPLE ( MFATIP ) USERS</p>
                               <p>&#8369;{spec.details.price.transactiongiveaway}</p>
 
                               <p>STOCKS</p>
