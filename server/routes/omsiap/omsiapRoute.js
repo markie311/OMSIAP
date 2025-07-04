@@ -1726,6 +1726,7 @@ Router.post('/approvecurrencyexchange', async (req, res) => {
 Router.post('/rejectcurrencyexchange', async (req, res) => {
   try {
     const {
+      _id,
       id,
       phpAmountVerification,
       omsiapAmountVerification,
@@ -1734,21 +1735,26 @@ Router.post('/rejectcurrencyexchange', async (req, res) => {
       reason
     } = req.body;
 
+    console.log("_ID" + " " + _id)
+    console.log("ID" + " " + id)
+
     // Validate request data
     if (!id) {
       return res.status(400).json({ success: false, message: 'Transaction ID is required' });
     }
 
+    {/*
     if (!rejectedDeductionAmount) {
       return res.status(400).json({ success: false, message: 'Rejected deduction amount is required' });
     }
+    */}
     
     if (!reason || reason.trim() === '') {
       return res.status(400).json({ success: false, message: 'Rejection reason is required' });
     }
 
-    // Find the transaction
-    const transaction = await CurrencyExchangeTransactionDataModel.findOne({ _id: id });
+    // Find the transaction using MongoDB's _id field
+    const transaction = await CurrencyExchangeTransactionDataModel.findById(_id);
     
     // Check if transaction exists
     if (!transaction) {
@@ -1783,17 +1789,16 @@ Router.post('/rejectcurrencyexchange', async (req, res) => {
       messages: [{ message: `Transaction rejected: ${reason}` }]
     };
 
-    // Update the transaction with all verification fields and rejection info
+    // Update the main transaction document using the MongoDB _id
     const updatedTransaction = await CurrencyExchangeTransactionDataModel.findByIdAndUpdate(
-      id,
+      _id, // Use the _id parameter directly
       {
         $set: {
           'statusesandlogs.status': 'rejected',
-          'statusesandlogs.indication': reason, // Using the rejection reason for the status indication
+          'statusesandlogs.indication': reason,
           'details.amounts.deductions.successfulprocessing.amount': successfulDeductionAmount || 0,
           'details.amounts.deductions.rejectionprocessing.amount': rejectedDeductionAmount,
           'details.amounts.deductions.rejectionprocessing.reasons': reason,
-          // Update verification fields if provided
           ...(phpAmountVerification !== undefined ? { 'details.amounts.phppurchaseorexchangeamount': phpAmountVerification } : {}),
           ...(omsiapAmountVerification !== undefined ? { 'details.amounts.omsiapawasamounttorecieve': omsiapAmountVerification } : {})
         },
@@ -1808,7 +1813,47 @@ Router.post('/rejectcurrencyexchange', async (req, res) => {
       return res.status(500).json({ success: false, message: 'Failed to update transaction' });
     }
 
-    // Return success response with formatted date and transaction details
+    // Update the transaction in the registrant's data
+    try {
+      // Find the registrant who made this transaction using the custom 'id' field
+      const registrant = await RegistrantDataModel.findOne({
+        'credits.omsiapawas.transactions.currencyexchange.id': transaction.id
+      });
+
+      if (registrant) {
+        // Update the specific transaction in the registrant's currency exchange array
+        await RegistrantDataModel.updateOne(
+          {
+            _id: registrant._id,
+            'credits.omsiapawas.transactions.currencyexchange.id': transaction.id
+          },
+          {
+            $set: {
+              'credits.omsiapawas.transactions.currencyexchange.$.statusesandlogs.status': 'rejected',
+              'credits.omsiapawas.transactions.currencyexchange.$.statusesandlogs.indication': reason,
+              'credits.omsiapawas.transactions.currencyexchange.$.details.amounts.deductions.successfulprocessing.amount': successfulDeductionAmount || 0,
+              'credits.omsiapawas.transactions.currencyexchange.$.details.amounts.deductions.rejectionprocessing.amount': rejectedDeductionAmount,
+              'credits.omsiapawas.transactions.currencyexchange.$.details.amounts.deductions.rejectionprocessing.reasons': reason,
+              ...(phpAmountVerification !== undefined ? { 'credits.omsiapawas.transactions.currencyexchange.$.details.amounts.phppurchaseorexchangeamount': phpAmountVerification } : {}),
+              ...(omsiapAmountVerification !== undefined ? { 'credits.omsiapawas.transactions.currencyexchange.$.details.amounts.omsiapawasamounttorecieve': omsiapAmountVerification } : {})
+            },
+            $push: {
+              'credits.omsiapawas.transactions.currencyexchange.$.statusesandlogs.logs': newStatusLog
+            }
+          }
+        );
+
+        console.log(`Successfully updated transaction ${transaction.id} in registrant ${registrant.id} record`);
+      } else {
+        console.warn(`Registrant not found for transaction ${transaction.id}`);
+      }
+    } catch (registrantUpdateError) {
+      console.error('Error updating registrant transaction:', registrantUpdateError);
+      // Don't fail the entire operation if registrant update fails
+      // The main transaction was already updated successfully
+    }
+
+    // Return success response
     return res.status(200).json({
       success: true,
       message: 'Currency exchange transaction has been rejected',
@@ -2060,7 +2105,7 @@ Router.post('/widthdrawal', async(req, res) => {
   }
 });
 
-// Approve withdrawal route
+// Approve withdrawal route - FIXED VERSION
 Router.post("/approvewithdrawal", multerInstances.withdrawals.single('receipt'), async (req, res) => {
   try {
     const { transactionId, successfulProcessingDeduction, intent, phpAmountToReceive } = req.body;
@@ -2107,6 +2152,45 @@ Router.post("/approvewithdrawal", multerInstances.withdrawals.single('receipt'),
       });
     }
     
+    // Find the user who made the withdrawal
+    const userId = withdrawalTransaction.details.thistransactionismadeby.id;
+    const user = await RegistrantDataModel.findById(userId);
+    
+    if (!user) {
+      // Delete uploaded file if user not found
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+    
+    // Get withdrawal amount from transaction
+    const withdrawalAmount = withdrawalTransaction.details.amounts.intent || 0;
+    const processingFee = parseFloat(successfulProcessingDeduction) || 0;
+    
+    // Check if user has sufficient balance (only need to check withdrawal amount)
+    const currentBalance = user.credits?.omsiapawas?.amount || 0;
+    if (currentBalance < withdrawalAmount) {
+      // Delete uploaded file if insufficient balance
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        message: 'Insufficient balance for withdrawal',
+        details: {
+          currentBalance,
+          withdrawalAmount,
+          processingFee
+        }
+      });
+    }
+    
     // Create new log entry
     const formattedDate = timestamps.getFormattedDate();
     const newLogEntry = {
@@ -2133,12 +2217,15 @@ Router.post("/approvewithdrawal", multerInstances.withdrawals.single('receipt'),
     }
     
     withdrawalTransaction.details.amounts.deductions.successfulprocessing = {
-      amount: parseFloat(successfulProcessingDeduction),
+      amount: processingFee,
       reasons: 'Withdrawal processing fee'
     };
     
-    // Calculate profit
-    withdrawalTransaction.details.amounts.profit = parseFloat(successfulProcessingDeduction);
+    // Calculate profit (processing fee only)
+    withdrawalTransaction.details.amounts.profit = processingFee;
+    
+    // Set PHP amount to receive (withdrawal amount minus processing fee)
+    withdrawalTransaction.details.amounts.phpamounttorecieve = withdrawalAmount - processingFee;
     
     // Update receipt image path if uploaded
     if (req.file) {
@@ -2152,25 +2239,20 @@ Router.post("/approvewithdrawal", multerInstances.withdrawals.single('receipt'),
       withdrawalTransaction.details.referrence.gcashtransactionrecieptimage = relativePath;
     }
     
-    // Find the user who made the withdrawal
-    const userId = withdrawalTransaction.details.thistransactionismadeby.id;
-    const user = await RegistrantDataModel.findById(userId);
+    // *** CRITICAL FIX: Deduct only the withdrawal amount from user's credits ***
+    user.credits.omsiapawas.amount -= withdrawalAmount;
     
-    if (!user) {
-      console.warn(`User with ID ${userId} not found when approving withdrawal ${transactionId}`);
-    } else {
-      // Update user's withdrawal transactions
-      const userWithdrawalIndex = user.credits?.omsiapawas?.transactions?.widthdrawals?.findIndex(
-        tx => tx._id.toString() === transactionId.toString() || tx.id === transactionId
-      );
-      
-      if (userWithdrawalIndex !== -1 && userWithdrawalIndex !== undefined) {
-        user.credits.omsiapawas.transactions.widthdrawals[userWithdrawalIndex] = withdrawalTransaction;
-        await user.save();
-      }
+    // Update user's withdrawal transactions
+    const userWithdrawalIndex = user.credits?.omsiapawas?.transactions?.widthdrawals?.findIndex(
+      tx => tx._id.toString() === transactionId.toString() || tx.id === transactionId
+    );
+    
+    if (userWithdrawalIndex !== -1 && userWithdrawalIndex !== undefined) {
+      user.credits.omsiapawas.transactions.widthdrawals[userWithdrawalIndex] = withdrawalTransaction;
     }
     
-    // Save the updated transaction
+    // Save both user and transaction
+    await user.save();
     await withdrawalTransaction.save();
     
     // Return success response
@@ -2178,7 +2260,14 @@ Router.post("/approvewithdrawal", multerInstances.withdrawals.single('receipt'),
       success: true,
       message: 'Withdrawal approved successfully',
       transactionId: withdrawalTransaction._id,
-      processingDate: formattedDate
+      processingDate: formattedDate,
+      details: {
+        withdrawalAmount,
+        processingFee,
+        deductedFromCredits: withdrawalAmount,
+        remainingBalance: user.credits.omsiapawas.amount,
+        phpAmountToReceive: withdrawalAmount - processingFee
+      }
     });
     
   } catch (error) {

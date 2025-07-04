@@ -416,7 +416,7 @@
 }
 
 /* =========== Forms =========== */
-.userdashboard-deposit-panel,
+.userdashboard-deposit-panel, 
 .userdashboard-withdrawal-panel {
   background-color: white;
   border-radius: var(--border-radius);
@@ -424,7 +424,7 @@
   box-shadow: var(--box-shadow);
 }
 
-.userdashboard-deposit-form,
+.userdashboard-deposit-form, 
 .userdashboard-withdrawal-form {
   display: flex;
   flex-direction: column;
@@ -443,6 +443,11 @@
   gap: 0.5rem;
 }
 
+/* Enhanced amount group styling */
+.userdashboard-amount-group {
+  min-height: auto;
+}
+
 .userdashboard-form-label {
   font-weight: 600;
   color: var(--dark-gray);
@@ -457,10 +462,74 @@
   transition: var(--transition);
 }
 
+/* Enhanced amount input styling */
+.userdashboard-amount-input {
+  padding: 1rem;
+  border: 2px solid var(--medium-gray);
+  border-radius: var(--border-radius);
+  font-size: 1.1rem;
+  font-weight: 500;
+  min-height: 50px;
+  transition: var(--transition);
+  box-sizing: border-box;
+}
+
+.userdashboard-amount-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
 .userdashboard-form-input:focus {
   outline: none;
   border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+/* Processing fee breakdown styles */
+.userdashboard-fee-breakdown {
+  margin-top: 0.75rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+}
+
+.userdashboard-fee-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+  color: var(--dark-gray);
+}
+
+.userdashboard-fee-item:last-child {
+  margin-bottom: 0;
+}
+
+.userdashboard-fee-item.userdashboard-total {
+  padding-top: 0.5rem;
+  border-top: 1px solid #dee2e6;
+  color: var(--primary-color);
+}
+
+/* Fee notice styles */
+.userdashboard-fee-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  background-color: #e3f2fd;
+  border: 1px solid #bbdefb;
+  border-radius: var(--border-radius);
+  font-size: 0.85rem;
+  color: #1565c0;
+}
+
+.userdashboard-notice-icon {
+  font-size: 1rem;
+  flex-shrink: 0;
 }
 
 .userdashboard-image-upload {
@@ -511,7 +580,7 @@
   margin-top: 0.5rem;
 }
 
-.userdashboard-deposit-btn,
+.userdashboard-deposit-btn, 
 .userdashboard-withdrawal-btn {
   padding: 0.75rem 1.5rem;
   background-color: var(--primary-color);
@@ -525,9 +594,27 @@
   align-self: center;
 }
 
-.userdashboard-deposit-btn:hover,
+.userdashboard-deposit-btn:hover, 
 .userdashboard-withdrawal-btn:hover {
   background-color: var(--secondary-color);
+}
+
+/* Responsive design */
+@media (min-width: 768px) {
+  .userdashboard-form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .userdashboard-fee-breakdown {
+    font-size: 0.8rem;
+  }
+  
+  .userdashboard-amount-input {
+    font-size: 1rem;
+    min-height: 45px;
+  }
 }
 
 /* Transaction Tab Styles */

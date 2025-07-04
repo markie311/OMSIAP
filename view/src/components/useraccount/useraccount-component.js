@@ -190,9 +190,10 @@ const UserAccount = (props) => {
             date: tx.statusesandlogs?.logs?.[0]?.date || new Date().toISOString().split("T")[0],
             type: "Currency Exchange",
             typeClass: "currency-exchange",
+            status: tx.statusesandlogs?.status,
+            indication: tx.statusesandlogs?.indication,
             amount: tx.details?.amounts?.omsiapawasamounttorecieve || 0, // Positive because user receives OMSIAPAWAS
             phpAmount: tx.details?.amounts?.phppurchaseorexchangeamount || 0,
-            status: tx.statusesandlogs?.indication || "Pending",
             transactionDetails: {
               receiptNumber: tx.details?.referrence?.number || "",
               paymentMethod: tx.details?.paymentmethod || "GCash",
@@ -216,13 +217,15 @@ const UserAccount = (props) => {
             date: tx.statusesandlogs?.logs?.[0]?.date || new Date().toISOString().split("T")[0],
             type: "Withdrawal",
             typeClass: "withdrawal",
+             status: tx.statusesandlogs?.status,
+            indication: tx.statusesandlogs?.indication,
             amount: -Math.abs(tx.details?.amounts?.intent || 0), // Negative because user is withdrawing
-            status: tx.statusesandlogs?.indication || "Pending",
             transactionDetails: {
               receiptNumber: tx.id || "",
               withdrawalMethod: tx.details?.paymentmethod || "GCash",
               accountNumber: tx.details?.referrence?.number || "",
               notes: `Withdrawal of ${tx.amounts?.intent || 0} OMSIAPAWAS to PHP`,
+              gcashtransactionreceipt: tx.details?.referrence?.gcashtransactionrecieptimage
             },
             originalData: tx,
             icon: <FaWallet />,
@@ -1338,6 +1341,7 @@ const [profileForm, setProfileForm] = useState({
   governmentIdBack: props.user.personaldata.government_issued_identification.backphoto?.image || null
 });
 */}
+
 // Initial form state with more robust optional chaining and default values
 const [profileForm, setProfileForm] = useState({
   // Basic personal information
@@ -2227,7 +2231,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
         {activeTab === "withdrawal" && (
           <div className="userdashboard-withdrawal-panel">
             <section className="userdashboard-withdrawal-section">
-              <h2>Make a Cash out ( amounts will be sent to your gcash accounts )</h2>
+              <h2>Make a Cash out (amounts will be sent to your GCash accounts)</h2>
               <form className="userdashboard-withdrawal-form" onSubmit={handleWithdrawalSubmit}>
                 <div className="userdashboard-form-row">
                   <div className="userdashboard-form-group">
@@ -2279,7 +2283,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                 </div>
 
                 <div className="userdashboard-form-row">
-                  <div className="userdashboard-form-group">
+                  <div className="userdashboard-form-group userdashboard-amount-group">
                     <label>Cash out Amount</label>
                     <input
                       type="number"
@@ -2289,9 +2293,34 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                       step="0.01"
                       value={withdrawalForm.amount}
                       onChange={handleWithdrawalChange}
+                      className="userdashboard-amount-input"
                       required
                     />
+                    
+                    {/* Processing Fee Indication */}
+                    {withdrawalForm.amount && (
+                      <div className="userdashboard-fee-breakdown">
+                        <div className="userdashboard-fee-item">
+                          <span>Withdrawal Amount:</span>
+                          <span>₱{parseFloat(withdrawalForm.amount || 0)}</span>
+                        </div>
+                        <div className="userdashboard-fee-item">
+                          <span>Processing Fee (2.5%):</span>
+                          <span>-₱{Math.round((parseFloat(withdrawalForm.amount || 0) * 0.025) * 100) / 100}</span>
+                        </div>
+                        <div className="userdashboard-fee-item userdashboard-total">
+                          <span><strong>Amount You'll Receive:</strong></span>
+                          <span><strong>₱{Math.round((parseFloat(withdrawalForm.amount || 0) * 0.975) * 100) / 100}</strong></span>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className="userdashboard-fee-notice">
+                      <span className="userdashboard-notice-icon">ℹ️</span>
+                      <span>A 2.5% processing fee will be deducted from your withdrawal amount</span>
+                    </div>
                   </div>
+                  
                   <div className="userdashboard-form-group">
                     <label>Account Password</label>
                     <input

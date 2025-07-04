@@ -1919,10 +1919,12 @@ const fetchOmsiapData = async () => {
                                        setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
                                        setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
                                        setShowCurrencyExchangeApprovalModal={setShowCurrencyExchangeApprovalModal}
+                                       setShowCurrencyExchangeRejectionModal={setShowCurrencyExchangeRejectionModal}
 
                                        setShowCreditTransaction={setShowCreditTransaction}
 
                                        currencyexchangeapprovaltransactiondatacb={currencyexchangeapprovaltransactiondatacb}
+                                       currencyexchangerejectiontransactiondatacb={currencyexchangerejectiontransactiondatacb}
 
                              />
             )
@@ -1979,6 +1981,7 @@ const fetchOmsiapData = async () => {
                                                  setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
                                                  setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
                                                  currencyexchangerejectiontransactiondata={currencyexchangerejectiontransactiondata}
+                                                 currencyexchangerejectiontransactiondatacb={currencyexchangerejectiontransactiondatacb}
                                                  fetchOmsiapData={fetchOmsiapData}/>
               )
             }
@@ -7396,10 +7399,12 @@ const PendingCurrencyExchange = ({
   setShowTotalCurrencyExchange,
   setShowPendingCurrencyExchange, 
   setShowCurrencyExchangeApprovalModal,
+  setShowCurrencyExchangeRejectionModal,
   setShowCreditTransaction, 
   pendingcurrencyexchange,
   credittransactionobjectcb, 
   currencyexchangeapprovaltransactiondatacb,
+  currencyexchangerejectiontransactiondatacb,
   onClose, 
   onView, 
   onEdit 
@@ -7709,7 +7714,12 @@ const PendingCurrencyExchange = ({
                             </button>
                             <button 
                               className="reject-button" 
-                              onClick={() => handleReject(transaction.id)}
+                              onClick={() => {
+                                currencyexchangerejectiontransactiondatacb(transaction)
+                                setShowTotalCurrencyExchange(false)
+                                setShowPendingCurrencyExchange(false)
+                                setShowCurrencyExchangeRejectionModal(true)
+                              }}
                               aria-label="Reject transaction"
                             >
                               <FaTimesCircle />
@@ -8780,12 +8790,14 @@ const CurrencyExchangeApprovalModal = ({
               </div>
             ) : (
               <div className="ce-button-group">
+                {/*
                 <button 
                   className="ce-reject-button"
                   onClick={handleReject}
                 >
                   Reject
                 </button>
+                */}
                 <button 
                   className="ce-approve-button"
                   onClick={()=> handleApprove(currencyexchangeapprovaltransactiondata._id, currencyexchangeapprovaltransactiondata.id)}
@@ -8836,6 +8848,7 @@ const CurrencyExchangeRejectionModal = ({
   setShowCurrencyExchangeRejectionModal,
   setShowTotalCurrencyExchange,
   currencyexchangerejectiontransactiondata,
+  currencyexchangerejectiontransactiondatacb,
   fetchOmsiapData
 }) => {
   // State variables
@@ -8874,7 +8887,7 @@ const CurrencyExchangeRejectionModal = ({
   const recipientFullName = `${recipient.name.firstname} ${recipient.name.middlename} ${recipient.name.lastname}`;
 
   // Enhanced handleReject function with comprehensive validation and error handling
-  const handleReject = async (_id) => {
+  const handleReject = async (_id, id) => {
     // Reset response message
     setResponseMessage("");
     
@@ -8904,7 +8917,8 @@ const CurrencyExchangeRejectionModal = ({
     try {
       // Prepare comprehensive data for API request
       const rejectionData = {
-        id: _id,
+        _id: _id,
+        id: id,
         phpAmountVerification: Number(currencyexchangerejectionphpamountvalidationfield),
         omsiapAmountVerification: Number(currencyexchangerejectionomsiapamounttorecievevalidationfield),
         successfulDeductionAmount: Number(successfulDeductionField) || 0,
@@ -9193,7 +9207,7 @@ const CurrencyExchangeRejectionModal = ({
                 </button>
                 <button 
                   className="ce-confirm-rejection-button"
-                  onClick={()=> handleReject(_id)
+                  onClick={()=> handleReject(_id, id)
                   }
                 >
                   Confirm Rejection

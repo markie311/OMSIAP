@@ -218,7 +218,7 @@ const LoginAndRegistrationPage = (props) => {
     if (!formData.firstName) newErrors.firstName = 'First name is required';
     if (!formData.lastName) newErrors.lastName = 'Last name is required';
     if (!formData.phoneNumber) newErrors.phoneNumber = 'Phone number is required';
-    if (!formData.birthDate) newErrors.birthDate = 'Birth date is required';
+    // if (!formData.birthDate) newErrors.birthDate = 'Birth date is required';
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
@@ -234,7 +234,7 @@ const LoginAndRegistrationPage = (props) => {
   };
 
 const handleRegistration = async (e) => {
-
+  
     e.preventDefault();
     registerbuttonloadingindicationcb(true);
   
