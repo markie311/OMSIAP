@@ -11366,7 +11366,7 @@ const handleApprove = async (_id) => {
                 </button>
                 <button 
                   className="wd-approve-button"
-                  onClick={()=> handleApprove(_id)}
+                  onClick={()=> handleApprove(_id, id)}
                 >
                   Approve
                 </button>
