@@ -12,6 +12,7 @@ const timestamps = require('../../lib/timestamps/timestamps');
 const bcrypt = require('bcryptjs');
 
 const multer = require('multer');
+const path = require('path');
 const fs = require('fs');
 
 // Set up multer for handling file uploads
@@ -48,28 +49,23 @@ Router.route("/registration").post(async (req, res) => {
   try {
     // Generate next sequential ID for registrant
     const generateNextRegistrantId = async () => {
-      // Count all registrants
       const registrantCount = await RegistrantDataModel.countDocuments();
       
-      // Check if registrant count has reached the limit of 1000
       if (registrantCount >= 1000) {
         return null;
       }
       
-      // Pad the number to 4 digits
       const paddedCount = registrantCount.toString().padStart(4, '0');
       return `1000-${paddedCount}-A-1`;
     };
 
     // Generate unique ID for omsiapawas credits
     const generateOmsiapawasId = async () => {
-
       const currentDate = new Date();
       const year = currentDate.getFullYear().toString();
       const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
       const day = currentDate.getDate().toString().padStart(2, '0');
       
-      // Get count of registrants for today to generate sequential number
       const todayStart = new Date();
       todayStart.setHours(0, 0, 0, 0);
       
@@ -81,155 +77,116 @@ Router.route("/registration").post(async (req, res) => {
       
       const sequentialNum = (todayRegistrantCount + 1).toString().padStart(3, '0');
       
-      // Generate format: OMSAW-YYYYMMDD-XXX
       return `OMSAW-${year}${month}${day}-${sequentialNum}`;
     };
 
-    // Normalize new registrant data for comparison
-    const normalizedNewRegistrant = {
-      firstName: req.body.$registrant.name.firstname.toLowerCase().trim(),
-      middleName: req.body.$registrant.name.middlename ? req.body.$registrant.name.middlename.toLowerCase().trim() : '',
-      lastName: req.body.$registrant.name.lastname.toLowerCase().trim(),
-      password: req.body.$registrant.passwords.account.password
+    // Function to save base64 image to file
+    const saveBase64Image = (base64String, registrantId, imageType) => {
+      try {
+        // Remove the data URL prefix (data:image/jpeg;base64,)
+        const base64Data = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
+        
+        // Create filename with registrant ID and timestamp
+        const timestamp = Date.now();
+        const filename = `${registrantId}_${imageType}_${timestamp}.jpg`;
+        
+        // Create the full path to save the image
+        const imagePath = path.join(__dirname, '../../../view/public/images/registration', filename);
+        
+        // Ensure the directory exists
+        const dir = path.dirname(imagePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+        
+        // Save the image
+        fs.writeFileSync(imagePath, base64Data, 'base64');
+        
+        // Return the relative path to store in database
+        return `../images/registration/${filename}`;
+      } catch (error) {
+        console.error('Error saving image:', error);
+        throw new Error('Failed to save image');
+      }
     };
 
-    // Check for matches among existing users
-    const nameMatches = await RegistrantDataModel.find({
-      'name.firstname': new RegExp(`^${normalizedNewRegistrant.firstName}$`, 'i'),
-      'name.lastname': new RegExp(`^${normalizedNewRegistrant.lastName}$`, 'i'),
-      'name.middlename': normalizedNewRegistrant.middleName ? 
-        new RegExp(`^${normalizedNewRegistrant.middleName}$`, 'i') : 
-        { $in: [null, "", normalizedNewRegistrant.middleName] }
+    // Check for duplicate birth certificate reference number
+    const bRenNumber = req.body.$registrant.personaldata.birthcertificate.birthcertificatereferencenumber;
+    
+    const existingRegistrantWithBRen = await RegistrantDataModel.findOne({
+      'personaldata.birthcertificate.birthcertificatereferencenumber': bRenNumber
     });
 
-    // New registrant (no name matches)
-    if (nameMatches.length === 0) {
-      // Generate ID and check user limit
-      const registrantId = await generateNextRegistrantId();
-      
-      // Check if user limit is reached
-      if (registrantId === null) {
-        return res.status(200).send({
-          message: "OMSIAP_USER_LIMIT_REACHED",
-          details: {
-            status: "Registration Temporarily Paused",
-            reason: "First 1000 Users Milestone Reached"
-          }
-        });
-      }
-
-      // Generate omsiapawas credit ID
-      const omsiapawasId = await generateOmsiapawasId();
-      
-      const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password, 13);
-      const _registeringdate = timestamps.getFormattedDate();
-      
-      // Set the IDs and pending documents status
-      req.body.$registrant.id = registrantId;
-      req.body.$registrant.credits = req.body.$registrant.credits || {};
-      req.body.$registrant.credits.omsiapawas = req.body.$registrant.credits.omsiapawas || {};
-      req.body.$registrant.credits.omsiapawas.id = omsiapawasId;
-      req.body.$registrant.credits.omsiapawas.amount = 0;
-      req.body.$registrant.registrationstatusesandlogs.indication = "unverified";
-      
-      // Create registration detail with proper structure
-      req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
-        date: _registeringdate,
-        type: "Registration",
-        indication: "First Registration",
-        messages: [
-          { message: "Attempting for registering for the MFATIP PROGRAM" },
-          { message: "STATUS REGISTERED" }
-        ]
+    if (existingRegistrantWithBRen) {
+      return res.status(200).send({
+        message: "Duplicate bRen number"
       });
-
-      req.body.$registrant.passwords.account.password = _hashedpassword;
-      
-      // Create a new document using the imported model
-      const newRegistrant = new RegistrantDataModel(req.body.$registrant);
-      await newRegistrant.save();
-      
-      console.log(`Registrant registered: ${req.body.$registrant.name.firstname}, ${req.body.$registrant.name.middlename}, ${req.body.$registrant.name.lastname}. ID: ${req.body.$registrant.id}, OMSAW ID: ${omsiapawasId}`);
-
-      res.status(200).send({
-        message: "Registrant registered"
-      });
-    } 
-
-    // Existing user name found - handle password scenario
-    else {
-
-      let passwordMatchFound = false;
-
-      for (const user of nameMatches) {
-        const passwordMatches = await bcrypt.compare(normalizedNewRegistrant.password, user.passwords.account.password);
-        if (passwordMatches) {
-          passwordMatchFound = true;
-          break;
-        }
-      }
-
-      // Existing user with same password
-      if (passwordMatchFound) {
-        res.status(200).send({
-          message: "Same passwords"
-        });
-      } 
-
-      // Name matches but different password - register as new
-      else {
-        // Generate ID and check user limit
-        const registrantId = await generateNextRegistrantId();
-        
-        // Check if user limit is reached
-        if (registrantId === null) {
-          return res.status(200).send({
-            message: "OMSIAP_USER_LIMIT_REACHED",
-            details: {
-              status: "Registration Temporarily Paused",
-              reason: "First 1000 Users Milestone Reached"
-            }
-          });
-        }
-
-        // Generate omsiapawas credit ID
-        const omsiapawasId = await generateOmsiapawasId();
-        
-        const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password, 13);
-        const _registeringdate = timestamps.getFormattedDate();
-        
-        // Set the IDs and pending documents status
-        req.body.$registrant.id = registrantId;
-        req.body.$registrant.credits = req.body.$registrant.credits || {};
-        req.body.$registrant.credits.omsiapawas = req.body.$registrant.credits.omsiapawas || {};
-        req.body.$registrant.credits.omsiapawas.id = omsiapawasId;
-        req.body.$registrant.credits.omsiapawas.amount = 0;
-        req.body.$registrant.registrationstatusesandlogs.indication = "unverified";
-                         
-        // Create registration detail with proper structure
-        req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
-          date: _registeringdate,
-          type: "Registration",
-          indication: "First Registration",
-          messages: [
-            { message: "Attempting for registering for the MFATIP PROGRAM" },
-            { message: "STATUS REGISTERED" }
-          ]
-        });
-
-        req.body.$registrant.passwords.account.password = _hashedpassword;
-        
-        // Create a new document using the imported model
-        const newRegistrant = new RegistrantDataModel(req.body.$registrant);
-        await newRegistrant.save();
-        
-        console.log(`Registrant registered: ${req.body.$registrant.name.firstname}, ${req.body.$registrant.name.middlename}, ${req.body.$registrant.name.lastname}. ID: ${req.body.$registrant.id}, OMSAW ID: ${omsiapawasId}`);
-
-        res.status(200).send({
-          message: "Registrant registered"
-        });
-      }
     }
+
+    // Generate ID and check user limit
+    const registrantId = await generateNextRegistrantId();
+    
+    if (registrantId === null) {
+      return res.status(200).send({
+        message: "OMSIAP_USER_LIMIT_REACHED",
+        details: {
+          status: "Registration Temporarily Paused",
+          reason: "First 1000 Users Milestone Reached"
+        }
+      });
+    }
+
+    // Generate omsiapawas credit ID
+    const omsiapawasId = await generateOmsiapawasId();
+    
+    const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password, 13);
+    const _registeringdate = timestamps.getFormattedDate();
+    
+    // Save the birth certificate image as a file and get the path
+    let birthCertificateImagePath = "";
+    if (req.body.$registrant.personaldata.birthcertificate.frontphoto.image) {
+      birthCertificateImagePath = saveBase64Image(
+        req.body.$registrant.personaldata.birthcertificate.frontphoto.image,
+        registrantId,
+        'birthcert_front'
+      );
+    }
+    
+    // Set the IDs and update the image path
+    req.body.$registrant.id = registrantId;
+    req.body.$registrant.credits = req.body.$registrant.credits || {};
+    req.body.$registrant.credits.omsiapawas = req.body.$registrant.credits.omsiapawas || {};
+    req.body.$registrant.credits.omsiapawas.id = omsiapawasId;
+    req.body.$registrant.credits.omsiapawas.amount = 0;
+    req.body.$registrant.registrationstatusesandlogs.indication = "unverified";
+    
+    // Update the birth certificate image field to store the file path instead of base64
+    req.body.$registrant.personaldata.birthcertificate.frontphoto.image = birthCertificateImagePath;
+    
+    // Create registration detail with proper structure
+    req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
+      date: _registeringdate,
+      type: "Registration",
+      indication: "First Registration",
+      messages: [
+        { message: "Attempting for registering for the MFATIP PROGRAM" },
+        { message: "STATUS REGISTERED" }
+      ]
+    });
+
+    req.body.$registrant.passwords.account.password = _hashedpassword;
+    
+    // Create a new document using the imported model
+    const newRegistrant = new RegistrantDataModel(req.body.$registrant);
+    await newRegistrant.save();
+    
+    console.log(`Registrant registered with ID: ${req.body.$registrant.id}, OMSAW ID: ${omsiapawasId}, bRen: ${bRenNumber}`);
+    console.log(`Birth certificate image saved to: ${birthCertificateImagePath}`);
+
+    res.status(200).send({
+      message: "Registrant registered"
+    });
+
   } catch (err) {
     console.error(`Registration error: ${err}`);
 

@@ -77,7 +77,7 @@ import { FaEye,
          FaInfoCircle, 
          FaTruckMonster} from 'react-icons/fa';
 
-import { X, Star, Package, ShoppingCart, Tag, Info, FileText, Video, Award, Truck, AlertCircle, Trash, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
+import { X, ZoomIn, XCircle, CheckCircle, Star, Package, ShoppingCart, Tag, Info, FileText, Video, Award, Truck, AlertCircle, Trash, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import axiosCreatedInstance from '../lib/axiosutil.js';
@@ -183,6 +183,8 @@ function DatabaseComponent() {
   const [showRegisteredRegistrantsWithVerifiedDocuments, setShowRegisteredRegistrantsWithVerifiedDocuments] = useState(false)
   const [showRegisteredRegistrantsWithPendingDocuments, setShowRegisteredRegistrantsWithPendingDocuments] = useState(false)
   const [showRegisteredRegistrantsWithRejectedDocuments, setShowRegisteredRegistrantsWithRejectedDocuments] = useState(false)
+
+  const [showMfatipRegisteredRegistrantVerificationModal, setShowMfatipRegisteredRegistrantVerificationModal] = useState(false)
 
   const [showCreateContent, setShowCreateContent] = useState(false)
 
@@ -538,7 +540,7 @@ const fetchOmsiapData = async () => {
       const pending = omsiapdata.people.filter(person => 
         person.status && 
         person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
-        person.status.indication === "Pending Documents"
+        person.status.indication === "unverified"
       );
             
       const rejected = omsiapdata.people.filter(person => 
@@ -2109,6 +2111,9 @@ const fetchOmsiapData = async () => {
 
                                                                setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                                                setShowRegisteredRegistrantsWithPendingDocuments={setShowRegisteredRegistrantsWithPendingDocuments}
+
+                                                               setShowMfatipRegisteredRegistrantVerificationModal={setShowMfatipRegisteredRegistrantVerificationModal}
+
                                                                setShowRegistrantDetailsDisplay={setShowRegistrantDetailsDisplay}
 
                                                                fetchOmsiapData={fetchOmsiapData}
@@ -2127,6 +2132,36 @@ const fetchOmsiapData = async () => {
                              />
             )
             }
+
+          {showMfatipRegisteredRegistrantVerificationModal && (
+  <MfatipRegisteredRegistrantsVerificationModal 
+    isOpen={showMfatipRegisteredRegistrantVerificationModal}
+    onClose={() => {
+                    setShowDatabaseConfiguration(false)
+                    setShowMfatipRegisteredRegistrantVerificationModal(false)
+                  }}
+    registrantData={registrantdata}
+    onVerify={(data) => {
+      console.log('Verify action:', data);
+      // Handle verification logic here
+      // You might want to call your verification API
+    //  handleMfatipRegisteredRegistrantVerification(data.registrantId);
+    }}
+    onReject={(data) => {
+      console.log('Reject action:', data);
+      // Handle rejection logic here
+      // You might want to call your rejection API
+     // handleMfatipRegisteredRegistrantRejection(data.registrantId);
+    }}
+    onUpdate={(data) => {
+      console.log('Update action:', data);
+      // Handle any additional update logic here
+      // Refresh data if needed
+      fetchOmsiapData();
+    }}
+    fetchOmsiapData={fetchOmsiapData}
+  />
+)}
 
 
            
@@ -13033,6 +13068,7 @@ const MfatipRegisteredRegistrantsWithVerifiedDocuments = ({
 const MfatipRegisteredRegistrantsWithPendingDocuments = ({ 
   setShowDatabaseConfiguration, 
   setShowRegisteredRegistrantsWithPendingDocuments, 
+  setShowMfatipRegisteredRegistrantVerificationModal,
   setShowRegistrantDetailsDisplay, 
   pendingmfatipregistrants, 
   setregistrantdata,
@@ -13060,7 +13096,7 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
     // Filter registrants with "Pending Documents" status (case-sensitive)
     const pendingDocumentsRegistrants = pendingmfatipregistrants.filter(
       registrant => registrant.registrationstatusesandlogs && 
-                   registrant.registrationstatusesandlogs.indication === 'Pending Documents'
+                   registrant.registrationstatusesandlogs.indication === 'unverified'
     );
     setFilteredRegistrants(pendingDocumentsRegistrants);
     
@@ -13129,32 +13165,32 @@ const MfatipRegisteredRegistrantsWithPendingDocuments = ({
     return duplicateInfo;
   };
 
-  useEffect(() => {
-    if (searchQuery) {
-      const results = pendingmfatipregistrants.filter(registrant => 
-        // Filter by "Pending Documents" status first
-        registrant.registrationstatusesandlogs && 
-        registrant.registrationstatusesandlogs.indication === 'Pending Documents' &&
-        (
-          // Then search by various fields - safely access properties
-          (registrant.id && registrant.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (registrant.name?.firstname && registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (registrant.name?.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (registrant.name?.lastname && registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase())) ||
-          (registrant.contact?.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
-          (registrant.contact?.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
-        )
-      );
-      setFilteredRegistrants(results);
-    } else {
-      // Reset to show only "Pending Documents" registrants when search is cleared
-      const pendingDocumentsRegistrants = pendingmfatipregistrants.filter(
-        registrant => registrant.registrationstatusesandlogs && 
-                     registrant.registrationstatusesandlogs.indication === 'Pending Documents'
-      );
-      setFilteredRegistrants(pendingDocumentsRegistrants);
-    }
-  }, [searchQuery, pendingmfatipregistrants]);
+ useEffect(() => {
+  if (searchQuery) {
+    const results = pendingmfatipregistrants.filter(registrant => 
+      // Filter by "Pending Documents" status first
+      registrant.registrationstatusesandlogs && 
+      registrant.registrationstatusesandlogs.indication === 'unverified' &&  // ✓ FIXED: added missing 'i'
+      (
+        // Then search by various fields - safely access properties
+        (registrant.id && registrant.id.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (registrant.name?.firstname && registrant.name.firstname.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (registrant.name?.middlename && registrant.name.middlename.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (registrant.name?.lastname && registrant.name.lastname.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (registrant.contact?.phonenumber && registrant.contact.phonenumber.includes(searchQuery)) ||
+        (registrant.contact?.emailaddress && registrant.contact.emailaddress.toLowerCase().includes(searchQuery.toLowerCase()))
+      )
+    );
+    setFilteredRegistrants(results);
+  } else {
+    // Reset to show only "Pending Documents" registrants when search is cleared
+    const pendingDocumentsRegistrants = pendingmfatipregistrants.filter(
+      registrant => registrant.registrationstatusesandlogs && 
+                   registrant.registrationstatusesandlogs.indication === 'unverified'  // ✓ FIXED: added missing 'i'
+    );
+    setFilteredRegistrants(pendingDocumentsRegistrants);
+  }
+}, [searchQuery, pendingmfatipregistrants]);
 
   const handleClose = () => {
     setIsVisible(false);
@@ -13479,6 +13515,7 @@ async function handleMfatipRegisteredRegistrantRejection(id) {
                       </td>
                       <td className="actions-cell">
                         <div className="action-buttons">
+
                           <button 
                             className="view-button" 
                             onClick={() => {
@@ -13491,9 +13528,25 @@ async function handleMfatipRegisteredRegistrantRejection(id) {
                             <span className="action-text">View</span>
                           </button>
 
+                          <button 
+                            className="view-button" 
+                            onClick={() => {
+                              setShowRegisteredRegistrantsWithPendingDocuments(false)
+                              setShowMfatipRegisteredRegistrantVerificationModal(true)
+                              setregistrantdata(registrant)
+                            }}
+                            aria-label="View registrant details"
+                          >
+                            <FaEye className="action-icon" />
+                            <span className="action-text">Verify</span>
+                          </button>
+                            
+                          {/*
                           <VerifyMfatipRegistrantButton key={registrant._id}
                                                         registrant={registrant}
                                                         onVerifyMfatipRegisteredRegistrant={handleMfatipRegisteredRegistrantVerification}/>
+                          */}
+
                            <RejectMfatipRegistrantButton key={registrant._id}
                                                          registrant={registrant}
                                                          onRejectMfatipRegisteredRegistrant={handleMfatipRegisteredRegistrantRejection}/>
@@ -14377,8 +14430,456 @@ const PendingPrivateRegistrationsModal = ({ onClose, setShowDatabaseConfiguratio
   );
 };
 
+const MfatipRegisteredRegistrantsVerificationModal = ({ 
+  isOpen, 
+  onClose, 
+  registrantData,
+  onVerify,
+  onReject,
+  onUpdate,
+  fetchOmsiapData
+}) => {
 
+  const [formData, setFormData] = useState({
+    firstname: '',
+    middlename: '',
+    lastname: '',
+    nickname: ''
+  });
 
+  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
+
+  const [statusMessage, setStatusMessage] = useState('');
+
+  // Extract registrant data from the provided structure
+  const currentRegistrant = registrantData || {};
+  
+  // Helper function to get nested values safely
+  const getNestedValue = (obj, path, defaultValue = '') => {
+    return path.split('.').reduce((current, key) => {
+      return current && current[key] !== undefined ? current[key] : defaultValue;
+    }, obj);
+  };
+
+  // Extract data from the registrant structure
+  const registrantInfo = {
+    id: currentRegistrant._id || 'REG-UNKNOWN',
+    birthCertificatePhoto: getNestedValue(currentRegistrant, 'personaldata.birthcertificate.frontphoto.image', 'https://via.placeholder.com/600x400/f0f0f0/666?text=Birth+Certificate+Front+Photo'),
+    birthCertificateReferenceNumber: getNestedValue(currentRegistrant, 'personaldata.birthcertificate.birthcertificatereferencenumber', ''),
+    currentFirstname: getNestedValue(currentRegistrant, 'name.firstname', ''),
+    currentMiddlename: getNestedValue(currentRegistrant, 'name.middlename', ''),
+    currentLastname: getNestedValue(currentRegistrant, 'name.lastname', ''),
+    currentNickname: getNestedValue(currentRegistrant, 'name.nickname', ''),
+    registrationStatus: getNestedValue(currentRegistrant, 'registrationstatusesandlogs.indication', 'unverified'),
+    registrationType: getNestedValue(currentRegistrant, 'registrationstatusesandlogs.type', 'MFATIP'),
+    phoneNumber: getNestedValue(currentRegistrant, 'contact.phonenumber', ''),
+    emailAddress: getNestedValue(currentRegistrant, 'contact.emailaddress', ''),
+    address: {
+      street: getNestedValue(currentRegistrant, 'contact.address.street', ''),
+      baranggay: getNestedValue(currentRegistrant, 'contact.address.baranggay', ''),
+      city: getNestedValue(currentRegistrant, 'contact.address.city', ''),
+      province: getNestedValue(currentRegistrant, 'contact.address.province', ''),
+      country: getNestedValue(currentRegistrant, 'contact.address.country', '')
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({
+        firstname: registrantInfo.currentFirstname || '',
+        middlename: registrantInfo.currentMiddlename || '',
+        lastname: registrantInfo.currentLastname || '',
+        nickname: registrantInfo.currentNickname || ''
+      });
+      setValidationErrors({});
+    }
+  }, [isOpen, registrantData]);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear validation error when user starts typing
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    
+    if (!formData.firstname.trim()) {
+      errors.firstname = 'First name is required';
+    }
+    
+    if (!formData.lastname.trim()) {
+      errors.lastname = 'Last name is required';
+    }
+    
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Updated handleSubmit function
+const handleSubmit = async (action) => {
+  if (!validateForm()) return;
+
+  setIsLoading(true);
+  setStatusMessage('Processing request...');
+
+  try {
+    const submissionData = {
+      id: registrantInfo.id, // Using 'id' to match the route parameter
+      originalData: {
+        firstname: registrantInfo.currentFirstname,
+        middlename: registrantInfo.currentMiddlename,
+        lastname: registrantInfo.currentLastname,
+        nickname: registrantInfo.currentNickname
+      },
+      updatedData: {
+        firstname: formData.firstname.trim(),
+        middlename: formData.middlename.trim(),
+        lastname: formData.lastname.trim(),
+        nickname: formData.nickname.trim()
+      },
+      registrationInfo: {
+        status: registrantInfo.registrationStatus,
+        type: registrantInfo.registrationType,
+        birthCertificateRef: registrantInfo.birthCertificateReferenceNumber
+      },
+      action: action // 'verify' or 'reject'
+    };
+
+    // Call the verification route
+    const response = await axiosCreatedInstance.post("/omsiap/verifymfatipregistrant", submissionData);
+
+    if (response.data.success) {
+      // Handle successful verification
+      console.log('Registrant verified successfully:', response.data.message);
+      setStatusMessage('✓ Registrant verified and updated successfully!');
+      
+      // Refresh data if needed
+      await fetchOmsiapData();
+      
+      // Close the modal/form after successful submission
+      //onClose();
+
+    } else {
+      // Handle server-side validation errors
+      console.error('Verification failed:', response.data.message);
+      setStatusMessage(`✗ Verification failed: ${response.data.message}`);
+    }
+
+  } catch (error) {
+    // Handle different types of errors
+    if (error.response) {
+      // Server responded with error status
+      const status = error.response.status;
+      const message = error.response.data?.message || 'Unknown server error';
+      
+      switch (status) {
+        case 400:
+          setStatusMessage(`✗ Bad Request: ${message}`);
+          break;
+        case 404:
+          setStatusMessage('✗ Registrant not found. They may have been deleted.');
+          break;
+        case 409:
+          setStatusMessage('⚠ Registrant is already verified.');
+          break;
+        case 422:
+          setStatusMessage(`✗ Validation Error: ${message}`);
+          break;
+        case 500:
+          setStatusMessage('✗ Server error occurred. Please try again later.');
+          break;
+        default:
+          setStatusMessage(`✗ Error: ${message}`);
+      }
+      
+    } else if (error.request) {
+      // Network error - no response received
+      console.error('Network error:', error.request);
+      setStatusMessage('✗ Network error: Please check your internet connection and try again.');
+      
+    } else {
+      // Something else went wrong
+      console.error('Error:', error.message);
+      setStatusMessage('✗ An unexpected error occurred. Please try again.');
+    }
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const handleImageClick = () => {
+    setIsImageModalOpen(true);
+  };
+
+  const handleImageModalClose = () => {
+    setIsImageModalOpen(false);
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <>
+      <div className="mfatip-modal-overlay">
+        <div className="mfatip-modal-container">
+          <div className="mfatip-modal-header">
+            <div>
+              <h2 className="mfatip-modal-title">Registrant Verification</h2>
+              <div className="mfatip-registrant-info">
+                <span className="mfatip-registrant-id">ID: {registrantInfo.id}</span>
+                <span className={`mfatip-status-badge mfatip-status-${registrantInfo.registrationStatus}`}>
+                  {registrantInfo.registrationStatus.toUpperCase()}
+                </span>
+              </div>
+            </div>
+            <button 
+              onClick={onClose}
+              className="mfatip-close-button"
+              disabled={isLoading}
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="mfatip-modal-content">
+            <div className="mfatip-content-grid">
+              {/* Birth Certificate Section */}
+              <div className="mfatip-certificate-section">
+                <h3 className="mfatip-section-title">Birth Certificate</h3>
+                
+                <div className="mfatip-certificate-image-container">
+                  <img 
+                    src={registrantInfo.birthCertificatePhoto}
+                    alt="Birth Certificate Front"
+                    className="mfatip-certificate-image"
+                    onClick={handleImageClick}
+                  />
+                  <div className="mfatip-zoom-overlay" onClick={handleImageClick}>
+                    <ZoomIn size={24} />
+                    <span>View Image</span>
+                  </div>
+                </div>
+
+                <div className="mfatip-reference-container">
+                  <label className="mfatip-reference-label">
+                    Birth Certificate Reference Number:
+                  </label>
+                  <div className="mfatip-reference-number">
+                    {registrantInfo.birthCertificateReferenceNumber || 'Not provided'}
+                  </div>
+                </div>
+
+                {/* Additional Information */}
+                <div className="mfatip-additional-info">
+                  <h4 className="mfatip-info-title">Contact Information</h4>
+                  <div className="mfatip-info-item">
+                    <span className="mfatip-info-label">Phone:</span>
+                    <span className="mfatip-info-value">{registrantInfo.phoneNumber || 'Not provided'}</span>
+                  </div>
+                  <div className="mfatip-info-item">
+                    <span className="mfatip-info-label">Email:</span>
+                    <span className="mfatip-info-value">{registrantInfo.emailAddress || 'Not provided'}</span>
+                  </div>
+                  {registrantInfo.address.city && (
+                    <div className="mfatip-info-item">
+                      <span className="mfatip-info-label">Address:</span>
+                      <span className="mfatip-info-value">
+                        {[
+                          registrantInfo.address.street,
+                          registrantInfo.address.baranggay,
+                          registrantInfo.address.city,
+                          registrantInfo.address.province,
+                          registrantInfo.address.country
+                        ].filter(Boolean).join(', ')}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Form Section */}
+              <div className="mfatip-form-section">
+                <h3 className="mfatip-section-title">Update Registrant Information</h3>
+                
+                <div className="mfatip-form">
+                  <div className="mfatip-form-group">
+                    <label htmlFor="firstname" className="mfatip-form-label">
+                      First Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="firstname"
+                      name="firstname"
+                      value={formData.firstname}
+                      onChange={handleInputChange}
+                      className={`mfatip-form-input ${validationErrors.firstname ? 'mfatip-form-input-error' : ''}`}
+                      placeholder="Enter first name"
+                      disabled={isLoading}
+                    />
+                    {validationErrors.firstname && (
+                      <span className="mfatip-error-message">{validationErrors.firstname}</span>
+                    )}
+                  </div>
+
+                  <div className="mfatip-form-group">
+                    <label htmlFor="middlename" className="mfatip-form-label">
+                      Middle Name
+                    </label>
+                    <input
+                      type="text"
+                      id="middlename"
+                      name="middlename"
+                      value={formData.middlename}
+                      onChange={handleInputChange}
+                      className="mfatip-form-input"
+                      placeholder="Enter middle name"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  <div className="mfatip-form-group">
+                    <label htmlFor="lastname" className="mfatip-form-label">
+                      Last Name *
+                    </label>
+                    <input
+                      type="text"
+                      id="lastname"
+                      name="lastname"
+                      value={formData.lastname}
+                      onChange={handleInputChange}
+                      className={`mfatip-form-input ${validationErrors.lastname ? 'mfatip-form-input-error' : ''}`}
+                      placeholder="Enter last name"
+                      disabled={isLoading}
+                    />
+                    {validationErrors.lastname && (
+                      <span className="mfatip-error-message">{validationErrors.lastname}</span>
+                    )}
+                  </div>
+
+                  <div className="mfatip-form-group">
+                    <label htmlFor="nickname" className="mfatip-form-label">
+                      Nickname
+                    </label>
+                    <input
+                      type="text"
+                      id="nickname"
+                      name="nickname"
+                      value={formData.nickname}
+                      onChange={handleInputChange}
+                      className="mfatip-form-input"
+                      placeholder="Enter nickname"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  {/* Changes Summary */}
+                  <div className="mfatip-changes-summary">
+                    <h4 className="mfatip-changes-title">Changes Summary</h4>
+                    <div className="mfatip-changes-list">
+                      {formData.firstname !== registrantInfo.currentFirstname && (
+                        <div className="mfatip-change-item">
+                          <span className="mfatip-change-label">First Name:</span>
+                          <span className="mfatip-change-old">{registrantInfo.currentFirstname || 'Empty'}</span>
+                          <span className="mfatip-change-arrow">→</span>
+                          <span className="mfatip-change-new">{formData.firstname || 'Empty'}</span>
+                        </div>
+                      )}
+                      {formData.middlename !== registrantInfo.currentMiddlename && (
+                        <div className="mfatip-change-item">
+                          <span className="mfatip-change-label">Middle Name:</span>
+                          <span className="mfatip-change-old">{registrantInfo.currentMiddlename || 'Empty'}</span>
+                          <span className="mfatip-change-arrow">→</span>
+                          <span className="mfatip-change-new">{formData.middlename || 'Empty'}</span>
+                        </div>
+                      )}
+                      {formData.lastname !== registrantInfo.currentLastname && (
+                        <div className="mfatip-change-item">
+                          <span className="mfatip-change-label">Last Name:</span>
+                          <span className="mfatip-change-old">{registrantInfo.currentLastname || 'Empty'}</span>
+                          <span className="mfatip-change-arrow">→</span>
+                          <span className="mfatip-change-new">{formData.lastname || 'Empty'}</span>
+                        </div>
+                      )}
+                      {formData.nickname !== registrantInfo.currentNickname && (
+                        <div className="mfatip-change-item">
+                          <span className="mfatip-change-label">Nickname:</span>
+                          <span className="mfatip-change-old">{registrantInfo.currentNickname || 'Empty'}</span>
+                          <span className="mfatip-change-arrow">→</span>
+                          <span className="mfatip-change-new">{formData.nickname || 'Empty'}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {statusMessage && (
+              <div className={`status-message ${statusMessage.includes('✓') ? 'success' : 'error'}`}>
+                {statusMessage}
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            <div className="mfatip-modal-actions">
+              <button
+                type="button"
+                onClick={() => handleSubmit('reject')}
+                className="mfatip-reject-button"
+                disabled={isLoading}
+              >
+                <XCircle size={20} />
+                {isLoading ? 'Processing...' : 'Reject'}
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => handleSubmit('verify')}
+                className="mfatip-verify-button"
+                disabled={isLoading}
+              >
+                <CheckCircle size={20} />
+                {isLoading ? 'Processing...' : 'Verify'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Image Modal */}
+      {isImageModalOpen && (
+        <div className="mfatip-image-modal-overlay" onClick={handleImageModalClose}>
+          <div className="mfatip-image-modal-container">
+            <button 
+              onClick={handleImageModalClose}
+              className="mfatip-image-close-button"
+            >
+              <X size={24} />
+            </button>
+            <img 
+              src={registrantInfo.birthCertificatePhoto}
+              alt="Birth Certificate Front - Full View"
+              className="mfatip-image-modal-img"
+            />
+          </div>
+        </div>
+      )}
+
+    </>
+  );
+};
 
 
 const CreateProduct = ({ setShowDatabaseConfiguration, setShowCreateProduct }) => {

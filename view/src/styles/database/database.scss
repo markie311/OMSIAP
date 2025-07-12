@@ -7193,3 +7193,689 @@ color: white;
   color: #0c5460;
 }
 // end of order reject form
+
+// start of mfatip registered registrants verification
+/* MFATIP Registered Registrants Verification Modal Styles */
+/* Dark theme to match the database interface */
+
+.mfatip-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.mfatip-modal-container {
+  background: linear-gradient(135deg, #2a2a2a 0%, #1e1e1e 100%);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1200px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  border: 1px solid #404040;
+}
+
+.mfatip-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 24px;
+  border-bottom: 1px solid #404040;
+  background: linear-gradient(135deg, #333333 0%, #2a2a2a 100%);
+  border-radius: 16px 16px 0 0;
+}
+
+.mfatip-modal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.mfatip-registrant-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mfatip-registrant-id {
+  font-size: 0.875rem;
+  color: #b0b0b0;
+  font-family: 'Courier New', monospace;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid #555555;
+}
+
+.mfatip-status-badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.mfatip-status-unverified {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #ffffff;
+  border: 1px solid #f59e0b;
+}
+
+.mfatip-status-verified {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid #10b981;
+}
+
+.mfatip-status-rejected {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: 1px solid #ef4444;
+}
+
+.mfatip-close-button {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #555555;
+  cursor: pointer;
+  padding: 8px;
+  color: #b0b0b0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.mfatip-close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+.mfatip-close-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.mfatip-modal-content {
+  padding: 24px;
+  background: #1e1e1e;
+}
+
+.mfatip-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 32px;
+}
+
+.mfatip-section-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 16px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.mfatip-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 2px;
+}
+
+.mfatip-certificate-section {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #404040;
+  backdrop-filter: blur(10px);
+}
+
+.mfatip-certificate-image-container {
+  position: relative;
+  border: 2px solid #404040;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 16px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mfatip-certificate-image-container:hover {
+  border-color: #3b82f6;
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
+}
+
+.mfatip-certificate-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+.mfatip-zoom-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  opacity: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.mfatip-certificate-image-container:hover .mfatip-zoom-overlay {
+  opacity: 1;
+}
+
+.mfatip-zoom-overlay span {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.mfatip-reference-container {
+  margin-bottom: 24px;
+}
+
+.mfatip-reference-label {
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #b0b0b0;
+  margin-bottom: 8px;
+}
+
+.mfatip-reference-number {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #555555;
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #ffffff;
+  word-break: break-all;
+  backdrop-filter: blur(10px);
+}
+
+.mfatip-additional-info {
+  border-top: 1px solid #404040;
+  padding-top: 16px;
+}
+
+.mfatip-info-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.mfatip-info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mfatip-info-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #b0b0b0;
+  flex-shrink: 0;
+}
+
+.mfatip-info-value {
+  font-size: 0.875rem;
+  color: #ffffff;
+  text-align: right;
+  word-break: break-word;
+}
+
+.mfatip-form-section {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid #404040;
+  backdrop-filter: blur(10px);
+}
+
+.mfatip-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.mfatip-form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.mfatip-form-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #b0b0b0;
+  margin-bottom: 6px;
+}
+
+.mfatip-form-input {
+  padding: 12px;
+  border: 1px solid #555555;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
+}
+
+.mfatip-form-input::placeholder {
+  color: #888888;
+}
+
+.mfatip-form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.mfatip-form-input:disabled {
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mfatip-form-input-error {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.mfatip-form-input-error:focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
+}
+
+.mfatip-error-message {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 4px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.mfatip-changes-summary {
+  margin-top: 24px;
+  padding: 16px;
+  background: rgba(59, 130, 246, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.mfatip-changes-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.mfatip-changes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mfatip-change-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.875rem;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mfatip-change-label {
+  font-weight: 500;
+  color: #b0b0b0;
+  min-width: 90px;
+}
+
+.mfatip-change-old {
+  color: #ef4444;
+  text-decoration: line-through;
+  opacity: 0.8;
+}
+
+.mfatip-change-arrow {
+  color: #3b82f6;
+  font-weight: bold;
+}
+
+.mfatip-change-new {
+  color: #10b981;
+  font-weight: 600;
+}
+
+.mfatip-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 24px;
+  border-top: 1px solid #404040;
+}
+
+.mfatip-reject-button,
+.mfatip-verify-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.mfatip-reject-button {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  border: 1px solid #ef4444;
+}
+
+.mfatip-reject-button:hover {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
+}
+
+.mfatip-reject-button:disabled {
+  background: rgba(239, 68, 68, 0.4);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.mfatip-verify-button {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid #10b981;
+}
+
+.mfatip-verify-button:hover {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(16, 185, 129, 0.3);
+}
+
+.mfatip-verify-button:disabled {
+  background: rgba(16, 185, 129, 0.4);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.mfatip-image-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.95);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  padding: 20px;
+  backdrop-filter: blur(8px);
+}
+
+.mfatip-image-modal-container {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+}
+
+.mfatip-image-close-button {
+  position: absolute;
+  top: -50px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #555555;
+  color: #ffffff;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.mfatip-image-close-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+.mfatip-image-modal-img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .mfatip-modal-container {
+    max-width: 95vw;
+  }
+  
+  .mfatip-content-grid {
+    gap: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .mfatip-modal-overlay {
+    padding: 10px;
+  }
+
+  .mfatip-modal-container {
+    margin: 0;
+    max-height: 95vh;
+    border-radius: 12px;
+  }
+
+  .mfatip-content-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .mfatip-modal-header {
+    padding: 16px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .mfatip-modal-content {
+    padding: 16px;
+  }
+
+  .mfatip-modal-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .mfatip-reject-button,
+  .mfatip-verify-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .mfatip-registrant-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .mfatip-info-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .mfatip-info-value {
+    text-align: left;
+  }
+
+  .mfatip-certificate-section,
+  .mfatip-form-section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mfatip-modal-overlay {
+    padding: 5px;
+  }
+
+  .mfatip-modal-header {
+    padding: 12px;
+  }
+
+  .mfatip-modal-content {
+    padding: 12px;
+  }
+
+  .mfatip-modal-title {
+    font-size: 1.25rem;
+  }
+
+  .mfatip-certificate-image {
+    height: 200px;
+  }
+
+  .mfatip-form {
+    gap: 16px;
+  }
+
+  .mfatip-change-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .mfatip-change-label {
+    min-width: auto;
+  }
+
+  .mfatip-certificate-section,
+  .mfatip-form-section {
+    padding: 12px;
+  }
+
+  .mfatip-image-close-button {
+    top: -45px;
+    padding: 8px;
+  }
+}
+
+/* Scrollbar Styling for Dark Theme */
+.mfatip-modal-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.mfatip-modal-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.mfatip-modal-container::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.mfatip-modal-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Animation for modal appearance */
+@keyframes mfatip-modal-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.mfatip-modal-container {
+  animation: mfatip-modal-fade-in 0.3s ease-out;
+}
+
+/* Focus styles for accessibility */
+.mfatip-close-button:focus,
+.mfatip-reject-button:focus,
+.mfatip-verify-button:focus,
+.mfatip-form-input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .mfatip-modal-container {
+    border: 2px solid #ffffff;
+  }
+  
+  .mfatip-form-input {
+    border: 2px solid #ffffff;
+  }
+  
+  .mfatip-status-badge {
+    border: 2px solid currentColor;
+  }
+}
+// end of mfatip registered registrants verification

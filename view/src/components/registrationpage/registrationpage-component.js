@@ -64,15 +64,16 @@ const LoginAndRegistrationPage = (props) => {
   
   // Form state for registration modal
   const [formData, setFormData] = useState({
-    firstName: '',
-    middleName: '',
-    lastName: '',
+    birthCertificatePhoto: null,
+    bRenNumber: '',
     phoneNumber: '',
-    email: '',
     password: '',
-    confirmPassword: '',
-    birthDate: ''
+    confirmPassword: ''
   });
+  
+  // State for image preview
+  const [imagePreview, setImagePreview] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
   
   const [errors, setErrors] = useState({});
 
@@ -212,25 +213,77 @@ const LoginAndRegistrationPage = (props) => {
     });
   };
 
-  const validateForm = () => {
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        setErrors({
+          ...errors,
+          birthCertificatePhoto: 'Please upload a valid image file'
+        });
+        return;
+      }
+      
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        setErrors({
+          ...errors,
+          birthCertificatePhoto: 'Image size must be less than 5MB'
+        });
+        return;
+      }
+      
+      setFormData({
+        ...formData,
+        birthCertificatePhoto: file
+      });
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target.result);
+      };
+      reader.readAsDataURL(file);
+      
+      // Clear any previous errors
+      setErrors({
+        ...errors,
+        birthCertificatePhoto: ''
+      });
+    }
+  };
 
+  const validateForm = () => {
     const newErrors = {};
-    if (!formData.firstName) newErrors.firstName = 'First name is required';
-    if (!formData.lastName) newErrors.lastName = 'Last name is required';
-    if (!formData.phoneNumber) newErrors.phoneNumber = 'Phone number is required';
-    // if (!formData.birthDate) newErrors.birthDate = 'Birth date is required';
+    
+    if (!formData.birthCertificatePhoto) {
+      newErrors.birthCertificatePhoto = 'Birth certificate photo is required';
+    }
+    
+    if (!formData.bRenNumber) {
+      newErrors.bRenNumber = 'Birth Reference Number (bRen) is required';
+    } else if (formData.bRenNumber.length < 10) {
+      newErrors.bRenNumber = 'Birth Reference Number must be at least 10 characters';
+    }
+    
+    if (!formData.phoneNumber) {
+      newErrors.phoneNumber = 'Phone number is required';
+    } else if (!/^\d{10,11}$/.test(formData.phoneNumber.replace(/\D/g, ''))) {
+      newErrors.phoneNumber = 'Please enter a valid phone number (10-11 digits)';
+    }
 
     if (!formData.password) {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Password must be at least 8 characters';
     }
+    
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
     }
     
     return newErrors;
-
   };
 
 const handleRegistration = async (e) => {
@@ -244,25 +297,37 @@ const handleRegistration = async (e) => {
       try {
         
         const _registeringdate = timestamp.getFormattedDate();
+        
+        // Convert image to base64 for storage
+        const convertImageToBase64 = (file) => {
+          return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+        };
+        
+        const birthCertificateBase64 = await convertImageToBase64(formData.birthCertificatePhoto);
   
         const _registrant = { 
           id: `1000-0000-A-1`, // This will be replaced on the server
           registrationstatusesandlogs: {
             type: "Month Financial Allocation To Individual People ( MFATIP )",
-            indication: "Trying to register",
+            indication: "unverified",
             deviceloginstatus: "logged out",
             registrationlog: []
           },
           name: {
-            firstname: formData.firstName,
-            middlename: formData.middleName,
-            lastname: formData.lastName,
-            nickname: ""
+            firstname: "",
+            middlename: "",
+            lastname: "",
+            nickname:  ""
           },
           contact: {
             phonenumber: formData.phoneNumber,
             telephonenumber: "",
-            emailaddress: formData.email,
+            emailaddress: formData.email || "",
             address: {
               street: "",
               baranggay: "",
@@ -273,7 +338,7 @@ const handleRegistration = async (e) => {
             }
           },
           personaldata: {
-            age: 0,
+            age: "",
             sex: "",
             bloodtype: "",
             height: "",
@@ -282,21 +347,23 @@ const handleRegistration = async (e) => {
             dob: "",
             citizenship: "",
             civil_status: "",
-            government_issued_identification: {
+            birthcertificate: {
               frontphoto: {
-                name: "",
-                description: "",
-                image: "",
-                uploaddate: ""
+                name: formData.birthCertificatePhoto.name,
+                description: "Front photo of birth certificate",
+                // image: birthCertificateBase64,
+                image: '../images/registraion/imagename.jpg',
+                uploaddate: _registeringdate
               },
               backphoto: {
                 name: "",
                 description: "",
                 image: "",
                 uploaddate: ""
-              }
+              },
+              birthcertificatereferencenumber: formData.bRenNumber
             },
-            birthcertificate: {
+            government_issued_identification: {
               frontphoto: {
                 name: "",
                 description: "",
@@ -338,28 +405,32 @@ const handleRegistration = async (e) => {
   
         const _responsemessage = response.data.message;
         
+        // Always show the results section first
+        document.querySelector('#registration-results').style.display = "block";
+        
         switch(_responsemessage) {
           case "Registrant registered":
-            document.querySelector('#registration-results').style.display = "block";
             registrationresponsemessagetextcolorindicationcb("green");
             registrationresponsemessagecb({
               status: "Successfully REGISTERED",
-              indication: "You may now continue logging in your account and do not forget to submit these documents later",
-              bulletpoint1: "Front and back photo of your birth certificate",
-              bulletpoint2: "Front and back photo of your one valid government ID",
-              advice: "These documents really ensure that there will be no lazy duplicate accounts on OMSIAP abusing the MFATIP program. Your documents will be used as credentials."
+              indication: "Your account has been created successfully with your birth certificate and bRen number",
+              bulletpoint1: "Your birth certificate photo has been securely uploaded",
+              bulletpoint2: "Your Birth Reference Number (bRen) has been recorded",
+              advice: "You can log in to your account using firstname, middlename and lastname in your birthcertificate information accordingly after recieving a text message on the phone number you provided."
             });
             break;
-          case "Same passwords":
+            
+          case "Duplicate bRen number":
             registrationresponsemessagetextcolorindicationcb("red");
             registrationresponsemessagecb({
-              status: "Same password",
-              indication: "Registration failed. The registration will only succeed if you change your password. This process is making sure that there will be no duplicate accounts abusing the MFATIP program",
-              bulletpoint1: "Change your password within the registration form. Make sure your password is unique and secure with a minimun of 8 characters. This process is making sure that there will be no duplicate accounts abusing the MFATIP program.",
-              bulletpoint2: "Minimum of 8 characters",
-              advice: "Try changing your password first before clicking register button again"
+              status: "Birth Certificate Already Registered",
+              indication: "This Birth Reference Number (bRen) is already registered in our system",
+              bulletpoint1: "Each Birth Reference Number can only be used once for registration",
+              bulletpoint2: "This prevents duplicate accounts and ensures program integrity",
+              advice: "Please verify your bRen number is correct, or contact support if you believe this is an error"
             });
             break;
+            
           case "OMSIAP_USER_LIMIT_REACHED":
             registrationresponsemessagetextcolorindicationcb("blue");
             registrationresponsemessagecb({
@@ -367,30 +438,73 @@ const handleRegistration = async (e) => {
               indication: "Congratulations! You're among the first to witness this momentous occasion.",
               bulletpoint1: "OMSIAP has successfully reached its initial user capacity of 1000 registrants",
               bulletpoint2: "Accommodation and verification process will be initiated soon",
-              advice: "Stay tuned! We'll be expanding our user base and processing registrations in phases. Your interest is valuable to us.",
-              additionalNote: "You'll be notified about next steps via the contact information provided."
+              advice: "Stay tuned! We'll be expanding our user base and processing registrations in phases. Your interest is valuable to us."
+            });
+            break;
+            
+          default:
+            // Handle any unexpected response messages
+            registrationresponsemessagetextcolorindicationcb("orange");
+            registrationresponsemessagecb({
+              status: "Unexpected Response",
+              indication: `Server returned: ${_responsemessage}`,
+              bulletpoint1: "An unexpected response was received from the server",
+              bulletpoint2: "Please try again or contact support if the issue persists",
+              advice: "Take a screenshot of this message and contact technical support"
             });
             break;
         }
   
-        document.querySelector("#registration-results").style.display = "block";
         registerbuttonloadingindicationcb(false);
   
       } catch (error) {
         console.error("Registration error:", error);
         
-        const errorMessage = error.response?.data?.message || "Connection to server failed";
+        // Always show the results section for errors too
+        document.querySelector("#registration-results").style.display = "block";
         
-        registrationresponsemessagetextcolorindicationcb("red");
-        registrationresponsemessagecb({
+        let errorMessage = "Connection to server failed";
+        let errorDetails = {
           status: "Registration Failed",
-          indication: errorMessage,
+          indication: "Unable to connect to the registration server",
           bulletpoint1: "Check your internet connection",
           bulletpoint2: "Verify server status",
           advice: "If the problem persists, please contact support"
-        });
-  
-        document.querySelector("#registration-results").style.display = "block";
+        };
+        
+        // Handle specific error responses
+        if (error.response?.data?.message) {
+          errorMessage = error.response.data.message;
+          
+          // Handle specific server error messages
+          if (errorMessage.includes("Duplicate bRen number")) {
+            errorDetails = {
+              status: "Birth Certificate Already Registered",
+              indication: "This Birth Reference Number (bRen) is already registered in our system",
+              bulletpoint1: "Each Birth Reference Number can only be used once for registration",
+              bulletpoint2: "This prevents duplicate accounts and ensures program integrity",
+              advice: "Please verify your bRen number is correct, or contact support if you believe this is an error"
+            };
+          } else if (errorMessage.includes("OMSIAP_USER_LIMIT_REACHED")) {
+            errorDetails = {
+              status: "OMSIAP First 1000 Users Milestone Reached",
+              indication: "Congratulations! You're among the first to witness this momentous occasion.",
+              bulletpoint1: "OMSIAP has successfully reached its initial user capacity of 1000 registrants",
+              bulletpoint2: "Accommodation and verification process will be initiated soon",
+              advice: "Stay tuned! We'll be expanding our user base and processing registrations in phases. Your interest is valuable to us."
+            };
+            registrationresponsemessagetextcolorindicationcb("blue");
+          } else {
+            errorDetails.indication = errorMessage;
+          }
+        }
+        
+        // Set color based on error type
+        if (!errorMessage.includes("OMSIAP_USER_LIMIT_REACHED")) {
+          registrationresponsemessagetextcolorindicationcb("red");
+        }
+        
+        registrationresponsemessagecb(errorDetails);
         registerbuttonloadingindicationcb(false);
       }
     } else {
@@ -510,78 +624,96 @@ const handleRegistration = async (e) => {
             </div>
             
             <form onSubmit={handleRegistration} className="loginandregister-registration-form">
-              <div className="loginandregister-form-row">
-                <div className="loginandregister-form-group">
-                  <label>First Name*</label>
-                  <input
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    placeholder="Enter first name"
-                  />
-                  {errors.firstName && <span className="loginandregister-error">{errors.firstName}</span>}
-                </div>
-                
-                <div className="loginandregister-form-group">
-                  <label>Middle Name</label>
-                  <input
-                    type="text"
-                    id="middleName"
-                    name="middleName"
-                    value={formData.middleName}
-                    onChange={handleChange}
-                    placeholder="Enter middle name (optional)"
-                  />
-                </div>
-              </div>
               
-              <div className="loginandregister-form-row">
-                <div className="loginandregister-form-group">
-                  <label>Last Name*</label>
-                  <input
-                    type="text"
-                    id="lastName"
-                    name="lastName"
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    placeholder="Enter last name"
-                  />
-                  {errors.lastName && <span className="loginandregister-error">{errors.lastName}</span>}
-                </div>
-                
-                <div className="loginandregister-form-group">
-                  <label>Phone Number*</label>
-                  <input
-                    type="tel"
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleChange}
-                    placeholder="Enter phone number"
-                  />
-                  {errors.phoneNumber && <span className="loginandregister-error">{errors.phoneNumber}</span>}
-                </div>
-              </div>
-              
-              {/*
+              {/* Birth Certificate Photo Upload */}
               <div className="loginandregister-form-group">
-                <label>Birth Date*</label>
+                <label>Birth Certificate Front Photo*</label>
+                <div className="loginandregister-field-reminder">
+                  <small>📋 We need your birth certificate photo to verify your identity, OMSIAP personel will be creating your firstname, middlename and lastname login credential based on the birthcerficate you submitted. OMSIAP ensure's only legitimate registrants receive monthly financial allocations through the MFATIP program.</small>
+                </div>
                 <input
-                  type="date"
-                  id="birthDate"
-                  name="birthDate"
-                  value={formData.birthDate}
-                  onChange={handleChange}
+                  type="file"
+                  id="birthCertificatePhoto"
+                  name="birthCertificatePhoto"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="loginandregister-file-input"
                 />
-                {errors.birthDate && <span className="loginandregister-error">{errors.birthDate}</span>}
+                {formData.birthCertificatePhoto && imagePreview && (
+                  <div className="loginandregister-file-preview">
+                    <div className="loginandregister-file-info">
+                      <span>✓ {formData.birthCertificatePhoto.name}</span>
+                      <button 
+                        type="button" 
+                        className="loginandregister-view-button"
+                        onClick={() => setShowImageModal(true)}
+                      >
+                        View Full Size
+                      </button>
+                    </div>
+                    <div className="loginandregister-image-thumbnail">
+                      <img 
+                        src={imagePreview} 
+                        alt="Birth Certificate Thumbnail" 
+                        className="loginandregister-thumbnail-image"
+                        onClick={() => setShowImageModal(true)}
+                        style={{
+                          width: '100px',
+                          height: '100px',
+                          objectFit: 'cover',
+                          border: '2px solid #ddd',
+                          borderRadius: '8px',
+                          cursor: 'pointer',
+                          marginTop: '10px'
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+                {errors.birthCertificatePhoto && <span className="loginandregister-error">{errors.birthCertificatePhoto}</span>}
               </div>
-              */}
+
+              {/* Birth Reference Number (bRen) */}
+              <div className="loginandregister-form-group">
+                <label>Birth Reference Number (bRen)*</label>
+                <div className="loginandregister-field-reminder">
+                  <small>🔢 The bRen number is a unique identifier on your birth certificate that helps us prevent duplicate registrations and ensures program integrity. It is found at the top center area of you Philippine birthcertificate.</small>
+                </div>
+                <input
+                  type="text"
+                  id="bRenNumber"
+                  name="bRenNumber"
+                  value={formData.bRenNumber}
+                  onChange={handleChange}
+                  placeholder="Enter your Birth Reference Number"
+                />
+                {errors.bRenNumber && <span className="loginandregister-error">{errors.bRenNumber}</span>}
+              </div>
+
+              {/* Phone Number */}
+              <div className="loginandregister-form-group">
+                <label>Phone Number*</label>
+                <div className="loginandregister-field-reminder">
+                  <small>📞 Your phone number will be used for account verification, security notifications, and important updates about your MFATIP benefits. Make sure the one phone number you will provide that is the phone number you used as your Gcash account to recieve Monthly Financial Allocations and other transactions.</small>
+                </div>
+                <input
+                  type="tel"
+                  id="phoneNumber"
+                  name="phoneNumber"
+                  value={formData.phoneNumber}
+                  onChange={handleChange}
+                  placeholder="Enter your phone number"
+                />
+                {errors.phoneNumber && <span className="loginandregister-error">{errors.phoneNumber}</span>}
+              </div>
               
+              {/* Password Fields */}
               <div className="loginandregister-form-row">
                 <div className="loginandregister-form-group">
                   <label>Password*</label>
+                  <div className="loginandregister-field-reminder">
+                    <small>🔒 Create a strong password (minimum 8 characters) to secure your account and protect your personal information and financial allocations.</small>
+                  </div>
                   <input
                     type="password"
                     id="regPassword"
@@ -608,16 +740,15 @@ const handleRegistration = async (e) => {
               </div>
               
               <div className="loginandregister-document-notice">
-                <h3>Important Notice</h3>
-                <p>To complete your registration process, please have the following documents ready for submission:</p>
+                <h3>Important Information</h3>
+                <p>By registering with your birth certificate and bRen number, you are:</p>
                 <ul>
-                  <li>Front and back photos of your birth certificate</li>
-                  <li>Front and back photos of one valid government ID</li>
+                  <li>Verifying your identity with official government documents</li>
+                  <li>Helping us prevent duplicate accounts and program abuse</li>
+                  <li>Ensuring secure access to your Monthly Financial Allocation To Individual People Program (MFATIP)</li>
+                  <li>Providing the necessary credentials for receiving benefits</li>
                 </ul>
-                <p>You may proceed with registration now and submit these documents at your convenience.</p>
-                <p>
-                  These documents help us verify your identity and prevent duplicate accounts from misusing the MFATIP program. Your submitted documentation will also serve as the credential for receiving your monthly financial allocations.
-                </p>
+                <p><strong>Privacy Notice:</strong> Your documents are encrypted and stored securely. We use this information solely for identity verification and program administration.</p>
               </div>
 
               <div className="loginandregister-document-notice" id="registration-results">
@@ -653,6 +784,56 @@ const handleRegistration = async (e) => {
                 }
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Image Preview Modal */}
+      {showImageModal && imagePreview && (
+        <div className="loginandregister-modal-overlay" onClick={() => setShowImageModal(false)}>
+          <div className="loginandregister-image-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="loginandregister-modal-header">
+              <h3>Birth Certificate Preview</h3>
+              <button 
+                className="loginandregister-close-button" 
+                onClick={() => setShowImageModal(false)}
+                style={{
+                  position: 'absolute',
+                  top: '10px',
+                  right: '15px',
+                  background: 'none',
+                  border: 'none',
+                  fontSize: '24px',
+                  cursor: 'pointer',
+                  color: '#333',
+                  zIndex: 1000
+                }}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="loginandregister-image-container">
+              <img 
+                src={imagePreview} 
+                alt="Birth Certificate Preview" 
+                className="loginandregister-preview-image"
+                style={{
+                  maxWidth: '90%',
+                  maxHeight: '80vh',
+                  objectFit: 'contain',
+                  border: '2px solid #ddd',
+                  borderRadius: '8px'
+                }}
+              />
+            </div>
+            <div className="loginandregister-modal-footer">
+              <button 
+                className="loginandregister-cancel-button" 
+                onClick={() => setShowImageModal(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

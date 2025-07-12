@@ -888,8 +888,8 @@ address: {
     uploaddate: {
      type: 'string'
     }
-   },
-   backphoto: {
+  },
+  backphoto: {
      name: {
        type: 'string'
       },
@@ -902,7 +902,10 @@ address: {
       uploaddate: {
        type: 'string'
       }
-   }
+  },
+  birthcertificatereferencenumber: {
+    type: 'string'
+  }
  }
  },
  passwords: {

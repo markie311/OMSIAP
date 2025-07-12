@@ -2761,10 +2761,11 @@ Router.put('/profile/update', (req, res, next) => {
 });
 
 
+// Updated verifymfatipregistrant route
 Router.post('/verifymfatipregistrant', async (req, res) => {
   try {
-    const { id } = req.body;
-    
+    const { id, originalData, updatedData, registrationInfo, action } = req.body;
+
     // Validate input
     if (!id) {
       return res.status(400).json({
@@ -2772,74 +2773,131 @@ Router.post('/verifymfatipregistrant', async (req, res) => {
         message: 'Registrant ID is required'
       });
     }
-    
+
+    if (!updatedData || !updatedData.firstname || !updatedData.lastname) {
+      return res.status(400).json({
+        success: false,
+        message: 'First name and last name are required'
+      });
+    }
+
+    if (!action || !['verify', 'reject'].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid action (verify or reject) is required'
+      });
+    }
+
     // Find the registrant
     const user = await RegistrantDataModel.findById(id);
-    
+
     if (!user) {
       return res.status(404).json({
         success: false,
         message: 'Registrant not found'
       });
     }
-    
-    // Check if already verified
-    if (user.registrationstatusesandlogs.indication === 'Verified') {
+
+    // Check if already verified (only for verify action)
+    if (action === 'verify' && user.registrationstatusesandlogs.indication === 'Verified') {
       return res.status(409).json({
         success: false,
         message: 'Registrant is already verified'
       });
     }
-    
-    // Create verification log entry using custom timestamps
-    const verificationLogEntry = {
-      date: timestamps.getFormattedDate(),
-      type: 'verification',
-      indication: 'Verified',
-      messages: [{
-        message: 'Account verified by administrator'
-      }]
+
+    // Prepare update data - using nested name structure
+    const updateData = {
+      'name.firstname': updatedData.firstname,
+      'name.middlename': updatedData.middlename || '',
+      'name.lastname': updatedData.lastname,
+      'name.nickname': updatedData.nickname || ''
     };
-    
-    // Update registrant status
+
+    // Create log entry based on action
+    const logEntry = {
+      date: timestamps.getFormattedDate(),
+      type: action === 'verify' ? 'verification' : 'rejection',
+      indication: action === 'verify' ? 'Verified' : 'Rejected',
+      messages: []
+    };
+
+    // Add appropriate messages based on action
+    if (action === 'verify') {
+      logEntry.messages.push({
+        message: 'Account verified by administrator'
+      });
+      
+      // Check if name was updated
+      const nameChanged = (
+        originalData.firstname !== updatedData.firstname ||
+        originalData.middlename !== updatedData.middlename ||
+        originalData.lastname !== updatedData.lastname ||
+        originalData.nickname !== updatedData.nickname
+      );
+
+      if (nameChanged) {
+        const originalFullName = `${originalData.firstname || ''} ${originalData.middlename || ''} ${originalData.lastname || ''}`.trim();
+        const updatedFullName = `${updatedData.firstname || ''} ${updatedData.middlename || ''} ${updatedData.lastname || ''}`.trim();
+        
+        logEntry.messages.push({
+          message: `Name updated from "${originalFullName}" to "${updatedFullName}"`
+        });
+      }
+    } else {
+      logEntry.messages.push({
+        message: 'Account rejected by administrator'
+      });
+    }
+
+    // Prepare the update query
+    const updateQuery = {
+      $set: {
+        ...updateData,
+        'registrationstatusesandlogs.indication': action === 'verify' ? 'Verified' : 'Rejected',
+        'registrationstatusesandlogs.type': 'Month Financial Allocation To Individual People ( MFATIP )'
+      },
+      $push: {
+        'registrationstatusesandlogs.registrationlog': logEntry
+      }
+    };
+
+    // Update registrant
     const updatedUser = await RegistrantDataModel.findByIdAndUpdate(
       id,
+      updateQuery,
       {
-        $set: {
-          'registrationstatusesandlogs.indication': 'Verified',
-          'registrationstatusesandlogs.type': 'Month Financial Allocation To Individual People ( MFATIP )'
-        },
-        $push: {
-          'registrationstatusesandlogs.registrationlog': verificationLogEntry
-        }
-      },
-      { 
         new: true, // Return updated document
         runValidators: true // Run schema validators
       }
     );
-    
+
     if (!updatedUser) {
       return res.status(500).json({
         success: false,
-        message: 'Failed to update registrant status'
+        message: 'Failed to update registrant'
       });
     }
-    
+
     // Success response
     res.status(200).json({
       success: true,
-      message: 'Registrant verified successfully',
+      message: `Registrant ${action === 'verify' ? 'verified' : 'rejected'} successfully`,
       registrant: {
         _id: updatedUser._id,
-        registrationstatusesandlogs: updatedUser.registrationstatusesandlogs,
-        name: updatedUser.name
+        name: {
+          firstname: updatedUser.name.firstname,
+          middlename: updatedUser.name.middlename,
+          lastname: updatedUser.name.lastname,
+          nickname: updatedUser.name.nickname
+        },
+        registrationstatusesandlogs: updatedUser.registrationstatusesandlogs
       }
     });
-    
+
   } catch (error) {
-    console.error('Error verifying MFATIP registrant:', error);
-    
+    console.error('Error processing MFATIP registrant:', error);
+
     // Handle specific MongoDB errors
     if (error.name === 'CastError') {
       return res.status(400).json({
@@ -2847,21 +2905,48 @@ Router.post('/verifymfatipregistrant', async (req, res) => {
         message: 'Invalid registrant ID format'
       });
     }
-    
+
     if (error.name === 'ValidationError') {
-      return res.status(400).json({
+      return res.status(422).json({
         success: false,
         message: 'Validation error: ' + error.message
       });
     }
-    
+
+    if (error.name === 'MongoNetworkError') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection error. Please try again later.'
+      });
+    }
+
+    if (error.name === 'MongoTimeoutError') {
+      return res.status(408).json({
+        success: false,
+        message: 'Database operation timed out. Please try again.'
+      });
+    }
+
     // Generic server error
     res.status(500).json({
       success: false,
-      message: 'Internal server error occurred while verifying registrant'
+      message: 'Internal server error occurred while processing registrant'
     });
   }
 });
+
+// Additional helper function for better error handling
+const handleNetworkError = (error, setStatusMessage) => {
+  if (error.code === 'ECONNABORTED') {
+    setStatusMessage('✗ Request timed out. Please check your connection and try again.');
+  } else if (error.code === 'ENOTFOUND') {
+    setStatusMessage('✗ Cannot reach server. Please check your internet connection.');
+  } else if (error.code === 'ECONNREFUSED') {
+    setStatusMessage('✗ Connection refused. The server may be down.');
+  } else {
+    setStatusMessage('✗ Network error: Please check your internet connection and try again.');
+  }
+};
 
 // Backend: /rejectmfatipregistrant route
 Router.post('/rejectmfatipregistrant', async (req, res) => {
