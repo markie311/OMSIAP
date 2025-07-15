@@ -123,6 +123,9 @@ const CheckoutPage = (props) => {
   const location = useLocation()
   const navigate = useNavigate()
 
+  const [authError, setAuthError] = useState("")
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false)
+
   // Use useMemo to stabilize orderData reference
   const orderData = useMemo(() => {
     const data = location.state?.orderData || { cartItems: [], cartStats: {} }
@@ -173,7 +176,7 @@ const CheckoutPage = (props) => {
 
   // Enhanced payment details
   const [paymentDetails, setPaymentDetails] = useState({
-    omsiapawastoBalance: 5000.123456, // Example balance with decimals
+    omsiapawastoBalance: props.user.credits.omsiapawas.amount, // Example balance with decimals
     selectedPaymentMethod: "omsiapawasto",
     balanceAfterPayment: 0,
     transactionFee: 0,
@@ -203,6 +206,44 @@ const CheckoutPage = (props) => {
     }
 
     return fallbackUrl
+  }
+
+  // Add this function after the getImageUrl helper function
+  const validateUserAuthentication = () => {
+    setIsCheckingAuth(true)
+    setAuthError("")
+
+    // Check if user is logged in
+    if (!props.user || !props.user._id) {
+      setAuthError("You must be logged in to place an order. Please log in first.")
+      setIsCheckingAuth(false)
+      return false
+    }
+
+    // Check if user has device login status
+    if (props.user.registrationstatusesandlogs?.deviceloginstatus !== 'logged_in') {
+      setAuthError("Your session has expired. Please log in again to continue.")
+      setIsCheckingAuth(false)
+      return false
+    }
+
+    // Check if user has OMSIAPAWASTO credits
+    if (!props.user.credits?.omsiapawas) {
+      setAuthError("You don't have OMSIAPAWASTO credits set up. Please ensure you have credits cashed in before proceeding to order.")
+      setIsCheckingAuth(false)
+      return false
+    }
+
+    // Check if user has sufficient balance
+    const userBalance = props.user.credits.omsiapawas.amount || 0
+    if (userBalance < orderSummary.finalTotal) {
+      setAuthError(`Insufficient OMSIAPAWASTO balance. You need ${preciseCalculator.formatCurrency(orderSummary.finalTotal)} but only have ${preciseCalculator.formatCurrency(userBalance)}. Please cash in more credits before proceeding.`)
+      setIsCheckingAuth(false)
+      return false
+    }
+
+    setIsCheckingAuth(false)
+    return true
   }
 
   // Convert new cart structure to flat array for database compatibility
@@ -407,6 +448,12 @@ const CheckoutPage = (props) => {
   // Handle order submission
   const handleSubmit = async (e) => {
     e.preventDefault()
+
+     // First, validate authentication
+   if (!validateUserAuthentication()) {
+    return // Stop execution if authentication fails
+   }
+
     setFormSubmitted(true)
 
     if (paymentDetails.omsiapawastoBalance < orderSummary.finalTotal) {
@@ -529,6 +576,25 @@ const CheckoutPage = (props) => {
               Shipping & Personal Information
             </h2>
             <form onSubmit={handleSubmit} className="checkout-form">
+
+              {/* Add this authentication error display */}
+              {authError && (
+                <div className="checkout-auth-error" style={{
+                  backgroundColor: '#fef2f2',
+                  border: '1px solid #fecaca',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  marginBottom: '20px',
+                  color: '#dc2626',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <FaLock className="checkout-error-icon" />
+                  <span>{authError}</span>
+                </div>
+              )}
+
               <div className="checkout-form-section">
                 <h3 className="checkout-section-heading">Personal Details</h3>
                 <div className="checkout-form-grid">
@@ -705,16 +771,22 @@ const CheckoutPage = (props) => {
               </div>
 
               <button
-                type="submit"
-                className={`checkout-button ${formSubmitted ? "checkout-loading" : ""}`}
-                disabled={formSubmitted}
-              >
-                {formSubmitted ? (
-                  <>Processing Order...</>
-                ) : (
-                  <>Confirm Order & Pay {preciseCalculator.formatCurrency(orderSummary.finalTotal)} with OMSIAPAWASTO</>
-                )}
-              </button>
+                  type="submit"
+                  className={`checkout-button ${formSubmitted || isCheckingAuth ? "checkout-loading" : ""} ${authError ? "checkout-disabled" : ""}`}
+                  disabled={formSubmitted || isCheckingAuth || authError}
+                  style={authError ? { backgroundColor: '#9ca3af', cursor: 'not-allowed' } : {}}
+                >
+                  {isCheckingAuth ? (
+                    <>Checking Authentication...</>
+                  ) : formSubmitted ? (
+                    <>Processing Order...</>
+                  ) : authError ? (
+                    <>Please Log In First</>
+                  ) : (
+                    <>Confirm Order & Pay {preciseCalculator.formatCurrency(orderSummary.finalTotal)}</>
+                  )}
+                </button>
+
             </form>
           </div>
         </div>
@@ -896,6 +968,21 @@ const CheckoutPage = (props) => {
               <h3 className="checkout-section-heading">
                 <FaMoneyBillWave className="checkout-section-icon" /> Payment Method & Balance
               </h3>
+               {/* Add this authentication check display */}
+              {!props.user || !props.user._id ? (
+                <div className="checkout-auth-warning" style={{
+                  backgroundColor: '#fef3c7',
+                  border: '1px solid #fde68a',
+                  borderRadius: '6px',
+                  padding: '12px',
+                  marginBottom: '16px',
+                  color: '#92400e',
+                  textAlign: 'center'
+                }}>
+                  <FaLock style={{ marginRight: '8px' }} />
+                  Please log in to view payment options
+                </div>
+              ) : (
               <div className="checkout-payment-selection">
                 <label className="checkout-payment-method">
                   <input
@@ -919,6 +1006,7 @@ const CheckoutPage = (props) => {
                   </div>
                 </label>
               </div>
+              )}
 
               <div className="checkout-divider"></div>
 

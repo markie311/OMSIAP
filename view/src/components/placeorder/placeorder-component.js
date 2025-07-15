@@ -934,7 +934,7 @@ const PlaceOrderPage = () => {
                     ) : (
                       <>
                         <FaCheckCircle className="button-icon" />
-                        Place Order - Pay ₱{cartStats.total}
+                        Place Order - ₱{cartStats.total}
                       </>
                     )}
                   </motion.button>
