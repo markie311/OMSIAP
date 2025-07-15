@@ -1725,24 +1725,28 @@ const handleOmsiapawasTransferSubmit = async (e) => {
           >
             Cash out
           </button>
+          {/*
             <button
             className={`userdashboard-tab-btn ${activeTab === "omsiapawastransfer" ? "userdashboard-active" : ""}`}
             onClick={() => setActiveTab("omsiapawastransfer")}
           >
             OMSIAPAWAS transfer
           </button>
+          */}
           <button
             className={`userdashboard-tab-btn ${activeTab === "transactions" ? "userdashboard-active" : ""}`}
             onClick={() => setActiveTab("transactions")}
           >
             Transactions
           </button>
+          {/*
           <button
             className={`userdashboard-tab-btn ${activeTab === "settings" ? "userdashboard-active" : ""}`}
             onClick={() => setActiveTab("settings")}
           >
             Account Settings
           </button>
+          */}
         </div>
 
         <button className="userdashboard-gotohome-btn">
@@ -1948,405 +1952,453 @@ const handleOmsiapawasTransferSubmit = async (e) => {
 
         {/* Currency Exchange Tab */}
         {activeTab === "currencyexchange" && (
-         <div className="userdashboard-exchange-panel">
-            <section className="userdashboard-exchange-user-info">
-              <h2>Your Information</h2>
-              <br />
-              <br />
-              <div className="userdashboard-user-details">
-                <div className="userdashboard-user-info-row">
-                  <div className="userdashboard-user-info-item">
-                    <span className="info-label">Full Name:</span>
-                    <span className="info-value">
-                      {props.user.name.firstname} {props.user.name.middlename ? props.user.name.middlename + " " : ""}
-                      {props.user.name.lastname}
-                    </span>
-                  </div>
-                  <div className="userdashboard-user-info-item">
-                    <span className="info-label">Phone Number:</span>
-                    <span className="info-value">{props.user.contact.phonenumber}</span>
-                  </div>
-                </div>
-                <br />
-                <div className="userdashboard-user-info-row">
-                  <div className="userdashboard-user-info-item">
-                    <span className="info-label">
-                      Current&nbsp;
-                      <span className="tooltip-container">
-                        PESOS
-                        <span className="tooltip-text"></span>
-                      </span>{" "}
-                      &nbsp; Balance:
-                    </span>
-                    <span className="info-value omsiapas-balance">
-                      {props.user.credits.omsiapawas.amount}
-                      <span className="tooltip-container">
-                        &nbsp;PESOS
-                        <span className="tooltip-text"></span>
-                      </span>
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="userdashboard-exchange-notice">
-              <h2>Cash In Information</h2>
-              <div className="userdashboard-notice-content">
-                <ul className="exchange-info">
-                  <li style={{ color: "white" }} className="exchange-rate fade-in">
-                    The cash in rate is{" "}
-                    <strong>
-                      210 PHP = 200{" "}
-                      <span className="tooltip-container">
-                        PESOS
-                        <span className="tooltip-text"></span>
-                      </span>
-                    </strong>
-                    ,{" "}
-                    <strong>
-                      525 PHP = 500{" "}
-                      <span className="tooltip-container">
-                        PESOS
-                        <span className="tooltip-text"></span>
-                      </span>
-                    </strong>
-                    ,{" "}
-                    <strong>
-                      1050 PHP = 1000{" "}
-                      <span className="tooltip-container">
-                        PESOS
-                        <span className="tooltip-text"></span>
-                      </span>
-                    </strong>
-                    ,{" "}
-                    <strong>
-                      1575 PHP = 1500{" "}
-                      <span className="tooltip-container">
-                        PESOS
-                        <span className="tooltip-text"></span>
-                      </span>
-                    </strong>
-                    , and so on until reaching the maximum cash in amount.
-                  </li>
-                  <li className="min-amount slide-in">
-                    <FaInfoCircle className="icon" />
-                    Minimum cash in amount is <strong>210 PHP</strong> equivalent to <strong>200 peso's</strong>{" "}
-                    per transaction.
-                  </li>
-                  <li className="max-amount slide-in">
-                    <FaInfoCircle className="icon" />
-                    Maximum cash in amount is <strong>5,250 PHP</strong> equivalent to{" "}
-                    <strong>5,000 peso's</strong> per transaction.
-                  </li>
-                  <li className="process-info bounce-in">
-                    <FaMoneyBillWave className="icon" />
-                    All cash in transactions are processed through GCash payment integration and will be validated by OMSIAP
-                    personnel through the OMSIAP database management system.
-                  </li>
-                  <li style={{ color: "green" }} className="important-notice pulse">
-                    <FaExclamationTriangle className="icon warning" />
-                    Failure to send the exact amounts specified in the cash in form will result in your money being returned to
-                    your GCash account with a 50-peso deduction for processing, or disciplinary action for not following
-                    instructions.
-                  </li>
-                  <li style={{ color: "white" }} className="receipt-info fade-in">
-                    <FaReceipt className="icon" />
-                    All cash in transactions require a valid GCash receipt screenshot for validation and comparison by OMSIAP
-                    personnel.
-                  </li>
-                  <li className="reference-info slide-in">
-                    <FaInfoCircle className="icon" />
-                    Please ensure the GCash transaction reference number is clearly visible in your screenshot.
-                  </li>
-                  <li className="processing-time bounce-in">
-                    <FaClock className="icon" />
-                    Cash in processing may take up to 24 hours during business days.
-                  </li>
-                </ul>
-              </div>
-            </section>
-
-            <section className="userdashboard-exchange-form-section">
-              <h2>Cash In Form</h2>
-              <form className="userdashboard-exchange-form">
-                <div className="userdashboard-preset-amounts">
-                  <h3>Select Amount to Cash In</h3>
-                  <div className="userdashboard-preset-buttons">
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 210 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(210)}
-                    >
-                      ₱210 = 200 PESOS
-                    </button>
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 525 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(525)}
-                    >
-                      ₱525 = 500 PESOS
- 
-                    </button>
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 1050 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(1050)}
-                    >
-                      ₱1,050 = 1,000 PESOS
- 
-                    </button>
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 1260 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(1260)}
-                    >
-                      ₱1,260 = 1,200 PESOS
-                    </button>
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 1575 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(1575)}
-                    >
-                      ₱1,575 = 1,500 PESOS
-                    </button>
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 2100 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(2100)}
-                    >
-                      ₱2,100 = 2,000 PESOS
-                    </button>
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 3150 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(3150)}
-                    >
-                      ₱3,150 = 3,000 PESOS
-                    </button>
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 4200 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(4200)}
-                    >
-                      ₱4,200 = 4,000 PESOS
-                    </button>
-                    <button
-                      type="button"
-                      className={`preset-btn ${exchangeForm.phpAmount === 5250 ? "active" : ""}`}
-                      onClick={() => handlePresetAmountClick(5250)}
-                    >
-                      ₱5,250 = 5,000 PESOS
-                    </button>
-                  </div>
-                </div>
-
-                <div className="userdashboard-payment-instructions">
-                  <h3>Payment Instructions</h3>
-                  <p>
-                    Please send <strong>₱{exchangeForm.phpAmount || 0}</strong> to the GCash account:
-                    <strong> Of Macky'S Ink And Paper</strong> (OMSIAP)
+          <div className="userdashboard-exchange-panel">
+            {/* Check if user is logged in */}
+            {props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in" ? (
+              <div className="userdashboard-login-required-message">
+                <div className="alert alert-warning" style={{ 
+                  backgroundColor: '#fff3cd', 
+                  border: '1px solid #ffeaa7', 
+                  borderRadius: '5px', 
+                  padding: '15px', 
+                  margin: '20px 0',
+                  color: '#856404'
+                }}>
+                  <h4 style={{ color: '#d63384', marginBottom: '10px' }}>
+                    🚫 Cash In Not Available
+                  </h4>
+                  <p style={{ marginBottom: '5px' }}>
+                    <strong>You must be logged in to use the cash in feature.</strong>
                   </p>
-                  <ul style={{ color: "black" }}>
-                    <br />
-                    <li className="userdashboard-omsiapgcashnumber">(1.) 0-995-677-7674</li>
-                    <br />
-                  </ul>
+                  <p style={{ marginBottom: '0', fontSize: '0.9em' }}>
+                    Please log in to your account to proceed with currency exchange transactions.
+                  </p>
                 </div>
-                <p style={{ color: "black" }}>After sending the amount,</p>
-                <p style={{ color: "black" }}>
-                  1. Copy and paste the reference number in your GCash transaction receipt and paste it in the GCash reference
-                  number field below
-                </p>
-                <p style={{ color: "black" }}>2. Take a screenshot of your GCash transaction and upload it here</p>
-                <p style={{ color: "black" }}>
-                  3. The process cash in button will be available after selecting an amount in the cash in form. Click process cash in after following procedures 1 and 2. The process cash in button will not be submitted if procedures 1 and 2 are not followed.
-                </p>
-                <div className="userdashboard-form-row">
-                  <div className="userdashboard-form-group">
-                    <label>GCash Reference Number</label>
-                    <input
-                      type="text"
-                      id="referenceNumber"
-                      name="referenceNumber"
-                      placeholder="e.g. 1234567890"
-                      value={exchangeForm.referenceNumber}
-                      onChange={handleExchangeChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="userdashboard-form-row userdashboard-image-upload">
-                  <div className="userdashboard-form-group">
-                    <label htmlFor="transactionImage" className="userdashboard-file-input-label">
-                      GCash Transaction Screenshot
-                      <div className="userdashboard-image-preview">
-                        {previewImage ? (
-                          <img
-                            src={previewImage || "/placeholder.svg"}
-                            alt="Transaction Screenshot"
-                            onClick={() => openImageModal(previewImage)}
-                            style={{ cursor: "pointer" }}
-                          />
-                        ) : (
-                          <div className="userdashboard-upload-placeholder">
-                            <span>Upload GCash Screenshot</span>
-                          </div>
-                        )}
+              </div>
+            ) : (
+              <>
+                <section className="userdashboard-exchange-user-info">
+                  <h2>Your Information</h2>
+                  <br />
+                  <br />
+                  <div className="userdashboard-user-details">
+                    <div className="userdashboard-user-info-row">
+                      <div className="userdashboard-user-info-item">
+                        <span className="info-label">Full Name:</span>
+                        <span className="info-value">
+                          {props.user.name.firstname} {props.user.name.middlename ? props.user.name.middlename + " " : ""}
+                          {props.user.name.lastname}
+                        </span>
                       </div>
-                    </label>
-                    <input
-                      type="file"
-                      id="transactionImage"
-                      name="transactionImage"
-                      accept="image/*"
-                      onChange={handleExchangeChange}
-                      required
-                      className="userdashboard-file-input"
-                    />
+                      <div className="userdashboard-user-info-item">
+                        <span className="info-label">Phone Number:</span>
+                        <span className="info-value">{props.user.contact.phonenumber}</span>
+                      </div>
+                    </div>
+                    <br />
+                    <div className="userdashboard-user-info-row">
+                      <div className="userdashboard-user-info-item">
+                        <span className="info-label">
+                          Current&nbsp;
+                          <span className="tooltip-container">
+                            PESOS
+                            <span className="tooltip-text"></span>
+                          </span>{" "}
+                          &nbsp; Balance:
+                        </span>
+                        <span className="info-value omsiapas-balance">
+                          {props.user.credits.omsiapawas.amount}
+                          <span className="tooltip-container">
+                            &nbsp;PESOS
+                            <span className="tooltip-text"></span>
+                          </span>
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                </div>
+                </section>
 
-                <h3 className="userdashboard-currencyexchange-responsemessage"></h3>
+                <section className="userdashboard-exchange-notice">
+                  <h2>Cash In Information</h2>
+                  <div className="userdashboard-notice-content">
+                    <ul className="exchange-info">
+                      <li style={{ color: "white" }} className="exchange-rate fade-in">
+                        The cash in rate is{" "}
+                        <strong>
+                          210 PHP = 200{" "}
+                          <span className="tooltip-container">
+                            PESOS
+                            <span className="tooltip-text"></span>
+                          </span>
+                        </strong>
+                        ,{" "}
+                        <strong>
+                          525 PHP = 500{" "}
+                          <span className="tooltip-container">
+                            PESOS
+                            <span className="tooltip-text"></span>
+                          </span>
+                        </strong>
+                        ,{" "}
+                        <strong>
+                          1050 PHP = 1000{" "}
+                          <span className="tooltip-container">
+                            PESOS
+                            <span className="tooltip-text"></span>
+                          </span>
+                        </strong>
+                        ,{" "}
+                        <strong>
+                          1575 PHP = 1500{" "}
+                          <span className="tooltip-container">
+                            PESOS
+                            <span className="tooltip-text"></span>
+                          </span>
+                        </strong>
+                        , and so on until reaching the maximum cash in amount.
+                      </li>
+                      <li className="min-amount slide-in">
+                        <FaInfoCircle className="icon" />
+                        Minimum cash in amount is <strong>210 PHP</strong> equivalent to <strong>200 peso's</strong>{" "}
+                        per transaction.
+                      </li>
+                      <li className="max-amount slide-in">
+                        <FaInfoCircle className="icon" />
+                        Maximum cash in amount is <strong>5,250 PHP</strong> equivalent to{" "}
+                        <strong>5,000 peso's</strong> per transaction.
+                      </li>
+                      <li className="process-info bounce-in">
+                        <FaMoneyBillWave className="icon" />
+                        All cash in transactions are processed through GCash payment integration and will be validated by OMSIAP
+                        personnel through the OMSIAP database management system.
+                      </li>
+                      <li style={{ color: "green" }} className="important-notice pulse">
+                        <FaExclamationTriangle className="icon warning" />
+                        Failure to send the exact amounts specified in the cash in form will result in your money being returned to
+                        your GCash account with a 50-peso deduction for processing, or disciplinary action for not following
+                        instructions.
+                      </li>
+                      <li style={{ color: "white" }} className="receipt-info fade-in">
+                        <FaReceipt className="icon" />
+                        All cash in transactions require a valid GCash receipt screenshot for validation and comparison by OMSIAP
+                        personnel.
+                      </li>
+                      <li className="reference-info slide-in">
+                        <FaInfoCircle className="icon" />
+                        Please ensure the GCash transaction reference number is clearly visible in your screenshot.
+                      </li>
+                      <li className="processing-time bounce-in">
+                        <FaClock className="icon" />
+                        Cash in processing may take up to 24 hours during business days.
+                      </li>
+                    </ul>
+                  </div>
+                </section>
 
-                {currencyexchangeloadingindication ? (
-                  <Spinner animation="border" variant="success" />
-                ) : (
-                  <button
-                    type="button"
-                    className={`userdashboard-exchange-btn ${!exchangeForm.phpAmount || exchangeForm.phpAmount < 210 || exchangeForm.phpAmount > 5250 ? "disabled-btn" : ""}`}
-                    disabled={!exchangeForm.phpAmount || exchangeForm.phpAmount < 210 || exchangeForm.phpAmount > 5250}
-                    onClick={(e) => handleExchangeSubmit(e)}
-                  >
-                    Process Cash In
-                  </button>
-                )}
-              </form>
-            </section>
+                <section className="userdashboard-exchange-form-section">
+                  <h2>Cash In Form</h2>
+                  <form className="userdashboard-exchange-form">
+                    <div className="userdashboard-preset-amounts">
+                      <h3>Select Amount to Cash In</h3>
+                      <div className="userdashboard-preset-buttons">
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 210 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(210)}
+                        >
+                          ₱210 = 200 PESOS
+                        </button>
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 525 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(525)}
+                        >
+                          ₱525 = 500 PESOS
+                        </button>
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 1050 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(1050)}
+                        >
+                          ₱1,050 = 1,000 PESOS
+                        </button>
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 1260 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(1260)}
+                        >
+                          ₱1,260 = 1,200 PESOS
+                        </button>
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 1575 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(1575)}
+                        >
+                          ₱1,575 = 1,500 PESOS
+                        </button>
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 2100 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(2100)}
+                        >
+                          ₱2,100 = 2,000 PESOS
+                        </button>
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 3150 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(3150)}
+                        >
+                          ₱3,150 = 3,000 PESOS
+                        </button>
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 4200 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(4200)}
+                        >
+                          ₱4,200 = 4,000 PESOS
+                        </button>
+                        <button
+                          type="button"
+                          className={`preset-btn ${exchangeForm.phpAmount === 5250 ? "active" : ""}`}
+                          onClick={() => handlePresetAmountClick(5250)}
+                        >
+                          ₱5,250 = 5,000 PESOS
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="userdashboard-payment-instructions">
+                      <h3>Payment Instructions</h3>
+                      <p>
+                        Please send <strong>₱{exchangeForm.phpAmount || 0}</strong> to the GCash account:
+                        <strong> Of Macky'S Ink And Paper</strong> (OMSIAP)
+                      </p>
+                      <ul style={{ color: "black" }}>
+                        <br />
+                        <li className="userdashboard-omsiapgcashnumber">(1.) 0-995-677-7674</li>
+                        <br />
+                      </ul>
+                    </div>
+                    <p style={{ color: "black" }}>After sending the amount,</p>
+                    <p style={{ color: "black" }}>
+                      1. Copy and paste the reference number in your GCash transaction receipt and paste it in the GCash reference
+                      number field below
+                    </p>
+                    <p style={{ color: "black" }}>2. Take a screenshot of your GCash transaction and upload it here</p>
+                    <p style={{ color: "black" }}>
+                      3. The process cash in button will be available after selecting an amount in the cash in form. Click process cash in after following procedures 1 and 2. The process cash in button will not be submitted if procedures 1 and 2 are not followed.
+                    </p>
+                    <div className="userdashboard-form-row">
+                      <div className="userdashboard-form-group">
+                        <label>GCash Reference Number</label>
+                        <input
+                          type="text"
+                          id="referenceNumber"
+                          name="referenceNumber"
+                          placeholder="e.g. 1234567890"
+                          value={exchangeForm.referenceNumber}
+                          onChange={handleExchangeChange}
+                          required
+                        />
+                      </div>
+                    </div>
+
+                    <div className="userdashboard-form-row userdashboard-image-upload">
+                      <div className="userdashboard-form-group">
+                        <label htmlFor="transactionImage" className="userdashboard-file-input-label">
+                          GCash Transaction Screenshot
+                          <div className="userdashboard-image-preview">
+                            {previewImage ? (
+                              <img
+                                src={previewImage || "/placeholder.svg"}
+                                alt="Transaction Screenshot"
+                                onClick={() => openImageModal(previewImage)}
+                                style={{ cursor: "pointer" }}
+                              />
+                            ) : (
+                              <div className="userdashboard-upload-placeholder">
+                                <span>Upload GCash Screenshot</span>
+                              </div>
+                            )}
+                          </div>
+                        </label>
+                        <input
+                          type="file"
+                          id="transactionImage"
+                          name="transactionImage"
+                          accept="image/*"
+                          onChange={handleExchangeChange}
+                          required
+                          className="userdashboard-file-input"
+                        />
+                      </div>
+                    </div>
+
+                    <h3 className="userdashboard-currencyexchange-responsemessage"></h3>
+
+                    {currencyexchangeloadingindication ? (
+                      <Spinner animation="border" variant="success" />
+                    ) : (
+                      <button
+                        type="button"
+                        className={`userdashboard-exchange-btn ${!exchangeForm.phpAmount || exchangeForm.phpAmount < 210 || exchangeForm.phpAmount > 5250 ? "disabled-btn" : ""}`}
+                        disabled={!exchangeForm.phpAmount || exchangeForm.phpAmount < 210 || exchangeForm.phpAmount > 5250}
+                        onClick={(e) => handleExchangeSubmit(e)}
+                      >
+                        Process Cash In
+                      </button>
+                    )}
+                  </form>
+                </section>
+              </>
+            )}
           </div>
         )}
 
-        {/* Withdrawal Tab */}
+       {/* Withdrawal Tab */}
         {activeTab === "withdrawal" && (
           <div className="userdashboard-withdrawal-panel">
-            <section className="userdashboard-withdrawal-section">
-              <h2>Make a Cash out (amounts will be sent to your GCash accounts)</h2>
-              <form className="userdashboard-withdrawal-form" onSubmit={handleWithdrawalSubmit}>
-                <div className="userdashboard-form-row">
-                  <div className="userdashboard-form-group">
-                    <label>First Name</label>
-                    <input
-                      type="text"
-                      id="w-firstName"
-                      name="firstName"
-                      value={withdrawalForm.firstName}
-                      onChange={handleWithdrawalChange}
-                      required
-                    />
-                  </div>
-                  <div className="userdashboard-form-group">
-                    <label>Middle Name</label>
-                    <input
-                      type="text"
-                      id="w-middleName"
-                      name="middleName"
-                      value={withdrawalForm.middleName}
-                      onChange={handleWithdrawalChange}
-                    />
-                  </div>
+            {/* Check if user is logged in */}
+            {props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in" ? (
+              <div className="userdashboard-login-required-message">
+                <div className="alert alert-warning" style={{ 
+                  backgroundColor: '#fff3cd', 
+                  border: '1px solid #ffeaa7', 
+                  borderRadius: '5px', 
+                  padding: '15px', 
+                  margin: '20px 0',
+                  color: '#856404'
+                }}>
+                  <h4 style={{ color: '#d63384', marginBottom: '10px' }}>
+                    🚫 Cash Out Not Available
+                  </h4>
+                  <p style={{ marginBottom: '5px' }}>
+                    <strong>You must be logged in to use the cash out feature.</strong>
+                  </p>
+                  <p style={{ marginBottom: '0', fontSize: '0.9em' }}>
+                    Please log in to your account to proceed with withdrawal transactions.
+                  </p>
                 </div>
-
-                <div className="userdashboard-form-row">
-                  <div className="userdashboard-form-group">
-                    <label>Last Name</label>
-                    <input
-                      type="text"
-                      id="w-lastName"
-                      name="lastName"
-                      value={withdrawalForm.lastName}
-                      onChange={handleWithdrawalChange}
-                      required
-                    />
-                  </div>
-                  <div className="userdashboard-form-group">
-                    <label>GCash Phone Number</label>
-                    <input
-                      type="tel"
-                      id="w-phoneNumber"
-                      name="phoneNumber"
-                      value={withdrawalForm.phoneNumber}
-                      onChange={handleWithdrawalChange}
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div className="userdashboard-form-row">
-                  <div className="userdashboard-form-group userdashboard-amount-group">
-                    <label>Cash out Amount</label>
-                    <input
-                      type="number"
-                      id="w-amount"
-                      name="amount"
-                      min="1"
-                      step="0.01"
-                      value={withdrawalForm.amount}
-                      onChange={handleWithdrawalChange}
-                      className="userdashboard-amount-input"
-                      required
-                    />
-                    
-                    {/* Processing Fee Indication */}
-                    {withdrawalForm.amount && (
-                      <div className="userdashboard-fee-breakdown">
-                        <div className="userdashboard-fee-item">
-                          <span>Withdrawal Amount:</span>
-                          <span>₱{parseFloat(withdrawalForm.amount || 0)}</span>
-                        </div>
-                        <div className="userdashboard-fee-item">
-                          <span>Processing Fee (2.5%):</span>
-                          <span>-₱{Math.round((parseFloat(withdrawalForm.amount || 0) * 0.025) * 100) / 100}</span>
-                        </div>
-                        <div className="userdashboard-fee-item userdashboard-total">
-                          <span><strong>Amount You'll Receive:</strong></span>
-                          <span><strong>₱{Math.round((parseFloat(withdrawalForm.amount || 0) * 0.975) * 100) / 100}</strong></span>
-                        </div>
-                      </div>
-                    )}
-                    
-                    <div className="userdashboard-fee-notice">
-                      <span className="userdashboard-notice-icon">ℹ️</span>
-                      <span>A 2.5% processing fee will be deducted from your withdrawal amount</span>
+              </div>
+            ) : (
+              <section className="userdashboard-withdrawal-section">
+                <h2>Make a Cash out ( Amounts will be sent to your GCash accounts)</h2>
+                <form className="userdashboard-withdrawal-form" onSubmit={handleWithdrawalSubmit}>
+                  <div className="userdashboard-form-row">
+                    <div className="userdashboard-form-group">
+                      <label>First Name</label>
+                      <input
+                        type="text"
+                        id="w-firstName"
+                        name="firstName"
+                        value={withdrawalForm.firstName}
+                        onChange={handleWithdrawalChange}
+                        required
+                      />
+                    </div>
+                    <div className="userdashboard-form-group">
+                      <label>Middle Name</label>
+                      <input
+                        type="text"
+                        id="w-middleName"
+                        name="middleName"
+                        value={withdrawalForm.middleName}
+                        onChange={handleWithdrawalChange}
+                      />
                     </div>
                   </div>
-                  
-                  <div className="userdashboard-form-group">
-                    <label>Account Password</label>
-                    <input
-                      type="password"
-                      id="w-password"
-                      name="password"
-                      value={withdrawalForm.password}
-                      onChange={handleWithdrawalChange}
-                      required
-                    />
+
+                  <div className="userdashboard-form-row">
+                    <div className="userdashboard-form-group">
+                      <label>Last Name</label>
+                      <input
+                        type="text"
+                        id="w-lastName"
+                        name="lastName"
+                        value={withdrawalForm.lastName}
+                        onChange={handleWithdrawalChange}
+                        required
+                      />
+                    </div>
+                    <div className="userdashboard-form-group">
+                      <label>GCash Phone Number</label>
+                      <input
+                        type="tel"
+                        id="w-phoneNumber"
+                        name="phoneNumber"
+                        value={withdrawalForm.phoneNumber}
+                        onChange={handleWithdrawalChange}
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <h4 style={{ color: "black", textAlign: "center" }} id="widthdrawal-responsemessage">
-                  Response message
-                </h4>
+                  <div className="userdashboard-form-row">
+                    <div className="userdashboard-form-group userdashboard-amount-group">
+                      <label>Cash out Amount</label>
+                      <input
+                        type="number"
+                        id="w-amount"
+                        name="amount"
+                        min="1"
+                        step="0.01"
+                        value={withdrawalForm.amount}
+                        onChange={handleWithdrawalChange}
+                        className="userdashboard-amount-input"
+                        required
+                      />
+                      
+                      {/* Processing Fee Indication */}
+                      {withdrawalForm.amount && (
+                        <div className="userdashboard-fee-breakdown">
+                          <div className="userdashboard-fee-item">
+                            <span>Withdrawal Amount:</span>
+                            <span>₱{parseFloat(withdrawalForm.amount || 0)}</span>
+                          </div>
+                          <div className="userdashboard-fee-item">
+                            <span>Processing Fee (2.5%):</span>
+                            <span>-₱{Math.round((parseFloat(withdrawalForm.amount || 0) * 0.025) * 100) / 100}</span>
+                          </div>
+                          <div className="userdashboard-fee-item userdashboard-total">
+                            <span><strong>Amount You'll Receive:</strong></span>
+                            <span><strong>₱{Math.round((parseFloat(withdrawalForm.amount || 0) * 0.975) * 100) / 100}</strong></span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="userdashboard-fee-notice">
+                        <span className="userdashboard-notice-icon">ℹ️</span>
+                        <span>A 2.5% processing fee will be deducted from your withdrawal amount</span>
+                      </div>
+                    </div>
+                    
+                    <div className="userdashboard-form-group">
+                      <label>Account Password</label>
+                      <input
+                        type="password"
+                        id="w-password"
+                        name="password"
+                        value={withdrawalForm.password}
+                        onChange={handleWithdrawalChange}
+                        required
+                      />
+                    </div>
+                  </div>
 
-                {widthdrawalloadingindication ? (
-                  <Spinner animation="border" variant="success" style={{ marginLeft: "auto", marginRight: "auto" }} />
-                ) : (
-                  <button type="submit" className="userdashboard-withdrawal-btn">
-                    Submit Cash out
-                  </button>
-                )}
-              </form>
-            </section>
+                  <h4 style={{ color: "black", textAlign: "center" }} id="widthdrawal-responsemessage">
+                    Response message
+                  </h4>
+
+                  {widthdrawalloadingindication ? (
+                    <Spinner animation="border" variant="success" style={{ marginLeft: "auto", marginRight: "auto" }} />
+                  ) : (
+                    <button type="submit" className="userdashboard-withdrawal-btn">
+                      Submit Cash out
+                    </button>
+                  )}
+                </form>
+              </section>
+            )}
           </div>
         )}
 
@@ -2577,7 +2629,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
           </div>
         )}
 
-       {/* Settings Tab */}
+        {/* Settings Tab */} 
        {activeTab === "settings" && (
         <div className="userdashboard-settings-panel">
           <section className="userdashboard-user-settings">
@@ -2812,7 +2864,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
           </section>
         </div>
        )}
-
+       
       </div>
 
         {/* Transaction Details Modal */}
