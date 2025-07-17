@@ -221,7 +221,7 @@ const CheckoutPage = (props) => {
     }
 
     // Check if user has device login status
-    if (props.user.registrationstatusesandlogs?.deviceloginstatus !== 'logged_in') {
+    if (props.user.registrationstatusesandlogs?.deviceloginstatus !== 'logged in') {
       setAuthError("Your session has expired. Please log in again to continue.")
       setIsCheckingAuth(false)
       return false
@@ -501,6 +501,8 @@ const CheckoutPage = (props) => {
 
       console.log("Order submitted:", order)
       alert(`Order successfully placed! Total: ${preciseCalculator.formatCurrency(orderSummary.finalTotal)}`)
+       // Navigate to home page after successful order
+       navigate("/market")
     } catch (error) {
       console.error("Error placing order:", error)
       alert("There was an error processing your order. Please try again.")
@@ -566,6 +568,11 @@ const CheckoutPage = (props) => {
       <h1 className="checkout-title" style={{ color: "black" }}>
         <FaLock className="checkout-secure-icon" /> Secure Checkout
       </h1>
+       <h5  style={{ color: "black", textAlign: "center" }}>
+        <FaLock className="checkout-secure-icon" /> Do not refresh page. If current balance goes back to zero, go back to market then add to cart and place order again
+      </h5>
+
+      <br/>
 
       <div className="checkout-grid-layout">
         {/* Left Column: Shipping & Personal Information */}
@@ -993,7 +1000,7 @@ const CheckoutPage = (props) => {
                     onChange={() => setPaymentDetails({ ...paymentDetails, selectedPaymentMethod: "omsiapawasto" })}
                   />
                   <div className="checkout-method-info">
-                    <div className="checkout-method-name">OMSIAPAWASTO Currency</div>
+                    {/*<div className="checkout-method-name">OMSIAPAWASTO Currency</div>*/}
                     <div className="checkout-method-balance">
                       Current Balance: {preciseCalculator.formatCurrency(paymentDetails.omsiapawastoBalance)}
                     </div>
@@ -1037,7 +1044,7 @@ const CheckoutPage = (props) => {
                 {paymentDetails.omsiapawastoBalance < orderSummary.finalTotal && (
                   <div className="checkout-insufficient-funds">
                     <span className="checkout-warning-icon">⚠️</span>
-                    Warning: Insufficient OMSIAPAWASTO balance. You need{" "}
+                    Warning: Insufficient balance. You need{" "}
                     {preciseCalculator.formatCurrency(orderSummary.finalTotal)} but only have{" "}
                     {preciseCalculator.formatCurrency(paymentDetails.omsiapawastoBalance)}. Shortage:{" "}
                     {preciseCalculator.formatCurrency(

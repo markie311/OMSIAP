@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Row, Col } from "react-bootstrap"
+
 import "../../../styles/landingpage/articles/readmoreaboutarticles.scss"
 
 import NavBar from "../../navbar/navbar/navbar-component.js"
