@@ -1,15 +1,27 @@
 "use client"
-
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import { Search, ShoppingCart, X, ChevronLeft, ChevronRight, Star, Play, Heart, Plus, Minus, ShoppingBag, Info, Facebook, Twitter, Instagram } from 'lucide-react'
-
+import {
+  Search,
+  ShoppingCart,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  Star,
+  Play,
+  Heart,
+  Plus,
+  ShoppingBag,
+  Info,
+  Facebook,
+  Twitter,
+  Instagram,
+} from "lucide-react"
 import "../../styles/market/market.scss"
 
 const Market = (props) => {
   const navigate = useNavigate()
   const { loadingState, updateLoadingState } = props.useLoading || { loadingState: { products: false } }
-
   const [products, setProducts] = useState([])
   const [cart, setCart] = useState([])
   const [categories, setCategories] = useState([])
@@ -27,6 +39,8 @@ const Market = (props) => {
   const [isCartOpen, setIsCartOpen] = useState(false)
   const carouselRef = useRef(null)
   const autoplayRef = useRef(null)
+  const modalRef = useRef(null)
+  const imageModalRef = useRef(null)
 
   const carouselSlides = [
     {
@@ -53,23 +67,21 @@ const Market = (props) => {
   ]
 
   // Add these state variables to your component
-const [fullScreenVideo, setFullScreenVideo] = useState(false);
+  const [fullScreenVideo, setFullScreenVideo] = useState(false)
 
-// Add these functions to your component
-const openFullScreenVideo = () => {
-  setFullScreenVideo(true);
-};
+  // Add these functions to your component
+  const openFullScreenVideo = () => {
+    setFullScreenVideo(true)
+  }
 
-const closeFullScreenVideo = () => {
-  setFullScreenVideo(false);
-};
-
+  const closeFullScreenVideo = () => {
+    setFullScreenVideo(false)
+  }
 
   // Load products from props
   useEffect(() => {
     if (props.alloftheproducts) {
       setProducts(props.alloftheproducts)
-
       // Extract unique categories
       const uniqueCategories = [
         ...new Set(
@@ -89,9 +101,7 @@ const closeFullScreenVideo = () => {
         setCurrentSlide((prev) => (prev + 1) % carouselSlides.length)
       }, 5000)
     }
-
     startAutoplay()
-
     return () => {
       if (autoplayRef.current) {
         clearInterval(autoplayRef.current)
@@ -106,153 +116,172 @@ const closeFullScreenVideo = () => {
     }
   }, [currentSlide])
 
+  // Handle click outside modal to close
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isModalOpen && modalRef.current && !modalRef.current.contains(event.target)) {
+        closeProductModal()
+      }
+      if (imageModalOpen && imageModalRef.current && !imageModalRef.current.contains(event.target)) {
+        closeImageModal()
+      }
+    }
+
+    if (isModalOpen || imageModalOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside)
+      }
+    }
+  }, [isModalOpen, imageModalOpen])
+
   // Filter products based on selected category, price range, and search query
   const filteredProducts = products.filter((product) => {
     if (!product.details) return false
-
     const productCategory = product.details.category || "uncategorized"
     const productPrice = product.details.price && product.details.price.amount ? product.details.price.amount : 0
     const productName = product.details.productname || ""
     const productDescription = product.details.description || ""
-
     const matchesCategory = selectedCategory === "all" || productCategory === selectedCategory
     const matchesPrice = productPrice >= priceRange.min && productPrice <= priceRange.max
     const matchesSearch =
       productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       productDescription.toLowerCase().includes(searchQuery.toLowerCase())
-
     return matchesCategory && matchesPrice && matchesSearch
   })
 
   // Enhanced Cart functions - Groups specifications under main products
   const addToCart = (specificationProduct, mainProduct, quantity = 1) => {
-    console.log('Specification Product:', specificationProduct);
-    console.log('Main Product:', mainProduct);
-    
-    const mainProductId = mainProduct.authentications?.id;
-    const specificationId = specificationProduct.authentications?.id;
-    
+    console.log("Specification Product:", specificationProduct)
+    console.log("Main Product:", mainProduct)
+
+    const mainProductId = mainProduct.authentications?.id
+    const specificationId = specificationProduct.authentications?.id
+
     // Find if main product already exists in cart
-    const existingMainProduct = cart.find(item => item.mainProductId === mainProductId);
-    
+    const existingMainProduct = cart.find((item) => item.mainProductId === mainProductId)
+
     if (existingMainProduct) {
       // Check if this specific specification already exists under this main product
-      const existingSpec = existingMainProduct.specifications.find(spec => spec.id === specificationId);
-      
+      const existingSpec = existingMainProduct.specifications.find((spec) => spec.id === specificationId)
+
       if (existingSpec) {
         // Increase quantity of existing specification
-        setCart(cart.map(item => 
-          item.mainProductId === mainProductId 
-            ? {
-                ...item,
-                specifications: item.specifications.map(spec =>
-                  spec.id === specificationId
-                    ? { ...spec, quantity: spec.quantity + quantity }
-                    : spec
-                )
-              }
-            : item
-        ));
+        setCart(
+          cart.map((item) =>
+            item.mainProductId === mainProductId
+              ? {
+                  ...item,
+                  specifications: item.specifications.map((spec) =>
+                    spec.id === specificationId ? { ...spec, quantity: spec.quantity + quantity } : spec,
+                  ),
+                }
+              : item,
+          ),
+        )
       } else {
         // Add new specification to existing main product
         const newSpecification = {
           id: specificationId,
           data: specificationProduct,
           quantity: quantity,
-          name: specificationProduct.details?.productname || 'Default Specification',
+          name: specificationProduct.details?.productname || "Default Specification",
           price: specificationProduct.details?.price?.amount || 0,
-          images: specificationProduct.images || []
-        };
-        
-        setCart(cart.map(item => 
-          item.mainProductId === mainProductId
-            ? {
-                ...item,
-                specifications: [...item.specifications, newSpecification]
-              }
-            : item
-        ));
+          images: specificationProduct.images || [],
+        }
+
+        setCart(
+          cart.map((item) =>
+            item.mainProductId === mainProductId
+              ? {
+                  ...item,
+                  specifications: [...item.specifications, newSpecification],
+                }
+              : item,
+          ),
+        )
       }
     } else {
       // Create new main product entry with first specification
       const newCartItem = {
         mainProductId: mainProductId,
         mainProduct: mainProduct,
-        productName: mainProduct.details?.productname || 'Unnamed Product',
+        productName: mainProduct.details?.productname || "Unnamed Product",
         mainProductImages: mainProduct.images || [],
-        specifications: [{
-          id: specificationId,
-          data: specificationProduct,
-          quantity: quantity,
-          name: specificationProduct.details?.productname || 'Default Specification',
-          price: specificationProduct.details?.price?.amount || 0,
-          images: specificationProduct.images || []
-        }]
-      };
-      
-      setCart([...cart, newCartItem]);
-    }
+        specifications: [
+          {
+            id: specificationId,
+            data: specificationProduct,
+            quantity: quantity,
+            name: specificationProduct.details?.productname || "Default Specification",
+            price: specificationProduct.details?.price?.amount || 0,
+            images: specificationProduct.images || [],
+          },
+        ],
+      }
 
+      setCart([...cart, newCartItem])
+    }
     // Show cart after adding item
-    setIsCartOpen(true);
-
+    setIsCartOpen(true)
     // Animation for added to cart
-    const productElement = document.getElementById(`product-${mainProductId}`);
+    const productElement = document.getElementById(`product-${mainProductId}`)
     if (productElement) {
-      productElement.classList.add("market-added-to-cart");
+      productElement.classList.add("market-added-to-cart")
       setTimeout(() => {
-        productElement.classList.remove("market-added-to-cart");
-      }, 1000);
+        productElement.classList.remove("market-added-to-cart")
+      }, 1000)
     }
-  };
+  }
 
   const removeFromCart = (mainProductId, specificationId = null) => {
     if (specificationId) {
       // Remove specific specification from main product
-      setCart(cart.map(item => {
-        if (item.mainProductId === mainProductId) {
-          const updatedSpecs = item.specifications.filter(spec => spec.id !== specificationId);
-          // If no specifications left, remove the entire main product
-          return updatedSpecs.length > 0 ? { ...item, specifications: updatedSpecs } : null;
-        }
-        return item;
-      }).filter(Boolean)); // Remove null entries
+      setCart(
+        cart
+          .map((item) => {
+            if (item.mainProductId === mainProductId) {
+              const updatedSpecs = item.specifications.filter((spec) => spec.id !== specificationId)
+              // If no specifications left, remove the entire main product
+              return updatedSpecs.length > 0 ? { ...item, specifications: updatedSpecs } : null
+            }
+            return item
+          })
+          .filter(Boolean),
+      ) // Remove null entries
     } else {
       // Remove entire main product
-      setCart(cart.filter(item => item.mainProductId !== mainProductId));
+      setCart(cart.filter((item) => item.mainProductId !== mainProductId))
     }
-  };
+  }
 
   const updateQuantity = (mainProductId, specificationId, newQuantity) => {
-    const intQuantity = Math.max(1, newQuantity);
-
+    const intQuantity = Math.max(1, newQuantity)
     if (intQuantity < 1) {
-      removeFromCart(mainProductId, specificationId);
-      return;
+      removeFromCart(mainProductId, specificationId)
+      return
     }
-
-    setCart(cart.map(item => 
-      item.mainProductId === mainProductId
-        ? {
-            ...item,
-            specifications: item.specifications.map(spec =>
-              spec.id === specificationId
-                ? { ...spec, quantity: intQuantity }
-                : spec
-            )
-          }
-        : item
-    ));
-  };
+    setCart(
+      cart.map((item) =>
+        item.mainProductId === mainProductId
+          ? {
+              ...item,
+              specifications: item.specifications.map((spec) =>
+                spec.id === specificationId ? { ...spec, quantity: intQuantity } : spec,
+              ),
+            }
+          : item,
+      ),
+    )
+  }
 
   // Calculate cart total
   const cartTotal = cart.reduce((total, item) => {
     const itemTotal = item.specifications.reduce((specTotal, spec) => {
-      return specTotal + (spec.price * spec.quantity);
-    }, 0);
-    return total + itemTotal;
-  }, 0);
-
+      return specTotal + spec.price * spec.quantity
+    }, 0)
+    return total + itemTotal
+  }, 0)
 
   // Open product detail modal
   const openProductModal = (product) => {
@@ -270,31 +299,30 @@ const closeFullScreenVideo = () => {
   }
 
   // Enhance the existing openImageModal function
-const openImageModal = (imageUrl, index) => {
-  setFullScreenImage(imageUrl);
-  setImageModalOpen(true);
-  setActiveImageIndex(index);
-  // Pause video if it's playing
-  if (showVideo) {
-    setShowVideo(false);
+  const openImageModal = (imageUrl, index) => {
+    setFullScreenImage(imageUrl)
+    setImageModalOpen(true)
+    setActiveImageIndex(index)
+    // Pause video if it's playing
+    if (showVideo) {
+      setShowVideo(false)
+    }
   }
-
-};
 
   // Close full screen image modal
   const closeImageModal = () => {
     setImageModalOpen(false)
   }
 
- // Function to change active image in the modal
-const changeActiveImage = (index) => {
-  setActiveImageIndex(index)
-  setShowVideo(false)
-  // Update fullScreenImage in case it's used elsewhere
-  if (selectedProduct && selectedProduct.images && selectedProduct.images[index]) {
-    setFullScreenImage(selectedProduct.images[index].url)
+  // Function to change active image in the modal
+  const changeActiveImage = (index) => {
+    setActiveImageIndex(index)
+    setShowVideo(false)
+    // Update fullScreenImage in case it's used elsewhere
+    if (selectedProduct && selectedProduct.images && selectedProduct.images[index]) {
+      setFullScreenImage(selectedProduct.images[index].url)
+    }
   }
-}
 
   // Function to toggle video view
   const toggleVideo = () => {
@@ -326,31 +354,29 @@ const changeActiveImage = (index) => {
     }).format(price || 0)
   }
 
-// Navigate to next image in full screen mode
-const nextImage = () => {
-  if (!selectedProduct) return
+  // Navigate to next image in full screen mode
+  const nextImage = () => {
+    if (!selectedProduct) return
+    const images = selectedProduct.images || []
+    if (images.length === 0) return
 
-  const images = selectedProduct.images || []
-  if (images.length === 0) return
-  
-  const nextIndex = (activeImageIndex + 1) % images.length
-  setActiveImageIndex(nextIndex)
-  setFullScreenImage(images[nextIndex].url) // Add .url here
-  setShowVideo(false)
-}
+    const nextIndex = (activeImageIndex + 1) % images.length
+    setActiveImageIndex(nextIndex)
+    setFullScreenImage(images[nextIndex].url) // Add .url here
+    setShowVideo(false)
+  }
 
-// Navigate to previous image in full screen mode
-const prevImage = () => {
-  if (!selectedProduct) return
+  // Navigate to previous image in full screen mode
+  const prevImage = () => {
+    if (!selectedProduct) return
+    const images = selectedProduct.images || []
+    if (images.length === 0) return
 
-  const images = selectedProduct.images || []
-  if (images.length === 0) return
-  
-  const prevIndex = (activeImageIndex - 1 + images.length) % images.length
-  setActiveImageIndex(prevIndex)
-  setFullScreenImage(images[prevIndex].url)
-  setShowVideo(false) // Ensure we're in image mode, not video mode
-}
+    const prevIndex = (activeImageIndex - 1 + images.length) % images.length
+    setActiveImageIndex(prevIndex)
+    setFullScreenImage(images[prevIndex].url)
+    setShowVideo(false) // Ensure we're in image mode, not video mode
+  }
 
   // Show loading skeleton if products are still loading
   if (loadingState.products) {
@@ -373,7 +399,6 @@ const prevImage = () => {
 
   return (
     <div className="market-container">
-
       {/* Marketing Carousel Header */}
       <div className="market-carousel-container">
         <div className="market-carousel-track" ref={carouselRef}>
@@ -396,7 +421,6 @@ const prevImage = () => {
             </div>
           ))}
         </div>
-
         <button
           className="market-carousel-control market-carousel-prev"
           onClick={prevSlide}
@@ -407,7 +431,6 @@ const prevImage = () => {
         <button className="market-carousel-control market-carousel-next" onClick={nextSlide} aria-label="Next slide">
           <ChevronRight className="market-carousel-control-icon" />
         </button>
-
         <div className="market-carousel-indicators">
           {carouselSlides.map((_, index) => (
             <button
@@ -432,19 +455,18 @@ const prevImage = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             aria-label="Search products"
           />
-          <Search className="market-search-icon" />
         </div>
-       <div className="market-cart-icon">
-        <button onClick={toggleCart} aria-label="Open cart">
-          <ShoppingCart />
-          <span className="market-cart-count">
-            {cart.reduce((total, item) => 
-              total + item.specifications.reduce((specTotal, spec) => specTotal + spec.quantity, 0), 0
-            )}
-          </span>
-        </button>
-      </div>
-
+        <div className="market-cart-icon">
+          <button onClick={toggleCart} aria-label="Open cart">
+            <ShoppingCart />
+            <span className="market-cart-count">
+              {cart.reduce(
+                (total, item) => total + item.specifications.reduce((specTotal, spec) => specTotal + spec.quantity, 0),
+                0,
+              )}
+            </span>
+          </button>
+        </div>
       </header>
 
       <main className="market-main-content">
@@ -469,7 +491,6 @@ const prevImage = () => {
               ))}
             </div>
           </div>
-
           <div className="market-filter-section">
             <h3>Price Range</h3>
             <div className="market-price-filter">
@@ -488,7 +509,6 @@ const prevImage = () => {
         </aside>
 
         <section className="market-products-grid">
-
           {filteredProducts.length > 0 ? (
             filteredProducts.map((product) => {
               const productId = product.authentications && product.authentications.id ? product.authentications.id : ""
@@ -540,21 +560,11 @@ const prevImage = () => {
                     </div>
                   </div>
                   <div className="market-product-actions">
-
                     <button onClick={() => openProductModal(product)} className="market-view-details">
                       <Info size={16} />
                       View Details
                     </button>
-
-                   {/* 
-                    <button onClick={() => addToCart(product)} className="market-add-to-cart">
-                      <ShoppingBag size={16} />
-                      Add to Cart
-                    </button>
-                    */}
-
                   </div>
-
                   {/* Highlight if product has specifications */}
                   {product.details && product.details.specifications && product.details.specifications.length > 0 && (
                     <div className="market-product-badge">
@@ -579,9 +589,7 @@ const prevImage = () => {
               </button>
             </div>
           )}
-
         </section>
-
       </main>
 
       {/* Cart Sidebar */}
@@ -592,23 +600,22 @@ const prevImage = () => {
             <X />
           </button>
         </div>
-
         {cart.length > 0 ? (
           <>
             <div className="market-cart-items">
               {cart.map((item) => {
-                const mainProductImages = item.mainProductImages && item.mainProductImages.length > 0
-                  ? item.mainProductImages.map((img) => img.url)
-                  : ["/placeholder.svg?height=100&width=100"];
-
+                const mainProductImages =
+                  item.mainProductImages && item.mainProductImages.length > 0
+                    ? item.mainProductImages.map((img) => img.url)
+                    : ["/placeholder.svg?height=100&width=100"]
                 return (
                   <div key={item.mainProductId} className="market-cart-main-product">
                     {/* Main Product Header */}
                     <div className="market-cart-product-header">
                       <div className="market-cart-product-image">
-                        <img 
-                          src={mainProductImages[0] || "/placeholder.svg?height=80&width=80"} 
-                          alt={item.productName} 
+                        <img
+                          src={mainProductImages[0] || "/placeholder.svg?height=80&width=80"}
+                          alt={item.productName}
                         />
                       </div>
                       <div className="market-cart-product-info">
@@ -619,7 +626,10 @@ const prevImage = () => {
                           </p>
                         )}
                         <p className="market-cart-spec-count">
-                          <small>{item.specifications.length} specification{item.specifications.length > 1 ? 's' : ''} selected</small>
+                          <small>
+                            {item.specifications.length} specification{item.specifications.length > 1 ? "s" : ""}{" "}
+                            selected
+                          </small>
                         </p>
                       </div>
                       <button
@@ -631,21 +641,15 @@ const prevImage = () => {
                         <X className="market-remove-icon" />
                       </button>
                     </div>
-
                     {/* Specifications List */}
                     <div className="market-cart-specifications">
                       {item.specifications.map((spec) => {
-                        const specImages = spec.images && spec.images.length > 0
-                          ? spec.images.map((img) => img.url)
-                          : mainProductImages;
-
+                        const specImages =
+                          spec.images && spec.images.length > 0 ? spec.images.map((img) => img.url) : mainProductImages
                         return (
                           <div key={spec.id} className="market-cart-specification">
                             <div className="market-cart-spec-image">
-                              <img 
-                                src={specImages[0] || "/placeholder.svg?height=60&width=60"} 
-                                alt={spec.name} 
-                              />
+                              <img src={specImages[0] || "/placeholder.svg?height=60&width=60"} alt={spec.name} />
                             </div>
                             <div className="market-cart-spec-details">
                               <p className="market-cart-spec-name">{spec.name}</p>
@@ -656,25 +660,6 @@ const prevImage = () => {
                                 </p>
                               )}
                             </div>
-                            {/*
-                            <div className="market-cart-spec-quantity">
-                              <button
-                                onClick={() => updateQuantity(item.mainProductId, spec.id, spec.quantity - 1)}
-                                aria-label="Decrease quantity"
-                                className="market-quantity-btn"
-                              >
-                                <Minus size={12} />
-                              </button>
-                              <span>{spec.quantity}</span>
-                              <button
-                                onClick={() => updateQuantity(item.mainProductId, spec.id, spec.quantity + 1)}
-                                aria-label="Increase quantity"
-                                className="market-quantity-btn"
-                              >
-                                <Plus size={12} />
-                              </button>
-                            </div>
-                            */}
                             <button
                               onClick={() => removeFromCart(item.mainProductId, spec.id)}
                               className="market-remove-specification"
@@ -684,14 +669,13 @@ const prevImage = () => {
                               <X size={14} />
                             </button>
                           </div>
-                        );
+                        )
                       })}
                     </div>
                   </div>
-                );
+                )
               })}
             </div>
-
             <div className="market-cart-footer">
               <div className="market-cart-total">
                 <h3>Total: {formatPrice(cartTotal)}</h3>
@@ -702,7 +686,6 @@ const prevImage = () => {
                   if (props.cartcb) {
                     props.cartcb(cart)
                     navigate("/placeorder", { state: { cart } })
-                    //console.log(cart)
                   }
                 }}
               >
@@ -720,88 +703,87 @@ const prevImage = () => {
             </button>
           </div>
         )}
-
       </aside>
 
       {/* Product Detail Modal */}
       {isModalOpen && selectedProduct && (
         <div className="market-product-modal">
-          <div className="market-modal-content">
+          <div className="market-modal-content" ref={modalRef}>
             <button onClick={closeProductModal} className="market-close-modal" aria-label="Close modal">
-              <X />
+              X
             </button>
             <div className="market-modal-product-details">
               <div className="market-modal-product-media">
                 <div className="market-modal-media-main">
-               {showVideo && selectedProduct.videos && selectedProduct.videos.length > 0 ? (
-                  <div className="market-product-video-container">
-                    {(() => {
-                      const videoUrl = selectedProduct.videos[0].url;
-                      console.log("Video URL:", videoUrl);
-                      console.log("Show Video:", showVideo);
-                      
-                      // Check if it's a YouTube URL
-                      if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-                        // Convert YouTube URL to embed format
-                        let embedUrl = videoUrl;
-                        if (videoUrl.includes('youtube.com/watch?v=')) {
-                          const videoId = videoUrl.split('v=')[1].split('&')[0];
-                          embedUrl = `https://www.youtube.com/embed/${videoId}`;
-                        } else if (videoUrl.includes('youtu.be/')) {
-                          const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
-                          embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                  {showVideo && selectedProduct.videos && selectedProduct.videos.length > 0 ? (
+                    <div className="market-product-video-container">
+                      {(() => {
+                        const videoUrl = selectedProduct.videos[0].url
+                        console.log("Video URL:", videoUrl)
+                        console.log("Show Video:", showVideo)
+
+                        // Check if it's a YouTube URL
+                        if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
+                          // Convert YouTube URL to embed format
+                          let embedUrl = videoUrl
+                          if (videoUrl.includes("youtube.com/watch?v=")) {
+                            const videoId = videoUrl.split("v=")[1].split("&")[0]
+                            embedUrl = `https://www.youtube.com/embed/${videoId}`
+                          } else if (videoUrl.includes("youtu.be/")) {
+                            const videoId = videoUrl.split("youtu.be/")[1].split("?")[0]
+                            embedUrl = `https://www.youtube.com/embed/${videoId}`
+                          }
+
+                          return (
+                            <iframe
+                              src={embedUrl}
+                              title="Product Video"
+                              className="market-product-video"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                              style={{ width: "100%", height: "400px", borderRadius: "8px" }}
+                            />
+                          )
+                        } else {
+                          // For regular video files
+                          return (
+                            <video
+                              src={videoUrl}
+                              controls
+                              poster={
+                                selectedProduct.images && selectedProduct.images.length > 0
+                                  ? selectedProduct.images[0].url
+                                  : "/placeholder.svg?height=400&width=400"
+                              }
+                              className="market-product-video"
+                              style={{ width: "100%", height: "400px", borderRadius: "8px" }}
+                            >
+                              Your browser does not support the video tag.
+                            </video>
+                          )
                         }
-                        
-                        return (
-                          <iframe
-                            src={embedUrl}
-                            title="Product Video"
-                            className="market-product-video"
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            style={{ width: '100%', height: '400px', borderRadius: '8px' }}
-                          />
-                        );
-                      } else {
-                        // For regular video files
-                        return (
-                          <video
-                            src={videoUrl}
-                            controls
-                            poster={
-                              selectedProduct.images && selectedProduct.images.length > 0
-                                ? selectedProduct.images[0].url
-                                : "/placeholder.svg?height=400&width=400"
-                            }
-                            className="market-product-video"
-                            style={{ width: '100%', height: '400px', borderRadius: '8px' }}
-                          >
-                            Your browser does not support the video tag.
-                          </video>
-                        );
-                      }
-                    })()}
-                  </div>
-                ) : (
-                  <img
-                    src={
-                      selectedProduct.images && selectedProduct.images.length > 0
-                        ? selectedProduct.images[activeImageIndex].url
-                        : "/placeholder.svg?height=400&width=400"
-                    }
-                    alt={`${selectedProduct.details ? selectedProduct.details.productname : "Product"} - view ${activeImageIndex + 1}`}
-                    className="market-modal-main-image"
-                    onClick={() =>
-                      openImageModal(
+                      })()}
+                    </div>
+                  ) : (
+                    <img
+                      src={
                         selectedProduct.images && selectedProduct.images.length > 0
                           ? selectedProduct.images[activeImageIndex].url
-                          : "/placeholder.svg?height=400&width=400",
-                        activeImageIndex,
-                      )
-                    }
-                  />
-               )}
+                          : "/placeholder.svg?height=400&width=400"
+                      }
+                      alt={`${selectedProduct.details ? selectedProduct.details.productname : "Product"} - view ${activeImageIndex + 1}`}
+                      className="market-modal-main-image"
+                      onClick={() =>
+                        openImageModal(
+                          selectedProduct.images && selectedProduct.images.length > 0
+                            ? selectedProduct.images[activeImageIndex].url
+                            : "/placeholder.svg?height=400&width=400",
+                          activeImageIndex,
+                        )
+                      }
+                    />
+                  )}
                 </div>
                 <div className="market-modal-media-thumbnails">
                   {selectedProduct.images &&
@@ -814,16 +796,16 @@ const prevImage = () => {
                         onClick={() => changeActiveImage(index)}
                       />
                     ))}
-                 {selectedProduct.videos && selectedProduct.videos.length > 0 && (
-                  <button
-                    className={`market-video-thumbnail ${showVideo ? "market-active" : ""}`}
-                    onClick={toggleVideo}
-                    aria-label="Show video"
-                  >
-                    <Play className="market-video-icon" />
-                    <span>Video</span>
-                  </button>
-                 )}
+                  {selectedProduct.videos && selectedProduct.videos.length > 0 && (
+                    <button
+                      className={`market-video-thumbnail ${showVideo ? "market-active" : ""}`}
+                      onClick={toggleVideo}
+                      aria-label="Show video"
+                    >
+                      <Play className="market-video-icon" />
+                      <span>Video</span>
+                    </button>
+                  )}
                 </div>
               </div>
               <div className="market-modal-product-info">
@@ -859,7 +841,6 @@ const prevImage = () => {
                   <h3>Description</h3>
                   <p>{selectedProduct.details ? selectedProduct.details.description : ""}</p>
                 </div>
-
                 <div className="market-modal-product-features">
                   <h3>Key Features</h3>
                   <ul>
@@ -870,8 +851,7 @@ const prevImage = () => {
                     )}
                   </ul>
                 </div>
-
-               {/* Specifications Section - Highlighted */}
+                {/* Specifications Section - Highlighted */}
                 {selectedProduct.details &&
                   selectedProduct.details.specifications &&
                   selectedProduct.details.specifications.length > 0 && (
@@ -884,87 +864,76 @@ const prevImage = () => {
                               <h4>{spec.details ? spec.details.productname : `Specification ${index + 1}`}</h4>
                             </div>
                             <br />
-                            {
-                              spec.system.stocks < 1 ?
-                              (
-                                <p>Cannot add to cart: <span style={{color: "tomato"}}>Out of stocks</span></p>
-                              )
-                              :
-                              (
-                              <button className="market-add-spec-to-cart" onClick={() => addToCart(spec, selectedProduct)}>
+                            {spec.system.stocks < 1 ? (
+                              <p>
+                                Cannot add to cart: <span style={{ color: "tomato" }}>Out of stocks</span>
+                              </p>
+                            ) : (
+                              <button
+                                className="market-add-spec-to-cart"
+                                onClick={() => addToCart(spec, selectedProduct)}
+                              >
                                 <Plus size={14} />
                                 Add to Cart
                               </button>
-                              )
-                            }
-                            
+                            )}
+
                             <br />
                             <div className="market-spec-details">
                               <p>DESCRIPTION</p>
                               <p>{spec.details ? spec.details.description : ""}</p>
-
                               <p>CATEGORY</p>
                               <p>{spec.details.category}</p>
-
                               <p>FEATURES</p>
                               <ul>
-                              {
-                                spec.details.features.map((features, featuresindx) => (
+                                {spec.details.features.map((features, featuresindx) => (
                                   <li key={featuresindx}>{features.data}</li>
-                                ))
-                              }
+                                ))}
                               </ul>
-
                               <p>WEIGHT</p>
                               <p>Weight in grams: {spec.details.weightingrams} grams</p>
- 
                               <p>FOR</p>
                               <p>For age {spec.details.for.age}</p>
                               <p>For {spec.details.for.part}</p>
                               <p>For all {spec.details.for.gender} genders </p>
                               <p>Reminder: {spec.details.for.reminder}</p>
- 
                               <p>PRICE</p>
                               <p className="market-spec-price">
                                 {formatPrice(spec.details && spec.details.price ? spec.details.price.amount : 0)}
                               </p>
-
-                              <p>TRANSACTION GIVE AWAY TO BE SHARED AMONG MONTHLY FINANCIAL ALLOCATION TO INDIVIDUAL PEOPLE ( MFATIP ) USERS</p>
+                              <p>
+                                TRANSACTION GIVE AWAY TO BE SHARED AMONG MONTHLY FINANCIAL ALLOCATION TO INDIVIDUAL
+                                PEOPLE ( MFATIP ) USERS
+                              </p>
                               <p>&#8369;{spec.details.price.transactiongiveaway}</p>
-
                               <p>STOCKS</p>
                               <p>Stocks: {spec.system.stocks}</p>
-
                               <div className="market-spec-images">
-                                {
-                                  spec.images.map((specImage, specImageIndex) => {
-                                    return (
-                                      <img 
-                                        key={specImageIndex}
-                                        className="specimages"
-                                        src={specImage.url || "/placeholder.svg"} 
-                                        alt="Product Specification Image"
-                                        onClick={() => openImageModal(specImage.url, 0)}
-                                        style={{ cursor: 'pointer' }}
-                                      />
-                                    )
-                                  })
-                                }
+                                {spec.images.map((specImage, specImageIndex) => {
+                                  return (
+                                    <img
+                                      key={specImageIndex}
+                                      className="specimages"
+                                      src={specImage.url || "/placeholder.svg"}
+                                      alt="Product Specification Image"
+                                      onClick={() => openImageModal(specImage.url, 0)}
+                                      style={{ cursor: "pointer" }}
+                                    />
+                                  )
+                                })}
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     </div>
-                 )}
-
+                  )}
                 <div className="market-modal-product-warranty">
                   <h3>Warranty Information</h3>
                   <p>
                     {selectedProduct.details ? selectedProduct.details.warranty : "No warranty information available"}
                   </p>
                 </div>
-
                 <div className="market-modal-product-actions">
                   <button className="market-modal-wishlist">
                     <Heart size={16} />
@@ -980,12 +949,20 @@ const prevImage = () => {
       {/* Enhanced Full Screen Image Modal */}
       {imageModalOpen && (
         <div className="market-fullscreen-modal">
-          <div className="market-fullscreen-modal-content">
-            <button onClick={closeImageModal} className="market-close-fullscreen-modal" aria-label="Close fullscreen view">
+          <div className="market-fullscreen-modal-content" ref={imageModalRef}>
+            <button
+              onClick={closeImageModal}
+              className="market-close-fullscreen-modal"
+              aria-label="Close fullscreen view"
+            >
               <X size={24} />
             </button>
             <div className="market-fullscreen-image-container">
-              <button onClick={prevImage} className="market-fullscreen-nav market-prev-image" aria-label="Previous image">
+              <button
+                onClick={prevImage}
+                className="market-fullscreen-nav market-prev-image"
+                aria-label="Previous image"
+              >
                 <ChevronLeft size={36} />
               </button>
               <img
@@ -1009,58 +986,57 @@ const prevImage = () => {
       )}
 
       {/* Full Screen Video Modal */}
-     {fullScreenVideo && selectedProduct && selectedProduct.videos && selectedProduct.videos.length > 0 && (
-      <div className="market-fullscreen-modal">
-        <div className="market-fullscreen-modal-content">
-          <button onClick={() => setFullScreenVideo(false)} className="market-close-fullscreen-modal" aria-label="Close fullscreen video">
-            <X size={24} />
-          </button>
-          <div className="market-fullscreen-video-container">
-            {(() => {
-              const videoUrl = selectedProduct.videos[0].url;
-              if (videoUrl.includes('youtube.com') || videoUrl.includes('youtu.be')) {
-                let embedUrl = videoUrl;
-                if (videoUrl.includes('youtube.com/watch?v=')) {
-                  const videoId = videoUrl.split('v=')[1].split('&')[0];
-                  embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-                } else if (videoUrl.includes('youtu.be/')) {
-                  const videoId = videoUrl.split('youtu.be/')[1].split('?')[0];
-                  embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`;
+      {fullScreenVideo && selectedProduct && selectedProduct.videos && selectedProduct.videos.length > 0 && (
+        <div className="market-fullscreen-modal">
+          <div className="market-fullscreen-modal-content">
+            <button
+              onClick={() => setFullScreenVideo(false)}
+              className="market-close-fullscreen-modal"
+              aria-label="Close fullscreen video"
+            >
+              <X size={24} />
+            </button>
+            <div className="market-fullscreen-video-container">
+              {(() => {
+                const videoUrl = selectedProduct.videos[0].url
+                if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
+                  let embedUrl = videoUrl
+                  if (videoUrl.includes("youtube.com/watch?v=")) {
+                    const videoId = videoUrl.split("v=")[1].split("&")[0]
+                    embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`
+                  } else if (videoUrl.includes("youtu.be/")) {
+                    const videoId = videoUrl.split("youtu.be/")[1].split("?")[0]
+                    embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1`
+                  }
+
+                  return (
+                    <iframe
+                      src={embedUrl}
+                      title="Product Video Fullscreen"
+                      className="market-fullscreen-video"
+                      frameBorder="0"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  )
+                } else {
+                  return (
+                    <video src={videoUrl} controls autoPlay className="market-fullscreen-video">
+                      Your browser does not support the video tag.
+                    </video>
+                  )
                 }
-                
-                return (
-                  <iframe
-                    src={embedUrl}
-                    title="Product Video Fullscreen"
-                    className="market-fullscreen-video"
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  />
-                );
-              } else {
-                return (
-                  <video
-                    src={videoUrl}
-                    controls
-                    autoPlay
-                    className="market-fullscreen-video"
-                  >
-                    Your browser does not support the video tag.
-                  </video>
-                );
-              }
-            })()}
+              })()}
+            </div>
           </div>
         </div>
-      </div>
-     )}
+      )}
 
       {/* Full Screen Image Modal */}
       {imageModalOpen && (
         <div className="market-image-modal">
           <button onClick={closeImageModal} className="market-close-image-modal" aria-label="Close image">
-            <X />
+            <X size={20} />
           </button>
           <div className="market-fullscreen-image-container">
             <button onClick={prevImage} className="market-image-nav market-prev-image" aria-label="Previous image">
@@ -1149,7 +1125,6 @@ const prevImage = () => {
           <p>&copy; {new Date().getFullYear()} ShopEase. All rights reserved.</p>
         </div>
       </footer>
-
     </div>
   )
 }
