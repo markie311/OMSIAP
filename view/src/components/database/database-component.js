@@ -9,6 +9,12 @@ import "../../styles/database/database.scss"
 import { Container, Row, Col, Button, Form, Spinner, Modal, Image } from "react-bootstrap"
 
 import { FaEye, 
+         FaCogs,
+         FaShield,
+         FaUsers,
+         FaStarHalfAlt,
+         FaWarehouse,
+         FaMapMarkerAlt,
          FaGlobe,
          FaNewspaper,
          FaLightbulb,
@@ -166,6 +172,10 @@ function DatabaseComponent() {
   const [showOrderDetails, setShowOrderDetails] = useState(false)
 
   const [showOrderRejectForm, setShowOrderRejectForm] = useState(false)
+
+  const [totalordersseachtransactionid, totalordersseachtransactionidcb] = useState("")
+  const [totalorderssearchtransactionidloadingindication, totalorderssearchtransactionidloadingindicationcb] = useState(false)
+  const [totalorderssearchtransactionidresponsemessage, totalorderssearchtransactionidresponsemessagecb] = useState('Here the response message finding an order by transaction ID will appear')
 
   const [showTotalCurrencyExchange, setShowTotalCurrencyExchange] = useState(false)
   const [showPendingCurrencyExchange, setShowPendingCurrencyExchange] = useState(false)
@@ -1565,6 +1575,16 @@ const fetchOmsiapData = async () => {
                                      setShowRejectedOrders={setShowRejectedOrders}
                                      setShowOrderDetails={setShowOrderDetails}
 
+                                     setOrderDetailsObject={setOrderDetailsObject}
+
+                                     totalordersseachtransactionid={totalordersseachtransactionid}
+                                     totalordersseachtransactionidcb={totalordersseachtransactionidcb}
+
+                                     totalorderssearchtransactionidloadingindication={totalorderssearchtransactionidloadingindication}
+                                     totalorderssearchtransactionidloadingindicationcb={totalorderssearchtransactionidloadingindicationcb}
+                                     totalorderssearchtransactionidresponsemessage={totalorderssearchtransactionidresponsemessage}
+                                     totalorderssearchtransactionidresponsemessagecb={totalorderssearchtransactionidresponsemessagecb}
+
                                      setShowTotalCurrencyExchange={setShowTotalCurrencyExchange}
                                      setShowPendingCurrencyExchange={setShowPendingCurrencyExchange}
                                      setShowSuccessfulCurrencyExchange={setShowSuccessfulCurrencyExchange}
@@ -1879,6 +1899,7 @@ const fetchOmsiapData = async () => {
             {
               showOrderDetails && (
                 <OrderDetailsModal transaction={orderDetailsObject} 
+                                   setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                    setShowOrderDetails={setShowOrderDetails}/>
               )
             }
@@ -2549,6 +2570,15 @@ const StatisticsCardOperationBasis = ({
   setShowRejectedOrders,
   setShowOrderDetails,
 
+  setOrderDetailsObject,
+  
+  totalordersseachtransactionid,
+  totalordersseachtransactionidcb,
+  totalorderssearchtransactionidloadingindication,
+  totalorderssearchtransactionidloadingindicationcb,
+  totalorderssearchtransactionidresponsemessage,
+  totalorderssearchtransactionidresponsemessagecb,
+
   setShowTotalCurrencyExchange,
   setShowPendingCurrencyExchange,
   setShowSuccessfulCurrencyExchange,
@@ -2734,19 +2764,94 @@ const StatisticsCardOperationBasis = ({
             <div className="search-container">
               <div className="search-field">
                 <label>Transaction ID:</label>
-                <input className="transaction-id-input" type="text" placeholder="Enter transaction ID"/>
+                <input className="transaction-id-input" 
+                       type="text" 
+                       placeholder="Enter transaction ID"
+                       onChange={(evt)=> {
+                        totalordersseachtransactionidcb(evt.target.value)
+                       }}/>
               </div>
-              <button className="search-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                </svg>
-                Search
-              </button>
+              {
+                totalorderssearchtransactionidloadingindication ?
+                (
+                  <Spinner animation="border" variant="light" />
+                )
+                :
+                (
+               <button 
+                  className="search-button"                           
+                  onClick={async (e) => {                                 
+                    try {
+                      
+                      // Set the loading indication to true to display a loading spinner in the UI                             
+                      totalorderssearchtransactionidloadingindicationcb(true);
+                      
+                      // Clear any previous response messages
+                      totalorderssearchtransactionidresponsemessagecb("");
+                      
+                      // Validate input
+                      if (!totalordersseachtransactionid || totalordersseachtransactionid.trim() === '') {
+                        totalorderssearchtransactionidresponsemessagecb("Please enter a transaction ID to search");
+                        totalorderssearchtransactionidloadingindicationcb(false);
+                        return;
+                      }
+                      
+                      // Search in the local totalorders array instead of making API call
+                      const searchId = totalordersseachtransactionid.trim();
+                      const foundTransaction = totalorders.find(transaction => transaction.id === searchId);
+                      
+                      // Check if transaction was found
+                      if (foundTransaction) {
+                        // Setting the transaction data from local array                             
+                        setOrderDetailsObject(foundTransaction);
+                        
+                        // Open database configuration modal to display order details modal if successful query                             
+                        setShowDatabaseConfiguration(true);
+                        
+                        // Open order details modal if successful query                             
+                        setShowOrderDetails(true);
+                        
+                        // Control the response message with success                              
+                        totalorderssearchtransactionidresponsemessagecb("Transaction found successfully");
+                      } else {
+                        // Handle case when transaction is not found
+                        totalorderssearchtransactionidresponsemessagecb("Transaction not found. Please verify the transaction ID.");
+                      }
+                      
+                    } catch (error) {
+                      // Handle any unexpected errors during local search
+                      let errorMessage = "An unexpected error occurred while searching. Please try again.";
+                      
+                      // Display error message
+                      totalorderssearchtransactionidresponsemessagecb(errorMessage);
+                      
+                      // Log error for debugging
+                      console.error('Local search transaction error:', error);
+                      
+                    } finally {
+                      // Always set loading to false when done
+                      totalorderssearchtransactionidloadingindicationcb(false);
+                    }
+                  }}
+                >                     
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">                       
+                    <circle cx="11" cy="11" r="8"></circle>                       
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>                     
+                  </svg>                   
+                  Search                  
+                </button>
+
+                )
+              }
+             
             </div>
             <div className="transaction-info">
               <span className="transaction-label">TRANSACTION ID:</span>
-              <span className="transaction-value">TNX-123asd-123aqwe</span>
+              <span className="transaction-value">{totalordersseachtransactionid}</span>
+            </div>
+            <div className="transaction-info">
+              <span className="transaction-label">Response message:</span>
+              <span className="transaction-value">{totalorderssearchtransactionidresponsemessage}</span>
             </div>
           </div>
         </div>
@@ -6163,7 +6268,12 @@ const RejectedOrders = ({
   );
 };
 
-const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
+const OrderDetailsModal = (
+  {
+  setShowDatabaseConfiguration, 
+  setShowOrderDetails, 
+  transaction 
+  }) => {
   const [stockStatus, setStockStatus] = useState({});
   const [isChecking, setIsChecking] = useState({});
   
@@ -6190,7 +6300,8 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
   // Handle click outside modal to close
   const handleOverlayClick = (e) => {
     if (e.target.className === 'modal-overlay') {
-      setShowOrderDetails(false);
+      setShowDatabaseConfiguration(false)
+      setShowOrderDetails(false)
     }
   };
 
@@ -6264,13 +6375,28 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
     }
   };
   
+  // Format full name from name object
+  const formatFullName = (nameObj) => {
+    if (!nameObj) return 'N/A';
+    const { firstname = '', middlename = '', lastname = '' } = nameObj;
+    return [firstname, middlename, lastname].filter(Boolean).join(' ') || 'N/A';
+  };
+
+  // Format address from address object
+  const formatAddress = (addressObj) => {
+    if (!addressObj) return 'No address available';
+    const { street, trademark, baranggay, city, province, postal_zip_code, country } = addressObj;
+    const addressParts = [street, trademark, baranggay, city, province, postal_zip_code, country].filter(Boolean);
+    return addressParts.length > 0 ? addressParts.join(', ') : 'No address available';
+  };
+  
   // Extract data from the merchandise transaction schema
   const id = transaction.id || 'No ID';
   const date = transaction.statusesandlogs?.date || 'No Date';
   const status = transaction.statusesandlogs?.status || 'Unknown';
   const paymentMethod = transaction.details?.paymentmethod || 'Unknown';
   
-  // Extract shipping information
+  // Extract shipping information (using correct schema field names)
   const shippingInfo = transaction.system?.shippinginfo || {};
   const {
     street = '',
@@ -6278,7 +6404,7 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
     baranggay = '',
     city = '',
     province = '',
-    zipcode = '',
+    postal_zip_code = '', // Fixed: was zipcode, now postal_zip_code per schema
     country = ''
   } = shippingInfo;
   
@@ -6306,7 +6432,10 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
     <div className="modal-overlay" onClick={handleOverlayClick}>
       <div className="order-details-modal">
         <button className="close-button" 
-                onClick={() => setShowOrderDetails(false)}>
+                onClick={() => {
+                  setShowDatabaseConfiguration(false)
+                  setShowOrderDetails(false)
+                  }}>
           <FaTimes />
         </button>
         <h2 className="modal-title">Order Details</h2>
@@ -6351,7 +6480,7 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
             {trademark && <p className="address-line">{trademark}</p>}
             {baranggay && <p className="address-line">{baranggay}</p>}
             <p className="address-line">
-              {city}{city && province ? ', ' : ''}{province} {zipcode}
+              {city}{city && province ? ', ' : ''}{province} {postal_zip_code}
             </p>
             {country && <p className="address-line">{country}</p>}
           </div>
@@ -6383,18 +6512,17 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
                     </div>
                     
                     <div className="product-details">
-
                       <div className="product-info-primary">
                         <span className="product-name">{product.details?.productname || 'Unnamed Product'}</span>
                       </div>
                         
-                     <br/>
+                      <br/>
 
-                     <span className="product-price">
-                       {formatCurrency(product.details?.price?.amount)}
-                     </span>
+                      <span className="product-price">
+                        {formatCurrency(product.details?.price?.amount)}
+                      </span>
 
-                     <br/>
+                      <br/>
 
                       <div className="product-info-secondary">
                         {product.details?.category && 
@@ -6406,18 +6534,18 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
 
                       <br/>
 
-                       {product.details?.weightingrams && 
-                          <span className="product-weight">
-                            <FaWeight className="weight-icon" /> {product.details.weightingrams}g
-                          </span>
-                        }
+                      {product.details?.weightingrams && 
+                        <span className="product-weight">
+                          <FaWeight className="weight-icon" /> {product.details.weightingrams}g
+                        </span>
+                      }
 
-                       <br/>
+                      <br/>
 
                       {product.quantity && 
-                      <span className="product-quantity">
-                        <FaLayerGroup className="quantity-icon" /> Qty: {product.quantity}
-                      </span>
+                        <span className="product-quantity">
+                          <FaLayerGroup className="quantity-icon" /> Qty: {product.quantity}
+                        </span>
                       }
                       
                       <br/>
@@ -6428,41 +6556,87 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
 
                       <br/>
 
-                      <p className="product-description">{product.details.webaddress}asdas</p>
+                      {/* Fixed: Removed debugging text "asdas" */}
+                      {product.details?.webaddress && (
+                        <p className="product-webaddress">
+                          <FaGlobe className="web-icon" /> 
+                          <a href={product.details.webaddress} target="_blank" rel="noopener noreferrer">
+                            {product.details.webaddress}
+                          </a>
+                        </p>
+                      )}
 
-                    </div>
-                     
-                    {/*
-                    <div className="product-stock-check">
-                      {!productStockStatus && !isChecking[productId] ? (
-                        <button 
-                          className="check-stock-btn"
-                          onClick={() => checkStock(productId)}
-                        >
-                          <FaSearch className="check-icon" /> Check Stock
-                        </button>
-                      ) : isChecking[productId] ? (
-                        <div className="checking-status">
-                          <FaSpinner className="spin-icon" /> Checking...
+                      <br/>
+
+                      {/* Added: Product Features */}
+                      {product.details?.features && product.details.features.length > 0 && (
+                        <div className="product-features">
+                          <p className="features-title"><FaStar className="features-icon" /> Features:</p>
+                          {product.details.features.map((feature, idx) => (
+                            <span key={idx} className="feature-item">• {feature.data}</span>
+                          ))}
                         </div>
-                      ) : (
-                        <div className="stock-status" 
-                             style={{ backgroundColor: getStockStatusColor(productStockStatus.status) }}>
-                          {productStockStatus.status === 'available' ? (
-                            <>
-                              <FaCheckCircle className="status-icon" /> 
-                              In Stock ({productStockStatus.count} available)
-                            </>
-                          ) : (
-                            <>
-                              <FaTimesCircle className="status-icon" /> 
-                              Out of Stock
-                            </>
+                      )}
+
+                      <br/>
+
+                      {/* Added: Product Specifications */}
+                      {product.details?.specifications && product.details.specifications.length > 0 && (
+                        <div className="product-specifications">
+                          <p className="specs-title"><FaCogs className="specs-icon" /> Specifications:</p>
+                          {product.details.specifications.map((spec, idx) => (
+                            <span key={idx} className="spec-item">• {spec}</span>
+                          ))}
+                        </div>
+                      )}
+
+                      <br/>
+
+                      {/* Fixed: Replaced FaShield with FaCheckCircle */}
+                      {product.details?.warranty && (
+                        <p className="product-warranty">
+                          <FaCheckCircle className="warranty-icon" /> Warranty: {product.details.warranty}
+                        </p>
+                      )}
+
+                      <br/>
+
+                      {/* Added: Target Audience Information */}
+                      {product.details?.for && (
+                        <div className="product-targeting">
+                          <p className="targeting-title"><FaUsers className="targeting-icon" /> Target Information:</p>
+                          {product.details.for.age && <span className="targeting-item">Age: {product.details.for.age}</span>}
+                          {product.details.for.gender && <span className="targeting-item">Gender: {product.details.for.gender}</span>}
+                          {product.details.for.part && <span className="targeting-item">Part: {product.details.for.part}</span>}
+                          {product.details.for.reminder && <span className="targeting-item">Note: {product.details.for.reminder}</span>}
+                        </div>
+                      )}
+
+                      <br/>
+
+                      {/* Added: Customer Feedback */}
+                      {product.customerfeedback && (product.customerfeedback.rating > 0 || product.customerfeedback.reviews > 0) && (
+                        <div className="product-feedback">
+                          <FaStarHalfAlt className="feedback-icon" />
+                          {product.customerfeedback.rating > 0 && (
+                            <span className="rating">Rating: {product.customerfeedback.rating}/5</span>
+                          )}
+                          {product.customerfeedback.reviews > 0 && (
+                            <span className="reviews">({product.customerfeedback.reviews} reviews)</span>
                           )}
                         </div>
                       )}
+
+                      <br/>
+
+                      {/* Added: Stock Information */}
+                      {product.system?.stocks !== undefined && (
+                        <p className="product-stock">
+                          <FaWarehouse className="stock-icon" /> Stock: {product.system.stocks} units
+                        </p>
+                      )}
+
                     </div>
-                    */}
 
                   </div>
                 );
@@ -6482,7 +6656,7 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
               <span className="summary-label">Shipping Total:</span>
               <span className="summary-value">{formatCurrency(shippingtotal)}</span>
             </div>
-             <div className="summary-item">
+            <div className="summary-item">
               <span className="summary-label">Processing fee:</span>
               <span className="summary-value">{formatCurrency(processingfee)}</span>
             </div>
@@ -6513,22 +6687,48 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
           </div>
         </div>
         
-        {/* Customer Information Section */}
-        {transaction.system?.thistransactionismadeby && (
+        {/* Enhanced: Customer Information Section */}
+        {(transaction.system?.thistransactionismadeby || transaction.system?.thistransactionismainlyintendedto) && (
           <div className="order-section">
             <h3><FaUser className="section-icon" /> Customer Information</h3>
-            <div className="customer-info">
-              {transaction.system.thistransactionismadeby.name && (
+            
+            {/* Transaction Made By */}
+            {transaction.system?.thistransactionismadeby && (
+              <div className="customer-info">
+                <h4 className="customer-section-title">Transaction Made By:</h4>
                 <p className="customer-name">
-                  {transaction.system.thistransactionismadeby.name.firstname || ''}{' '}
-                  {transaction.system.thistransactionismadeby.name.middlename || ''}{' '}
-                  {transaction.system.thistransactionismadeby.name.lastname || ''}
+                  {formatFullName(transaction.system.thistransactionismadeby.name)}
                 </p>
-              )}
-              {transaction.system.thistransactionismadeby.id && (
-                <p className="customer-id">Customer ID: {transaction.system.thistransactionismadeby.id}</p>
-              )}
-            </div>
+                {transaction.system.thistransactionismadeby.id && (
+                  <p className="customer-id">Customer ID: {transaction.system.thistransactionismadeby.id}</p>
+                )}
+                {transaction.system.thistransactionismadeby.address && (
+                  <p className="customer-address">
+                    <FaMapMarkerAlt className="address-icon" /> 
+                    {formatAddress(transaction.system.thistransactionismadeby.address)}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Transaction Intended To */}
+            {transaction.system?.thistransactionismainlyintendedto && (
+              <div className="customer-info">
+                <h4 className="customer-section-title">Transaction Intended To:</h4>
+                <p className="customer-name">
+                  {formatFullName(transaction.system.thistransactionismainlyintendedto.name)}
+                </p>
+                {transaction.system.thistransactionismainlyintendedto.id && (
+                  <p className="customer-id">Recipient ID: {transaction.system.thistransactionismainlyintendedto.id}</p>
+                )}
+                {transaction.system.thistransactionismainlyintendedto.address && (
+                  <p className="customer-address">
+                    <FaMapMarkerAlt className="address-icon" /> 
+                    {formatAddress(transaction.system.thistransactionismainlyintendedto.address)}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
         )}
         
@@ -6560,6 +6760,7 @@ const OrderDetailsModal = ({ setShowOrderDetails, transaction }) => {
     </div>
   );
 };
+
 
 const OrderRejectForm = ({ 
 

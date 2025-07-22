@@ -728,6 +728,171 @@ Router.post('/ordershipped', async (req, res) => {
   }
 });
 
+// Get Product Order Transaction Route
+Router.post('/getproductordertransaction', async (req, res) => {
+
+  try {
+    const { id } = req.body;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Transaction ID is required'
+      });
+    }
+
+    // Validate that ID is not empty or just whitespace
+    if (typeof id !== 'string' || id.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Valid transaction ID is required'
+      });
+    }
+
+    const trimmedId = id.trim();
+    console.log('Searching for transaction with ID:', trimmedId); // Debug log
+
+    // Find the merchandise transaction by the normal ID (not mongoose _id)
+    // Based on your schema, the ID field is at the root level
+    const merchandiseTransaction = await MerchandiseTransactionDataModel.findOne({
+      id: trimmedId
+    });
+    
+    console.log('Transaction found:', !!merchandiseTransaction); // Debug log
+    
+    // Check if transaction exists
+    if (!merchandiseTransaction) {
+      return res.status(404).json({
+        success: false,
+        message: 'Transaction not found. Please verify the transaction ID and try again.'
+      });
+    }
+
+    // Get the registrant ID from the transaction
+    const registrantId = merchandiseTransaction.system?.thistransactionismadeby?.id;
+    
+    // Find the registrant by ID to get additional information
+    let registrantInfo = null;
+    if (registrantId) {
+      try {
+        const registrant = await RegistrantDataModel.findById(registrantId);
+        if (registrant) {
+          registrantInfo = {
+            id: registrant._id,
+            name: registrant.name,
+            email: registrant.email || null,
+            // Add other fields as needed
+          };
+        }
+      } catch (registrantError) {
+        console.warn('Could not fetch registrant info:', registrantError);
+        // Continue without registrant info - don't fail the whole request
+      }
+    }
+
+    // Prepare the response data based on your schema structure
+    const transactionData = {
+      _id: merchandiseTransaction._id,
+      id: merchandiseTransaction.id,
+      date: merchandiseTransaction.date,
+      intent: merchandiseTransaction.intent,
+      status: merchandiseTransaction.statusesandlogs?.status,
+      indication: merchandiseTransaction.statusesandlogs?.indication,
+      statusDate: merchandiseTransaction.statusesandlogs?.date,
+      logs: merchandiseTransaction.statusesandlogs?.logs || [],
+      
+      // Transaction details
+      merchandiseList: merchandiseTransaction.details?.merchandise?.list || [],
+      paymentMethod: merchandiseTransaction.details?.paymentmethod || null,
+      
+      // System information - who made the transaction
+      transactionMadeBy: {
+        id: merchandiseTransaction.system?.thistransactionismadeby?.id || null,
+        name: {
+          firstname: merchandiseTransaction.system?.thistransactionismadeby?.name?.firstname || '',
+          middlename: merchandiseTransaction.system?.thistransactionismadeby?.name?.middlename || '',
+          lastname: merchandiseTransaction.system?.thistransactionismadeby?.name?.lastname || ''
+        },
+        address: merchandiseTransaction.system?.thistransactionismadeby?.address || null
+      },
+      
+      // System information - transaction intended for
+      transactionIntendedFor: {
+        id: merchandiseTransaction.system?.thistransactionismainlyintendedto?.id || null,
+        name: {
+          firstname: merchandiseTransaction.system?.thistransactionismainlyintendedto?.name?.firstname || '',
+          middlename: merchandiseTransaction.system?.thistransactionismainlyintendedto?.name?.middlename || '',
+          lastname: merchandiseTransaction.system?.thistransactionismainlyintendedto?.name?.lastname || ''
+        },
+        address: merchandiseTransaction.system?.thistransactionismainlyintendedto?.address || null
+      },
+      
+      // Order summary
+      orderSummary: {
+        merchandiseTotal: merchandiseTransaction.system?.ordersummary?.merchandisetotal || 0,
+        shippingTotal: merchandiseTransaction.system?.ordersummary?.shippingtotal || 0,
+        processingFee: merchandiseTransaction.system?.ordersummary?.processingfee || 0,
+        totalCapital: merchandiseTransaction.system?.ordersummary?.totalcapital || 0,
+        totalTransactionGiveaway: merchandiseTransaction.system?.ordersummary?.totaltransactiongiveaway || 0,
+        totalProfit: merchandiseTransaction.system?.ordersummary?.totalprofit || 0,
+        totalItems: merchandiseTransaction.system?.ordersummary?.totalitems || 0,
+        totalWeightGrams: merchandiseTransaction.system?.ordersummary?.totalweightgrams || 0,
+        totalWeightKilos: merchandiseTransaction.system?.ordersummary?.totalweightkilos || 0
+      },
+      
+      // Shipping information
+      shippingInfo: merchandiseTransaction.system?.shippinginfo || null,
+      
+      // Add timestamps if available
+      createdAt: merchandiseTransaction.createdAt,
+      updatedAt: merchandiseTransaction.updatedAt
+    };
+
+    // Return success response with transaction data
+    return res.status(200).json({
+      success: true,
+      message: `Transaction ${trimmedId} retrieved successfully`,
+      transaction: transactionData,
+      registrant: registrantInfo,
+      found: true
+    });
+    
+  } catch (err) {
+    console.error('Error retrieving order transaction:', err);
+    
+    // Handle specific MongoDB errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid transaction ID format'
+      });
+    }
+
+    // Handle connection errors
+    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection error. Please try again later.'
+      });
+    }
+
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Data validation error. Please check your input.'
+      });
+    }
+    
+    // Handle other errors
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while retrieving order transaction. Please try again later.'
+    });
+  }
+});
+
 // Add this helper function before your router
 const calculatePartialRefund = (removedItems) => {
   return removedItems.reduce((total, item) => {
