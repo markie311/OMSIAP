@@ -6270,13 +6270,22 @@ const RejectedOrders = ({
 
 const OrderDetailsModal = (
   {
+
   setShowDatabaseConfiguration, 
   setShowOrderDetails, 
   transaction 
+
   }) => {
+
+
   const [stockStatus, setStockStatus] = useState({});
   const [isChecking, setIsChecking] = useState({});
-  
+
+  const [orderdetailsconfirmorderloadingindication, orderdetailsconfirmorderloadingindicationcb] = useState(false)
+  const [orderdetailsorderforshippingloadingindication, orderdetailsorderforshippingloadingindicationcb] = useState(false)
+  const [orderdetailsshippedorderloadingindication, orderdetailsshippedorderloadingindicationcb] = useState(false)
+  const [orderdetailsrejectloadingindication, orderdetailsrejectloadingindicationcb] = useState(false)
+
   if (!transaction) return null;
 
   // Format currency
@@ -6756,6 +6765,54 @@ const OrderDetailsModal = (
             </div>
           </div>
         )}
+
+        <div>
+          {
+            orderdetailsconfirmorderloadingindication ? 
+            (
+              <Spinner animation="border" variant="light" />
+            )
+            :
+            (
+              <button id="orderdetails-confirmorderbutton">Confirm</button>
+            )
+          }
+
+           { orderdetailsorderforshippingloadingindication ? 
+            (
+             <Spinner animation="border" variant="light" />
+            )
+            :
+            (
+             <button id="orderdetails-ordershippingbutton">Order for shipping</button> 
+            )
+           }
+
+
+           {
+            orderdetailsshippedorderloadingindication ? 
+            (
+             <Spinner animation="border" variant="light" />
+            )
+            :
+            (
+            <button id="orderdetails-shippedorderbutton">Shipped order</button>
+            )
+          }
+
+           {
+             orderdetailsrejectloadingindication ? 
+            (
+             <Spinner animation="border" variant="light" />
+            )
+            :
+            (
+              <button id="orderdetails-rejectbutton">Reject</button>
+            )
+           }
+           
+         
+        </div>
       </div>
     </div>
   );
