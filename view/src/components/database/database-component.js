@@ -1900,7 +1900,12 @@ const fetchOmsiapData = async () => {
               showOrderDetails && (
                 <OrderDetailsModal transaction={orderDetailsObject} 
                                    setShowDatabaseConfiguration={setShowDatabaseConfiguration}
-                                   setShowOrderDetails={setShowOrderDetails}/>
+                                   setShowOrderDetails={setShowOrderDetails}
+
+                                   setShowOrderRejectForm={setShowOrderRejectForm}
+                                   orderrejectformtransactioncb={orderrejectformtransactioncb}
+
+                                   fetchOmsiapData={fetchOmsiapData}/>
               )
             }
 
@@ -4955,6 +4960,7 @@ const ConfirmedOrders = ({
 
 // Improved handleOrderForShipping function with shipping-specific messaging
 const handleOrderForShipping = async (_id, id) => {
+
   // Prevent multiple simultaneous requests
   if (onorderforshippingloadingindicationcb) {
     onorderforshippingloadingindicationcb(true);
@@ -6273,7 +6279,12 @@ const OrderDetailsModal = (
 
   setShowDatabaseConfiguration, 
   setShowOrderDetails, 
-  transaction 
+  transaction,
+
+  setShowOrderRejectForm,
+  orderrejectformtransactioncb,
+
+  fetchOmsiapData
 
   }) => {
 
@@ -6285,6 +6296,8 @@ const OrderDetailsModal = (
   const [orderdetailsorderforshippingloadingindication, orderdetailsorderforshippingloadingindicationcb] = useState(false)
   const [orderdetailsshippedorderloadingindication, orderdetailsshippedorderloadingindicationcb] = useState(false)
   const [orderdetailsrejectloadingindication, orderdetailsrejectloadingindicationcb] = useState(false)
+
+  const [orderdetailsresponsemessage, orderdetailsresponsemessagecb] = useState("Response message")
 
   if (!transaction) return null;
 
@@ -6774,7 +6787,97 @@ const OrderDetailsModal = (
             )
             :
             (
-              <button id="orderdetails-confirmorderbutton">Confirm</button>
+              <button id="orderdetails-confirmorderbutton"
+                      onClick={ async (e)=> {
+ 
+                        const _id = transaction._id
+                        const id = transaction.id
+
+                         // Prevent multiple simultaneous requests
+                         if (orderdetailsconfirmorderloadingindicationcb) {
+                          orderdetailsconfirmorderloadingindicationcb(true);
+                         }
+                        
+                         try {
+                          // Validate input
+                          if (!_id) {
+                            orderdetailsresponsemessagecb('Order ID is missing', 'error');
+                            return;
+                          }
+                          
+                          // Send request to backend to accept the order
+                          const response = await axiosCreatedInstance.post("/omsiap/confirmorder", { _id, id });
+                          
+                          // Show success status message based on backend response
+                          orderdetailsresponsemessagecb(
+                            response.data.message || `Order ${_id} has been confirmed successfully`,
+                            'success'
+                          );
+                          
+                          // Update the UI with fresh data
+                          await fetchOmsiapData();
+                          
+                         } catch (error) {
+                          // Handle different types of backend errors
+                          if (error.response) {
+                            // The request was made and the server responded with a status code
+                            // that falls out of the range of 2xx
+                            const errorMessage = error.response.data.message || 
+                                                `Failed to confirm Order ${_id}. Server responded with an error.`;
+                            
+                            orderdetailsresponsemessagecb(errorMessage, 'error');
+                            console.error('Backend error response:', error.response.data);
+                            
+                            // Handle specific error status codes
+                            switch(error.response.status) {
+                              case 404:
+                                orderdetailsresponsemessagecb(`Order ${_id} could not be found. It may have been deleted or moved.`, 'error');
+                                break;
+                              case 400:
+                                // The message from the server should already be descriptive
+                                break;
+                              case 401:
+                                orderdetailsresponsemessagecb('You are not authorized to confirm this order. Please log in again.', 'error');
+                                break;
+                              case 403:
+                                orderdetailsresponsemessagecb('You do not have permission to confirm orders.', 'error');
+                                break;
+                              case 500:
+                                orderdetailsresponsemessagecb('The server encountered an error. Please try again later.', 'error');
+                                break;
+                            }
+                            
+                          } else if (error.request) {
+                            // The request was made but no response was received
+                            orderdetailsresponsemessagecb(
+                              `No response received when trying to confirm Order ${_id}. Please check your network connection.`, 
+                              'error'
+                            );
+                            console.error('No response received:', error.request);
+                            
+                          } else {
+                            // Something happened in setting up the request that triggered an Error
+                            orderdetailsresponsemessagecb(`Error in processing Order ${_id}. Please try again.`, 'error');
+                            console.error('Error setting up request:', error.message);
+                          }
+                         } finally {
+                          // Ensure loading indication is set to false regardless of outcome
+                          if (orderdetailsconfirmorderloadingindicationcb) {
+                            orderdetailsconfirmorderloadingindicationcb(false);
+                          }
+                          
+                          // Refresh the data even if there was an error, as the operation might have succeeded
+                          // despite the client receiving an error
+                          try {
+                            await fetchOmsiapData();
+                          } catch (refreshError) {
+                            console.error('Failed to refresh data after order confirmation:', refreshError);
+                          }
+                         }
+
+                      }}>
+                Confirm
+              </button>
             )
           }
 
@@ -6784,7 +6887,101 @@ const OrderDetailsModal = (
             )
             :
             (
-             <button id="orderdetails-ordershippingbutton">Order for shipping</button> 
+             <button id="orderdetails-ordershippingbutton"
+                     onClick={ async (e)=> {
+
+                        const _id = transaction._id
+                        const id = transaction.id
+
+                        // Prevent multiple simultaneous requests
+                        if (orderdetailsorderforshippingloadingindicationcb) {
+                          orderdetailsorderforshippingloadingindicationcb(true);
+                        }
+                        
+                        try {
+                          // Validate input
+                          if (!_id) {
+                            orderdetailsresponsemessagecb('Order ID is missing', 'error');
+                            return;
+                          }
+                          
+                          // Send request to backend to mark the order for shipping
+                          const response = await axiosCreatedInstance.post("/omsiap/orderforshipping", { _id, id });
+                          
+                          // Show success status message based on backend response
+                          orderdetailsresponsemessagecb(
+                            response.data.message || `Order ${_id} has been marked for shipping successfully`,
+                            'success'
+                          );
+                          
+                          // Update the UI with fresh data
+                          await fetchOmsiapData();
+                          
+                        } catch (error) {
+                          // Handle different types of backend errors
+                          if (error.response) {
+                            // The request was made and the server responded with a status code
+                            // that falls out of the range of 2xx
+                            const errorMessage = error.response.data.message ||
+                                                `Failed to mark Order ${_id} for shipping. Server responded with an error.`;
+                            
+                            orderdetailsresponsemessagecb(errorMessage, 'error');
+                            console.error('Backend error response:', error.response.data);
+                            
+                            // Handle specific error status codes
+                            switch(error.response.status) {
+                              case 404:
+                                orderdetailsresponsemessagecb(`Order ${_id} could not be found. It may have been deleted or moved.`, 'error');
+                                break;
+                              case 400:
+                                // The message from the server should already be descriptive
+                                // Check for specific shipping-related errors
+                                if (error.response.data.message && error.response.data.message.includes('status')) {
+                                  orderdetailsresponsemessagecb('This order cannot be marked for shipping. It may need to be confirmed first.', 'error');
+                                }
+                                break;
+                              case 401:
+                                orderdetailsresponsemessagecb('You are not authorized to mark this order for shipping. Please log in again.', 'error');
+                                break;
+                              case 403:
+                                orderdetailsresponsemessagecb('You do not have permission to update order shipping status.', 'error');
+                                break;
+                              case 500:
+                                orderdetailsresponsemessagecb('The server encountered an error while preparing the order for shipping. Please try again later.', 'error');
+                                break;
+                            }
+                            
+                          } else if (error.request) {
+                            // The request was made but no response was received
+                            orderdetailsresponsemessagecb(
+                              `No response received when trying to mark Order ${_id} for shipping. Please check your network connection.`,
+                              'error'
+                            );
+                            console.error('No response received:', error.request);
+                            
+                          } else {
+                            // Something happened in setting up the request that triggered an Error
+                            orderdetailsresponsemessagecb(`Error processing shipping request for Order ${_id}. Please try again.`, 'error');
+                            console.error('Error setting up request:', error.message);
+                          }
+                        } finally {
+                          // Ensure loading indication is set to false regardless of outcome
+                          if (orderdetailsorderforshippingloadingindicationcb) {
+                            orderdetailsorderforshippingloadingindicationcb(false);
+                          }
+                          
+                          // Refresh the data even if there was an error, as the operation might have succeeded
+                          // despite the client receiving an error
+                          try {
+                            await fetchOmsiapData();
+                          } catch (refreshError) {
+                            console.error('Failed to refresh data after updating shipping status:', refreshError);
+                          }
+                        }
+
+                     }}>
+                Order for shipping
+             </button> 
             )
            }
 
@@ -6796,7 +6993,101 @@ const OrderDetailsModal = (
             )
             :
             (
-            <button id="orderdetails-shippedorderbutton">Shipped order</button>
+            <button id="orderdetails-shippedorderbutton"
+                    onClick={ async (e)=> {
+
+                        const _id = transaction._id
+                        const id = transaction.id
+
+                        // Prevent multiple simultaneous requests
+                        if (orderdetailsshippedorderloadingindicationcb) {
+                          orderdetailsshippedorderloadingindicationcb(true);
+                        }
+                        
+                        try {
+                          // Validate input
+                          if (!_id) {
+                            orderdetailsresponsemessagecb('Order ID is missing', 'error');
+                            return;
+                          }
+                          
+                          // Send request to backend to mark the order as shipped
+                          const response = await axiosCreatedInstance.post("/omsiap/ordershipped", { _id, id });
+                          
+                          // Show success status message based on backend response
+                          orderdetailsresponsemessagecb(
+                            response.data.message || `Order ${_id} has been marked as shipped successfully`,
+                            'success'
+                          );
+                          
+                          // Update the UI with fresh data
+                          await fetchOmsiapData();
+                          
+                        } catch (error) {
+                          // Handle different types of backend errors
+                          if (error.response) {
+                            // The request was made and the server responded with a status code
+                            // that falls out of the range of 2xx
+                            const errorMessage = error.response.data.message ||
+                                                `Failed to mark Order ${_id} as shipped. Server responded with an error.`;
+                            
+                            orderdetailsresponsemessagecb(errorMessage, 'error');
+                            console.error('Backend error response:', error.response.data);
+                            
+                            // Handle specific error status codes
+                            switch(error.response.status) {
+                              case 404:
+                                orderdetailsresponsemessagecb(`Order ${_id} could not be found. It may have been deleted or moved.`, 'error');
+                                break;
+                              case 400:
+                                // The message from the server should already be descriptive
+                                // Check for specific shipping-related errors
+                                if (error.response.data.message && error.response.data.message.includes('status')) {
+                                  orderdetailsresponsemessagecb('This order cannot be marked as shipped. It may need to be prepared for shipping first.', 'error');
+                                }
+                                break;
+                              case 401:
+                                orderdetailsresponsemessagecb('You are not authorized to mark this order as shipped. Please log in again.', 'error');
+                                break;
+                              case 403:
+                                orderdetailsresponsemessagecb('You do not have permission to update order shipping status.', 'error');
+                                break;
+                              case 500:
+                                orderdetailsresponsemessagecb('The server encountered an error while marking the order as shipped. Please try again later.', 'error');
+                                break;
+                            }
+                            
+                          } else if (error.request) {
+                            // The request was made but no response was received
+                            orderdetailsresponsemessagecb(
+                              `No response received when trying to mark Order ${_id} as shipped. Please check your network connection.`,
+                              'error'
+                            );
+                            console.error('No response received:', error.request);
+                            
+                          } else {
+                            // Something happened in setting up the request that triggered an Error
+                            orderdetailsresponsemessagecb(`Error processing shipment update for Order ${_id}. Please try again.`, 'error');
+                            console.error('Error setting up request:', error.message);
+                          }
+                        } finally {
+                          // Ensure loading indication is set to false regardless of outcome
+                          if (orderdetailsshippedorderloadingindicationcb) {
+                            orderdetailsshippedorderloadingindicationcb(false);
+                          }
+                          
+                          // Refresh the data even if there was an error, as the operation might have succeeded
+                          // despite the client receiving an error
+                          try {
+                            await fetchOmsiapData();
+                          } catch (refreshError) {
+                            console.error('Failed to refresh data after marking order as shipped:', refreshError);
+                          }
+                        }
+
+                    }}>
+                Shipped order
+            </button>
             )
           }
 
@@ -6807,9 +7098,18 @@ const OrderDetailsModal = (
             )
             :
             (
-              <button id="orderdetails-rejectbutton">Reject</button>
+              <button id="orderdetails-rejectbutton"
+                      onClick={(e)=> {
+                        setShowOrderDetails(false)
+                        setShowOrderRejectForm(true)
+                        orderrejectformtransactioncb(transaction)
+                      }}>
+                Reject
+              </button>
             )
            }
+        
+           <p style={{marginTop: "3vh"}}>{orderdetailsresponsemessage}</p>
            
          
         </div>
