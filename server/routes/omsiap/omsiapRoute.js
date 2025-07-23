@@ -14,6 +14,8 @@ const CurrencyExchangeTransactionDataModel = require('../../models/transactions/
 const WidthdrawalTransactionDataModel = require('../../models/transactions/withdrawaltransactiondatascheme.js')
 const PendingFundsDataModel = require('../../models/pendingfunds/pendingfundsdatascheme.js')
 
+const ProductDataModel = require('../../models/products/productsdatascheme.js')
+
 // Import utilities
 const timestamps = require('../../lib/timestamps/timestamps');
 
@@ -210,7 +212,7 @@ Router.get("/getomsiapdata", async (req, res) => {
     const registrants = await RegistrantDataModel.find({}, {
       'passwords.account.password': 0 // Exclude password fields
     });
-        
+    
     // Process registrants for status categorization
     const people = registrants.map(person => {
       const personObj = person.toObject();
@@ -222,10 +224,13 @@ Router.get("/getomsiapdata", async (req, res) => {
         }
       };
     });
-        
+    
+    // Fetch products data
+    const products = await ProductDataModel.find({});
+    
     // Fetch merchandise transactions
     const merchandiseTransactions = await MerchandiseTransactionDataModel.find({});
-        
+    
     // Categorize merchandise transactions by status
     const orders = {
       total: merchandiseTransactions,
@@ -236,10 +241,10 @@ Router.get("/getomsiapdata", async (req, res) => {
       shipped: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'shipped'),
       successful: merchandiseTransactions.filter(tx => tx.statusesandlogs?.status === 'completed')
     };
-        
+    
     // Fetch currency exchange transactions
     const currencyExchangeTransactions = await CurrencyExchangeTransactionDataModel.find({});
-        
+    
     // Categorize currency exchange transactions
     const currencyexchange = {
       total: currencyExchangeTransactions,
@@ -247,10 +252,10 @@ Router.get("/getomsiapdata", async (req, res) => {
       successful: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'successful'),
       rejected: currencyExchangeTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
     };
-        
+    
     // Fetch withdrawal transactions
     const withdrawalTransactions = await WidthdrawalTransactionDataModel.find({});
-        
+    
     // Categorize withdrawal transactions
     const withdrawals = {
       total: withdrawalTransactions,
@@ -258,17 +263,18 @@ Router.get("/getomsiapdata", async (req, res) => {
       successful: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'successful'),
       rejected: withdrawalTransactions.filter(tx => tx.statusesandlogs?.status === 'rejected')
     };
-        
+    
     // Construct response object
     const responseData = {
       people,
+      products, // Add products to response
       transactions: {
         orders,
         currencyexchange,
         withdrawals
       }
     };
-        
+    
     res.status(200).json(responseData);
   } catch (err) {
     console.error('Error fetching OMSIAP data:', err);
@@ -278,6 +284,7 @@ Router.get("/getomsiapdata", async (req, res) => {
     });
   }
 });
+
 
 // Confirm Order Route
 Router.post('/confirmorder', async (req, res) => {

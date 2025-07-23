@@ -86,6 +86,8 @@ import { FaEye,
 import { X, ZoomIn, XCircle, CheckCircle, Star, Package, ShoppingCart, Tag, Info, FileText, Video, Award, Truck, AlertCircle, Trash, ChevronLeft, ChevronRight, Maximize2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+
+
 import axiosCreatedInstance from '../lib/axiosutil.js';
 
 import { timestamp } from '../lib/timestamps.js';
@@ -488,6 +490,8 @@ function DatabaseComponent() {
    }
   )
 
+  const [allproducts, productscb] = useState([])
+
   useEffect(() => {
 
     fetchOmsiapData();
@@ -499,13 +503,17 @@ function DatabaseComponent() {
     verifiedmfatipregistrantscb, pendingmfatipregistrantscb, mfatipregistrantsrejecteddocumentscb
   ]);
 
-// Client-side fetchOmsiapData function    
+// Client-side fetchOmsiapData function
 const fetchOmsiapData = async () => {
-
   try {
     const response = await axiosCreatedInstance.get("/omsiap/getomsiapdata");
     const omsiapdata = response.data;
-        
+    
+    // Process products data
+    if (omsiapdata && omsiapdata.products) {
+      productscb(omsiapdata.products);
+    }
+    
     // Process transactions data
     if (omsiapdata && omsiapdata.transactions) {
       // Update orders data
@@ -519,7 +527,7 @@ const fetchOmsiapData = async () => {
         shippedorderscb(omsiapdata.transactions.orders.shipped || []);
         successfulorderscb(omsiapdata.transactions.orders.successful || []);
       }
-            
+      
       // Update currency exchange data
       if (omsiapdata.transactions.currencyexchange) {
         totalcurrencyexchangecb(omsiapdata.transactions.currencyexchange.total || []);
@@ -527,7 +535,7 @@ const fetchOmsiapData = async () => {
         successfulcurrencyexchangecb(omsiapdata.transactions.currencyexchange.successful || []);
         rejectedcurrencyexchangecb(omsiapdata.transactions.currencyexchange.rejected || []);
       }
-            
+      
       // Update withdrawals data
       if (omsiapdata.transactions.withdrawals) {
         totalwithdrawalscb(omsiapdata.transactions.withdrawals.total || []);
@@ -536,41 +544,38 @@ const fetchOmsiapData = async () => {
         rejectedwithdrawalscb(omsiapdata.transactions.withdrawals.rejected || []);
       }
     }
-        
+    
     // Process MFATIP registrants data
     if (omsiapdata && omsiapdata.people) {
       // Pass the total registrants to the callback
       totalregisteredregistrantscb(omsiapdata.people || []);
-        
-      const verified = omsiapdata.people.filter(person => 
-        person.status && person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
-         person.status.indication === "Verified"
+      
+      const verified = omsiapdata.people.filter(person =>
+        person.status && person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" &&
+        person.status.indication === "Verified"
       );
-            
-      const pending = omsiapdata.people.filter(person => 
-        person.status && 
-        person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
+      
+      const pending = omsiapdata.people.filter(person =>
+        person.status &&
+        person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" &&
         person.status.indication === "unverified"
       );
-            
-      const rejected = omsiapdata.people.filter(person => 
-        person.status && 
-        person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" && 
+      
+      const rejected = omsiapdata.people.filter(person =>
+        person.status &&
+        person.status.type === "Month Financial Allocation To Individual People ( MFATIP )" &&
         person.status.indication === "Rejected Documents"
       );
-            
+      
       verifiedmfatipregistrantscb(verified);
       pendingmfatipregistrantscb(pending);
       mfatipregistrantsrejecteddocumentscb(rejected);
-
     }
-
   } catch (err) {
-
     console.error('Error fetching OMSIAP data:', err);
-
   }
-}; 
+};
+
 
 
   const transactions = [
@@ -1729,7 +1734,7 @@ const fetchOmsiapData = async () => {
                                   setShowPendingWithdrawals={setShowPendingWithdrawals}
                        />
 */}
-         <StatisticsCardProductCRUD stats={customStats}
+         <StatisticsCardProductCRUDONE stats={customStats}
                                     setShowDatabaseConfiguration={setShowDatabaseConfiguration}
                                     setShowCreateProduct={setShowCreateProduct}
                                     setShowProductReader={setShowProductReader}
@@ -1739,6 +1744,22 @@ const fetchOmsiapData = async () => {
 
                                     deleteproductfield={deleteproductfield}
                                     deleteproductfieldcb={deleteproductfieldcb}
+
+                                    allproducts={allproducts}
+                       />
+                    
+          <StatisticsCardProductCRUDTWO stats={customStats}
+                                    setShowDatabaseConfiguration={setShowDatabaseConfiguration}
+                                    setShowCreateProduct={setShowCreateProduct}
+                                    setShowProductReader={setShowProductReader}
+                                    setShowUpdateProductForm={setShowUpdateProductForm}
+                                    setShowDeleteProductReader={setShowDeleteProductReader}
+                                    setproduct={setproduct}
+
+                                    deleteproductfield={deleteproductfield}
+                                    deleteproductfieldcb={deleteproductfieldcb}
+
+                                    allproducts={allproducts}
                        />
 
          <StatisticsCardRegistrantCRUD stats={customStats}
@@ -3286,7 +3307,1137 @@ const StatisticsCardOperationBasis = ({
 
 };
 
-const StatisticsCardProductCRUD = ({ 
+const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreatedInstance, allproducts }) => {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showSpecModal, setShowSpecModal] = useState(false)
+  const [showSpecListModal, setShowSpecListModal] = useState(false)
+  const [selectedSpec, setSelectedSpec] = useState(null)
+  const [error, setError] = useState("")
+  const [activeTab, setActiveTab] = useState("basic")
+  const [activeSpecTab, setActiveSpecTab] = useState("basic")
+
+  // Form data for main product editing
+  const [formData, setFormData] = useState({
+    productname: "",
+    category: "",
+    description: "",
+    price: {
+      amount: 0,
+      capital: 0,
+      shipping: 0,
+      transactiongiveaway: 0,
+      profit: 0,
+    },
+    weightingrams: 0,
+    warranty: "",
+    webaddress: "",
+  })
+
+  // Form data for specification editing
+  const [specFormData, setSpecFormData] = useState({
+    authentications: {
+      producttype: "",
+      id: "",
+    },
+    details: {
+      productname: "",
+      category: "",
+      description: "",
+      webaddress: "",
+      weightingrams: 0,
+      warranty: "",
+      for: {
+        age: "",
+        part: "",
+        gender: "",
+        reminder: "",
+      },
+      price: {
+        amount: 0,
+        capital: 0,
+        shipping: 0,
+        transactiongiveaway: 0,
+        profit: 0,
+      },
+    },
+    system: {
+      stocks: 0,
+    },
+  })
+
+  // Update products when props change
+  useEffect(() => {
+    if (allproducts && allproducts.length > 0) {
+      setProducts(allproducts)
+    } else {
+      fetchAllProducts()
+    }
+  }, [allproducts])
+
+  // Update form data when selected product changes
+  useEffect(() => {
+    if (selectedProduct) {
+      setFormData({
+        productname: selectedProduct.details?.productname || "",
+        category: selectedProduct.details?.category || "",
+        description: selectedProduct.details?.description || "",
+        price: {
+          amount: selectedProduct.details?.price?.amount || 0,
+          capital: selectedProduct.details?.price?.capital || 0,
+          shipping: selectedProduct.details?.price?.shipping || 0,
+          transactiongiveaway: selectedProduct.details?.price?.transactiongiveaway || 0,
+          profit: selectedProduct.details?.price?.profit || 0,
+        },
+        weightingrams: selectedProduct.details?.weightingrams || 0,
+        warranty: selectedProduct.details?.warranty || "",
+        webaddress: selectedProduct.details?.webaddress || "",
+      })
+    }
+  }, [selectedProduct])
+
+  // Update spec form data when selected spec changes
+  useEffect(() => {
+    if (selectedSpec) {
+      setSpecFormData(selectedSpec)
+    }
+  }, [selectedSpec])
+
+  const fetchAllProducts = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      const response = await axiosCreatedInstance.get("/products/getallproducts")
+      const { data: productsData, message } = response.data
+      if (message === "Products found" || message === "success") {
+        setProducts(productsData || [])
+      } else {
+        setError("No products found")
+        setProducts([])
+      }
+    } catch (error) {
+      setError("Error connecting to server")
+      setProducts([])
+      console.error("Error fetching products:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleProductClick = (product) => {
+    setSelectedProduct(product)
+    setShowEditModal(true)
+    setActiveTab("basic")
+  }
+
+  const handleSpecClick = (spec, product) => {
+    setSelectedProduct(product)
+    setSelectedSpec(spec)
+    setShowSpecModal(true)
+    setActiveSpecTab("basic")
+  }
+
+  const handleViewSpecs = (product) => {
+    setSelectedProduct(product)
+    setShowSpecListModal(true)
+  }
+
+  const handleCloseModal = () => {
+    setShowEditModal(false)
+    setSelectedProduct(null)
+    setActiveTab("basic")
+  }
+
+  const handleCloseSpecModal = () => {
+    setShowSpecModal(false)
+    setSelectedSpec(null)
+    setActiveSpecTab("basic")
+  }
+
+  const handleCloseSpecListModal = () => {
+    setShowSpecListModal(false)
+    setSelectedProduct(null)
+  }
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    if (name.startsWith("price.")) {
+      const priceField = name.split(".")[1]
+      setFormData((prev) => ({
+        ...prev,
+        price: {
+          ...prev.price,
+          [priceField]: Number.parseFloat(value) || 0,
+        },
+      }))
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: name === "weightingrams" ? Number.parseInt(value) || 0 : value,
+      }))
+    }
+  }
+
+  const handleSpecInputChange = (e) => {
+    const { name, value } = e.target
+
+    if (name.startsWith("authentications.")) {
+      const field = name.split(".")[1]
+      setSpecFormData((prev) => ({
+        ...prev,
+        authentications: {
+          ...prev.authentications,
+          [field]: value,
+        },
+      }))
+    } else if (name.startsWith("details.price.")) {
+      const field = name.split(".")[2]
+      setSpecFormData((prev) => ({
+        ...prev,
+        details: {
+          ...prev.details,
+          price: {
+            ...prev.details.price,
+            [field]: Number.parseFloat(value) || 0,
+          },
+        },
+      }))
+    } else if (name.startsWith("details.for.")) {
+      const field = name.split(".")[2]
+      setSpecFormData((prev) => ({
+        ...prev,
+        details: {
+          ...prev.details,
+          for: {
+            ...prev.details.for,
+            [field]: value,
+          },
+        },
+      }))
+    } else if (name.startsWith("details.")) {
+      const field = name.split(".")[1]
+      setSpecFormData((prev) => ({
+        ...prev,
+        details: {
+          ...prev.details,
+          [field]: field === "weightingrams" ? Number.parseInt(value) || 0 : value,
+        },
+      }))
+    } else if (name.startsWith("system.")) {
+      const field = name.split(".")[1]
+      setSpecFormData((prev) => ({
+        ...prev,
+        system: {
+          ...prev.system,
+          [field]: field === "stocks" ? Number.parseInt(value) || 0 : value,
+        },
+      }))
+    }
+  }
+
+  const handleProductUpdate = async (e) => {
+    e.preventDefault()
+    try {
+      const updatedProduct = {
+        ...selectedProduct,
+        details: {
+          ...selectedProduct.details,
+          productname: formData.productname,
+          category: formData.category,
+          description: formData.description,
+          price: formData.price,
+          weightingrams: formData.weightingrams,
+          warranty: formData.warranty,
+          webaddress: formData.webaddress,
+        },
+      }
+
+      const response = await axiosCreatedInstance.put(`/products/updateproduct/${updatedProduct._id}`, updatedProduct)
+      if (response.data.message === "Product updated successfully") {
+        setProducts((prevProducts) =>
+          prevProducts.map((product) => (product._id === updatedProduct._id ? updatedProduct : product)),
+        )
+        handleCloseModal()
+        alert("Product updated successfully!")
+      }
+    } catch (error) {
+      console.error("Error updating product:", error)
+      alert("Error updating product")
+    }
+  }
+
+  const handleSpecUpdate = async (e) => {
+    e.preventDefault()
+    try {
+      const updatedProduct = {
+        ...selectedProduct,
+        details: {
+          ...selectedProduct.details,
+          specifications: selectedProduct.details.specifications.map((spec) =>
+            spec._id === selectedSpec._id ? specFormData : spec,
+          ),
+        },
+      }
+
+      const response = await axiosCreatedInstance.put(`/products/updateproduct/${updatedProduct._id}`, updatedProduct)
+      if (response.data.message === "Product updated successfully") {
+        setProducts((prevProducts) =>
+          prevProducts.map((product) => (product._id === updatedProduct._id ? updatedProduct : product)),
+        )
+        setSelectedProduct(updatedProduct)
+        handleCloseSpecModal()
+        alert("Specification updated successfully!")
+      }
+    } catch (error) {
+      console.error("Error updating specification:", error)
+      alert("Error updating specification")
+    }
+  }
+
+  const handleSpecDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this specification?")) {
+      try {
+        const updatedProduct = {
+          ...selectedProduct,
+          details: {
+            ...selectedProduct.details,
+            specifications: selectedProduct.details.specifications.filter((spec) => spec._id !== selectedSpec._id),
+          },
+        }
+
+        const response = await axiosCreatedInstance.put(`/products/updateproduct/${updatedProduct._id}`, updatedProduct)
+        if (response.data.message === "Product updated successfully") {
+          setProducts((prevProducts) =>
+            prevProducts.map((product) => (product._id === updatedProduct._id ? updatedProduct : product)),
+          )
+          setSelectedProduct(updatedProduct)
+          handleCloseSpecModal()
+          alert("Specification deleted successfully!")
+        }
+      } catch (error) {
+        console.error("Error deleting specification:", error)
+        alert("Error deleting specification")
+      }
+    }
+  }
+
+  const handleProductDelete = async () => {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
+        const response = await axiosCreatedInstance.delete(`/products/deleteproduct/${selectedProduct._id}`)
+        if (response.data.message === "Product deleted successfully") {
+          setProducts((prevProducts) => prevProducts.filter((product) => product._id !== selectedProduct._id))
+          handleCloseModal()
+          alert("Product deleted successfully!")
+        }
+      } catch (error) {
+        console.error("Error deleting product:", error)
+        alert("Error deleting product")
+      }
+    }
+  }
+
+  const handleManualRefresh = () => {
+    fetchAllProducts()
+  }
+
+  const renderTabContent = (tab) => {
+    switch (tab) {
+      case "basic":
+        return (
+          <div className="space-y-3">
+            <Form.Group>
+              <Form.Label>Product Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="productname"
+                value={formData.productname}
+                onChange={handleInputChange}
+                required
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Category</Form.Label>
+              <Form.Control type="text" name="category" value={formData.category} onChange={handleInputChange} />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={4}
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Weight (grams)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="weightingrams"
+                    value={formData.weightingrams}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Warranty</Form.Label>
+                  <Form.Control type="text" name="warranty" value={formData.warranty} onChange={handleInputChange} />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group>
+              <Form.Label>Web Address</Form.Label>
+              <Form.Control type="url" name="webaddress" value={formData.webaddress} onChange={handleInputChange} />
+            </Form.Group>
+          </div>
+        )
+      case "pricing":
+        return (
+          <div className="space-y-3">
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Amount ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="price.amount"
+                    value={formData.price.amount}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Capital ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="price.capital"
+                    value={formData.price.capital}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Shipping ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="price.shipping"
+                    value={formData.price.shipping}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Transaction Giveaway ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="price.transactiongiveaway"
+                    value={formData.price.transactiongiveaway}
+                    onChange={handleInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group>
+              <Form.Label>Profit ($)</Form.Label>
+              <Form.Control
+                type="number"
+                step="0.01"
+                name="price.profit"
+                value={formData.price.profit}
+                onChange={handleInputChange}
+              />
+            </Form.Group>
+          </div>
+        )
+      case "specifications":
+        return (
+          <div>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+              <h5>Product Specifications</h5>
+              <span className="badge bg-secondary">
+                {selectedProduct?.details?.specifications?.length || 0} variants
+              </span>
+            </div>
+
+            {selectedProduct?.details?.specifications && selectedProduct.details.specifications.length > 0 ? (
+              <div className="space-y-2">
+                {selectedProduct.details.specifications.map((spec, index) => (
+                  <motion.div
+                    key={spec._id || index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="card"
+                  >
+                    <div className="card-body">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <h6 className="card-title">{spec.details?.productname || `Variant ${index + 1}`}</h6>
+                          <div className="d-flex gap-2 flex-wrap mt-2">
+                            {spec.details?.for?.gender && (
+                              <span className="badge bg-outline-primary">{spec.details.for.gender}</span>
+                            )}
+                            {spec.details?.for?.age && (
+                              <span className="badge bg-outline-primary">{spec.details.for.age}</span>
+                            )}
+                            <span className="badge bg-success">${spec.details?.price?.amount || 0}</span>
+                            <span className="badge bg-info">Stock: {spec.system?.stocks || 0}</span>
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline-primary"
+                          size="sm"
+                          onClick={() => handleSpecClick(spec, selectedProduct)}
+                        >
+                          <FaEdit className="me-1" />
+                          Edit
+                        </Button>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-5">
+                <Package size={48} className="text-muted mb-3" />
+                <p className="text-muted">No specifications found for this product</p>
+              </div>
+            )}
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  const renderSpecTabContent = (tab) => {
+    switch (tab) {
+      case "basic":
+        return (
+          <div className="space-y-3">
+            <Form.Group>
+              <Form.Label>Product Name</Form.Label>
+              <Form.Control
+                type="text"
+                name="details.productname"
+                value={specFormData.details?.productname || ""}
+                onChange={handleSpecInputChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Category</Form.Label>
+              <Form.Control
+                type="text"
+                name="details.category"
+                value={specFormData.details?.category || ""}
+                onChange={handleSpecInputChange}
+              />
+            </Form.Group>
+            <Form.Group>
+              <Form.Label>Description</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                name="details.description"
+                value={specFormData.details?.description || ""}
+                onChange={handleSpecInputChange}
+              />
+            </Form.Group>
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Product Type</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="authentications.producttype"
+                    value={specFormData.authentications?.producttype || ""}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>ID</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="authentications.id"
+                    value={specFormData.authentications?.id || ""}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+          </div>
+        )
+      case "pricing":
+        return (
+          <div className="space-y-3">
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Amount ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="details.price.amount"
+                    value={specFormData.details?.price?.amount || 0}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Capital ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="details.price.capital"
+                    value={specFormData.details?.price?.capital || 0}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Shipping ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="details.price.shipping"
+                    value={specFormData.details?.price?.shipping || 0}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Transaction Giveaway ($)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="0.01"
+                    name="details.price.transactiongiveaway"
+                    value={specFormData.details?.price?.transactiongiveaway || 0}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group>
+              <Form.Label>Profit ($)</Form.Label>
+              <Form.Control
+                type="number"
+                step="0.01"
+                name="details.price.profit"
+                value={specFormData.details?.price?.profit || 0}
+                onChange={handleSpecInputChange}
+              />
+            </Form.Group>
+          </div>
+        )
+      case "details":
+        return (
+          <div className="space-y-3">
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Gender</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="details.for.gender"
+                    value={specFormData.details?.for?.gender || ""}
+                    onChange={handleSpecInputChange}
+                    placeholder="e.g., Male, Female, Unisex"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Age</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="details.for.age"
+                    value={specFormData.details?.for?.age || ""}
+                    onChange={handleSpecInputChange}
+                    placeholder="e.g., Adult, Child, Teen"
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Part</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="details.for.part"
+                    value={specFormData.details?.for?.part || ""}
+                    onChange={handleSpecInputChange}
+                    placeholder="e.g., Size, Color"
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Reminder</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="details.for.reminder"
+                    value={specFormData.details?.for?.reminder || ""}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Row>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Weight (grams)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    name="details.weightingrams"
+                    value={specFormData.details?.weightingrams || 0}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+              <Col md={6}>
+                <Form.Group>
+                  <Form.Label>Warranty</Form.Label>
+                  <Form.Control
+                    type="text"
+                    name="details.warranty"
+                    value={specFormData.details?.warranty || ""}
+                    onChange={handleSpecInputChange}
+                  />
+                </Form.Group>
+              </Col>
+            </Row>
+            <Form.Group>
+              <Form.Label>Web Address</Form.Label>
+              <Form.Control
+                type="url"
+                name="details.webaddress"
+                value={specFormData.details?.webaddress || ""}
+                onChange={handleSpecInputChange}
+              />
+            </Form.Group>
+          </div>
+        )
+      case "system":
+        return (
+          <div className="space-y-3">
+            <Form.Group>
+              <Form.Label>Stock Quantity</Form.Label>
+              <Form.Control
+                type="number"
+                name="system.stocks"
+                value={specFormData.system?.stocks || 0}
+                onChange={handleSpecInputChange}
+              />
+            </Form.Group>
+
+            <div className="bg-light p-3 rounded">
+              <h6>Specification IDs</h6>
+              <div className="small">
+                <p className="mb-1">
+                  <strong>Custom ID:</strong> {selectedSpec?.authentications?.id || "N/A"}
+                </p>
+                <p className="mb-0">
+                  <strong>MongoDB ID:</strong> {selectedSpec?._id || "N/A"}
+                </p>
+              </div>
+            </div>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  if (loading) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: "400px" }}>
+        <div className="text-center">
+          <Spinner animation="border" role="status" className="mb-3">
+            <span className="visually-hidden">Loading...</span>
+          </Spinner>
+          <p>Loading products...</p>
+        </div>
+      </Container>
+    )
+  }
+
+  return (
+    <Container fluid className="py-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h1 className="h2 mb-1">Product Management</h1>
+          <p className="text-muted">Manage your products and their specifications</p>
+        </div>
+        <Button variant="outline-primary" onClick={handleManualRefresh}>
+          <FaRedo className="me-2" />
+          Refresh
+        </Button>
+      </div>
+
+      {error && (
+        <div className="alert alert-danger" role="alert">
+          <FaExclamationTriangle className="me-2" />
+          {error}
+        </div>
+      )}
+
+      <Row className="mb-4">
+        <Col md={6} lg={3}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="card bg-primary text-white"
+          >
+            <div className="card-body">
+              <div className="d-flex justify-content-between">
+                <div>
+                  <h6 className="card-title">Total Products</h6>
+                  <h2 className="mb-0">{products.length}</h2>
+                </div>
+                <FaBox size={40} className="opacity-75" />
+              </div>
+              <small className="opacity-75">
+                Data Source: {allproducts && allproducts.length > 0 ? "OMSIAP Data" : "Direct API"}
+              </small>
+            </div>
+          </motion.div>
+        </Col>
+        <Col md={6} lg={3}>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="card bg-success text-white"
+          >
+            <div className="card-body">
+              <div className="d-flex justify-content-between">
+                <div>
+                  <h6 className="card-title">Total Specifications</h6>
+                  <h2 className="mb-0">
+                    {products.reduce((total, product) => total + (product.details?.specifications?.length || 0), 0)}
+                  </h2>
+                </div>
+                <FaLayerGroup size={40} className="opacity-75" />
+              </div>
+              <small className="opacity-75">All product variants</small>
+            </div>
+          </motion.div>
+        </Col>
+      </Row>
+
+      <Row>
+        {products.length === 0 ? (
+          <Col>
+            <div className="card">
+              <div className="card-body text-center py-5">
+                <Package size={64} className="text-muted mb-3" />
+                <h5>No products found</h5>
+                <p className="text-muted">Try loading again or check your connection</p>
+                <Button variant="outline-primary" onClick={handleManualRefresh}>
+                  Try Loading Again
+                </Button>
+              </div>
+            </div>
+          </Col>
+        ) : (
+          products.map((product, index) => (
+            <Col key={product._id} lg={4} md={6} className="mb-4">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                className="card h-100"
+              >
+                <div className="position-relative" style={{ height: "200px", overflow: "hidden" }}>
+                  {product.images && product.images.length > 0 ? (
+                    <Image
+                      src={product.images[0].url || "/placeholder.svg?height=200&width=300"}
+                      alt={product.details?.productname || "Product"}
+                      className="card-img-top"
+                      style={{ height: "200px", objectFit: "cover" }}
+                    />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center h-100 bg-light">
+                      <Package size={48} className="text-muted" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="card-body">
+                  <h5 className="card-title text-truncate">{product.details?.productname || "Unnamed Product"}</h5>
+                  <div className="d-flex gap-2 mb-3">
+                    <span className="badge bg-secondary">{product.details?.category || "N/A"}</span>
+                    <span className="badge bg-success">${product.details?.price?.amount || 0}</span>
+                  </div>
+
+                  <div className="small text-muted mb-3">
+                    <p className="mb-1">
+                      <FaIdCard className="me-1" />
+                      <strong>ID:</strong> {product.authentications?.id || "N/A"}
+                    </p>
+                    <p className="mb-0">
+                      <FaBarcode className="me-1" />
+                      <strong>MongoDB ID:</strong> {product._id}
+                    </p>
+                  </div>
+
+                  {/* Specifications Preview */}
+                  {product.details?.specifications && product.details.specifications.length > 0 && (
+                    <div className="mb-3">
+                      <div className="d-flex justify-content-between align-items-center mb-2">
+                        <small className="fw-bold">Specifications ({product.details.specifications.length})</small>
+                      </div>
+                      <div style={{ maxHeight: "120px", overflowY: "auto" }}>
+                        {product.details.specifications.slice(0, 3).map((spec, specIndex) => (
+                          <div key={spec._id || specIndex} className="bg-light p-2 rounded mb-2 small">
+                            <div className="d-flex justify-content-between align-items-start">
+                              <div>
+                                <div className="fw-bold">{spec.details?.productname || `Variant ${specIndex + 1}`}</div>
+                                <div className="text-muted">
+                                  {spec.details?.for?.gender && `${spec.details.for.gender} • `}
+                                  {spec.details?.for?.age && `${spec.details.for.age} • `}
+                                  Stock: {spec.system?.stocks || 0}
+                                </div>
+                              </div>
+                              <div className="text-end">
+                                <div className="fw-bold">${spec.details?.price?.amount || 0}</div>
+                                <Button
+                                  size="sm"
+                                  variant="outline-primary"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleSpecClick(spec, product)
+                                  }}
+                                >
+                                  <FaEdit size={12} />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        {product.details.specifications.length > 3 && (
+                          <small className="text-muted text-center d-block">
+                            +{product.details.specifications.length - 3} more specifications
+                          </small>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="d-flex gap-2">
+                    <Button variant="primary" className="flex-fill" onClick={() => handleProductClick(product)}>
+                      <FaEdit className="me-1" />
+                      Edit Product
+                    </Button>
+                    <Button variant="outline-secondary" onClick={() => handleViewSpecs(product)}>
+                      <FaEye />
+                    </Button>
+                  </div>
+                </div>
+              </motion.div>
+            </Col>
+          ))
+        )}
+      </Row>
+
+      {/* Main Product Edit Modal */}
+      <Modal show={showEditModal} onHide={handleCloseModal} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Product</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedProduct && (
+            <>
+              {/* Custom Tab Navigation */}
+              <div className="nav nav-tabs mb-3">
+                <button
+                  className={`nav-link ${activeTab === "basic" ? "active" : ""}`}
+                  onClick={() => setActiveTab("basic")}
+                >
+                  Basic Info
+                </button>
+                <button
+                  className={`nav-link ${activeTab === "pricing" ? "active" : ""}`}
+                  onClick={() => setActiveTab("pricing")}
+                >
+                  Pricing
+                </button>
+                <button
+                  className={`nav-link ${activeTab === "specifications" ? "active" : ""}`}
+                  onClick={() => setActiveTab("specifications")}
+                >
+                  Specifications
+                </button>
+              </div>
+
+              <Form onSubmit={handleProductUpdate}>{renderTabContent(activeTab)}</Form>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleProductDelete}>
+            <FaTrash className="me-1" />
+            Delete Product
+          </Button>
+          <Button variant="primary" onClick={handleProductUpdate}>
+            Update Product
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Specification Edit Modal */}
+      <Modal show={showSpecModal} onHide={handleCloseSpecModal} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Edit Specification</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedSpec && (
+            <>
+              {/* Custom Tab Navigation */}
+              <div className="nav nav-tabs mb-3">
+                <button
+                  className={`nav-link ${activeSpecTab === "basic" ? "active" : ""}`}
+                  onClick={() => setActiveSpecTab("basic")}
+                >
+                  Basic
+                </button>
+                <button
+                  className={`nav-link ${activeSpecTab === "pricing" ? "active" : ""}`}
+                  onClick={() => setActiveSpecTab("pricing")}
+                >
+                  Pricing
+                </button>
+                <button
+                  className={`nav-link ${activeSpecTab === "details" ? "active" : ""}`}
+                  onClick={() => setActiveSpecTab("details")}
+                >
+                  Details
+                </button>
+                <button
+                  className={`nav-link ${activeSpecTab === "system" ? "active" : ""}`}
+                  onClick={() => setActiveSpecTab("system")}
+                >
+                  System
+                </button>
+              </div>
+
+              <Form onSubmit={handleSpecUpdate}>{renderSpecTabContent(activeSpecTab)}</Form>
+            </>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseSpecModal}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleSpecDelete}>
+            <FaTrash className="me-1" />
+            Delete Specification
+          </Button>
+          <Button variant="primary" onClick={handleSpecUpdate}>
+            Update Specification
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      {/* Specifications List Modal */}
+      <Modal show={showSpecListModal} onHide={handleCloseSpecListModal} size="xl">
+        <Modal.Header closeButton>
+          <Modal.Title>Product Specifications</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedProduct?.details?.specifications && selectedProduct.details.specifications.length > 0 ? (
+            <div className="table-responsive">
+              <table className="table table-striped">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Details</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedProduct.details.specifications.map((spec, index) => (
+                    <tr key={spec._id || index}>
+                      <td className="fw-bold">{spec.details?.productname || `Variant ${index + 1}`}</td>
+                      <td>${spec.details?.price?.amount || 0}</td>
+                      <td>{spec.system?.stocks || 0}</td>
+                      <td>
+                        <div className="d-flex gap-1 flex-wrap">
+                          {spec.details?.for?.gender && (
+                            <span className="badge bg-outline-primary">{spec.details.for.gender}</span>
+                          )}
+                          {spec.details?.for?.age && (
+                            <span className="badge bg-outline-primary">{spec.details.for.age}</span>
+                          )}
+                          {spec.details?.category && (
+                            <span className="badge bg-secondary">{spec.details.category}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          onClick={() => {
+                            handleCloseSpecListModal()
+                            handleSpecClick(spec, selectedProduct)
+                          }}
+                        >
+                          <FaEdit className="me-1" />
+                          Edit
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center py-5">
+              <Package size={64} className="text-muted mb-3" />
+              <p className="text-muted">No specifications found for this product</p>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseSpecListModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
+    </Container>
+  )
+}
+
+const StatisticsCardProductCRUDTWO = ({ 
   setShowDatabaseConfiguration, 
   setShowCreateProduct, 
   setShowProductReader,
