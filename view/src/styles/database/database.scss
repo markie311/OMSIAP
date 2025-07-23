@@ -7933,23 +7933,23 @@ color: white;
   --hover-overlay: rgba(255, 255, 255, 0.05);
 }
 
-/* Global Container Styling */
-.container-fluid {
+/* Global Container Styling - Made more specific */
+.custom-container-fluid {
   background: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", sans-serif;
 }
 
-/* Header Styling */
-.h2 {
+/* Header Styling - Made more specific */
+.custom-h2 {
   font-size: 2.5rem;
   font-weight: 600;
   color: var(--text-primary);
   letter-spacing: -0.02em;
 }
 
-.text-muted {
+.custom-text-muted {
   color: var(--text-secondary) !important;
 }
 
@@ -8349,25 +8349,25 @@ color: white;
 }
 
 /* Info Section Styling */
-.bg-light {
+.custom-bg-light {
   background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid var(--border-color);
   border-radius: 12px;
   color: var(--text-primary);
 }
 
-.bg-light h6 {
+.custom-bg-light h6 {
   color: var(--text-primary);
   font-weight: 600;
   margin-bottom: 12px;
 }
 
-.bg-light .small {
+.custom-bg-light .small {
   font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
   font-size: 13px;
 }
 
-.bg-light p {
+.custom-bg-light p {
   background: rgba(255, 255, 255, 0.05);
   padding: 8px 12px;
   border-radius: 8px;
@@ -8424,7 +8424,7 @@ color: white;
 }
 
 @media (max-width: 480px) {
-  .h2 {
+  .custom-h2 {
     font-size: 1.75rem;
   }
 
@@ -8534,8 +8534,8 @@ color: white;
   color: var(--text-secondary);
 }
 
-/* Hover Effects */
-.card:hover {
+/* Hover Effects - Made more specific */
+.card:hover:not(.nav-item) {
   cursor: pointer;
 }
 
@@ -8547,24 +8547,6 @@ color: white;
 .btn:focus,
 .form-control:focus {
   outline: none;
-}
-
-/* Dark theme for all Bootstrap components */
-.container-fluid * {
-  color: inherit;
-}
-
-/* Override Bootstrap defaults */
-.text-white {
-  color: var(--text-primary) !important;
-}
-
-.bg-primary {
-  background: linear-gradient(135deg, var(--accent-blue), #3a8aef) !important;
-}
-
-.bg-success {
-  background: linear-gradient(135deg, var(--accent-green), #20a038) !important;
 }
 
 /* Ensure proper spacing */
@@ -8612,6 +8594,7 @@ color: white;
 .flex-wrap {
   flex-wrap: wrap;
 }
+
 
 
 // end of product crud
