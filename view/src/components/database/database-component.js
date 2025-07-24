@@ -1746,6 +1746,8 @@ const fetchOmsiapData = async () => {
                                     deleteproductfieldcb={deleteproductfieldcb}
 
                                     allproducts={allproducts}
+
+                                    axiosCreatedInstance={axiosCreatedInstance}
                        />
                     
           <StatisticsCardProductCRUDTWO stats={customStats}
@@ -3307,7 +3309,14 @@ const StatisticsCardOperationBasis = ({
 
 };
 
-const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreatedInstance, allproducts }) => {
+const StatisticsCardProductCRUDONE = ({ 
+
+  setShowDatabaseConfiguration, 
+  axiosCreatedInstance, 
+  allproducts 
+  
+  }) => {
+
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -3334,6 +3343,16 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
     weightingrams: 0,
     warranty: "",
     webaddress: "",
+    // Add these missing fields:
+    features: [], // Array of feature objects
+  })
+
+  // Add these new state variables after your existing useState declarations:
+  const [productImages, setProductImages] = useState([])
+  const [productVideos, setProductVideos] = useState([])
+  const [customerFeedback, setCustomerFeedback] = useState({
+    rating: 0,
+    reviews: 0
   })
 
   // Form data for specification editing
@@ -3379,24 +3398,33 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
 
   // Update form data when selected product changes
   useEffect(() => {
-    if (selectedProduct) {
-      setFormData({
-        productname: selectedProduct.details?.productname || "",
-        category: selectedProduct.details?.category || "",
-        description: selectedProduct.details?.description || "",
-        price: {
-          amount: selectedProduct.details?.price?.amount || 0,
-          capital: selectedProduct.details?.price?.capital || 0,
-          shipping: selectedProduct.details?.price?.shipping || 0,
-          transactiongiveaway: selectedProduct.details?.price?.transactiongiveaway || 0,
-          profit: selectedProduct.details?.price?.profit || 0,
-        },
-        weightingrams: selectedProduct.details?.weightingrams || 0,
-        warranty: selectedProduct.details?.warranty || "",
-        webaddress: selectedProduct.details?.webaddress || "",
-      })
-    }
-  }, [selectedProduct])
+   if (selectedProduct) {
+    setFormData({
+      productname: selectedProduct.details?.productname || "",
+      category: selectedProduct.details?.category || "",
+      description: selectedProduct.details?.description || "",
+      price: {
+        amount: selectedProduct.details?.price?.amount || 0,
+        capital: selectedProduct.details?.price?.capital || 0,
+        shipping: selectedProduct.details?.price?.shipping || 0,
+        transactiongiveaway: selectedProduct.details?.price?.transactiongiveaway || 0,
+        profit: selectedProduct.details?.price?.profit || 0,
+      },
+      weightingrams: selectedProduct.details?.weightingrams || 0,
+      warranty: selectedProduct.details?.warranty || "",
+      webaddress: selectedProduct.details?.webaddress || "",
+      features: selectedProduct.details?.features || [], // Add this
+    })
+    
+    // Set the additional state variables
+    setProductImages(selectedProduct.images || [])
+    setProductVideos(selectedProduct.videos || [])
+    setCustomerFeedback({
+      rating: selectedProduct.customerfeedback?.rating || 0,
+      reviews: selectedProduct.customerfeedback?.reviews || 0
+    })
+  }
+ }, [selectedProduct])
 
   // Update spec form data when selected spec changes
   useEffect(() => {
@@ -3480,6 +3508,45 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
     }
   }
 
+  const handleFeatureAdd = () => {
+    setFormData(prev => ({
+      ...prev,
+      features: [...prev.features, { data: "" }]
+    }))
+  }
+
+  const handleFeatureChange = (index, value) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.map((feature, i) => 
+        i === index ? { data: value } : feature
+      )
+    }))
+  }
+
+  const handleFeatureRemove = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      features: prev.features.filter((_, i) => i !== index)
+    }))
+  }
+
+  const handleImageAdd = (url) => {
+    setProductImages(prev => [...prev, { url }])
+  }
+
+  const handleImageRemove = (index) => {
+    setProductImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleVideoAdd = (url) => {
+    setProductVideos(prev => [...prev, { url }])
+  }
+
+  const handleVideoRemove = (index) => {
+    setProductVideos(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handleSpecInputChange = (e) => {
     const { name, value } = e.target
 
@@ -3551,10 +3618,23 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
           weightingrams: formData.weightingrams,
           warranty: formData.warranty,
           webaddress: formData.webaddress,
+          features: formData.features, // Add this
         },
+        images: productImages, // Add this
+        videos: productVideos, // Add this
+        customerfeedback: customerFeedback, // Add this
+        // Keep existing system data or initialize if missing
+        system: selectedProduct.system || {
+          purchases: {
+            total: [],
+            pending: [],
+            accepted: [],
+            rejected: []
+          }
+        }
       }
 
-      const response = await axiosCreatedInstance.put(`/products/updateproduct/${updatedProduct._id}`, updatedProduct)
+      const response = await axiosCreatedInstance.put(`/omsiap/updateproduct/${updatedProduct._id}`, updatedProduct)
       if (response.data.message === "Product updated successfully") {
         setProducts((prevProducts) =>
           prevProducts.map((product) => (product._id === updatedProduct._id ? updatedProduct : product)),
@@ -3581,7 +3661,7 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
         },
       }
 
-      const response = await axiosCreatedInstance.put(`/products/updateproduct/${updatedProduct._id}`, updatedProduct)
+      const response = await axiosCreatedInstance.put(`/omsiap/updateproduct/${updatedProduct._id}/specification`, updatedProduct)
       if (response.data.message === "Product updated successfully") {
         setProducts((prevProducts) =>
           prevProducts.map((product) => (product._id === updatedProduct._id ? updatedProduct : product)),
@@ -3787,13 +3867,13 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
                     <div className="card-body">
                       <div className="d-flex justify-content-between align-items-start">
                         <div>
-                          <h6 className="card-title">{spec.details?.productname || `Variant ${index + 1}`}</h6>
+                          <h6 className="card-title" style={{color: "black"}}>{spec.details?.productname || `Variant ${index + 1}`}</h6>
                           <div className="d-flex gap-2 flex-wrap mt-2">
                             {spec.details?.for?.gender && (
-                              <span className="badge bg-outline-primary">{spec.details.for.gender}</span>
+                              <span className="badge bg-outline-primary" style={{color: "black"}}>{spec.details.for.gender}</span>
                             )}
                             {spec.details?.for?.age && (
-                              <span className="badge bg-outline-primary">{spec.details.for.age}</span>
+                              <span className="badge bg-outline-primary" style={{color: "black"}}>{spec.details.for.age}</span>
                             )}
                             <span className="badge bg-success">${spec.details?.price?.amount || 0}</span>
                             <span className="badge bg-info">Stock: {spec.system?.stocks || 0}</span>
@@ -3820,6 +3900,155 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
             )}
           </div>
         )
+      case "features":
+  return (
+    <div className="space-y-3">
+      <div className="d-flex justify-content-between align-items-center">
+        <h6>Product Features</h6>
+        <Button variant="outline-primary" size="sm" onClick={handleFeatureAdd}>
+          Add Feature
+        </Button>
+      </div>
+      {formData.features.map((feature, index) => (
+        <div key={index} className="d-flex gap-2">
+          <Form.Control
+            type="text"
+            value={feature.data}
+            onChange={(e) => handleFeatureChange(index, e.target.value)}
+            placeholder={`Feature ${index + 1}`}
+          />
+          <Button 
+            variant="outline-danger" 
+            size="sm" 
+            onClick={() => handleFeatureRemove(index)}
+          >
+            Remove
+          </Button>
+        </div>
+      ))}
+      {formData.features.length === 0 && (
+        <p className="text-muted text-center">No features added yet</p>
+      )}
+    </div>
+  )
+
+case "media":
+  return (
+    <div className="space-y-4">
+      {/* Images Section */}
+      <div>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h6>Product Images</h6>
+          <Button 
+            variant="outline-primary" 
+            size="sm" 
+            onClick={() => {
+              const url = prompt("Enter image URL:")
+              if (url) handleImageAdd(url)
+            }}
+          >
+            Add Image
+          </Button>
+        </div>
+        {productImages.map((image, index) => (
+          <div key={index} className="d-flex gap-2 mb-2">
+            <Form.Control
+              type="url"
+              value={image.url}
+              onChange={(e) => {
+                const newImages = [...productImages]
+                newImages[index] = { url: e.target.value }
+                setProductImages(newImages)
+              }}
+              placeholder="Image URL"
+            />
+            <Button 
+              variant="outline-danger" 
+              size="sm" 
+              onClick={() => handleImageRemove(index)}
+            >
+              Remove
+            </Button>
+          </div>
+        ))}
+      </div>
+      
+      {/* Videos Section */}
+      <div>
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h6>Product Videos</h6>
+          <Button 
+            variant="outline-primary" 
+            size="sm" 
+            onClick={() => {
+              const url = prompt("Enter video URL:")
+              if (url) handleVideoAdd(url)
+            }}
+          >
+            Add Video
+          </Button>
+        </div>
+        {productVideos.map((video, index) => (
+          <div key={index} className="d-flex gap-2 mb-2">
+            <Form.Control
+              type="url"
+              value={video.url}
+              onChange={(e) => {
+                const newVideos = [...productVideos]
+                newVideos[index] = { url: e.target.value }
+                setProductVideos(newVideos)
+              }}
+              placeholder="Video URL"
+            />
+            <Button 
+              variant="outline-danger" 
+              size="sm" 
+              onClick={() => handleVideoRemove(index)}
+            >
+              Remove
+            </Button>
+          </div>
+        ))}
+      </div>
+      
+      {/* Customer Feedback Section */}
+      <div>
+        <h6>Customer Feedback</h6>
+        <Row>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Rating</Form.Label>
+              <Form.Control
+                type="number"
+                min="0"
+                max="5"
+                step="0.1"
+                value={customerFeedback.rating}
+                onChange={(e) => setCustomerFeedback(prev => ({
+                  ...prev,
+                  rating: Number.parseFloat(e.target.value) || 0
+                }))}
+              />
+            </Form.Group>
+          </Col>
+          <Col md={6}>
+            <Form.Group>
+              <Form.Label>Number of Reviews</Form.Label>
+              <Form.Control
+                type="number"
+                min="0"
+                value={customerFeedback.reviews}
+                onChange={(e) => setCustomerFeedback(prev => ({
+                  ...prev,
+                  reviews: Number.parseInt(e.target.value) || 0
+                }))}
+              />
+            </Form.Group>
+          </Col>
+        </Row>
+      </div>
+    </div>
+  )
       default:
         return null
     }
@@ -4054,13 +4283,13 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
             </Form.Group>
 
             <div className="bg-light p-3 rounded">
-              <h6>Specification IDs</h6>
+              <h6 style={{color: "black"}}>Specification IDs</h6>
               <div className="small">
-                <p className="mb-1">
-                  <strong>Custom ID:</strong> {selectedSpec?.authentications?.id || "N/A"}
+                <p className="mb-1" style={{color: "black"}}>
+                  <strong style={{color: "black"}}>Custom ID:</strong> {selectedSpec?.authentications?.id || "N/A"}
                 </p>
-                <p className="mb-0">
-                  <strong>MongoDB ID:</strong> {selectedSpec?._id || "N/A"}
+                <p className="mb-0" style={{color: "black"}}>
+                  <strong style={{color: "black"}}>MongoDB ID:</strong> {selectedSpec?._id || "N/A"}
                 </p>
               </div>
             </div>
@@ -4272,7 +4501,7 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
           {selectedProduct && (
             <>
               {/* Custom Tab Navigation */}
-              <div className="nav nav-tabs mb-3">
+             <div className="nav nav-tabs mb-3">
                 <button
                   className={`nav-link ${activeTab === "basic" ? "active" : ""}`}
                   onClick={() => setActiveTab("basic")}
@@ -4286,13 +4515,24 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
                   Pricing
                 </button>
                 <button
+                  className={`nav-link ${activeTab === "features" ? "active" : ""}`}
+                  onClick={() => setActiveTab("features")}
+                >
+                  Features
+                </button>
+                <button
+                  className={`nav-link ${activeTab === "media" ? "active" : ""}`}
+                  onClick={() => setActiveTab("media")}
+                >
+                  Media & Feedback
+                </button>
+                <button
                   className={`nav-link ${activeTab === "specifications" ? "active" : ""}`}
                   onClick={() => setActiveTab("specifications")}
                 >
                   Specifications
                 </button>
               </div>
-
               <Form onSubmit={handleProductUpdate}>{renderTabContent(activeTab)}</Form>
             </>
           )}
@@ -4392,7 +4632,7 @@ const StatisticsCardProductCRUDONE = ({ setShowDatabaseConfiguration, axiosCreat
                       <td>
                         <div className="d-flex gap-1 flex-wrap">
                           {spec.details?.for?.gender && (
-                            <span className="badge bg-outline-primary">{spec.details.for.gender}</span>
+                            <span className="badge bg-outline-primary" style={{color:"black"}}>{spec.details.for.gender}</span>
                           )}
                           {spec.details?.for?.age && (
                             <span className="badge bg-outline-primary">{spec.details.for.age}</span>

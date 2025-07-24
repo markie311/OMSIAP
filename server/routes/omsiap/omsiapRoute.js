@@ -3681,5 +3681,394 @@ function generateOmsiapawasId() {
   return 'OMS_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
 
+// General Product Update Route
+Router.put('/updateproduct/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedProductData = req.body;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product ID is required'
+      });
+    }
+
+    // Validate required fields in the request body
+    if (!updatedProductData.details) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product details are required'
+      });
+    }
+
+    const { productname, category, description, price, weightingrams } = updatedProductData.details;
+
+    // Check for required product details
+    if (!productname || !category || !description) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product name, category, and description are required fields'
+      });
+    }
+
+    // Validate price object if provided
+    if (price) {
+      if (typeof price !== 'object') {
+        return res.status(400).json({
+          success: false,
+          message: 'Price must be an object with amount, capital, shipping, etc.'
+        });
+      }
+      
+      // Validate price.amount if provided
+      if (price.amount !== undefined && (isNaN(price.amount) || price.amount < 0)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Price amount must be a valid positive number'
+        });
+      }
+    }
+
+    // Validate weight if provided
+    if (weightingrams !== undefined && weightingrams !== null && (isNaN(weightingrams) || weightingrams < 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Weight must be a valid positive number'
+      });
+    }
+
+    // Find the product by ID
+    const existingProduct = await ProductDataModel.findById(id);
+    
+    // Check if product exists
+    if (!existingProduct) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found. Please refresh and try again.'
+      });
+    }
+
+    // Generate timestamp for the update
+    const formattedDate = timestamps.getFormattedDate();
+
+    // Prepare the update object
+    const updateData = {
+      authentications: {
+        ...existingProduct.authentications?.toObject(),
+        ...updatedProductData.authentications
+      },
+      details: {
+        ...existingProduct.details.toObject(), // Preserve existing details
+        productname: updatedProductData.details.productname,
+        category: updatedProductData.details.category,
+        description: updatedProductData.details.description,
+        weightingrams: updatedProductData.details.weightingrams ?? existingProduct.details.weightingrams,
+        warranty: updatedProductData.details.warranty || existingProduct.details.warranty,
+        webaddress: updatedProductData.details.webaddress || existingProduct.details.webaddress,
+        features: updatedProductData.details.features || existingProduct.details.features,
+        price: {
+          amount: updatedProductData.details.price?.amount ?? existingProduct.details.price?.amount ?? 0,
+          capital: updatedProductData.details.price?.capital ?? existingProduct.details.price?.capital ?? 0,
+          shipping: updatedProductData.details.price?.shipping ?? existingProduct.details.price?.shipping ?? 0,
+          transactiongiveaway: updatedProductData.details.price?.transactiongiveaway ?? existingProduct.details.price?.transactiongiveaway ?? 0,
+          profit: updatedProductData.details.price?.profit ?? existingProduct.details.price?.profit ?? 0
+        },
+        // Preserve existing specifications - don't update them in this route
+        specifications: existingProduct.details.specifications
+      },
+      images: updatedProductData.images || existingProduct.images,
+      videos: updatedProductData.videos || existingProduct.videos,
+      customerfeedback: {
+        rating: updatedProductData.customerfeedback?.rating ?? existingProduct.customerfeedback?.rating ?? 0,
+        reviews: updatedProductData.customerfeedback?.reviews ?? existingProduct.customerfeedback?.reviews ?? 0
+      },
+      system: {
+        ...existingProduct.system?.toObject(),
+        purchases: updatedProductData.system?.purchases || existingProduct.system?.purchases || {
+          total: [],
+          pending: [],
+          accepted: [],
+          rejected: []
+        },
+        stocks: updatedProductData.system?.stocks ?? existingProduct.system?.stocks ?? 0
+      }
+    };
+
+    // Update the product
+    const updatedProduct = await ProductDataModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { 
+        new: true, // Return the updated document
+        runValidators: true // Run schema validation
+      }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found or could not be updated'
+      });
+    }
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: 'Product updated successfully',
+      updatedProduct: updatedProduct,
+      updateDetails: {
+        productId: updatedProduct._id,
+        productName: updatedProduct.details.productname,
+        updateType: 'general',
+        lastUpdated: formattedDate
+      }
+    });
+    
+  } catch (err) {
+    console.error('Error updating product:', err);
+    
+    // Handle specific MongoDB errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid product ID format'
+      });
+    }
+
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      const validationErrors = Object.values(err.errors).map(error => error.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: validationErrors
+      });
+    }
+
+    // Handle duplicate key errors
+    if (err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product with similar details already exists'
+      });
+    }
+
+    // Handle network/connection errors (no internet scenario)
+    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection failed. Please check your internet connection and try again.'
+      });
+    }
+
+    // Handle other MongoDB errors
+    if (err.name === 'MongoError') {
+      return res.status(500).json({
+        success: false,
+        message: 'Database error occurred while updating product'
+      });
+    }
+    
+    // Handle other unexpected errors
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while updating product'
+    });
+  }
+});
+
+// Product Specification Update Route
+Router.put('/updateproduct/:id/specification', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedProductData = req.body;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product ID is required'
+      });
+    }
+
+    // Validate request body
+    if (!updatedProductData || !updatedProductData.details || !updatedProductData.details.specifications) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product specifications data is required'
+      });
+    }
+
+    // Find the product by ID
+    const existingProduct = await ProductDataModel.findById(id);
+    
+    // Check if product exists
+    if (!existingProduct) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found. Please refresh and try again.'
+      });
+    }
+
+    const specifications = updatedProductData.details.specifications;
+    
+    // Validate specifications array
+    if (!Array.isArray(specifications)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Specifications must be an array'
+      });
+    }
+
+    // Validate each specification object
+    for (let i = 0; i < specifications.length; i++) {
+      const spec = specifications[i];
+      
+      // Check if specification has required fields
+      if (!spec._id) {
+        return res.status(400).json({
+          success: false,
+          message: `Specification at index ${i} is missing _id field`
+        });
+      }
+      
+      // Check if the specification exists in the current product
+      const existingSpec = existingProduct.details.specifications.find(
+        existingSpec => existingSpec._id.toString() === spec._id.toString()
+      );
+      
+      if (!existingSpec) {
+        return res.status(400).json({
+          success: false,
+          message: `Specification with ID ${spec._id} not found in product`
+        });
+      }
+
+      // Validate specification structure if needed
+      if (spec.details) {
+        if (spec.details.productname && typeof spec.details.productname !== 'string') {
+          return res.status(400).json({
+            success: false,
+            message: `Invalid productname in specification ${spec._id}`
+          });
+        }
+        
+        if (spec.details.category && typeof spec.details.category !== 'string') {
+          return res.status(400).json({
+            success: false,
+            message: `Invalid category in specification ${spec._id}`
+          });
+        }
+      }
+    }
+
+    // Generate timestamp for the update
+    const formattedDate = timestamps.getFormattedDate();
+
+    // Update only the specifications in the product
+    const updateData = {
+      details: {
+        ...existingProduct.details.toObject(),
+        specifications: updatedProductData.details.specifications
+      }
+    };
+
+    // Update the product
+    const updatedProduct = await ProductDataModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { 
+        new: true, // Return the updated document
+        runValidators: true // Run schema validation
+      }
+    );
+
+    if (!updatedProduct) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found or could not be updated'
+      });
+    }
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: 'Product updated successfully',
+      updatedProduct: updatedProduct,
+      updateDetails: {
+        productId: updatedProduct._id,
+        productName: updatedProduct.details.productname,
+        updateType: 'specification',
+        specificationsUpdated: specifications.length,
+        totalSpecifications: updatedProduct.details.specifications?.length || 0,
+        lastUpdated: formattedDate
+      }
+    });
+    
+  } catch (err) {
+    console.error('Error updating product specifications:', err);
+    
+    // Handle specific MongoDB errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid product ID format'
+      });
+    }
+
+    // Handle validation errors
+    if (err.name === 'ValidationError') {
+      const validationErrors = Object.values(err.errors).map(error => error.message);
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error occurred while updating specifications',
+        errors: validationErrors
+      });
+    }
+
+    // Handle duplicate key errors
+    if (err.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: 'Duplicate specification detected'
+      });
+    }
+
+    // Handle network/connection errors (no internet scenario)
+    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection failed. Please check your internet connection and try again.'
+      });
+    }
+
+    // Handle other MongoDB errors
+    if (err.name === 'MongoError') {
+      return res.status(500).json({
+        success: false,
+        message: 'Database error occurred while updating specifications'
+      });
+    }
+
+    // Handle array operation errors (for specifications updates)
+    if (err.message && err.message.includes('specifications')) {
+      return res.status(400).json({
+        success: false,
+        message: 'Error updating product specifications. Please verify the data format.'
+      });
+    }
+    
+    // Handle other unexpected errors
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while updating product specifications'
+    });
+  }
+});
+
+
+
 // Export the router
 module.exports = Router ;
