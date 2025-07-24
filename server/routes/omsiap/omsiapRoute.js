@@ -4068,6 +4068,234 @@ Router.put('/updateproduct/:id/specification', async (req, res) => {
   }
 });
 
+// Delete Product Route
+Router.delete('/deleteproduct/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Input validation
+    if (!id) {
+      return res.status(400).json({
+        success: false,
+        message: 'Product ID is required'
+      });
+    }
+
+    // Find the product by ID first to get image paths
+    const existingProduct = await ProductDataModel.findById(id);
+    
+    // Check if product exists
+    if (!existingProduct) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found. Please refresh and try again.'
+      });
+    }
+
+    // Function to safely delete files
+    const deleteFile = (filePath) => {
+      return new Promise((resolve) => {
+        fs.unlink(filePath, (err) => {
+          if (err) {
+            console.warn(`Failed to delete file: ${filePath}`, err.message);
+          } else {
+            console.log(`Successfully deleted file: ${filePath}`);
+          }
+          resolve(); // Always resolve to continue with other deletions
+        });
+      });
+    };
+
+    // Function to check if URL is a local file (not external URL like YouTube, etc.)
+    const isLocalFile = (url) => {
+      if (!url || typeof url !== 'string') return false;
+      
+      // Skip external URLs
+      if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('www.')) {
+        return false;
+      }
+      
+      // Check if it's a local file with proper extension
+      const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg', '.bmp'];
+      const videoExtensions = ['.mp4', '.avi', '.mov', '.wmv', '.flv', '.webm', '.mkv'];
+      const allExtensions = [...imageExtensions, ...videoExtensions];
+      
+      return allExtensions.some(ext => url.toLowerCase().includes(ext));
+    };
+
+    // Function to delete product images and videos
+    const deleteProductMedia = async (product) => {
+      const deletionPromises = [];
+      
+      // Get the path to the public folder (view folder is at the same level as server folder)
+      const publicPath = path.join(__dirname, '../../../view/public');
+      
+      // Delete main product images
+      if (product.images && Array.isArray(product.images)) {
+        for (const imageObj of product.images) {
+          if (imageObj && imageObj.url && isLocalFile(imageObj.url)) {
+            // Remove leading slash if present and construct full path
+            const cleanImagePath = imageObj.url.startsWith('/') ? imageObj.url.slice(1) : imageObj.url;
+            const fullImagePath = path.join(publicPath, cleanImagePath);
+            deletionPromises.push(deleteFile(fullImagePath));
+          }
+        }
+      }
+
+      // Delete main product videos (only local files, skip YouTube URLs)
+      if (product.videos && Array.isArray(product.videos)) {
+        for (const videoObj of product.videos) {
+          if (videoObj && videoObj.url && isLocalFile(videoObj.url)) {
+            const cleanVideoPath = videoObj.url.startsWith('/') ? videoObj.url.slice(1) : videoObj.url;
+            const fullVideoPath = path.join(publicPath, cleanVideoPath);
+            deletionPromises.push(deleteFile(fullVideoPath));
+          }
+        }
+      }
+
+      // Delete images and videos from specifications (nested products)
+      if (product.details && product.details.specifications && Array.isArray(product.details.specifications)) {
+        for (const spec of product.details.specifications) {
+          // Delete specification images
+          if (spec.images && Array.isArray(spec.images)) {
+            for (const imageObj of spec.images) {
+              if (imageObj && imageObj.url && isLocalFile(imageObj.url)) {
+                const cleanImagePath = imageObj.url.startsWith('/') ? imageObj.url.slice(1) : imageObj.url;
+                const fullImagePath = path.join(publicPath, cleanImagePath);
+                deletionPromises.push(deleteFile(fullImagePath));
+              }
+            }
+          }
+
+          // Delete specification videos (only local files)
+          if (spec.videos && Array.isArray(spec.videos)) {
+            for (const videoObj of spec.videos) {
+              if (videoObj && videoObj.url && isLocalFile(videoObj.url)) {
+                const cleanVideoPath = videoObj.url.startsWith('/') ? videoObj.url.slice(1) : videoObj.url;
+                const fullVideoPath = path.join(publicPath, cleanVideoPath);
+                deletionPromises.push(deleteFile(fullVideoPath));
+              }
+            }
+          }
+        }
+      }
+
+      // Additional cleanup: search for any other media URLs in the product data
+      const searchForMediaUrls = (obj, currentPath = '') => {
+        for (const key in obj) {
+          if (obj[key] && typeof obj[key] === 'string') {
+            // Check if the value looks like a local media path (skip external URLs)
+            if (isLocalFile(obj[key]) && obj[key].includes('/images/market/products/')) {
+              const cleanMediaPath = obj[key].startsWith('/') ? obj[key].slice(1) : obj[key];
+              const fullMediaPath = path.join(publicPath, cleanMediaPath);
+              deletionPromises.push(deleteFile(fullMediaPath));
+            }
+          } else if (obj[key] && typeof obj[key] === 'object' && obj[key] !== null) {
+            // Skip already processed arrays to avoid duplication
+            const newPath = currentPath ? `${currentPath}.${key}` : key;
+            if (newPath !== 'images' && newPath !== 'videos' && 
+                !newPath.includes('.images') && !newPath.includes('.videos')) {
+              searchForMediaUrls(obj[key], newPath);
+            }
+          }
+        }
+      };
+      
+      // Search for any additional media URLs in the entire product object
+      searchForMediaUrls(product.toObject ? product.toObject() : product);
+
+      // Wait for all file deletions to complete
+      await Promise.all(deletionPromises);
+    };
+
+    // Delete associated media files first
+    await deleteProductMedia(existingProduct);
+
+    // Delete the product from database
+    const deletedProduct = await ProductDataModel.findByIdAndDelete(id);
+
+    if (!deletedProduct) {
+      return res.status(404).json({
+        success: false,
+        message: 'Product not found or could not be deleted'
+      });
+    }
+
+    // Generate timestamp for the deletion log
+    const formattedDate = timestamps.getFormattedDate();
+
+    // Log the deletion for audit purposes
+    console.log(`Product deleted successfully:`, {
+      productId: deletedProduct._id,
+      productName: deletedProduct.details?.productname || 'Unknown',
+      deletedBy: 'System', // You can modify this to include user info if available
+      deletedAt: formattedDate
+    });
+
+    // Return success response
+    return res.status(200).json({
+      success: true,
+      message: 'Product deleted successfully',
+      deleteDetails: {
+        productId: deletedProduct._id,
+        productName: deletedProduct.details?.productname || 'Unknown Product',
+        category: deletedProduct.details?.category || 'Unknown Category',
+        deletedAt: formattedDate
+      }
+    });
+    
+  } catch (err) {
+    console.error('Error deleting product:', err);
+    
+    // Handle specific MongoDB errors
+    if (err.name === 'CastError') {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid product ID format'
+      });
+    }
+
+    // Handle network/connection errors (no internet scenario)
+    if (err.name === 'MongoNetworkError' || err.name === 'MongoTimeoutError') {
+      return res.status(503).json({
+        success: false,
+        message: 'Database connection failed. Please check your internet connection and try again.'
+      });
+    }
+
+    // Handle other MongoDB errors
+    if (err.name === 'MongoError') {
+      return res.status(500).json({
+        success: false,
+        message: 'Database error occurred while deleting product'
+      });
+    }
+
+    // Handle file system errors
+    if (err.code === 'ENOENT') {
+      console.warn('Some files were not found during deletion, but product was removed from database');
+      return res.status(200).json({
+        success: true,
+        message: 'Product deleted successfully (some associated files were already missing)',
+        warning: 'Some media files were not found on the server'
+      });
+    }
+
+    if (err.code === 'EACCES' || err.code === 'EPERM') {
+      return res.status(500).json({
+        success: false,
+        message: 'Permission denied while deleting product files'
+      });
+    }
+    
+    // Handle other unexpected errors
+    return res.status(500).json({
+      success: false,
+      message: 'Server error occurred while deleting product'
+    });
+  }
+});
+
 
 
 // Export the router

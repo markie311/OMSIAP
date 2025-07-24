@@ -3706,7 +3706,7 @@ const StatisticsCardProductCRUDONE = ({
   const handleProductDelete = async () => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        const response = await axiosCreatedInstance.delete(`/products/deleteproduct/${selectedProduct._id}`)
+        const response = await axiosCreatedInstance.delete(`/omsiap/deleteproduct/${selectedProduct._id}`)
         if (response.data.message === "Product deleted successfully") {
           setProducts((prevProducts) => prevProducts.filter((product) => product._id !== selectedProduct._id))
           handleCloseModal()

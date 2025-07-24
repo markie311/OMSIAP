@@ -151,97 +151,100 @@ const Market = (props) => {
   })
 
   // Enhanced Cart functions - Groups specifications under main products
-  const addToCart = (specificationProduct, mainProduct, quantity = 1) => {
-    console.log("Specification Product:", specificationProduct)
-    console.log("Main Product:", mainProduct)
+  // MODIFICATION 1: Replace the existing addToCart function (around line 107)
+      const addToCart = (specificationProduct, mainProduct, quantity = 1) => {
+        console.log("Specification Product:", specificationProduct)
+        console.log("Main Product:", mainProduct)
 
-    const mainProductId = mainProduct.authentications?.id
-    const specificationId = specificationProduct.authentications?.id
+        // CHANGED: Use product names instead of IDs
+        const mainProductName = mainProduct.details?.productname || "Unnamed Product"
+        const specificationName = specificationProduct.details?.productname || "Default Specification"
 
-    // Find if main product already exists in cart
-    const existingMainProduct = cart.find((item) => item.mainProductId === mainProductId)
+        // Find if main product already exists in cart BY NAME
+        const existingMainProduct = cart.find((item) => item.mainProductName === mainProductName)
 
-    if (existingMainProduct) {
-      // Check if this specific specification already exists under this main product
-      const existingSpec = existingMainProduct.specifications.find((spec) => spec.id === specificationId)
+        if (existingMainProduct) {
+          // Check if this specific specification already exists under this main product BY NAME
+          const existingSpec = existingMainProduct.specifications.find((spec) => spec.name === specificationName)
 
-      if (existingSpec) {
-        // Increase quantity of existing specification
-        setCart(
-          cart.map((item) =>
-            item.mainProductId === mainProductId
-              ? {
-                  ...item,
-                  specifications: item.specifications.map((spec) =>
-                    spec.id === specificationId ? { ...spec, quantity: spec.quantity + quantity } : spec,
-                  ),
-                }
-              : item,
-          ),
-        )
-      } else {
-        // Add new specification to existing main product
-        const newSpecification = {
-          id: specificationId,
-          data: specificationProduct,
-          quantity: quantity,
-          name: specificationProduct.details?.productname || "Default Specification",
-          price: specificationProduct.details?.price?.amount || 0,
-          images: specificationProduct.images || [],
+          if (existingSpec) {
+            // Increase quantity of existing specification
+            setCart(
+              cart.map((item) =>
+                item.mainProductName === mainProductName
+                  ? {
+                      ...item,
+                      specifications: item.specifications.map((spec) =>
+                        spec.name === specificationName ? { ...spec, quantity: spec.quantity + quantity } : spec,
+                      ),
+                    }
+                  : item,
+              ),
+            )
+          } else {
+            // Add new specification to existing main product
+            const newSpecification = {
+              name: specificationName, // CHANGED: Use name as primary identifier
+              data: specificationProduct,
+              quantity: quantity,
+              price: specificationProduct.details?.price?.amount || 0,
+              images: specificationProduct.images || [],
+            }
+
+            setCart(
+              cart.map((item) =>
+                item.mainProductName === mainProductName
+                  ? {
+                      ...item,
+                      specifications: [...item.specifications, newSpecification],
+                    }
+                  : item,
+              ),
+            )
+          }
+        } else {
+          // Create new main product entry with first specification
+          const newCartItem = {
+            mainProductName: mainProductName, // CHANGED: Use name as primary identifier
+            mainProduct: mainProduct,
+            productName: mainProductName, // Keep this for consistency
+            mainProductImages: mainProduct.images || [],
+            specifications: [
+              {
+                name: specificationName, // CHANGED: Use name as primary identifier
+                data: specificationProduct,
+                quantity: quantity,
+                price: specificationProduct.details?.price?.amount || 0,
+                images: specificationProduct.images || [],
+              },
+            ],
+          }
+
+          setCart([...cart, newCartItem])
         }
-
-        setCart(
-          cart.map((item) =>
-            item.mainProductId === mainProductId
-              ? {
-                  ...item,
-                  specifications: [...item.specifications, newSpecification],
-                }
-              : item,
-          ),
-        )
-      }
-    } else {
-      // Create new main product entry with first specification
-      const newCartItem = {
-        mainProductId: mainProductId,
-        mainProduct: mainProduct,
-        productName: mainProduct.details?.productname || "Unnamed Product",
-        mainProductImages: mainProduct.images || [],
-        specifications: [
-          {
-            id: specificationId,
-            data: specificationProduct,
-            quantity: quantity,
-            name: specificationProduct.details?.productname || "Default Specification",
-            price: specificationProduct.details?.price?.amount || 0,
-            images: specificationProduct.images || [],
-          },
-        ],
+        
+        // Show cart after adding item
+        setIsCartOpen(true)
+        
+        // CHANGED: Animation now uses product name for element ID
+        const productElement = document.getElementById(`product-${mainProductName.replace(/\s+/g, '-').toLowerCase()}`)
+        if (productElement) {
+          productElement.classList.add("market-added-to-cart")
+          setTimeout(() => {
+            productElement.classList.remove("market-added-to-cart")
+          }, 1000)
+        }
       }
 
-      setCart([...cart, newCartItem])
-    }
-    // Show cart after adding item
-    setIsCartOpen(true)
-    // Animation for added to cart
-    const productElement = document.getElementById(`product-${mainProductId}`)
-    if (productElement) {
-      productElement.classList.add("market-added-to-cart")
-      setTimeout(() => {
-        productElement.classList.remove("market-added-to-cart")
-      }, 1000)
-    }
-  }
-
-  const removeFromCart = (mainProductId, specificationId = null) => {
-    if (specificationId) {
-      // Remove specific specification from main product
+  // MODIFICATION 2: Replace the existing removeFromCart function (around line 170)
+  const removeFromCart = (mainProductName, specificationName = null) => {
+    if (specificationName) {
+      // Remove specific specification from main product BY NAME
       setCart(
         cart
           .map((item) => {
-            if (item.mainProductId === mainProductId) {
-              const updatedSpecs = item.specifications.filter((spec) => spec.id !== specificationId)
+            if (item.mainProductName === mainProductName) {
+              const updatedSpecs = item.specifications.filter((spec) => spec.name !== specificationName)
               // If no specifications left, remove the entire main product
               return updatedSpecs.length > 0 ? { ...item, specifications: updatedSpecs } : null
             }
@@ -250,24 +253,25 @@ const Market = (props) => {
           .filter(Boolean),
       ) // Remove null entries
     } else {
-      // Remove entire main product
-      setCart(cart.filter((item) => item.mainProductId !== mainProductId))
+      // Remove entire main product BY NAME
+      setCart(cart.filter((item) => item.mainProductName !== mainProductName))
     }
   }
 
-  const updateQuantity = (mainProductId, specificationId, newQuantity) => {
+  // MODIFICATION 3: Replace the existing updateQuantity function (around line 190)
+  const updateQuantity = (mainProductName, specificationName, newQuantity) => {
     const intQuantity = Math.max(1, newQuantity)
     if (intQuantity < 1) {
-      removeFromCart(mainProductId, specificationId)
+      removeFromCart(mainProductName, specificationName)
       return
     }
     setCart(
       cart.map((item) =>
-        item.mainProductId === mainProductId
+        item.mainProductName === mainProductName
           ? {
               ...item,
               specifications: item.specifications.map((spec) =>
-                spec.id === specificationId ? { ...spec, quantity: intQuantity } : spec,
+                spec.name === specificationName ? { ...spec, quantity: intQuantity } : spec,
               ),
             }
           : item,
@@ -530,7 +534,9 @@ const Market = (props) => {
                   : ["/placeholder.svg?height=400&width=400"]
 
               return (
-                <div key={productId} id={`product-${productId}`} className="market-product-card">
+               <div key={productName} // CHANGED: Use productName instead of productId
+                    id={`product-${productName.replace(/\s+/g, '-').toLowerCase()}`} // CHANGED: Use productName for ID
+                    className="market-product-card">
                   <div className="market-product-image">
                     <img
                       src={productImages[0] || "/placeholder.svg?height=400&width=400"}
@@ -609,7 +615,7 @@ const Market = (props) => {
                     ? item.mainProductImages.map((img) => img.url)
                     : ["/placeholder.svg?height=100&width=100"]
                 return (
-                  <div key={item.mainProductId} className="market-cart-main-product">
+                  <div key={item.mainProductName} className="market-cart-main-product"> {/* CHANGED: Use mainProductName as key */}
                     {/* Main Product Header */}
                     <div className="market-cart-product-header">
                       <div className="market-cart-product-image">
@@ -633,7 +639,7 @@ const Market = (props) => {
                         </p>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item.mainProductId)}
+                        onClick={() => removeFromCart(item.mainProductName)} 
                         className="market-remove-main-product"
                         aria-label="Remove entire product"
                         title="Remove entire product"
@@ -647,7 +653,7 @@ const Market = (props) => {
                         const specImages =
                           spec.images && spec.images.length > 0 ? spec.images.map((img) => img.url) : mainProductImages
                         return (
-                          <div key={spec.id} className="market-cart-specification">
+                          <div key={spec.name} className="market-cart-specification"> {/* CHANGED: Use spec.name as key */}
                             <div className="market-cart-spec-image">
                               <img src={specImages[0] || "/placeholder.svg?height=60&width=60"} alt={spec.name} />
                             </div>
@@ -661,7 +667,7 @@ const Market = (props) => {
                               )}
                             </div>
                             <button
-                              onClick={() => removeFromCart(item.mainProductId, spec.id)}
+                              onClick={() => removeFromCart(item.mainProductName, spec.name)} 
                               className="market-remove-specification"
                               aria-label="Remove specification"
                               title="Remove this specification"
@@ -680,18 +686,18 @@ const Market = (props) => {
               <div className="market-cart-total">
                 <h3>Total: {formatPrice(cartTotal)}</h3>
               </div>
-              <button
-                className="market-checkout-button"
-                onClick={() => {
-                  if (props.cartcb) {
-                    props.cartcb(cart)
-                    navigate("/placeorder", { state: { cart } })
-                  }
-                }}
-              >
-                <ShoppingBag size={16} />
-                Proceed Placing The Orders
-              </button>
+             <button
+                  className="market-checkout-button"
+                  onClick={() => {
+                    if (props.cartcb) {
+                      props.cartcb(cart) // Cart now contains name-based structure
+                      navigate("/placeorder", { state: { cart } })
+                    }
+                  }}
+                >
+                  <ShoppingBag size={16} />
+                  Proceed Placing The Orders
+                </button>
             </div>
           </>
         ) : (
