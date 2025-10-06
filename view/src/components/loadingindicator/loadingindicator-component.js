@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import '../../styles/loadingindicator/loadingindicator.scss';
-import { motion } from "framer-motion";
+import "../../styles/loadingindicator/loadingindicator.scss";
+import { motion, AnimatePresence } from "framer-motion";
 import { useLoading } from "../loadingcontext/loadingcontext.js";
 
 export default function LoadingIndicator({ isVisible, loadingindicatormodal }) {
@@ -17,19 +17,17 @@ export default function LoadingIndicator({ isVisible, loadingindicatormodal }) {
     "Almost done..."
   ];
 
-  // Animate progress bar and cycle messages
+  // Hide when done
   useEffect(() => {
     if (!isAnyLoading()) {
-      // all done, hide after delay
-      const timer = setTimeout(() => {
-        setInternalVisible(false);
-      }, 500);
+      const timer = setTimeout(() => setInternalVisible(false), 800);
       return () => clearTimeout(timer);
     } else {
       setInternalVisible(true);
     }
   }, [isAnyLoading]);
 
+  // Animate progress and messages
   useEffect(() => {
     if (!internalVisible) return;
 
@@ -40,9 +38,12 @@ export default function LoadingIndicator({ isVisible, loadingindicatormodal }) {
     setLoadingText(loadingMessages[0]);
 
     progressInterval = setInterval(() => {
-      setProgress(prev => {
-        const next = Math.min(prev + Math.random() * 10, 100);
-        if (next >= ((messageIndex + 1) / loadingMessages.length) * 100 && messageIndex < loadingMessages.length - 1) {
+      setProgress((prev) => {
+        const next = Math.min(prev + Math.random() * 8, 100);
+        if (
+          next >= ((messageIndex + 1) / loadingMessages.length) * 100 &&
+          messageIndex < loadingMessages.length - 1
+        ) {
           messageIndex++;
           setLoadingText(loadingMessages[messageIndex]);
         }
@@ -57,48 +58,65 @@ export default function LoadingIndicator({ isVisible, loadingindicatormodal }) {
 
   return (
     <div
+      className="loading-container"
       style={{
         display: loadingindicatormodal,
-        position: "fixed",
-        inset: 0,
-        backgroundColor: "rgba(255,255,255,0.95)",
-        zIndex: 9999,
-        justifyContent: "center",
-        alignItems: "center",
-        flexDirection: "column",
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
       }}
     >
+      {/* Animated glowing background */}
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5 }}
-        style={{ textAlign: "center" }}
+        className="loading-background-glow"
+        animate={{
+          scale: [1, 1.1, 1],
+          opacity: [0.7, 1, 0.7],
+        }}
+        transition={{
+          duration: 5,
+          repeat: Infinity,
+          ease: "easeInOut",
+        }}
+      />
+
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, ease: "easeOut" }}
+        className="loading-content"
       >
-        <h2 style={{ marginBottom: "20px", fontWeight: "600", color: "#333" }}>
-          {loadingText}
-        </h2>
-        <div
-          style={{
-            width: "300px",
-            height: "15px",
-            backgroundColor: "#ddd",
-            borderRadius: "10px",
-            overflow: "hidden",
-          }}
-        >
-          <motion.div
-            style={{
-              height: "100%",
-              backgroundColor: "#007bff",
-              borderRadius: "10px",
-            }}
-            animate={{ width: `${progress}%` }}
-            transition={{ ease: "easeOut", duration: 0.3 }}
-          />
+        {/* Animated text */}
+        <AnimatePresence mode="wait">
+          <motion.h2
+            key={loadingText}
+            id="pageloadingindicatortext"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.5 }}
+            className="loading-text"
+          >
+            {loadingText}
+          </motion.h2>
+        </AnimatePresence>
+
+        {/* Progress bar */}
+        <div className="progress-container">
+          <div className="progress-bar">
+            <motion.div
+              className="progress-fill"
+              animate={{ width: `${progress}%` }}
+              transition={{ ease: "easeOut", duration: 0.5 }}
+            />
+          </div>
+          <motion.p
+            className="progress-percentage"
+            animate={{ opacity: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+          >
+            {Math.round(progress)}%
+          </motion.p>
         </div>
-        <p style={{ marginTop: "10px", fontWeight: "500", color: "#444" }}>
-          {Math.round(progress)}%
-        </p>
       </motion.div>
     </div>
   );
