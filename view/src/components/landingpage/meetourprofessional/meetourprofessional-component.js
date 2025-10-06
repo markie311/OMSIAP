@@ -6,7 +6,7 @@ const professionals = [
   {
     id: 1,
     name: "Mark Anthony Beloy",
-    position: "HEAD SOFTWARE ENGINEER",
+    position: "HEAD SOFTWARE ENGINEER / Owner",
     image: "../images/landingpage/meetourprofessionals/tuxedo.jpg",
     bio: "Mark is the head software engineer of OMSIAP with over 5 years of industry experience. He specializes in strategic planning and business development.",
     education: "Mapua Malayan Colleges Mindanao",

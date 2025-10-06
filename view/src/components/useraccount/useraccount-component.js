@@ -2175,7 +2175,7 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                       </p>
                       <ul style={{ color: "black" }}>
                         <br />
-                        <li className="userdashboard-omsiapgcashnumber">(1.) x-xxx-xxx-xxxx ( Real number will appear here if this community project is already on production )</li>
+                        <li className="userdashboard-omsiapgcashnumber">(1.) 09956777674 - Mark Anthony Apura Beloy</li>
                         <br />
                       </ul>
                     </div>
