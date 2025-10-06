@@ -1,106 +1,105 @@
-import React, { useState, useEffect, useRef } from 'react';
-
+import React, { useEffect, useState } from "react";
 import '../../styles/loadingindicator/loadingindicator.scss';
+import { motion } from "framer-motion";
+import { useLoading } from "../loadingcontext/loadingcontext.js";
 
-import { useLoading } from '../loadingcontext/loadingcontext.js';
-
-const LoadingIndicator = ({ isVisible, loadingindicatormodal, loadingindicatormodalcb }) => {
-  const { loadingState } = useLoading();
+export default function LoadingIndicator({ isVisible, loadingindicatormodal }) {
+  const { loadingState, isAnyLoading } = useLoading();
   const [progress, setProgress] = useState(0);
-  const [loadingText, setLoadingText] = useState('Loading resources');
-  const progressInterval = useRef(null);
-  
-  // Calculate overall progress based on loading states
-  const calculateProgress = () => {
-    const totalResources = Object.keys(loadingState).length;
-    const loadedResources = Object.values(loadingState).filter(state => state === false).length;
-    return Math.max(5, Math.min(100, (loadedResources / totalResources) * 100));
-  };
-  
+  const [loadingText, setLoadingText] = useState("Initializing...");
+  const [internalVisible, setInternalVisible] = useState(isVisible);
+
+  const loadingMessages = [
+    "Loading user data...",
+    "Fetching products...",
+    "Retrieving transactions...",
+    "Preparing content...",
+    "Almost done..."
+  ];
+
+  // Animate progress bar and cycle messages
   useEffect(() => {
-    // If we're visible, start progress animation
-    if (isVisible) {
-      // Clear any existing interval
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
-      
-      // Start a new progress animation
-      progressInterval.current = setInterval(() => {
-        const calculatedProgress = calculateProgress();
-        
-        setProgress(prevProgress => {
-          // Don't go backwards, and don't jump too far ahead
-          const targetProgress = Math.max(prevProgress, 
-            Math.min(calculatedProgress, prevProgress + 2));
-          
-          // Update loading text based on progress
-          if (targetProgress >= 30 && targetProgress < 60) {
-            setLoadingText('Initializing application');
-          } else if (targetProgress >= 60 && targetProgress < 90) {
-            setLoadingText('Preparing your experience');
-          } else if (targetProgress >= 90) {
-            setLoadingText('Almost ready');
-          }
-          
-          // If we've reached 100%, hide the indicator after a short delay
-          if (targetProgress >= 100) {
-            setTimeout(() => {
-              loadingindicatormodalcb('none');
-            }, 500);
-            clearInterval(progressInterval.current);
-          }
-          
-          return targetProgress;
-        });
-      }, 100);
+    if (!isAnyLoading()) {
+      // all done, hide after delay
+      const timer = setTimeout(() => {
+        setInternalVisible(false);
+      }, 500);
+      return () => clearTimeout(timer);
     } else {
-      // We're not visible, clear the interval
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
+      setInternalVisible(true);
     }
-    
-    // Clean up on component unmount
-    return () => {
-      if (progressInterval.current) {
-        clearInterval(progressInterval.current);
-      }
-    };
-  }, [isVisible, loadingState]);
-  
-  // Format progress to display at most one decimal place
-  const formattedProgress = Math.min(100, Math.floor(progress * 10) / 10);
-  
-  if (loadingindicatormodal === 'none') {
-    return null;
-  }
-  
+  }, [isAnyLoading]);
+
+  useEffect(() => {
+    if (!internalVisible) return;
+
+    let progressInterval;
+    let messageIndex = 0;
+
+    setProgress(0);
+    setLoadingText(loadingMessages[0]);
+
+    progressInterval = setInterval(() => {
+      setProgress(prev => {
+        const next = Math.min(prev + Math.random() * 10, 100);
+        if (next >= ((messageIndex + 1) / loadingMessages.length) * 100 && messageIndex < loadingMessages.length - 1) {
+          messageIndex++;
+          setLoadingText(loadingMessages[messageIndex]);
+        }
+        return next;
+      });
+    }, 300);
+
+    return () => clearInterval(progressInterval);
+  }, [internalVisible]);
+
+  if (!internalVisible) return null;
+
   return (
-    <div className="loading-container" style={{ display: loadingindicatormodal }}>
-      <div className="loading-content">
-        <div className="logo-container">
-          <div className="logo">
-            {/* Replace with your logo */}
-            <span>OMSIAP</span>
-          </div>
+    <div
+      style={{
+        display: loadingindicatormodal,
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(255,255,255,0.95)",
+        zIndex: 9999,
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "column",
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        style={{ textAlign: "center" }}
+      >
+        <h2 style={{ marginBottom: "20px", fontWeight: "600", color: "#333" }}>
+          {loadingText}
+        </h2>
+        <div
+          style={{
+            width: "300px",
+            height: "15px",
+            backgroundColor: "#ddd",
+            borderRadius: "10px",
+            overflow: "hidden",
+          }}
+        >
+          <motion.div
+            style={{
+              height: "100%",
+              backgroundColor: "#007bff",
+              borderRadius: "10px",
+            }}
+            animate={{ width: `${progress}%` }}
+            transition={{ ease: "easeOut", duration: 0.3 }}
+          />
         </div>
-        
-        <div className="progress-container">
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${formattedProgress}%` }}
-            ></div>
-          </div>
-          <div className="progress-text">
-            <span>{loadingText}</span>
-            <span className="progress-percentage">{formattedProgress}%</span>
-          </div>
-        </div>
-      </div>
+        <p style={{ marginTop: "10px", fontWeight: "500", color: "#444" }}>
+          {Math.round(progress)}%
+        </p>
+      </motion.div>
     </div>
   );
-};
-
-export default LoadingIndicator;
+}

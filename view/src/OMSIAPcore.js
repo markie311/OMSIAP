@@ -211,33 +211,48 @@ function OMSIAPCoreContent() {
   useEffect(() => {
 
     const initializeApp = async () => {
-      try {
-        // Update loading state to show we're starting
-        updateLoadingState('global', true);
-        
-        // Start all data loading in parallel
-        await Promise.all([
-          loadUserData(),
-          loadProductData(),
-          loadContentsData(),
-          loadTransactionData(),
-        ]);
-        
-        // All critical data is loaded, update global state
-        updateLoadingState('global', false);
-        
-        // Hide loading indicator after a short delay
-        setTimeout(() => {
-          loadingindicatormodalcb('none');
-        }, 500);
-      } catch (error) {
-        console.error("Failed to initialize app:", error);
-        // Handle initialization failure
-        updateLoadingState('global', false);
+    try {
+      // Start with all resources loading
+      updateLoadingState('global', true);
+      updateLoadingState('user', true);
+      updateLoadingState('products', true);
+      updateLoadingState('contents', true);
+      updateLoadingState('transactions', true);
+
+      // Step 1 - Simulate user data
+      await loadUserData();
+      await new Promise(r => setTimeout(r, 1000));
+      updateLoadingState('user', false);
+
+      // Step 2 - Products
+      await loadProductData();
+      await new Promise(r => setTimeout(r, 1000));
+      updateLoadingState('products', false);
+
+      // Step 3 - Contents
+      await loadContentsData();
+      await new Promise(r => setTimeout(r, 1000));
+      updateLoadingState('contents', false);
+
+      // Step 4 - Transactions
+      await loadTransactionData();
+      await new Promise(r => setTimeout(r, 1000));
+      updateLoadingState('transactions', false);
+
+      // Mark everything done
+      updateLoadingState('global', false);
+
+      // Hide loading indicator after a slight delay
+      setTimeout(() => {
         loadingindicatormodalcb('none');
-        // Show error message or handle gracefully
-      }
-    };
+      }, 1000);
+
+    } catch (error) {
+      console.error("Failed to initialize app:", error);
+      updateLoadingState('global', false);
+      loadingindicatormodalcb('none');
+    }
+    }
     
     initializeApp();
 
