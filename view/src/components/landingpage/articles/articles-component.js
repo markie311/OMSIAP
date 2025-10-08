@@ -63,10 +63,16 @@ export default function Articles(props) {
                   <div className="article-title">
                     <h5>{article.title}</h5>
                   </div>
+                  <div>
+                    <h6 style={{color:"white"}}>{article.description}</h6>
+                  </div>
+                  <br/>
+                  <br/>
+                  <br/>
                   <Row className="article-actions">
                     <Col xs={6} className="article-read-more">
                       <button className="read-more-btn" onClick={() => openArticleModal(article)}>
-                        Continue reading
+                        Read topic header only and view image
                       </button>
                     </Col>
                     <Col xs={6} className="article-read-time">
@@ -114,7 +120,7 @@ export default function Articles(props) {
                 Close
               </Button>
               <Button variant="primary" onClick={() => navigate("./readmoreaboutarticles")}>
-                Read Full Article
+                Read All Article's
               </Button>
             </Modal.Footer>
           </>

@@ -11,7 +11,6 @@ import Footer from "../footer/footer-component.js"
 import axiosCreatedInstance from "../../../components/lib/axiosutil.js"
 
 export default function BlogPage(props) {
-
   const [showImageModal, setShowImageModal] = useState(false)
   const [modalImage, setModalImage] = useState("")
   const [animatedElements, setAnimatedElements] = useState([])
@@ -25,93 +24,98 @@ export default function BlogPage(props) {
   const [replyingTo, setReplyingTo] = useState(null)
   const [newReply, setNewReply] = useState("")
   const [isLoading, setIsLoading] = useState(true)
-  const [interactionLoading, setInteractionLoading] = useState(null) // Track which button is loading
+  const [interactionLoading, setInteractionLoading] = useState(null)
 
-  const [currentTopicFilter, setCurrentTopicFilter] = useState("All") // Track current topic filter
-  const [topicBrowseLoading, setTopicBrowseLoading] = useState(false) // Track topic browsing loading
+  const [currentTopicFilter, setCurrentTopicFilter] = useState("All")
+  const [topicBrowseLoading, setTopicBrowseLoading] = useState(false)
 
-  // Add these state variables to your existing useState declarations
   const [commentLoading, setCommentLoading] = useState(false)
-  const [replyLoading, setReplyLoading] = useState(null) // Track which reply is loading
+  const [replyLoading, setReplyLoading] = useState(null)
 
-  // Placeholder images
+  const [showTopicArticlesModal, setShowTopicArticlesModal] = useState(false)
+  const [topicArticles, setTopicArticles] = useState([])
+  const [topicArticlesLoading, setTopicArticlesLoading] = useState(false)
+
   const headerImage = "../images/landingpage/articles/blog.jpg"
 
+  const getTopicCount = (topicName) => {
+    if (!props.articles || !Array.isArray(props.articles)) return 0
+    return props.articles.filter((article) => article.data?.toLowerCase() === topicName.toLowerCase()).length
+  }
 
-const getTopicCount = (topicName) => {
-  if (!props.articles || !Array.isArray(props.articles)) return 0;
-  return props.articles.filter(article => 
-    article.data?.toLowerCase() === topicName.toLowerCase()
-  ).length;
-};
-
-  // Enhanced topics with summaries
- const topics = [
-  {
-    name: "All",
-    summary: "Browse all articles across different topics and categories.",
-    relatedArticles: props.articles?.length || 0,
-    icon: "📚",
-    filterValue: "All"
-  },
-  {
-    name: "Business Strategy",
-    summary: "Explore frameworks and methodologies for developing effective business strategies that drive growth and competitive advantage in today's dynamic market environment.",
-    relatedArticles: getTopicCount("Business"),
-    icon: "📊",
-    filterValue: "Business"
-  },
-  {
-    name: "Technology Trends",
-    summary: "Stay updated with the latest technological innovations and trends shaping industries, from AI and machine learning to blockchain and IoT applications.",
-    relatedArticles: getTopicCount("Technology"),
-    icon: "💻",
-    filterValue: "Technology"
-  },
-  {
-    name: "Digital Marketing",
-    summary: "Discover cutting-edge digital marketing strategies, tools, and best practices to reach your target audience and maximize ROI across various online channels.",
-    relatedArticles: getTopicCount("Marketing"),
-    icon: "📱",
-    filterValue: "Marketing"
-  },
-  {
-    name: "Leadership",
-    summary: "Learn about effective leadership styles, team management techniques, and how to inspire and guide organizations through change and challenges.",
-    relatedArticles: getTopicCount("Leadership"),
-    icon: "👥",
-    filterValue: "Leadership"
-  },
-  {
-    name: "Entrepreneurship",
-    summary: "Gain insights into starting and scaling businesses, from ideation and funding to growth strategies and overcoming common startup challenges.",
-    relatedArticles: getTopicCount("Entrepreneurship"),
-    icon: "🚀",
-    filterValue: "Entrepreneurship"
-  },
-  {
-    name: "Finance",
-    summary: "Understand financial management principles, investment strategies, and economic trends that impact business decisions and performance.",
-    relatedArticles: getTopicCount("Finance"),
-    icon: "💰",
-    filterValue: "Finance"
-  },
-  {
-    name: "Sustainability",
-    summary: "Explore eco-friendly business practices, ESG frameworks, and how companies are balancing profit with environmental and social responsibility.",
-    relatedArticles: getTopicCount("Sustainability"),
-    icon: "🌱",
-    filterValue: "Sustainability"
-  },
-  {
-    name: "Innovation",
-    summary: "Discover methodologies for fostering innovation, design thinking, and creating a culture that encourages creative problem-solving and continuous improvement.",
-    relatedArticles: getTopicCount("Innovation"),
-    icon: "💡",
-    filterValue: "Innovation"
-  },
-];
-
+  const topics = [
+    {
+      name: "All",
+      summary: "Browse all articles across different topics and categories.",
+      relatedArticles: props.articles?.length || 0,
+      icon: "📚",
+      filterValue: "All",
+    },
+    {
+      name: "Business Strategy",
+      summary:
+        "Explore frameworks and methodologies for developing effective business strategies that drive growth and competitive advantage in today's dynamic market environment.",
+      relatedArticles: getTopicCount("Business"),
+      icon: "📊",
+      filterValue: "Business",
+    },
+    {
+      name: "Technology Trends",
+      summary:
+        "Stay updated with the latest technological innovations and trends shaping industries, from AI and machine learning to blockchain and IoT applications.",
+      relatedArticles: getTopicCount("Technology"),
+      icon: "💻",
+      filterValue: "Technology",
+    },
+    {
+      name: "Digital Marketing",
+      summary:
+        "Discover cutting-edge digital marketing strategies, tools, and best practices to reach your target audience and maximize ROI across various online channels.",
+      relatedArticles: getTopicCount("Marketing"),
+      icon: "📱",
+      filterValue: "Marketing",
+    },
+    {
+      name: "Leadership",
+      summary:
+        "Learn about effective leadership styles, team management techniques, and how to inspire and guide organizations through change and challenges.",
+      relatedArticles: getTopicCount("Leadership"),
+      icon: "👥",
+      filterValue: "Leadership",
+    },
+    {
+      name: "Entrepreneurship",
+      summary:
+        "Gain insights into starting and scaling businesses, from ideation and funding to growth strategies and overcoming common startup challenges.",
+      relatedArticles: getTopicCount("Entrepreneurship"),
+      icon: "🚀",
+      filterValue: "Entrepreneurship",
+    },
+    {
+      name: "Finance",
+      summary:
+        "Understand financial management principles, investment strategies, and economic trends that impact business decisions and performance.",
+      relatedArticles: getTopicCount("Finance"),
+      icon: "💰",
+      filterValue: "Finance",
+    },
+    {
+      name: "Sustainability",
+      summary:
+        "Explore eco-friendly business practices, ESG frameworks, and how companies are balancing profit with environmental and social responsibility.",
+      relatedArticles: getTopicCount("Sustainability"),
+      icon: "🌱",
+      filterValue: "Sustainability",
+    },
+    {
+      name: "Innovation",
+      summary:
+        "Discover methodologies for fostering innovation, design thinking, and creating a culture that encourages creative problem-solving and continuous improvement.",
+      relatedArticles: getTopicCount("Innovation"),
+      icon: "💡",
+      filterValue: "Innovation",
+    },
+  ]
 
   const openImageModal = (imageSrc) => {
     setModalImage(imageSrc)
@@ -143,7 +147,17 @@ const getTopicCount = (topicName) => {
     document.body.style.overflow = "auto"
   }
 
-  // Animation on scroll functionality
+  const openTopicArticlesModal = () => {
+    setShowTopicArticlesModal(true)
+    document.body.style.overflow = "hidden"
+  }
+
+  const closeTopicArticlesModal = () => {
+    setShowTopicArticlesModal(false)
+    setTopicArticles([])
+    document.body.style.overflow = "auto"
+  }
+
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -165,39 +179,89 @@ const getTopicCount = (topicName) => {
     }
   }, [])
 
-  // Close modals with escape key
   useEffect(() => {
     const handleEscKey = (event) => {
       if (event.key === "Escape") {
         if (showImageModal) closeImageModal()
         if (showTopicModal) closeTopicModal()
         if (showBlogModal) closeBlogModal()
+        if (showTopicArticlesModal) closeTopicArticlesModal()
       }
     }
 
     window.addEventListener("keydown", handleEscKey)
     return () => window.removeEventListener("keydown", handleEscKey)
-  }, [showImageModal, showTopicModal, showBlogModal])
+  }, [showImageModal, showTopicModal, showBlogModal, showTopicArticlesModal])
 
+  const handleInteraction = async (type) => {
+    if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
+      alert("Please log in to interact with articles")
+      return
+    }
 
-const handleInteraction = async (type) => {
-  // Check if user is logged in
-  if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
-    alert("Please log in to interact with articles")
-    return
-  }
+    if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
+      alert("Please complete your profile to interact with articles")
+      return
+    }
 
-  // Check if user has required data
-  if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
-    alert("Please complete your profile to interact with articles")
-    return
-  }
+    if (userInteraction === type) {
+      setInteractionLoading(type)
 
-  // Check if user is trying to interact with the same type they already selected
-  if (userInteraction === type) {
-    // User is removing their interaction
+      const requestData = {
+        articleId: selectedBlog.id,
+        interactionType: type,
+        userData: {
+          name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
+          phonenumber: props.user.contact.phonenumber,
+          date: new Date().toISOString(),
+        },
+        action: "remove",
+        currentInteraction: userInteraction,
+      }
+
+      try {
+        const response = await axiosCreatedInstance.post("/content/article-interaction", requestData)
+        const result = response.data
+
+        if (result.success) {
+          setSelectedBlog((prevBlog) => {
+            const updatedBlog = { ...prevBlog }
+
+            if (!updatedBlog.interactions) {
+              updatedBlog.interactions = {
+                like: [],
+                unlike: [],
+                exited: [],
+                wow: [],
+                sad: [],
+              }
+            }
+
+            const userPhone = props.user.contact.phonenumber
+            if (updatedBlog.interactions[type]) {
+              updatedBlog.interactions[type] = updatedBlog.interactions[type].filter(
+                (interaction) => interaction.phonenumber !== userPhone,
+              )
+            }
+
+            return updatedBlog
+          })
+
+          setUserInteraction(null)
+        } else {
+          alert("Failed to remove interaction. Please try again.")
+        }
+      } catch (error) {
+        console.error("Remove interaction error:", error.response?.data || error.message)
+        alert("Network error. Please try again.")
+      } finally {
+        setInteractionLoading(null)
+      }
+      return
+    }
+
     setInteractionLoading(type)
-    
+
     const requestData = {
       articleId: selectedBlog.id,
       interactionType: type,
@@ -206,7 +270,7 @@ const handleInteraction = async (type) => {
         phonenumber: props.user.contact.phonenumber,
         date: new Date().toISOString(),
       },
-      action: "remove", // Indicate this is a removal
+      action: "add",
       currentInteraction: userInteraction,
     }
 
@@ -215,128 +279,67 @@ const handleInteraction = async (type) => {
       const result = response.data
 
       if (result.success) {
-        // Update selectedBlog state to remove the interaction
-        setSelectedBlog(prevBlog => {
+        setSelectedBlog((prevBlog) => {
           const updatedBlog = { ...prevBlog }
-          
-          // Initialize interactions if they don't exist
+
           if (!updatedBlog.interactions) {
             updatedBlog.interactions = {
-              like: [], unlike: [], exited: [], wow: [], sad: []
+              like: [],
+              unlike: [],
+              exited: [],
+              wow: [],
+              sad: [],
             }
           }
 
-          // Remove user's interaction
           const userPhone = props.user.contact.phonenumber
-          if (updatedBlog.interactions[type]) {
-            updatedBlog.interactions[type] = updatedBlog.interactions[type].filter(
-              interaction => interaction.phonenumber !== userPhone
-            )
+          const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
+
+          interactionTypes.forEach((interactionType) => {
+            if (updatedBlog.interactions[interactionType]) {
+              updatedBlog.interactions[interactionType] = updatedBlog.interactions[interactionType].filter(
+                (interaction) => interaction.phonenumber !== userPhone,
+              )
+            }
+          })
+
+          if (!updatedBlog.interactions[type]) {
+            updatedBlog.interactions[type] = []
           }
+          updatedBlog.interactions[type].push(requestData.userData)
 
           return updatedBlog
         })
 
-        // Clear user interaction state
-        setUserInteraction(null)
+        setUserInteraction(type)
       } else {
-        alert("Failed to remove interaction. Please try again.")
+        alert("Failed to update interaction. Please try again.")
       }
     } catch (error) {
-      console.error("Remove interaction error:", error.response?.data || error.message)
+      console.error("Add interaction error:", error.response?.data || error.message)
       alert("Network error. Please try again.")
     } finally {
       setInteractionLoading(null)
     }
-    return
   }
 
-  // User is adding/changing interaction
-  setInteractionLoading(type)
-
-  const requestData = {
-    articleId: selectedBlog.id,
-    interactionType: type,
-    userData: {
-      name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
-      phonenumber: props.user.contact.phonenumber,
-      date: new Date().toISOString(),
-    },
-    action: "add", // Indicate this is an addition/change
-    currentInteraction: userInteraction, // Send current interaction to handle replacement
-  }
-
-  try {
-    const response = await axiosCreatedInstance.post("/content/article-interaction", requestData)
-    const result = response.data
-
-    if (result.success) {
-      // Update selectedBlog state to reflect the new interaction
-      setSelectedBlog(prevBlog => {
-        const updatedBlog = { ...prevBlog }
-        
-        // Initialize interactions if they don't exist
-        if (!updatedBlog.interactions) {
-          updatedBlog.interactions = {
-            like: [], unlike: [], exited: [], wow: [], sad: []
-          }
-        }
-
-        const userPhone = props.user.contact.phonenumber
-        const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
-
-        // Remove user's previous interaction (if any)
-        interactionTypes.forEach(interactionType => {
-          if (updatedBlog.interactions[interactionType]) {
-            updatedBlog.interactions[interactionType] = updatedBlog.interactions[interactionType].filter(
-              interaction => interaction.phonenumber !== userPhone
-            )
-          }
-        })
-
-        // Add new interaction
-        if (!updatedBlog.interactions[type]) {
-          updatedBlog.interactions[type] = []
-        }
-        updatedBlog.interactions[type].push(requestData.userData)
-
-        return updatedBlog
-      })
-
-      // Update user interaction state
-      setUserInteraction(type)
-    } else {
-      alert("Failed to update interaction. Please try again.")
+  const getInteractionCount = (type) => {
+    if (!selectedBlog?.interactions?.[type]) {
+      return 0
     }
-  } catch (error) {
-    console.error("Add interaction error:", error.response?.data || error.message)
-    alert("Network error. Please try again.")
-  } finally {
-    setInteractionLoading(null)
+    return selectedBlog.interactions[type].length
   }
-}
 
-const getInteractionCount = (type) => {
-  if (!selectedBlog?.interactions?.[type]) {
-    return 0
-  }
-  return selectedBlog.interactions[type].length
-}
-
-  // Add these useEffects to your existing useEffect declarations in the component
-
-  // Set initial user interaction state when blog modal opens
   useEffect(() => {
     if (selectedBlog && props.user?.contact?.phonenumber) {
       const userPhone = props.user.contact.phonenumber
       const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
-      
-      // Find if user has any existing interaction
+
       let foundInteraction = null
       for (const type of interactionTypes) {
         if (selectedBlog.interactions?.[type]) {
           const hasInteraction = selectedBlog.interactions[type].some(
-            interaction => interaction.phonenumber === userPhone
+            (interaction) => interaction.phonenumber === userPhone,
           )
           if (hasInteraction) {
             foundInteraction = type
@@ -344,307 +347,302 @@ const getInteractionCount = (type) => {
           }
         }
       }
-      
+
       setUserInteraction(foundInteraction)
-      setIsLoading(false) // Set loading to false when we have data
+      setIsLoading(false)
     } else {
       setUserInteraction(null)
       setIsLoading(false)
     }
   }, [selectedBlog, props.user])
 
-  // Handle loading state when modal opens
   useEffect(() => {
     if (showBlogModal && selectedBlog) {
-      setIsLoading(false) // Set loading to false when blog modal opens with data
+      setIsLoading(false)
     } else if (showBlogModal) {
-      setIsLoading(true) // Set loading to true if modal opens without data
+      setIsLoading(true)
     }
   }, [showBlogModal, selectedBlog])
 
- // Updated handleAddComment function
-const handleAddComment = async () => {
-  // Check if user is logged in
-  if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
-    alert("Please log in to comment on articles")
-    return
-  }
-
-  // Check if user has required data
-  if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
-    alert("Please complete your profile to comment on articles")
-    return
-  }
-
-  // Validate comment content
-  if (!newComment.trim()) {
-    alert("Please enter a comment")
-    return
-  }
-
-  setCommentLoading(true)
-
-  const commentData = {
-    articleId: selectedBlog.id,
-    comment: newComment.trim(),
-    userData: {
-      name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
-      phonenumber: props.user.contact.phonenumber,
-      date: new Date().toISOString(),
+  const handleAddComment = async () => {
+    if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
+      alert("Please log in to comment on articles")
+      return
     }
-  }
 
-  try {
-    const response = await axiosCreatedInstance.post("/content/comment", commentData)
-    const result = response.data
-
-    if (result.success) {
-      // Update selectedBlog with new comment
-      setSelectedBlog(prevBlog => {
-        const updatedBlog = { ...prevBlog }
-        
-        // Initialize comments array if it doesn't exist
-        if (!updatedBlog.comments) {
-          updatedBlog.comments = []
-        }
-        
-        // Add the new comment
-        updatedBlog.comments.push(result.comment)
-        
-        return updatedBlog
-      })
-
-      // Clear the comment input
-      setNewComment("")
-      
-      // Show success message (optional)
-      // alert("Comment added successfully!")
-    } else {
-      alert("Failed to add comment. Please try again.")
+    if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
+      alert("Please complete your profile to comment on articles")
+      return
     }
-  } catch (error) {
-    console.error("Add comment error:", error.response?.data || error.message)
-    alert("Network error. Please try again.")
-  } finally {
-    setCommentLoading(false)
-  }
-}
 
-// Updated handleAddReply function
-const handleAddReply = async (commentIndex) => {
-  // Check if user is logged in
-  if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
-    alert("Please log in to reply to comments")
-    return
-  }
-
-  // Check if user has required data
-  if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
-    alert("Please complete your profile to reply to comments")
-    return
-  }
-
-  // Validate reply content
-  if (!newReply.trim()) {
-    alert("Please enter a reply")
-    return
-  }
-
-  setReplyLoading(commentIndex)
-
-  const replyData = {
-    articleId: selectedBlog.id,
-    commentIndex: commentIndex,
-    reply: newReply.trim(),
-    userData: {
-      name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
-      phonenumber: props.user.contact.phonenumber,
-      date: new Date().toISOString(),
+    if (!newComment.trim()) {
+      alert("Please enter a comment")
+      return
     }
-  }
 
-  try {
-    const response = await axiosCreatedInstance.post("/content/reply", replyData)
-    const result = response.data
+    setCommentLoading(true)
 
-    if (result.success) {
-      // Update selectedBlog with new reply
-      setSelectedBlog(prevBlog => {
-        const updatedBlog = { ...prevBlog }
-        
-        // Make sure the comment and replies array exist
-        if (updatedBlog.comments && updatedBlog.comments[commentIndex]) {
-          if (!updatedBlog.comments[commentIndex].replies) {
-            updatedBlog.comments[commentIndex].replies = []
+    const commentData = {
+      articleId: selectedBlog.id,
+      comment: newComment.trim(),
+      userData: {
+        name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
+        phonenumber: props.user.contact.phonenumber,
+        date: new Date().toISOString(),
+      },
+    }
+
+    try {
+      const response = await axiosCreatedInstance.post("/content/comment", commentData)
+      const result = response.data
+
+      if (result.success) {
+        setSelectedBlog((prevBlog) => {
+          const updatedBlog = { ...prevBlog }
+
+          if (!updatedBlog.comments) {
+            updatedBlog.comments = []
           }
-          
-          // Add the new reply
-          updatedBlog.comments[commentIndex].replies.push(result.reply)
-        }
-        
-        return updatedBlog
-      })
 
-      // Clear the reply input and close reply form
-      setNewReply("")
-      setReplyingTo(null)
-      
-      // Show success message (optional)
-      // alert("Reply added successfully!")
-    } else {
-      alert("Failed to add reply. Please try again.")
-    }
-  } catch (error) {
-    console.error("Add reply error:", error.response?.data || error.message)
-    alert("Network error. Please try again.")
-  } finally {
-    setReplyLoading(null)
-  }
-}
+          updatedBlog.comments.push(result.comment)
 
-// Optional: Add comment interaction handler
-const handleCommentInteraction = async (commentIndex, interactionType) => {
-  // Check if user is logged in
-  if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
-    alert("Please log in to interact with comments")
-    return
-  }
-
-  // Check if user has required data
-  if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
-    alert("Please complete your profile to interact with comments")
-    return
-  }
-
-  // Get current user's interaction for this comment
-  const comment = selectedBlog.comments[commentIndex]
-  const userPhone = props.user.contact.phonenumber
-  
-  let currentInteraction = null
-  const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
-  
-  for (const type of interactionTypes) {
-    if (comment.interactions?.[type]) {
-      const hasInteraction = comment.interactions[type].some(
-        interaction => interaction.phonenumber === userPhone
-      )
-      if (hasInteraction) {
-        currentInteraction = type
-        break
-      }
-    }
-  }
-
-  const requestData = {
-    articleId: selectedBlog.id,
-    commentIndex: commentIndex,
-    interactionType: interactionType,
-    userData: {
-      name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
-      phonenumber: props.user.contact.phonenumber,
-      date: new Date().toISOString(),
-    },
-    currentInteraction: currentInteraction,
-  }
-
-  try {
-    const response = await axiosCreatedInstance.post("/content/comment-interaction", requestData)
-    const result = response.data
-
-    if (result.success) {
-      // Update the local state to reflect the interaction change
-      setSelectedBlog(prevBlog => {
-        const updatedBlog = { ...prevBlog }
-        const comment = updatedBlog.comments[commentIndex]
-        
-        // Initialize interactions if they don't exist
-        if (!comment.interactions) {
-          comment.interactions = {
-            like: [], unlike: [], exited: [], wow: [], sad: []
-          }
-        }
-
-        // Remove user's previous interaction
-        interactionTypes.forEach(type => {
-          if (comment.interactions[type]) {
-            comment.interactions[type] = comment.interactions[type].filter(
-              interaction => interaction.phonenumber !== userPhone
-            )
-          }
+          return updatedBlog
         })
 
-        // Add new interaction if different from current
-        if (interactionType !== currentInteraction) {
-          if (!comment.interactions[interactionType]) {
-            comment.interactions[interactionType] = []
+        setNewComment("")
+      } else {
+        alert("Failed to add comment. Please try again.")
+      }
+    } catch (error) {
+      console.error("Add comment error:", error.response?.data || error.message)
+      alert("Network error. Please try again.")
+    } finally {
+      setCommentLoading(false)
+    }
+  }
+
+  const handleAddReply = async (commentIndex) => {
+    if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
+      alert("Please log in to reply to comments")
+      return
+    }
+
+    if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
+      alert("Please complete your profile to reply to comments")
+      return
+    }
+
+    if (!newReply.trim()) {
+      alert("Please enter a reply")
+      return
+    }
+
+    setReplyLoading(commentIndex)
+
+    const replyData = {
+      articleId: selectedBlog.id,
+      commentIndex: commentIndex,
+      reply: newReply.trim(),
+      userData: {
+        name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
+        phonenumber: props.user.contact.phonenumber,
+        date: new Date().toISOString(),
+      },
+    }
+
+    try {
+      const response = await axiosCreatedInstance.post("/content/reply", replyData)
+      const result = response.data
+
+      if (result.success) {
+        setSelectedBlog((prevBlog) => {
+          const updatedBlog = { ...prevBlog }
+
+          if (updatedBlog.comments && updatedBlog.comments[commentIndex]) {
+            if (!updatedBlog.comments[commentIndex].replies) {
+              updatedBlog.comments[commentIndex].replies = []
+            }
+
+            updatedBlog.comments[commentIndex].replies.push(result.reply)
           }
-          comment.interactions[interactionType].push(requestData.userData)
+
+          return updatedBlog
+        })
+
+        setNewReply("")
+        setReplyingTo(null)
+      } else {
+        alert("Failed to add reply. Please try again.")
+      }
+    } catch (error) {
+      console.error("Add reply error:", error.response?.data || error.message)
+      alert("Network error. Please try again.")
+    } finally {
+      setReplyLoading(null)
+    }
+  }
+
+  const handleCommentInteraction = async (commentIndex, interactionType) => {
+    if (props.user?.registrationstatusesandlogs?.deviceloginstatus !== "logged in") {
+      alert("Please log in to interact with comments")
+      return
+    }
+
+    if (!props.user.contact?.phonenumber || !props.user.name?.firstname) {
+      alert("Please complete your profile to interact with comments")
+      return
+    }
+
+    const comment = selectedBlog.comments[commentIndex]
+    const userPhone = props.user.contact.phonenumber
+
+    let currentInteraction = null
+    const interactionTypes = ["like", "unlike", "exited", "wow", "sad"]
+
+    for (const type of interactionTypes) {
+      if (comment.interactions?.[type]) {
+        const hasInteraction = comment.interactions[type].some((interaction) => interaction.phonenumber === userPhone)
+        if (hasInteraction) {
+          currentInteraction = type
+          break
+        }
+      }
+    }
+
+    const requestData = {
+      articleId: selectedBlog.id,
+      commentIndex: commentIndex,
+      interactionType: interactionType,
+      userData: {
+        name: `${props.user.name.firstname} ${props.user.name.lastname || ""}`.trim(),
+        phonenumber: props.user.contact.phonenumber,
+        date: new Date().toISOString(),
+      },
+      currentInteraction: currentInteraction,
+    }
+
+    try {
+      const response = await axiosCreatedInstance.post("/content/comment-interaction", requestData)
+      const result = response.data
+
+      if (result.success) {
+        setSelectedBlog((prevBlog) => {
+          const updatedBlog = { ...prevBlog }
+          const comment = updatedBlog.comments[commentIndex]
+
+          if (!comment.interactions) {
+            comment.interactions = {
+              like: [],
+              unlike: [],
+              exited: [],
+              wow: [],
+              sad: [],
+            }
+          }
+
+          interactionTypes.forEach((type) => {
+            if (comment.interactions[type]) {
+              comment.interactions[type] = comment.interactions[type].filter(
+                (interaction) => interaction.phonenumber !== userPhone,
+              )
+            }
+          })
+
+          if (interactionType !== currentInteraction) {
+            if (!comment.interactions[interactionType]) {
+              comment.interactions[interactionType] = []
+            }
+            comment.interactions[interactionType].push(requestData.userData)
+          }
+
+          return updatedBlog
+        })
+      } else {
+        alert("Failed to update interaction. Please try again.")
+      }
+    } catch (error) {
+      console.error("Comment interaction error:", error.response?.data || error.message)
+      alert("Network error. Please try again.")
+    }
+  }
+
+  const handleBrowseArticles = async (topic) => {
+    if (!props.articlescb) {
+      console.error("articlescb function not provided in props")
+      return
+    }
+
+    setTopicBrowseLoading(true)
+
+    try {
+      closeTopicModal()
+
+      setTimeout(async () => {
+        setCurrentTopicFilter(topic.name)
+
+        if (topic.filterValue === "All") {
+          await props.articlescb("All")
+        } else {
+          await props.articlescb(topic.filterValue)
         }
 
-        return updatedBlog
-      })
-    } else {
-      alert("Failed to update interaction. Please try again.")
+        const blogPosts = document.querySelectorAll(".blog-post")
+        blogPosts.forEach((post, index) => {
+          post.style.opacity = "0"
+          post.style.transform = "translateY(30px)"
+
+          setTimeout(() => {
+            post.style.transition = "all 0.6s ease"
+            post.style.opacity = "1"
+            post.style.transform = "translateY(0)"
+          }, index * 100)
+        })
+
+        setTopicBrowseLoading(false)
+      }, 300)
+    } catch (error) {
+      console.error("Error browsing articles:", error)
+      setTopicBrowseLoading(false)
     }
-  } catch (error) {
-    console.error("Comment interaction error:", error.response?.data || error.message)
-    alert("Network error. Please try again.")
-  }
-}
-
-const handleBrowseArticles = async (topic) => {
-  if (!props.articlescb) {
-    console.error('articlescb function not provided in props');
-    return;
   }
 
-  setTopicBrowseLoading(true);
-  
-  try {
-    // Close the topic modal first
-    closeTopicModal();
-    
-    // Add a small delay for smooth modal closing
-    setTimeout(async () => {
-      // Set the current topic filter
-      setCurrentTopicFilter(topic.name);
-      
-      // Call the parent callback to filter articles
-      if (topic.filterValue === "All") {
-        // Show all articles
-        await props.articlescb("All");
-      } else {
-        // Filter by specific topic
-        await props.articlescb(topic.filterValue);
-      }
-      
-      // Add animation class to blog posts
-      const blogPosts = document.querySelectorAll('.blog-post');
-      blogPosts.forEach((post, index) => {
-        post.style.opacity = '0';
-        post.style.transform = 'translateY(30px)';
-        
-        setTimeout(() => {
-          post.style.transition = 'all 0.6s ease';
-          post.style.opacity = '1';
-          post.style.transform = 'translateY(0)';
-        }, index * 100);
-      });
-      
-      setTopicBrowseLoading(false);
-    }, 300);
-    
-  } catch (error) {
-    console.error('Error browsing articles:', error);
-    setTopicBrowseLoading(false);
+  const handleViewTopicArticles = (topic) => {
+    setTopicArticlesLoading(true)
+
+    // Filter articles based on topic
+    let filteredArticles = []
+    if (topic.filterValue === "All") {
+      filteredArticles = props.articles || []
+    } else {
+      filteredArticles =
+        props.articles?.filter((article) => article.data?.toLowerCase() === topic.filterValue.toLowerCase()) || []
+    }
+
+    setTopicArticles(filteredArticles)
+    setTopicArticlesLoading(false)
+
+    // Close topic modal and open articles modal
+    closeTopicModal()
+    setTimeout(() => {
+      openTopicArticlesModal()
+    }, 300)
   }
-};
+
+  const handleOpenBlogFromTopicModal = (blog) => {
+    closeTopicArticlesModal()
+
+    // Small delay to allow smooth transition between modals
+    setTimeout(() => {
+      setSelectedBlog(blog)
+      setShowBlogModal(true)
+      document.body.style.overflow = "hidden"
+    }, 300)
+  }
 
   return (
     <div className="blog-container">
       <NavBar />
 
-      {/* Header Section */}
       <div className="blog-header animate-on-scroll fade-in">
         <div className="header-image-container">
           <img
@@ -661,9 +659,7 @@ const handleBrowseArticles = async (topic) => {
         </div>
       </div>
 
-      {/* Blog Grid Section */}
       <Row className="blog-grid-section">
-        {/* Blog Posts Column */}
         <Col xs={12} md={8} className="blog-posts-col">
           {props.articles?.map((post, index) => (
             <div
@@ -704,7 +700,6 @@ const handleBrowseArticles = async (topic) => {
           ))}
         </Col>
 
-        {/* Topics Column */}
         <Col xs={12} md={4} className="topics-col">
           <div className="topics-container animate-on-scroll fade-in-up">
             <h3 className="topics-title">Topics</h3>
@@ -739,13 +734,12 @@ const handleBrowseArticles = async (topic) => {
           </div>
         </Col>
 
-        {/* Current Topic Filter Indicator */}
         {currentTopicFilter !== "All" && (
           <div className="current-topic-filter animate-on-scroll fade-in">
             <div className="filter-container">
               <span className="filter-text">Showing articles for: </span>
               <span className="filter-topic">{currentTopicFilter}</span>
-              <button 
+              <button
                 className="clear-filter-btn"
                 onClick={() => handleBrowseArticles({ name: "All", filterValue: "All" })}
                 title="Show all articles"
@@ -759,7 +753,6 @@ const handleBrowseArticles = async (topic) => {
 
       <Footer />
 
-      {/* Blog Post Modal */}
       {showBlogModal && selectedBlog && (
         <div className="modal-overlay blog-modal-overlay" onClick={closeBlogModal}>
           <div className="modal-container blog-modal-container" onClick={(e) => e.stopPropagation()}>
@@ -820,7 +813,6 @@ const handleBrowseArticles = async (topic) => {
                   <h3 className="highlight-text">Expert Opinion</h3>
                   <blockquote className="blog-modal-quote">{selectedBlog.expertopinion}</blockquote>
 
-                  {/* Interactions Section */}
                   <div className="blog-interactions-section">
                     <div className="interactions-header">
                       <h3 className="highlight-text">How do you feel about this article?</h3>
@@ -838,7 +830,6 @@ const handleBrowseArticles = async (topic) => {
                             { type: "sad", icon: "😢", label: "Sad" },
                             { type: "unlike", icon: "👎", label: "Unlike" },
                           ].map(({ type, icon, label }) => {
-
                             const isActive = userInteraction === type
                             const isLoading = interactionLoading === type
                             const isDisabled = interactionLoading !== null
@@ -863,7 +854,6 @@ const handleBrowseArticles = async (topic) => {
                     </div>
                   </div>
 
-                  {/* Comments Section */}
                   <div className="comments-section">
                     <div className="comments-header">
                       <h3 className="highlight-text">Comments ({selectedBlog?.comments?.length || 0})</h3>
@@ -874,7 +864,6 @@ const handleBrowseArticles = async (topic) => {
 
                     {showComments && (
                       <div className="comments-container">
-                        {/* Add Comment Form */}
                         <div className="add-comment-form">
                           <textarea
                             value={newComment}
@@ -885,16 +874,15 @@ const handleBrowseArticles = async (topic) => {
                             disabled={commentLoading}
                           />
                           <button
-                            className={`submit-comment-btn ${commentLoading ? 'loading' : ''}`}
+                            className={`submit-comment-btn ${commentLoading ? "loading" : ""}`}
                             onClick={handleAddComment}
                             disabled={!newComment.trim() || commentLoading}
                           >
-                            {commentLoading ? 'Posting...' : 'Post Comment'}
+                            {commentLoading ? "Posting..." : "Post Comment"}
                           </button>
                         </div>
 
-                        {/* Comments List */}
-                         <div className="comments-list">
+                        <div className="comments-list">
                           {selectedBlog?.comments?.map((comment, commentIndex) => (
                             <div key={commentIndex} className="comment-item">
                               <div className="comment-content">
@@ -909,26 +897,29 @@ const handleBrowseArticles = async (topic) => {
                                 </div>
                                 <p className="comment-text">{comment.comment || "No comment text"}</p>
 
-                                {/* Updated Comment Interactions with actual counts */}
                                 <div className="comment-interactions">
                                   {[
-                                    { type: 'like', icon: '👍', label: 'Like' },
-                                    { type: 'unlike', icon: '👎', label: 'Unlike' },
-                                    { type: 'wow', icon: '😮', label: 'Wow' },
-                                    { type: 'exited', icon: '🎉', label: 'Excited' },
-                                    { type: 'sad', icon: '😢', label: 'Sad' }
+                                    { type: "like", icon: "👍", label: "Like" },
+                                    { type: "unlike", icon: "👎", label: "Unlike" },
+                                    { type: "wow", icon: "😮", label: "Wow" },
+                                    { type: "exited", icon: "🎉", label: "Excited" },
+                                    { type: "sad", icon: "😢", label: "Sad" },
                                   ].map(({ type, icon, label }) => {
                                     const count = comment.interactions?.[type]?.length || 0
                                     const userPhone = props.user?.contact?.phonenumber
-                                    const isActive = userPhone && comment.interactions?.[type]?.some(
-                                      interaction => interaction.phonenumber === userPhone
-                                    )
-                                    
+                                    const isActive =
+                                      userPhone &&
+                                      comment.interactions?.[type]?.some(
+                                        (interaction) => interaction.phonenumber === userPhone,
+                                      )
+
                                     return (
                                       <button
                                         key={type}
-                                        className={`comment-interaction-btn ${isActive ? 'active' : ''}`}
-                                        onClick={() => handleCommentInteraction && handleCommentInteraction(commentIndex, type)}
+                                        className={`comment-interaction-btn ${isActive ? "active" : ""}`}
+                                        onClick={() =>
+                                          handleCommentInteraction && handleCommentInteraction(commentIndex, type)
+                                        }
                                         title={`${label} this comment`}
                                       >
                                         <span>{icon}</span>
@@ -944,7 +935,6 @@ const handleBrowseArticles = async (topic) => {
                                   </button>
                                 </div>
 
-                                {/* Updated Reply Form with loading state */}
                                 {replyingTo === commentIndex && (
                                   <div className="reply-form">
                                     <textarea
@@ -957,11 +947,11 @@ const handleBrowseArticles = async (topic) => {
                                     />
                                     <div className="reply-actions">
                                       <button
-                                        className={`submit-reply-btn ${replyLoading === commentIndex ? 'loading' : ''}`}
+                                        className={`submit-reply-btn ${replyLoading === commentIndex ? "loading" : ""}`}
                                         onClick={() => handleAddReply(commentIndex)}
                                         disabled={!newReply.trim() || replyLoading === commentIndex}
                                       >
-                                        {replyLoading === commentIndex ? 'Posting...' : 'Post Reply'}
+                                        {replyLoading === commentIndex ? "Posting..." : "Post Reply"}
                                       </button>
                                       <button
                                         className="cancel-reply-btn"
@@ -977,7 +967,6 @@ const handleBrowseArticles = async (topic) => {
                                   </div>
                                 )}
 
-                                {/* Replies remain the same */}
                                 {comment.replies && comment.replies.length > 0 && (
                                   <div className="replies-container">
                                     {comment.replies.map((reply, replyIndex) => (
@@ -1033,7 +1022,6 @@ const handleBrowseArticles = async (topic) => {
         </div>
       )}
 
-      {/* Image Modal */}
       {showImageModal && (
         <div className="modal-overlay" onClick={closeImageModal}>
           <div className="modal-container" onClick={(e) => e.stopPropagation()}>
@@ -1047,7 +1035,6 @@ const handleBrowseArticles = async (topic) => {
         </div>
       )}
 
-      {/* Topic Modal */}
       {showTopicModal && selectedTopic && (
         <div className="modal-overlay topic-modal-overlay" onClick={closeTopicModal}>
           <div className="modal-container topic-modal-container" onClick={(e) => e.stopPropagation()}>
@@ -1072,19 +1059,351 @@ const handleBrowseArticles = async (topic) => {
                   <span className="stat-label">Average Rating</span>
                 </div>
               </div>
-              {/*
               <div className="topic-modal-actions">
-                <button 
-                  className={`topic-action-btn primary ${topicBrowseLoading ? 'loading' : ''}`}
-                  onClick={() => handleBrowseArticles(selectedTopic)}
+                <button
+                  className={`topic-action-btn primary ${topicBrowseLoading ? "loading" : ""}`}
+                  onClick={() => handleViewTopicArticles(selectedTopic)}
                   disabled={topicBrowseLoading}
                 >
-                  {topicBrowseLoading ? 'Loading...' : 'Browse Articles'}
+                  {topicBrowseLoading ? "Loading..." : "View All Articles"}
                   {!topicBrowseLoading && <span className="action-icon">→</span>}
                 </button>
                 <button className="topic-action-btn secondary">Subscribe to Topic</button>
               </div>
-              */}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTopicArticlesModal && (
+        <div className="modal-overlay topic-articles-modal-overlay" onClick={closeTopicArticlesModal}>
+          <div className="modal-container topic-articles-modal-container" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close-btn" onClick={closeTopicArticlesModal}>
+              ×
+            </button>
+            <div
+              className="modal-content topic-articles-modal-content"
+              style={{
+                maxHeight: "90vh",
+                overflowY: "auto",
+                display: "flex",
+                flexDirection: "column",
+                background: "linear-gradient(to bottom, #ffffff, #f9fafb)",
+              }}
+            >
+              <div
+                className="topic-articles-header"
+                style={{
+                  flexShrink: 0,
+                  marginBottom: "2rem",
+                  paddingBottom: "1.5rem",
+                  borderBottom: "2px solid #e5e7eb",
+                  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  padding: "2rem",
+                  borderRadius: "0.75rem 0.75rem 0 0",
+                  marginTop: "-1rem",
+                  marginLeft: "-1rem",
+                  marginRight: "-1rem",
+                }}
+              >
+                <h2
+                  className="topic-articles-title"
+                  style={{
+                    fontSize: "2rem",
+                    fontWeight: "700",
+                    marginBottom: "0.75rem",
+                    color: "#ffffff",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                    letterSpacing: "-0.025em",
+                  }}
+                >
+                  {selectedTopic?.name} Articles
+                </h2>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "1rem",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <p
+                    className="topic-articles-subtitle"
+                    style={{
+                      fontSize: "1rem",
+                      color: "#f3f4f6",
+                      margin: 0,
+                    }}
+                  >
+                    Explore all articles related to {selectedTopic?.name}
+                  </p>
+                  <span
+                    style={{
+                      backgroundColor: "rgba(255,255,255,0.2)",
+                      color: "#ffffff",
+                      padding: "0.375rem 0.875rem",
+                      borderRadius: "9999px",
+                      fontSize: "0.875rem",
+                      fontWeight: "600",
+                      backdropFilter: "blur(10px)",
+                    }}
+                  >
+                    {topicArticles.length} {topicArticles.length === 1 ? "Article" : "Articles"}
+                  </span>
+                </div>
+              </div>
+
+              {topicArticlesLoading ? (
+                <div
+                  className="topic-articles-loading"
+                  style={{
+                    padding: "4rem",
+                    textAlign: "center",
+                    color: "#6b7280",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "inline-block",
+                      width: "3rem",
+                      height: "3rem",
+                      border: "4px solid #e5e7eb",
+                      borderTopColor: "#667eea",
+                      borderRadius: "50%",
+                      animation: "spin 1s linear infinite",
+                    }}
+                  ></div>
+                  <p style={{ marginTop: "1rem", fontSize: "1.125rem", fontWeight: "500" }}>Loading articles...</p>
+                </div>
+              ) : topicArticles.length === 0 ? (
+                <div
+                  className="topic-articles-empty"
+                  style={{
+                    padding: "4rem",
+                    textAlign: "center",
+                    color: "#6b7280",
+                    backgroundColor: "#f9fafb",
+                    borderRadius: "0.75rem",
+                    margin: "1rem",
+                  }}
+                >
+                  <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>📭</div>
+                  <p style={{ fontSize: "1.125rem", fontWeight: "500", color: "#374151" }}>
+                    No articles found for this topic.
+                  </p>
+                  <p style={{ fontSize: "0.875rem", marginTop: "0.5rem" }}>Check back later for new content!</p>
+                </div>
+              ) : (
+                <div
+                  className="topic-articles-grid"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                    gap: "1.75rem",
+                    padding: "1rem",
+                  }}
+                >
+                  {topicArticles.map((article) => (
+                    <div
+                      key={article.id}
+                      className="topic-article-card"
+                      onClick={() => handleOpenBlogFromTopicModal(article)}
+                      style={{
+                        cursor: "pointer",
+                        borderRadius: "0.875rem",
+                        overflow: "hidden",
+                        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+                        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                        backgroundColor: "white",
+                        display: "flex",
+                        flexDirection: "column",
+                        height: "100%",
+                        border: "1px solid #e5e7eb",
+                        position: "relative",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = "translateY(-8px)"
+                        e.currentTarget.style.boxShadow =
+                          "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)"
+                        e.currentTarget.style.borderColor = "#667eea"
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = "translateY(0)"
+                        e.currentTarget.style.boxShadow =
+                          "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)"
+                        e.currentTarget.style.borderColor = "#e5e7eb"
+                      }}
+                    >
+                      <div
+                        className="topic-article-image-container"
+                        style={{
+                          position: "relative",
+                          width: "100%",
+                          height: "220px",
+                          overflow: "hidden",
+                        }}
+                      >
+                        <img
+                          src={article.image || "/placeholder.svg"}
+                          alt={article.title}
+                          className="topic-article-image"
+                          style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "cover",
+                            transition: "transform 0.3s ease",
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openImageModal(article.image)
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "scale(1.05)"
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "scale(1)"
+                          }}
+                        />
+                        <div
+                          className="image-overlay"
+                          style={{
+                            position: "absolute",
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            bottom: 0,
+                            background: "linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.3))",
+                          }}
+                        ></div>
+                        <div
+                          style={{
+                            position: "absolute",
+                            top: "1rem",
+                            right: "1rem",
+                            backgroundColor: "rgba(255,255,255,0.95)",
+                            padding: "0.375rem 0.75rem",
+                            borderRadius: "9999px",
+                            fontSize: "0.75rem",
+                            fontWeight: "600",
+                            color: "#667eea",
+                            backdropFilter: "blur(10px)",
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          }}
+                        >
+                          {article.data || "Article"}
+                        </div>
+                      </div>
+                      <div
+                        className="topic-article-content"
+                        style={{
+                          padding: "1.5rem",
+                          display: "flex",
+                          flexDirection: "column",
+                          flexGrow: 1,
+                          gap: "0.75rem",
+                        }}
+                      >
+                        <div
+                          className="topic-article-date"
+                          style={{
+                            fontSize: "0.8125rem",
+                            color: "#9ca3af",
+                            fontWeight: "500",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "0.375rem",
+                          }}
+                        >
+                          <span style={{ fontSize: "1rem" }}>📅</span>
+                          <p style={{ margin: 0 }}>{article.date}</p>
+                        </div>
+                        <h3
+                          className="topic-article-title"
+                          style={{
+                            fontSize: "1.25rem",
+                            fontWeight: "700",
+                            color: "#1f2937",
+                            lineHeight: "1.4",
+                            marginBottom: "0.5rem",
+                            wordWrap: "break-word",
+                            hyphens: "auto",
+                          }}
+                        >
+                          {article.title}
+                        </h3>
+                        <p
+                          className="topic-article-description"
+                          style={{
+                            fontSize: "0.9375rem",
+                            color: "#6b7280",
+                            lineHeight: "1.6",
+                            flexGrow: 1,
+                            display: "-webkit-box",
+                            WebkitLineClamp: 3,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                        >
+                          {article.description}
+                        </p>
+                        <div
+                          className="topic-article-footer"
+                          style={{
+                            marginTop: "auto",
+                            paddingTop: "1rem",
+                            borderTop: "1px solid #f3f4f6",
+                          }}
+                        >
+                          <button
+                            className="topic-article-btn"
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.5rem",
+                              color: "#667eea",
+                              fontSize: "0.9375rem",
+                              fontWeight: "600",
+                              background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                              WebkitBackgroundClip: "text",
+                              WebkitTextFillColor: "transparent",
+                              backgroundClip: "text",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "0.5rem 0",
+                              transition: "all 0.2s ease",
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.gap = "0.75rem"
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.gap = "0.5rem"
+                            }}
+                          >
+                            <span>Read More</span>
+                            <span
+                              className="more-icon"
+                              style={{
+                                display: "inline-flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                width: "1.5rem",
+                                height: "1.5rem",
+                                borderRadius: "50%",
+                                backgroundColor: "#667eea",
+                                color: "white",
+                                fontSize: "0.875rem",
+                                transition: "transform 0.2s ease",
+                              }}
+                            >
+                              →
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -1092,3 +1411,5 @@ const handleBrowseArticles = async (topic) => {
     </div>
   )
 }
+
+
