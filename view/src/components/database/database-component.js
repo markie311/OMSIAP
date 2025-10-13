@@ -2662,6 +2662,7 @@ const StatisticsCardOperationBasis = ({
   return (
     <div className="statistics-container">
       <h1 className="dashboard-title">Operation Basis</h1>
+      
       <div className="statistics-grid">
 
         {/* TOTAL ORDERS */}
