@@ -288,229 +288,252 @@ const LoginAndRegistrationPage = (props) => {
 
 const handleRegistration = async (e) => {
   
-    e.preventDefault();
-    registerbuttonloadingindicationcb(true);
+  e.preventDefault();
+  registerbuttonloadingindicationcb(true);
   
-    const validationErrors = validateForm();
+  const validationErrors = validateForm();
    
-    if (Object.keys(validationErrors).length === 0) {
-      try {
-        
-        const _registeringdate = timestamp.getFormattedDate();
-        
-        // Convert image to base64 for storage
-        const convertImageToBase64 = (file) => {
-          return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = reject;
-            reader.readAsDataURL(file);
-          });
-        };
-        
-        const birthCertificateBase64 = await convertImageToBase64(formData.birthCertificatePhoto);
-  
-        const _registrant = { 
-          id: `1000-0000-A-1`, // This will be replaced on the server
-          registrationstatusesandlogs: {
-            type: "Month Financial Allocation To Individual People ( MFATIP )",
-            indication: "unverified",
-            deviceloginstatus: "logged out",
-            registrationlog: []
-          },
-          name: {
-            firstname: "",
-            middlename: "",
-            lastname: "",
-            nickname:  ""
-          },
-          contact: {
-            phonenumber: formData.phoneNumber,
-            telephonenumber: "",
-            emailaddress: formData.email || "",
-            address: {
-              street: "",
-              baranggay: "",
-              trademark: "",
-              city: "",
-              province: "",
-              country: ""
-            }
-          },
-          personaldata: {
-            age: "",
-            sex: "",
-            bloodtype: "",
-            height: "",
-            weight: "",
-            deviceprofilepicture: "",
-            dob: "",
-            citizenship: "",
-            civil_status: "",
-            birthcertificate: {
-              frontphoto: {
-                name: formData.birthCertificatePhoto.name,
-                description: "Front photo of birth certificate",
-                // image: birthCertificateBase64,
-                image: '../images/registraion/imagename.jpg',
-                uploaddate: _registeringdate
-              },
-              backphoto: {
-                name: "",
-                description: "",
-                image: "",
-                uploaddate: ""
-              },
-              birthcertificatereferencenumber: formData.bRenNumber
+  if (Object.keys(validationErrors).length === 0) {
+    try {
+      const _registeringdate = timestamp.getFormattedDate();
+      
+      // 🔍 DEBUG: Log what we're sending
+      console.log("=== REGISTRATION DEBUG INFO ===");
+      console.log("Image file:", formData.birthCertificatePhoto);
+      console.log("Image file name:", formData.birthCertificatePhoto?.name);
+      console.log("Image file size:", formData.birthCertificatePhoto?.size, "bytes");
+      console.log("Image file type:", formData.birthCertificatePhoto?.type);
+      console.log("bRen number:", formData.bRenNumber);
+      console.log("Phone number:", formData.phoneNumber);
+
+      // ✅ Create FormData object for multipart/form-data upload
+      const formDataToSend = new FormData();
+      
+      // Add the birth certificate image file
+      formDataToSend.append('birthcertificate_front', formData.birthCertificatePhoto);
+      
+      // Add the registrant data as JSON string
+      const registrantData = {
+        id: `1000-0000-A-1`, // This will be replaced on the server
+        registrationstatusesandlogs: {
+          type: "Month Financial Allocation To Individual People ( MFATIP )",
+          indication: "unverified",
+          deviceloginstatus: "logged out",
+          registrationlog: []
+        },
+        name: {
+          firstname: "",
+          middlename: "",
+          lastname: "",
+          nickname: ""
+        },
+        contact: {
+          phonenumber: formData.phoneNumber,
+          telephonenumber: "",
+          emailaddress: formData.email || "",
+          address: {
+            street: "",
+            baranggay: "",
+            trademark: "",
+            city: "",
+            province: "",
+            country: ""
+          }
+        },
+        personaldata: {
+          age: "",
+          sex: "",
+          bloodtype: "",
+          height: "",
+          weight: "",
+          deviceprofilepicture: "",
+          dob: "",
+          citizenship: "",
+          civil_status: "",
+          birthcertificate: {
+            frontphoto: {
+              name: formData.birthCertificatePhoto.name,
+              description: "Front photo of birth certificate",
+              uploaddate: _registeringdate
             },
-            government_issued_identification: {
-              frontphoto: {
-                name: "",
-                description: "",
-                image: "",
-                uploaddate: ""
-              },
-              backphoto: {
-                name: "",
-                description: "",
-                image: "",
-                uploaddate: ""
-              }
-            }
+            backphoto: {
+              name: "",
+              description: "",
+              image: "",
+              uploaddate: ""
+            },
+            birthcertificatereferencenumber: formData.bRenNumber
           },
-          passwords: {
-            account: {
-              password: formData.confirmPassword
+          government_issued_identification: {
+            frontphoto: {
+              name: "",
+              description: "",
+              image: "",
+              uploaddate: ""
+            },
+            backphoto: {
+              name: "",
+              description: "",
+              image: "",
+              uploaddate: ""
             }
-          },
-          credits: {
-            omsiapawas: {
-              id: `${generateInt32StringsDataType(16)}-A-1`,
-              amount: 0,
-              transactions: {
-                currencyexchange: [],
-                widthdrawals: [],
-                omsiapawastransfer: []
-              }
-            }
-          },
-          transactions: {
-            merchandise: []
           }
-        };
-  
-        const response = await axiosCreatedInstance.post("/people/registration", {
-          $registrant: _registrant
-        });
-  
-        const _responsemessage = response.data.message;
-        
-        // Always show the results section first
-        document.querySelector('#registration-results').style.display = "block";
-        
-        switch(_responsemessage) {
-          case "Registrant registered":
-            registrationresponsemessagetextcolorindicationcb("green");
-            registrationresponsemessagecb({
-              status: "Successfully REGISTERED",
-              indication: "Your account has been created successfully with your birth certificate and bRen number",
-              bulletpoint1: "Your birth certificate photo has been securely uploaded",
-              bulletpoint2: "Your Birth Reference Number (bRen) has been recorded",
-              advice: "You can log in to your account using firstname, middlename and lastname in your birthcertificate information accordingly after recieving a text message on the phone number you provided."
-            });
-            break;
-            
-          case "Duplicate bRen number":
-            registrationresponsemessagetextcolorindicationcb("red");
-            registrationresponsemessagecb({
-              status: "Birth Certificate Already Registered",
-              indication: "This Birth Reference Number (bRen) is already registered in our system",
-              bulletpoint1: "Each Birth Reference Number can only be used once for registration",
-              bulletpoint2: "This prevents duplicate accounts and ensures program integrity",
-              advice: "Please verify your bRen number is correct, or contact support if you believe this is an error"
-            });
-            break;
-            
-          case "OMSIAP_USER_LIMIT_REACHED":
-            registrationresponsemessagetextcolorindicationcb("blue");
-            registrationresponsemessagecb({
-              status: "OMSIAP First 1000 Users Milestone Reached",
-              indication: "Congratulations! You're among the first to witness this momentous occasion.",
-              bulletpoint1: "OMSIAP has successfully reached its initial user capacity of 1000 registrants",
-              bulletpoint2: "Accommodation and verification process will be initiated soon",
-              advice: "Stay tuned! We'll be expanding our user base and processing registrations in phases. Your interest is valuable to us."
-            });
-            break;
-            
-          default:
-            // Handle any unexpected response messages
-            registrationresponsemessagetextcolorindicationcb("orange");
-            registrationresponsemessagecb({
-              status: "Unexpected Response",
-              indication: `Server returned: ${_responsemessage}`,
-              bulletpoint1: "An unexpected response was received from the server",
-              bulletpoint2: "Please try again or contact support if the issue persists",
-              advice: "Take a screenshot of this message and contact technical support"
-            });
-            break;
-        }
-  
-        registerbuttonloadingindicationcb(false);
-  
-      } catch (error) {
-        console.error("Registration error:", error);
-        
-        // Always show the results section for errors too
-        document.querySelector("#registration-results").style.display = "block";
-        
-        let errorMessage = "Connection to server failed";
-        let errorDetails = {
-          status: "Registration Failed",
-          indication: "Unable to connect to the registration server",
-          bulletpoint1: "Check your internet connection",
-          bulletpoint2: "Verify server status",
-          advice: "If the problem persists, please contact support"
-        };
-        
-        // Handle specific error responses
-        if (error.response?.data?.message) {
-          errorMessage = error.response.data.message;
-          
-          // Handle specific server error messages
-          if (errorMessage.includes("Duplicate bRen number")) {
-            errorDetails = {
-              status: "Birth Certificate Already Registered",
-              indication: "This Birth Reference Number (bRen) is already registered in our system",
-              bulletpoint1: "Each Birth Reference Number can only be used once for registration",
-              bulletpoint2: "This prevents duplicate accounts and ensures program integrity",
-              advice: "Please verify your bRen number is correct, or contact support if you believe this is an error"
-            };
-          } else if (errorMessage.includes("OMSIAP_USER_LIMIT_REACHED")) {
-            errorDetails = {
-              status: "OMSIAP First 1000 Users Milestone Reached",
-              indication: "Congratulations! You're among the first to witness this momentous occasion.",
-              bulletpoint1: "OMSIAP has successfully reached its initial user capacity of 1000 registrants",
-              bulletpoint2: "Accommodation and verification process will be initiated soon",
-              advice: "Stay tuned! We'll be expanding our user base and processing registrations in phases. Your interest is valuable to us."
-            };
-            registrationresponsemessagetextcolorindicationcb("blue");
-          } else {
-            errorDetails.indication = errorMessage;
+        },
+        passwords: {
+          account: {
+            password: formData.confirmPassword
           }
+        },
+        credits: {
+          omsiapawas: {
+            id: `${generateInt32StringsDataType(16)}-A-1`,
+            amount: 0,
+            transactions: {
+              currencyexchange: [],
+              widthdrawals: [],
+              omsiapawastransfer: []
+            }
+          }
+        },
+        transactions: {
+          merchandise: []
         }
-        
-        // Set color based on error type
-        if (!errorMessage.includes("OMSIAP_USER_LIMIT_REACHED")) {
-          registrationresponsemessagetextcolorindicationcb("red");
+      };
+      
+      // Add registrant data as a JSON field
+      formDataToSend.append('registrantData', JSON.stringify(registrantData));
+      
+      // 🔍 DEBUG: Log FormData contents
+      console.log("FormData entries:");
+      for (let pair of formDataToSend.entries()) {
+        if (pair[1] instanceof File) {
+          console.log(`  ${pair[0]}:`, pair[1].name, pair[1].size, 'bytes');
+        } else {
+          console.log(`  ${pair[0]}:`, pair[1].substring(0, 100) + '...');
         }
-        
-        registrationresponsemessagecb(errorDetails);
-        registerbuttonloadingindicationcb(false);
       }
-    } else {
-      setErrors(validationErrors);
+
+      // Make the request with FormData (axios will automatically set Content-Type to multipart/form-data)
+      const response = await axiosCreatedInstance.post("/people/registration", formDataToSend, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      const _responsemessage = response.data.message;
+      
+      // 🔍 DEBUG: Log server response
+      console.log("Server response:", _responsemessage);
+      console.log("=== END DEBUG INFO ===");
+      
+      // Always show the results section first
+      document.querySelector('#registration-results').style.display = "block";
+      
+      switch(_responsemessage) {
+        case "Registrant registered":
+          registrationresponsemessagetextcolorindicationcb("green");
+          registrationresponsemessagecb({
+            status: "Successfully REGISTERED",
+            indication: "Your account has been created successfully with your birth certificate and bRen number",
+            bulletpoint1: "Your birth certificate photo has been securely uploaded",
+            bulletpoint2: "Your Birth Reference Number (bRen) has been recorded",
+            advice: "You can log in to your account using firstname, middlename and lastname in your birthcertificate information accordingly after recieving a text message on the phone number you provided."
+          });
+          break;
+          
+        case "Duplicate bRen number":
+          registrationresponsemessagetextcolorindicationcb("red");
+          registrationresponsemessagecb({
+            status: "Birth Certificate Already Registered",
+            indication: "This Birth Reference Number (bRen) is already registered in our system",
+            bulletpoint1: "Each Birth Reference Number can only be used once for registration",
+            bulletpoint2: "This prevents duplicate accounts and ensures program integrity",
+            advice: "Please verify your bRen number is correct, or contact support if you believe this is an error"
+          });
+          break;
+          
+        case "OMSIAP_USER_LIMIT_REACHED":
+          registrationresponsemessagetextcolorindicationcb("blue");
+          registrationresponsemessagecb({
+            status: "OMSIAP First 1000 Users Milestone Reached",
+            indication: "Congratulations! You're among the first to witness this momentous occasion.",
+            bulletpoint1: "OMSIAP has successfully reached its initial user capacity of 1000 registrants",
+            bulletpoint2: "Accommodation and verification process will be initiated soon",
+            advice: "Stay tuned! We'll be expanding our user base and processing registrations in phases. Your interest is valuable to us."
+          });
+          break;
+          
+        default:
+          registrationresponsemessagetextcolorindicationcb("orange");
+          registrationresponsemessagecb({
+            status: "Unexpected Response",
+            indication: `Server returned: ${_responsemessage}`,
+            bulletpoint1: "An unexpected response was received from the server",
+            bulletpoint2: "Please try again or contact support if the issue persists",
+            advice: "Take a screenshot of this message and contact technical support"
+          });
+          break;
+      }
+
+      registerbuttonloadingindicationcb(false);
+
+    } catch (error) {
+      console.error("Registration error:", error);
+      console.error("Error details:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
+      
+      // Always show the results section for errors too
+      document.querySelector("#registration-results").style.display = "block";
+      
+      let errorMessage = "Connection to server failed";
+      let errorDetails = {
+        status: "Registration Failed",
+        indication: "Unable to connect to the registration server",
+        bulletpoint1: "Check your internet connection",
+        bulletpoint2: "Verify server status",
+        advice: "If the problem persists, please contact support"
+      };
+      
+      // Handle specific error responses
+      if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+        
+        if (errorMessage.includes("Duplicate bRen number")) {
+          errorDetails = {
+            status: "Birth Certificate Already Registered",
+            indication: "This Birth Reference Number (bRen) is already registered in our system",
+            bulletpoint1: "Each Birth Reference Number can only be used once for registration",
+            bulletpoint2: "This prevents duplicate accounts and ensures program integrity",
+            advice: "Please verify your bRen number is correct, or contact support if you believe this is an error"
+          };
+        } else if (errorMessage.includes("OMSIAP_USER_LIMIT_REACHED")) {
+          errorDetails = {
+            status: "OMSIAP First 1000 Users Milestone Reached",
+            indication: "Congratulations! You're among the first to witness this momentous occasion.",
+            bulletpoint1: "OMSIAP has successfully reached its initial user capacity of 1000 registrants",
+            bulletpoint2: "Accommodation and verification process will be initiated soon",
+            advice: "Stay tuned! We'll be expanding our user base and processing registrations in phases. Your interest is valuable to us."
+          };
+          registrationresponsemessagetextcolorindicationcb("blue");
+        } else {
+          errorDetails.indication = errorMessage;
+        }
+      }
+      
+      if (!errorMessage.includes("OMSIAP_USER_LIMIT_REACHED")) {
+        registrationresponsemessagetextcolorindicationcb("red");
+      }
+      
+      registrationresponsemessagecb(errorDetails);
       registerbuttonloadingindicationcb(false);
     }
+  } else {
+    setErrors(validationErrors);
+    registerbuttonloadingindicationcb(false);
+  }
 };
 
   // Utility function (mocked)

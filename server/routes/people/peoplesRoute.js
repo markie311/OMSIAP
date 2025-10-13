@@ -44,9 +44,45 @@ const uploadFields = upload.fields([
 ]);
 
 
-Router.route("/registration").post(async (req, res) => {
+Router.route("/registration").post(uploadFields, async (req, res) => {
 
   try {
+
+    // 🔍 DEBUG: Log incoming request
+    console.log("\n=== BACKEND REGISTRATION DEBUG ===");
+    console.log("Request received at:", new Date().toISOString());
+    console.log("Request body keys:", Object.keys(req.body));
+    console.log("Request files:", req.files ? Object.keys(req.files) : 'No files');
+    
+    // Log file details
+    if (req.files) {
+      Object.keys(req.files).forEach(fieldName => {
+        const files = req.files[fieldName];
+        files.forEach(file => {
+          console.log(`File ${fieldName}:`, {
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            bufferSize: file.buffer.length
+          });
+        });
+      });
+    }
+    
+    // ✅ Parse the registrant data from JSON string sent by frontend
+    let registrantData;
+    try {
+      registrantData = JSON.parse(req.body.registrantData);
+      console.log("✅ Registrant data parsed successfully");
+      console.log("bRen number:", registrantData.personaldata?.birthcertificate?.birthcertificatereferencenumber);
+      console.log("Phone number:", registrantData.contact?.phonenumber);
+    } catch (parseError) {
+      console.error("❌ Error parsing registrant data:", parseError);
+      return res.status(400).send({
+        message: "Invalid registrant data format"
+      });
+    }
+
     // Generate next sequential ID for registrant
     const generateNextRegistrantId = async () => {
       const registrantCount = await RegistrantDataModel.countDocuments();
@@ -80,53 +116,71 @@ Router.route("/registration").post(async (req, res) => {
       return `OMSAW-${year}${month}${day}-${sequentialNum}`;
     };
 
-    // Function to save base64 image to file
-    const saveBase64Image = (base64String, registrantId, imageType) => {
+    // ✅ Function to save image buffer to file (using multer buffer instead of base64 string)
+    const saveImageBufferToFile = (buffer, registrantId, imageType, mimetype) => {
       try {
-        // Remove the data URL prefix (data:image/jpeg;base64,)
-        const base64Data = base64String.replace(/^data:image\/[a-z]+;base64,/, '');
+        console.log("\n🔍 Saving image buffer to file...");
+        console.log("Registrant ID:", registrantId);
+        console.log("Image type:", imageType);
+        console.log("Buffer length:", buffer.length);
+        console.log("Mimetype:", mimetype);
         
         // Create filename with registrant ID and timestamp
         const timestamp = Date.now();
-        const filename = `${registrantId}_${imageType}_${timestamp}.jpg`;
+        
+        // Get file extension from mimetype
+        const extension = mimetype.split('/')[1] || 'jpg';
+        const filename = `${registrantId}_${imageType}_${timestamp}.${extension}`;
         
         // Create the full path to save the image
         const imagePath = path.join(__dirname, '../../../view/public/images/registration', filename);
         
+        console.log("Full path:", imagePath);
+        
         // Ensure the directory exists
         const dir = path.dirname(imagePath);
         if (!fs.existsSync(dir)) {
+          console.log("Creating directory:", dir);
           fs.mkdirSync(dir, { recursive: true });
         }
         
-        // Save the image
-        fs.writeFileSync(imagePath, base64Data, 'base64');
+        // ✅ Save the buffer directly as a file
+        fs.writeFileSync(imagePath, buffer);
+        
+        console.log("✅ Image saved successfully!");
         
         // Return the relative path to store in database
         return `../images/registration/${filename}`;
       } catch (error) {
-        console.error('Error saving image:', error);
-        throw new Error('Failed to save image');
+        console.error('❌ Error saving image:', error);
+        throw new Error('Failed to save image: ' + error.message);
       }
     };
 
     // Check for duplicate birth certificate reference number
-    const bRenNumber = req.body.$registrant.personaldata.birthcertificate.birthcertificatereferencenumber;
+    const bRenNumber = registrantData.personaldata.birthcertificate.birthcertificatereferencenumber;
+    
+    console.log("\n🔍 Checking for duplicate bRen number:", bRenNumber);
     
     const existingRegistrantWithBRen = await RegistrantDataModel.findOne({
       'personaldata.birthcertificate.birthcertificatereferencenumber': bRenNumber
     });
 
     if (existingRegistrantWithBRen) {
+      console.log("❌ Duplicate bRen number found!");
       return res.status(200).send({
         message: "Duplicate bRen number"
       });
     }
+    
+    console.log("✅ No duplicate bRen number found");
 
     // Generate ID and check user limit
     const registrantId = await generateNextRegistrantId();
+    console.log("Generated registrant ID:", registrantId);
     
     if (registrantId === null) {
+      console.log("❌ User limit reached!");
       return res.status(200).send({
         message: "OMSIAP_USER_LIMIT_REACHED",
         details: {
@@ -138,33 +192,102 @@ Router.route("/registration").post(async (req, res) => {
 
     // Generate omsiapawas credit ID
     const omsiapawasId = await generateOmsiapawasId();
+    console.log("Generated OMSAW ID:", omsiapawasId);
     
-    const _hashedpassword = await bcrypt.hash(req.body.$registrant.passwords.account.password, 13);
+    const _hashedpassword = await bcrypt.hash(registrantData.passwords.account.password, 13);
     const _registeringdate = timestamps.getFormattedDate();
     
-    // Save the birth certificate image as a file and get the path
+    // ✅ Save the birth certificate image as a file and get the path
     let birthCertificateImagePath = "";
-    if (req.body.$registrant.personaldata.birthcertificate.frontphoto.image) {
-      birthCertificateImagePath = saveBase64Image(
-        req.body.$registrant.personaldata.birthcertificate.frontphoto.image,
+    if (req.files && req.files.birthcertificate_front && req.files.birthcertificate_front[0]) {
+      const file = req.files.birthcertificate_front[0];
+      console.log("\n🔍 Processing birth certificate front image...");
+      
+      birthCertificateImagePath = saveImageBufferToFile(
+        file.buffer,
         registrantId,
-        'birthcert_front'
+        'birthcert_front',
+        file.mimetype
       );
+      
+      console.log("Birth certificate image path:", birthCertificateImagePath);
+    } else {
+      console.log("⚠️ No birth certificate front image found in request!");
     }
     
-    // Set the IDs and update the image path
-    req.body.$registrant.id = registrantId;
-    req.body.$registrant.credits = req.body.$registrant.credits || {};
-    req.body.$registrant.credits.omsiapawas = req.body.$registrant.credits.omsiapawas || {};
-    req.body.$registrant.credits.omsiapawas.id = omsiapawasId;
-    req.body.$registrant.credits.omsiapawas.amount = 0;
-    req.body.$registrant.registrationstatusesandlogs.indication = "unverified";
+    // ✅ Process birth certificate back image if uploaded
+    let birthCertificateBackImagePath = "";
+    if (req.files && req.files.birthcertificate_back && req.files.birthcertificate_back[0]) {
+      const file = req.files.birthcertificate_back[0];
+      console.log("\n🔍 Processing birth certificate back image...");
+      
+      birthCertificateBackImagePath = saveImageBufferToFile(
+        file.buffer,
+        registrantId,
+        'birthcert_back',
+        file.mimetype
+      );
+      
+      console.log("Birth certificate back image path:", birthCertificateBackImagePath);
+    }
     
-    // Update the birth certificate image field to store the file path instead of base64
-    req.body.$registrant.personaldata.birthcertificate.frontphoto.image = birthCertificateImagePath;
+    // ✅ Process government ID front image if uploaded
+    let govIdFrontImagePath = "";
+    if (req.files && req.files.governmentid_front && req.files.governmentid_front[0]) {
+      const file = req.files.governmentid_front[0];
+      console.log("\n🔍 Processing government ID front image...");
+      
+      govIdFrontImagePath = saveImageBufferToFile(
+        file.buffer,
+        registrantId,
+        'govid_front',
+        file.mimetype
+      );
+      
+      console.log("Government ID front image path:", govIdFrontImagePath);
+    }
     
-    // Create registration detail with proper structure
-    req.body.$registrant.registrationstatusesandlogs.registrationlog.push({
+    // ✅ Process government ID back image if uploaded
+    let govIdBackImagePath = "";
+    if (req.files && req.files.governmentid_back && req.files.governmentid_back[0]) {
+      const file = req.files.governmentid_back[0];
+      console.log("\n🔍 Processing government ID back image...");
+      
+      govIdBackImagePath = saveImageBufferToFile(
+        file.buffer,
+        registrantId,
+        'govid_back',
+        file.mimetype
+      );
+      
+      console.log("Government ID back image path:", govIdBackImagePath);
+    }
+    
+    // Set the IDs
+    registrantData.id = registrantId;
+    registrantData.credits = registrantData.credits || {};
+    registrantData.credits.omsiapawas = registrantData.credits.omsiapawas || {};
+    registrantData.credits.omsiapawas.id = omsiapawasId;
+    registrantData.credits.omsiapawas.amount = 0;
+    registrantData.registrationstatusesandlogs.indication = "unverified";
+    
+    // ✅ Update the image fields to store the file paths instead of base64
+    registrantData.personaldata.birthcertificate.frontphoto.image = birthCertificateImagePath;
+    
+    if (birthCertificateBackImagePath) {
+      registrantData.personaldata.birthcertificate.backphoto.image = birthCertificateBackImagePath;
+    }
+    
+    if (govIdFrontImagePath) {
+      registrantData.personaldata.government_issued_identification.frontphoto.image = govIdFrontImagePath;
+    }
+    
+    if (govIdBackImagePath) {
+      registrantData.personaldata.government_issued_identification.backphoto.image = govIdBackImagePath;
+    }
+    
+    // Create registration log entry
+    registrantData.registrationstatusesandlogs.registrationlog.push({
       date: _registeringdate,
       type: "Registration",
       indication: "First Registration",
@@ -174,26 +297,41 @@ Router.route("/registration").post(async (req, res) => {
       ]
     });
 
-    req.body.$registrant.passwords.account.password = _hashedpassword;
+    // Set hashed password
+    registrantData.passwords.account.password = _hashedpassword;
     
-    // Create a new document using the imported model
-    const newRegistrant = new RegistrantDataModel(req.body.$registrant);
+    console.log("\n🔍 Creating new registrant document...");
+    
+    // ✅ Create and save the new registrant to MongoDB
+    const newRegistrant = new RegistrantDataModel(registrantData);
     await newRegistrant.save();
     
-    console.log(`Registrant registered with ID: ${req.body.$registrant.id}, OMSAW ID: ${omsiapawasId}, bRen: ${bRenNumber}`);
-    console.log(`Birth certificate image saved to: ${birthCertificateImagePath}`);
+    console.log(`✅ Registrant registered with ID: ${registrantData.id}, OMSAW ID: ${omsiapawasId}, bRen: ${bRenNumber}`);
+    console.log(`✅ Birth certificate image saved to: ${birthCertificateImagePath}`);
+    console.log("=== END BACKEND DEBUG ===\n");
 
     res.status(200).send({
       message: "Registrant registered"
     });
 
   } catch (err) {
-    console.error(`Registration error: ${err}`);
+
+    console.error("❌ Registration error:", err);
+    console.error("Error stack:", err.stack);
+    console.log("=== END BACKEND DEBUG (ERROR) ===\n");
 
     // Specific error handling
     if (err.message === "Maximum registrant limit reached") {
       return res.status(400).send({
         message: "Registration limit reached. Cannot add more registrants.",
+        error: true
+      });
+    }
+
+    // Handle multer errors
+    if (err.message === "Only image files are allowed!") {
+      return res.status(400).send({
+        message: "Only image files are allowed for upload",
         error: true
       });
     }
