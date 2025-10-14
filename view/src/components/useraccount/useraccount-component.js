@@ -1,8 +1,10 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 
-import { Spinner } from "react-bootstrap"
+import { Spinner, Modal, Button, Form } from "react-bootstrap"
+
+import { motion, AnimatePresence } from "framer-motion"
 
 import {
   FaMoneyBillWave,
@@ -22,6 +24,122 @@ import { useNavigate } from "react-router-dom"
 import axiosCreatedInstance from "../lib/axiosutil.js"
 
 const UserAccount = (props) => {
+
+  /// transactions tab 
+ 
+     const [allTransactions, setAllTransactions] = useState([]);
+  const [filteredTransactions, setFilteredTransactions] = useState([]);
+  const [selectedMonth, setSelectedMonth] = useState("all");
+  const [selectedYear, setSelectedYear] = useState("all");
+  const [selectedTransactions, setSelectedTransactions] = useState([]);
+  const [showDeleteMode, setShowDeleteMode] = useState(false);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ✅ Fetch Transactions
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await axiosCreatedInstance.get("/transactions");
+        const data = response.data || [];
+        setAllTransactions(data);
+        setFilteredTransactions(data);
+      } catch (error) {
+        console.error("Error fetching transactions:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchTransactions();
+  }, []);
+
+useEffect(() => {
+  if (selectedMonth === "all" && selectedYear === "all") {
+    setFilteredTransactions(allTransactions);
+    return;
+  }
+
+  const filtered = allTransactions.filter((transaction) => {
+    if (!transaction.date || typeof transaction.date !== "string") return false;
+
+    // 🧹 Clean up the date string so JS can parse it
+    let cleanDateStr = transaction.date
+      .replace(/at/i, "")     // remove "at"
+      .replace(/\./g, "")     // remove dots like "Fri."
+      .trim();
+
+    let date = new Date(cleanDateStr);
+
+    // 🩹 Fallback: if still invalid, try removing weekday words manually
+    if (isNaN(date)) {
+      const parts = cleanDateStr.split(" ");
+      // e.g., ["Friday", "October", "10,", "2025", "6:51", "PM"]
+      const monthIndex = parts.findIndex((p) =>
+        /^[A-Za-z]+$/.test(p) && new Date(`${p} 1, 2000`).toString() !== "Invalid Date"
+      );
+      if (monthIndex > -1) {
+        const sliced = parts.slice(monthIndex).join(" ");
+        date = new Date(sliced);
+      }
+    }
+
+    if (isNaN(date)) return false;
+
+    const month = date.getMonth() + 1;
+    const year = date.getFullYear();
+
+    const matchesMonth =
+      selectedMonth === "all" || month === parseInt(selectedMonth);
+    const matchesYear =
+      selectedYear === "all" || year === parseInt(selectedYear);
+
+    return matchesMonth && matchesYear;
+  });
+
+  setFilteredTransactions(filtered);
+}, [selectedMonth, selectedYear, allTransactions]);
+
+  // ✅ Checkbox Logic
+  const toggleSelectTransaction = (id) => {
+    setSelectedTransactions((prev) =>
+      prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedTransactions.length === filteredTransactions.length) {
+      setSelectedTransactions([]);
+    } else {
+      setSelectedTransactions(filteredTransactions.map((t) => t.id));
+    }
+  };
+
+  // ✅ Handle Delete
+  const handleDeleteSelected = () => setShowConfirmModal(true);
+
+  const confirmDeleteTransactions = async () => {
+    try {
+      await axiosCreatedInstance.post("/transactions/delete", {
+        transactionIds: selectedTransactions,
+      });
+
+      const remaining = allTransactions.filter(
+        (t) => !selectedTransactions.includes(t.id)
+      );
+
+      setAllTransactions(remaining);
+      setFilteredTransactions(remaining);
+      setSelectedTransactions([]);
+      setShowDeleteMode(false);
+      setShowConfirmModal(false);
+    } catch (error) {
+      console.error("Error deleting transactions:", error);
+    }
+  };
+
+  /// end of transaction tab
+
+
   const navigate = useNavigate()
 
   const [user, setUser] = useState({
@@ -41,8 +159,8 @@ const UserAccount = (props) => {
   })
 
   // State for all transactions from different sources
-  const [allTransactions, setAllTransactions] = useState([])
-  const [isLoading, setIsLoading] = useState(false)
+ // const [allTransactions, setAllTransactions] = useState([])
+ // const [isLoading, setIsLoading] = useState(false)
 
   // Original transactions state (keeping for backward compatibility)
   const [transactions, setTransactions] = useState([
@@ -298,10 +416,7 @@ const UserAccount = (props) => {
     }
   }
 
-  const openTransactionModal = (transaction) => {
-    setSelectedTransaction(transaction)
-    setIsModalOpen(true)
-  }
+ 
 
   const closeTransactionModal = () => {
     setIsModalOpen(false)
@@ -2552,81 +2667,153 @@ const handleOmsiapawasTransferSubmit = async (e) => {
         )}
 
         {/* Transactions Tab */}
+
         {activeTab === "transactions" && (
-          <div className="userdashboard-transactions-panel">
-            <section className="userdashboard-transactions-section">
-              <h2>Recent Transactions</h2>
+    
+  <div className="userdashboard-transactions-panel">
+      <section className="userdashboard-transactions-section">
+        {/* Header and Filters */}
+        <div className="userdashboard-header">
+          <h2>Recent Transactions</h2>
+          <div className="userdashboard-controls">
+            <select
+              className="userdashboard-filter"
+              value={selectedMonth}
+              onChange={(e) => setSelectedMonth(e.target.value)}
+            >
+              <option value="all">All Months</option>
+              {[...Array(12)].map((_, i) => (
+                <option key={i + 1} value={i + 1}>
+                  {new Date(0, i).toLocaleString("default", { month: "long" })}
+                </option>
+              ))}
+            </select>
 
-              {isLoading ? (
-                <div className="userdashboard-loading-spinner">
-                  <Spinner animation="border" variant="primary" />
-                  <p>Loading transactions...</p>
-                </div>
-              ) : allTransactions.length === 0 ? (
-                <div className="userdashboard-no-transactions">
-                  <p>No transactions found.</p>
-                </div>
-              ) : (
-                <div className="userdashboard-transactions-list">
-                  {allTransactions.map((transaction) => (
-                    <div
-                      key={transaction.id}
-                      className={`userdashboard-transaction-item userdashboard-${transaction.typeClass || transaction.type.toLowerCase().replace(/\s+/g, "-")}`}
-                    >
-                      <div className="userdashboard-transaction-header">
-                        <div className="userdashboard-transaction-info">
-                          <span className="userdashboard-transaction-id">{transaction.id}</span>
-                          <span className="userdashboard-transaction-date">{transaction.date}</span>
-                        </div>
-                        <div className="userdashboard-transaction-status">
-                          <span
-                            className={`userdashboard-status-badge userdashboard-${transaction.status.toLowerCase().replace(/\s+/g, "-")}`}
-                          >
-                            {transaction.status}
-                          </span>
-                        </div>
-                      </div>
+            <select
+              className="userdashboard-filter"
+              value={selectedYear}
+              onChange={(e) => setSelectedYear(e.target.value)}
+            >
+              <option value="all">All Years</option>
+              {[2025, 2024, 2023, 2022].map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
 
-                      <div className="userdashboard-transaction-details">
-                        <div className="userdashboard-transaction-type">
-                          {transaction.icon && (
-                            <span className="userdashboard-transaction-icon">{transaction.icon}</span>
-                          )}
-                          <span
-                            className={`userdashboard-type-badge userdashboard-${transaction.typeClass || transaction.type.toLowerCase().replace(/\s+/g, "-")}`}
-                          >
-                            {transaction.type}
-                          </span>
-                        </div>
-                        <div className="userdashboard-transaction-amount">
-                          <span
-                            className={
-                              transaction.amount >= 0
-                                ? "userdashboard-amount-positive"
-                                : "userdashboard-amount-negative"
-                            }
-                          >
-                            {formatCurrency(transaction.amount, transaction.type)}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="userdashboard-view-details">
-                        <button
-                          className="userdashboard-view-details-btn"
-                          onClick={() => openTransactionModal(transaction)}
-                        >
-                          {transaction.type === "Merchandise" && transaction.products && transaction.products.length > 0
-                            ? `View ${transaction.products.length} items`
-                            : "View transaction details"}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
+            <button
+              className="userdashboard-delete-toggle-btn"
+              onClick={() => setShowDeleteMode(!showDeleteMode)}
+            >
+              {showDeleteMode ? "Cancel Delete" : "🗑 Delete Transactions"}
+            </button>
           </div>
+        </div>
+
+        {/* Delete Mode Buttons */}
+        {showDeleteMode && (
+          <div className="userdashboard-delete-controls">
+            <button className="userdashboard-delete-all-btn" onClick={toggleSelectAll}>
+              {selectedTransactions.length === filteredTransactions.length
+                ? "Deselect All"
+                : "Select All"}
+            </button>
+            <button
+              className="userdashboard-confirm-delete-btn"
+              disabled={selectedTransactions.length === 0}
+              onClick={handleDeleteSelected}
+            >
+              Delete Selected ({selectedTransactions.length})
+            </button>
+          </div>
+        )}
+
+        {/* Transaction List */}
+        {isLoading ? (
+          <div className="userdashboard-loading-spinner">
+            <Spinner animation="border" variant="primary" />
+            <p>Loading transactions...</p>
+          </div>
+        ) : filteredTransactions.length === 0 ? (
+          <div className="userdashboard-no-transactions">
+            <p>No transactions found for the selected filter.</p>
+          </div>
+        ) : (
+          <div className="userdashboard-transactions-list">
+            <AnimatePresence>
+              {filteredTransactions.map((transaction) => (
+                <motion.div
+                  key={transaction.id}
+                  className={`userdashboard-transaction-item ${
+                    showDeleteMode ? "userdashboard-deletable" : ""
+                  }`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {showDeleteMode && (
+                    <input
+                      type="checkbox"
+                      checked={selectedTransactions.includes(transaction.id)}
+                      onChange={() => toggleSelectTransaction(transaction.id)}
+                      className="userdashboard-delete-checkbox"
+                    />
+                  )}
+
+                  <div className="userdashboard-transaction-header">
+                    <div className="userdashboard-transaction-info">
+                      <span className="userdashboard-transaction-id">{transaction.id}</span>
+                      <span className="userdashboard-transaction-date">{transaction.date}</span>
+                    </div>
+                    <div className="userdashboard-transaction-status">
+                      <span
+                        className={`userdashboard-status-badge userdashboard-${transaction.status
+                          .toLowerCase()
+                          .replace(/\s+/g, "-")}`}
+                      >
+                        {transaction.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="userdashboard-transaction-details">
+                    <div className="userdashboard-transaction-type">
+                      {transaction.icon && (
+                        <span className="userdashboard-transaction-icon">{transaction.icon}</span>
+                      )}
+                      <span className="userdashboard-type-badge">{transaction.type}</span>
+                    </div>
+                    <div className="userdashboard-transaction-amount">
+                      <span
+                        className={
+                          transaction.amount >= 0
+                            ? "userdashboard-amount-positive"
+                            : "userdashboard-amount-negative"
+                        }
+                      >
+                        {formatCurrency(transaction.amount)}
+                      </span>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {/* ✅ Confirmation Modal */}
+        <ConfirmModal
+          show={showConfirmModal}
+          title="Confirm Deletion"
+          message={`Are you sure you want to delete ${selectedTransactions.length} transaction(s)? This action cannot be undone.`}
+          onConfirm={confirmDeleteTransactions}
+          onCancel={() => setShowConfirmModal(false)}
+        />
+      </section>
+  </div>
+
         )}
 
         {/* Settings Tab */} 
@@ -2990,5 +3177,32 @@ const handleOmsiapawasTransferSubmit = async (e) => {
   )
 
 }
+
+// ✅ Confirmation Modal Component
+const ConfirmModal = ({ show, title, message, onConfirm, onCancel }) => {
+  if (!show) return null;
+  return (
+    <div className="confirm-modal-overlay">
+      <motion.div
+        className="confirm-modal"
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.25 }}
+      >
+        <h3>{title}</h3>
+        <p>{message}</p>
+        <div className="confirm-modal-buttons">
+          <button className="confirm-btn confirm-yes" onClick={onConfirm}>
+            Yes
+          </button>
+          <button className="confirm-btn confirm-cancel" onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </motion.div>
+    </div>
+  );
+};
 
 export default UserAccount

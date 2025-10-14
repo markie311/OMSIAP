@@ -3234,3 +3234,150 @@
   font-size: 0.9em;
   color: #007bff;
 }
+
+/// transactions tab
+/* Filters and Header */
+.userdashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 1rem;
+}
+
+.userdashboard-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.userdashboard-filter {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  background-color: white;
+  transition: all 0.3s ease;
+  &:hover {
+    border-color: #007bff;
+  }
+}
+
+/* Delete Controls */
+.userdashboard-delete-toggle-btn,
+.userdashboard-delete-all-btn,
+.userdashboard-confirm-delete-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.userdashboard-delete-toggle-btn {
+  background-color: #e74c3c;
+  color: white;
+  &:hover {
+    background-color: #c0392b;
+  }
+}
+
+.userdashboard-delete-controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 1rem;
+}
+
+.userdashboard-delete-all-btn {
+  background-color: #3498db;
+  color: white;
+  &:hover {
+    background-color: #2980b9;
+  }
+}
+
+.userdashboard-confirm-delete-btn {
+  background-color: #e74c3c;
+  color: white;
+  &:hover {
+    background-color: #c0392b;
+  }
+}
+
+/* Transaction Items */
+.userdashboard-delete-checkbox {
+  transform: scale(1.3);
+  margin-right: 10px;
+}
+
+.userdashboard-transaction-item.userdashboard-deletable {
+  border: 2px dashed #ff7675;
+  transition: 0.3s ease;
+}
+
+/* Confirmation Modal */
+.confirm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(2px);
+}
+
+.confirm-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.confirm-modal h3 {
+  margin-bottom: 0.5rem;
+  font-size: 1.3rem;
+  color: #222;
+}
+
+.confirm-modal p {
+  color: #555;
+  margin-bottom: 1.5rem;
+}
+
+.confirm-modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.confirm-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.confirm-yes {
+  background-color: #e74c3c;
+  color: white;
+  &:hover {
+    background-color: #c0392b;
+  }
+}
+
+.confirm-cancel {
+  background-color: #bdc3c7;
+  color: #333;
+  &:hover {
+    background-color: #95a5a6;
+  }
+}
+/// end of transactions tab
