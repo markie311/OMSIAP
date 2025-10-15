@@ -20,6 +20,7 @@ import {
 import "../../styles/placeorder/placeorder.scss"
 
 const PlaceOrderPage = () => {
+
   const navigate = useNavigate()
   const location = useLocation()
   const [cartItems, setCartItems] = useState([])
@@ -27,6 +28,7 @@ const PlaceOrderPage = () => {
   const [paymentMethod, setPaymentMethod] = useState("omsiapawasto")
   const [combinedPayment, setCombinedPayment] = useState("none")
   const [showWeightLimitModal, setShowWeightLimitModal] = useState(false)
+
   const [cartStats, setCartStats] = useState({
     totalItems: 0,
     totalWeightGrams: 0,
@@ -91,32 +93,32 @@ const PlaceOrderPage = () => {
     })
   }, [cartItems])
 
-  // Calculate totals for the new cart structure
-  const calculateCartTotals = (cartItems) => {
-    const totalSummary = {
-      totalPrice: 0,
-      totalWeightInGrams: 0,
-      totalWeightInKilos: 0,
-    }
-
-    cartItems.forEach((mainProduct) => {
-      mainProduct.specifications.forEach((spec) => {
-        const quantity = spec.quantity || 1
-        const price = spec.price || 0
-        const weightInGrams = spec.data?.details?.weightingrams || 0
-
-        const specTotal = preciseMultiply(price, quantity)
-        const specWeightGrams = preciseMultiply(weightInGrams, quantity)
-        const specWeightKilos = preciseMultiply(specWeightGrams, 0.001)
-
-        totalSummary.totalPrice = preciseAdd(totalSummary.totalPrice, specTotal)
-        totalSummary.totalWeightInGrams = preciseAdd(totalSummary.totalWeightInGrams, specWeightGrams)
-        totalSummary.totalWeightInKilos = preciseAdd(totalSummary.totalWeightInKilos, specWeightKilos)
-      })
-    })
-
-    return { totalSummary }
+ // Replace existing calculateCartTotals with this
+const calculateCartTotals = (cartItems) => {
+  const totalSummary = {
+    totalPrice: 0,
+    totalWeightInGrams: 0,
+    totalWeightInKilos: 0,
   }
+
+  cartItems.forEach((mainProduct) => {
+    mainProduct.specifications.forEach((spec) => {
+      const quantity = Math.max(1, parseInt(spec.quantity || 1, 10))
+      const price = Number(spec.price || 0)
+      const weightInGrams = Number(spec.data?.details?.weightingrams || 0)
+
+      const specTotal = preciseMultiply(price, quantity)
+      const specWeightGrams = preciseMultiply(weightInGrams, quantity)
+      const specWeightKilos = preciseMultiply(specWeightGrams, 0.001)
+
+      totalSummary.totalPrice = preciseAdd(totalSummary.totalPrice, specTotal)
+      totalSummary.totalWeightInGrams = preciseAdd(totalSummary.totalWeightInGrams, specWeightGrams)
+      totalSummary.totalWeightInKilos = preciseAdd(totalSummary.totalWeightInKilos, specWeightKilos)
+    })
+  })
+
+  return { totalSummary }
+}
 
   // Get total item count
   const getTotalItemCount = (cartItems) => {
@@ -187,38 +189,36 @@ const PlaceOrderPage = () => {
     return totalShippingCost
   }
 
-  // Helper function to get main product shipping details
-  const getMainProductShippingDetails = (mainProduct) => {
-    // Get main product's base shipping rate
-    let baseShippingRate = mainProduct.mainProduct?.details?.price?.shipping || 0
-    const hasFallback = baseShippingRate === 0 || isNaN(baseShippingRate)
+// Replace existing getMainProductShippingDetails with this
+const getMainProductShippingDetails = (mainProduct) => {
+  let baseShippingRate = Number(mainProduct.mainProduct?.details?.price?.shipping || 0)
+  const hasFallback = baseShippingRate === 0 || isNaN(baseShippingRate)
 
-    if (hasFallback) {
-      baseShippingRate = 50 // Fallback rate per kg
-    }
-
-    // Calculate total weight for this main product
-    let totalMainProductWeightGrams = 0
-    mainProduct.specifications.forEach((spec) => {
-      const quantity = spec.quantity || 1
-      const weightInGrams = spec.data?.details?.weightingrams || 0
-      const specWeightGrams = preciseMultiply(weightInGrams, quantity)
-      totalMainProductWeightGrams = preciseAdd(totalMainProductWeightGrams, specWeightGrams)
-    })
-
-    const totalMainProductWeightKilos = preciseMultiply(totalMainProductWeightGrams, 0.001)
-    const weightMultiplier = Math.min(Math.ceil(totalMainProductWeightKilos), MAX_WEIGHT_LIMIT)
-    const shippingCost = preciseMultiply(baseShippingRate, weightMultiplier)
-
-    return {
-      baseRate: baseShippingRate,
-      totalWeightGrams: totalMainProductWeightGrams,
-      totalWeightKilos: totalMainProductWeightKilos,
-      weightMultiplier,
-      shippingCost,
-      hasFallback,
-    }
+  if (hasFallback) {
+    baseShippingRate = 50 // Fallback rate per kg
   }
+
+  let totalMainProductWeightGrams = 0
+  mainProduct.specifications.forEach((spec) => {
+    const quantity = Math.max(1, parseInt(spec.quantity || 1, 10))
+    const weightInGrams = Number(spec.data?.details?.weightingrams || 0)
+    const specWeightGrams = preciseMultiply(weightInGrams, quantity)
+    totalMainProductWeightGrams = preciseAdd(totalMainProductWeightGrams, specWeightGrams)
+  })
+
+  const totalMainProductWeightKilos = preciseMultiply(totalMainProductWeightGrams, 0.001)
+  const weightMultiplier = Math.min(Math.ceil(totalMainProductWeightKilos), MAX_WEIGHT_LIMIT)
+  const shippingCost = preciseMultiply(baseShippingRate, weightMultiplier)
+
+  return {
+    baseRate: baseShippingRate,
+    totalWeightGrams: totalMainProductWeightGrams,
+    totalWeightKilos: totalMainProductWeightKilos,
+    weightMultiplier,
+    shippingCost,
+    hasFallback,
+  }
+}
 
   // Enhanced decimal formatting without toFixed
   const formatDecimal = (number, decimalPlaces) => {
@@ -262,24 +262,22 @@ const PlaceOrderPage = () => {
     return (Math.round(a * factor) + Math.round(b * factor)) / factor
   }
 
-  // Update quantity for specifications
-  const updateSpecificationQuantity = (mainProductId, specificationId, newQuantity) => {
-    const intQuantity = Math.max(1, Math.floor(newQuantity))
+const updateSpecificationQuantity = (mainProductName, specificationName, delta) => {
+  setCartItems(prev =>
+    prev.map(mainProduct => {
+      if (mainProduct.mainProductName !== mainProductName) return mainProduct;
 
-    setCartItems((prevItems) =>
-      prevItems.map((mainProduct) => {
-        if (mainProduct.mainProductId === mainProductId) {
-          return {
-            ...mainProduct,
-            specifications: mainProduct.specifications.map((spec) =>
-              spec.id === specificationId ? { ...spec, quantity: intQuantity } : spec,
-            ),
-          }
-        }
-        return mainProduct
-      }),
-    )
-  }
+      return {
+        ...mainProduct,
+        specifications: mainProduct.specifications.map(spec =>
+          spec.name === specificationName
+            ? { ...spec, quantity: Math.max(1, (spec.quantity || 1) + delta) }
+            : spec
+        ),
+      };
+    })
+  );
+};
 
   // Remove specification or entire main product
   const removeFromCart = (mainProductId, specificationId = null) => {
@@ -375,6 +373,8 @@ const PlaceOrderPage = () => {
     }
   }
 
+ 
+
   // Enhanced Weight Limit Modal
   const WeightLimitModal = ({ show, onClose }) => {
     if (!show) return null
@@ -461,7 +461,12 @@ const PlaceOrderPage = () => {
           transition={{ delay: 0.2 }}
         >
           <h1>
-            <FaShoppingCart className="header-icon" /> Place Order
+            <FaShoppingCart className="header-icon" /> Place 
+            Order 
+            <button onClick={()=> {
+                console.log("Cart items")
+                console.log(location.state.cart)
+            }}>click me</button>
           </h1>
         </motion.header>
 
@@ -614,7 +619,7 @@ const PlaceOrderPage = () => {
 
                               return (
                                 <motion.div
-                                  key={spec.id}
+                                  key={`${mainProduct.mainProductId}-${spec.id}`}
                                   className="specification-item"
                                   initial={{ opacity: 0, x: -10 }}
                                   animate={{ opacity: 1, x: 0 }}
@@ -654,11 +659,8 @@ const PlaceOrderPage = () => {
                                         type="button"
                                         className="quantity-btn"
                                         onClick={() =>
-                                          updateSpecificationQuantity(
-                                            mainProduct.mainProductId,
-                                            spec.id,
-                                            spec.quantity - 1,
-                                          )
+                                         updateSpecificationQuantity(mainProduct.mainProductName, spec.name, -1)
+
                                         }
                                         whileTap={{ scale: 0.9 }}
                                         disabled={spec.quantity <= 1}
@@ -670,11 +672,8 @@ const PlaceOrderPage = () => {
                                         type="button"
                                         className="quantity-btn"
                                         onClick={() =>
-                                          updateSpecificationQuantity(
-                                            mainProduct.mainProductId,
-                                            spec.id,
-                                            spec.quantity + 1,
-                                          )
+                                          updateSpecificationQuantity(mainProduct.mainProductName, spec.name, +1)
+
                                         }
                                         whileTap={{ scale: 0.9 }}
                                       >
