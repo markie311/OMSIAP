@@ -279,35 +279,40 @@ const updateSpecificationQuantity = (mainProductName, specificationName, delta) 
   );
 };
 
-// Remove specification or entire main product (uses names, not IDs)
-const removeFromCart = (mainProductName, specificationName = null) => {
-  if (specificationName) {
-    // Remove specific specification
-    setCartItems((prevItems) =>
-      prevItems
-        .map((mainProduct) => {
-          if (mainProduct.details?.productName === mainProductName) {
+// Remove a specification or entire main product (uses mainProductName)
+const removeFromCart = (targetMainProductName, targetSpecificationName = null) => {
+  setCartItems((prevCart) =>
+    prevCart
+      .map((mainProduct) => {
+        const currentMainName = mainProduct.mainProductName
+
+        // Remove specific specification under this main product
+        if (targetSpecificationName) {
+          if (currentMainName === targetMainProductName) {
             const updatedSpecs = mainProduct.specifications.filter(
-              (spec) => spec.name !== specificationName
+              (spec) => spec.name !== targetSpecificationName
             )
-            // Keep the main product only if there are remaining specifications
+            // If no specs left, remove main product
             return updatedSpecs.length > 0
               ? { ...mainProduct, specifications: updatedSpecs }
               : null
           }
           return mainProduct
-        })
-        .filter(Boolean)
-    )
-  } else {
-    // Remove entire main product
-    setCartItems((prevItems) =>
-      prevItems.filter(
-        (mainProduct) => mainProduct.details?.productName !== mainProductName
-      )
-    )
-  }
+        }
+
+        // Remove entire main product
+        if (currentMainName === targetMainProductName) {
+          return null
+        }
+
+        // Keep all others
+        return mainProduct
+      })
+      .filter(Boolean)
+  )
 }
+
+
 
 
   // Helper function to get image URL with fallback
@@ -614,7 +619,7 @@ const removeFromCart = (mainProductName, specificationName = null) => {
                             <button
                               type="button"
                               className="remove-main-product-btn"
-                              onClick={() => removeFromCart(mainProduct.mainProductId)}
+                              onClick={() => removeFromCart(mainProduct.mainProductName)}
                               title="Remove entire product"
                             >
                               <FaTrashAlt />
@@ -700,10 +705,7 @@ const removeFromCart = (mainProductName, specificationName = null) => {
                                   <button
                                     type="button"
                                     className="remove-spec-btn"
-                                    onClick={() =>     removeFromCart(
-      mainProduct.details?.productName, // use product name instead of ID
-      spec.name // use specification name instead of ID
-    )
+                                    onClick={() =>  removeFromCart(mainProduct.mainProductName, spec.name)
 }
                                     title="Remove this specification"
                                   >
