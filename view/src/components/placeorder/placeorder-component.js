@@ -279,26 +279,36 @@ const updateSpecificationQuantity = (mainProductName, specificationName, delta) 
   );
 };
 
-  // Remove specification or entire main product
-  const removeFromCart = (mainProductId, specificationId = null) => {
-    if (specificationId) {
-      // Remove specific specification
-      setCartItems((prevItems) =>
-        prevItems
-          .map((mainProduct) => {
-            if (mainProduct.mainProductId === mainProductId) {
-              const updatedSpecs = mainProduct.specifications.filter((spec) => spec.id !== specificationId)
-              return updatedSpecs.length > 0 ? { ...mainProduct, specifications: updatedSpecs } : null
-            }
-            return mainProduct
-          })
-          .filter(Boolean),
+// Remove specification or entire main product (uses names, not IDs)
+const removeFromCart = (mainProductName, specificationName = null) => {
+  if (specificationName) {
+    // Remove specific specification
+    setCartItems((prevItems) =>
+      prevItems
+        .map((mainProduct) => {
+          if (mainProduct.details?.productName === mainProductName) {
+            const updatedSpecs = mainProduct.specifications.filter(
+              (spec) => spec.name !== specificationName
+            )
+            // Keep the main product only if there are remaining specifications
+            return updatedSpecs.length > 0
+              ? { ...mainProduct, specifications: updatedSpecs }
+              : null
+          }
+          return mainProduct
+        })
+        .filter(Boolean)
+    )
+  } else {
+    // Remove entire main product
+    setCartItems((prevItems) =>
+      prevItems.filter(
+        (mainProduct) => mainProduct.details?.productName !== mainProductName
       )
-    } else {
-      // Remove entire main product
-      setCartItems((prevItems) => prevItems.filter((mainProduct) => mainProduct.mainProductId !== mainProductId))
-    }
+    )
   }
+}
+
 
   // Helper function to get image URL with fallback
   const getImageUrl = (imageArray, fallbackUrl = "/placeholder.svg?height=80&width=80") => {
@@ -690,7 +700,11 @@ const updateSpecificationQuantity = (mainProductName, specificationName, delta) 
                                   <button
                                     type="button"
                                     className="remove-spec-btn"
-                                    onClick={() => removeFromCart(mainProduct.mainProductId, spec.id)}
+                                    onClick={() =>     removeFromCart(
+      mainProduct.details?.productName, // use product name instead of ID
+      spec.name // use specification name instead of ID
+    )
+}
                                     title="Remove this specification"
                                   >
                                     <FaTrashAlt />
