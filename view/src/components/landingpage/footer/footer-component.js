@@ -37,7 +37,7 @@ export default function Footer() {
                 </div>
               </div>
               <p className="company-description">
-                Tector is your trusted business agent, providing expert solutions 
+                OMSIAP is your trusted business agent, providing expert solutions 
                 tailored to your needs. We help businesses thrive in today's competitive landscape.
               </p>
               <div className="social-icons">
@@ -93,11 +93,11 @@ export default function Footer() {
               <ul className="contact-details">
                 <li className="contact-item">
                   <FaMapMarkerAlt className="contact-icon" />
-                  <p>Valentin, Street Road 24, New York, USA - 67452</p>
+                  <p>Greenhills subdivision, Trinidad Street, Davao City, Philippines</p>
                 </li>
                 <li className="contact-item">
                   <FaPhone className="contact-icon" />
-                  <p>+199(980) 6915</p>
+                  <p>+09956777674</p>
                 </li>
                 <li className="contact-item">
                   <FaEnvelope className="contact-icon" />

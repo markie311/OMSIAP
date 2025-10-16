@@ -12,7 +12,7 @@ const professionals = [
     education: "Mapua Malayan Colleges Mindanao",
     contact: "markiebeloy@gmail.com"
   },
-  {
+    {
     id: 2,
     name: "Sarah Johnson",
     position: "Senior Consultant",

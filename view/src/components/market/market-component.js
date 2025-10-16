@@ -152,6 +152,7 @@ const Market = (props) => {
 
   // Enhanced Cart functions - Groups specifications under main products
   // MODIFICATION 1: Replace the existing addToCart function (around line 107)
+  
       const addToCart = (specificationProduct, mainProduct, quantity = 1) => {
         console.log("Specification Product:", specificationProduct)
         console.log("Main Product:", mainProduct)
