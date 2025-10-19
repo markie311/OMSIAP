@@ -11,9 +11,9 @@ $text-light: #eaeaea;
 #omsiapmarket {
   position: relative;
   background: linear-gradient(135deg, #000010, #040406 40%, #000);
-  min-height: 100vh;
+  height: 100%;
   width: 100%;
-  overflow-y: auto !important;
+  overflow-y: hidden;
   overflow-x: hidden;
   color: $text-light;
   font-family: $sub-font;
@@ -39,6 +39,28 @@ $text-light: #eaeaea;
     animation: glowPulse 6s ease-in-out infinite alternate;
     z-index: 0;
   }
+}
+
+/* width */
+#omsiapmarket::-webkit-scrollbar {
+  width: 20px;
+}
+
+/* Track */
+#omsiapmarket::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey; 
+  border-radius: 10px;
+}
+ 
+/* Handle */
+#omsiapmarket::-webkit-scrollbar-thumb {
+  background: dodgerblue; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #b30000; 
 }
 
 @keyframes gradientShift {

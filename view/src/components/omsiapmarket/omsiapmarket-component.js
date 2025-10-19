@@ -48,8 +48,7 @@ export default function OmsiapMarket() {
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 0.8 }}
         >
-          Navigate through our futuristic platform and experience transparency and
-          rewards powered by blockchain.
+          Navigate through our futuristic platform and experience transparency
         </motion.p>
       </motion.div>
 
