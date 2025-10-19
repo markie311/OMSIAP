@@ -13,7 +13,7 @@ $text-light: #eaeaea;
   background: linear-gradient(135deg, #000010, #040406 40%, #000);
   height: 100%;
   width: 100%;
-  overflow-y: hidden;
+  overflow-y: scroll;
   overflow-x: hidden;
   color: $text-light;
   font-family: $sub-font;
@@ -43,7 +43,7 @@ $text-light: #eaeaea;
 
 /* width */
 #omsiapmarket::-webkit-scrollbar {
-  width: 20px;
+  width: 5px;
 }
 
 /* Track */
