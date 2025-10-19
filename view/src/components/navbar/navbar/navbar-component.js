@@ -1,7 +1,7 @@
 import React, {
     useState,
     useEffect
-  } from 'react';
+  } from 'react'
 
 import { Row, 
          Col,
@@ -13,7 +13,7 @@ import { Row,
 
 import { List, X } from 'lucide-react';
 
-import axiosCreatedInstance from '../../lib/axiosutil.js';
+import axiosCreatedInstance from '../../lib/axiosutil.js'
 
 import '../../../styles/navbar/navbar/navbar.scss';
 

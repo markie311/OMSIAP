@@ -404,7 +404,8 @@ const Market = (props) => {
 
   return (
     <div className="market-container">
-      {/* Marketing Carousel Header */}
+
+      {/*Marketing Carousel Header 
       <div className="market-carousel-container">
         <div className="market-carousel-track" ref={carouselRef}>
           {carouselSlides.map((slide, index) => (
@@ -446,11 +447,11 @@ const Market = (props) => {
             />
           ))}
         </div>
-      </div>
+      </div>*/}
 
       <header className="market-header">
         <div className="market-logo">
-          <h1>ShopEase</h1>
+          <button id="market-backbutton">&#8592;</button>
         </div>
         <div className="market-search-bar">
           <input
@@ -549,7 +550,7 @@ const Market = (props) => {
                     </button>
                   </div>
                   <div className="market-product-info">
-                    <h3>{productName}</h3>
+                    <h3 style={{color:'white'}}>{productName}</h3>
                     <p className="market-product-price">{formatPrice(productPrice)}</p>
                     <p className="market-product-category">{productCategory}</p>
                     <div className="market-product-rating">

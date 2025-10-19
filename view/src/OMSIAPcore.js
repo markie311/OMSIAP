@@ -15,6 +15,7 @@ import './styles/omsiapcore/omsiapcore.scss';
 
 import LandingPage from './components/landingpage/landingpage/landingpage-component.js';
 import HOPE from './components/hope/hope-component.js';
+import OmsiapMarket from './components/omsiapmarket/omsiapmarket-component.js';
 import Market from './components/market/market-component.js';
 import MonthlyFinanceAllocationToIndividualPeople from './components/mfatip/mfatip-component.js';
 import Cart from './components/cart/cart-component.js';
@@ -617,7 +618,9 @@ function OMSIAPCoreContent() {
                            citizenshipregistrationtype={citizenshipregistrationtype}
                            citizenshipregistrationtypecb={citizenshipregistrationtypecb}/>}>
       </Route>
-      <Route path='/market'
+      <Route path='/omsiapmarket'
+             element={<OmsiapMarket/>}/>
+      <Route path='/ecommercemarket'
             element={<Market viewport={viewport}
             
                              alloftheproducts={alloftheproducts}

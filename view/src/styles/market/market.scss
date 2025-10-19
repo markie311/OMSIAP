@@ -1,3 +1,5 @@
+
+
 /* Market Component Responsive Stylesheet */
 /* CSS Custom Properties for consistent theming */
 :root {
@@ -109,10 +111,17 @@
   width: 100%;
   margin: 0 auto;
   padding: 0 1rem;
-  background-color: var(--background-color);
+  background-color: black;
   height: 100vh;
   overflow-y:scroll;
   animation: fadeIn 0.6s ease-out;
+}
+
+#market-backbutton {
+position:relative;
+background-color:dodgerblue;
+height:100%;
+width:5vw;
 }
 
 /* Marketing Carousel */
@@ -260,7 +269,7 @@
 }
 
 .market-carousel-indicator.market-active {
-  background-color: white;
+  background-color: black;
   transform: scale(1.2);
 }
 
@@ -319,6 +328,7 @@
 
 .market-cart-icon {
   position: relative;
+  background-color:White;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -369,7 +379,7 @@
 
 /* Filters Sidebar */
 .market-filters-sidebar {
-  background-color: var(--surface-color);
+  background-color: dodgerblue;
   padding: 1.5rem;
   border-radius: var(--radius-lg);
   height: fit-content;
@@ -417,7 +427,7 @@
 }
 
 .market-category-filters button.market-active {
-  background-color: var(--primary-color);
+  background-color: blue;
   color: white;
   box-shadow: var(--shadow-md);
 }
@@ -432,7 +442,7 @@
 .market-price-filter span {
   font-size: 0.875rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: black;
   background-color: white;
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
@@ -474,7 +484,7 @@
 }
 
 .market-product-card {
-  background-color: white;
+  background-color: rgb(27, 27, 27);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -600,6 +610,7 @@
 
 .market-view-details,
 .market-add-to-cart {
+  background-color:dodgerblue;
   flex: 1;
   padding: 0.75rem 1rem;
   border: none;
