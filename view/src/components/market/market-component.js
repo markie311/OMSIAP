@@ -20,6 +20,7 @@ import {
 import "../../styles/market/market.scss"
 
 const Market = (props) => {
+    
   const navigate = useNavigate()
   const { loadingState, updateLoadingState } = props.useLoading || { loadingState: { products: false } }
   const [products, setProducts] = useState([])
@@ -451,7 +452,10 @@ const Market = (props) => {
 
       <header className="market-header">
         <div className="market-logo">
-          <button id="market-backbutton">&#8592;</button>
+          <button id="market-backbutton"
+                  onClick={()=> {
+                    navigate('/omsiapmarket')
+                  }}>&#8592;</button>
         </div>
         <div className="market-search-bar">
           <input
