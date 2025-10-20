@@ -2,9 +2,12 @@
 
 import React from "react"
 import { useNavigate } from 'react-router-dom'
+
 import { Col, Row } from "react-bootstrap"
+
 import { motion } from "framer-motion"
-import "../../styles/omsiapmarket/omsiapmarket.scss"
+
+import "../../../styles/omsiapmarket/omsiapmarket/omsiapmarket.scss"
 
 export default function OmsiapMarket() {
 
@@ -12,11 +15,7 @@ export default function OmsiapMarket() {
 
   const navigationItems = [
     "Shop Products",
-    "Blockchain Rewards",
-    "Order History",
-    "My Account",
-    "About OMSIAP",
-    "Help & Support",
+    "Worldwide OMSIAP market insights",
   ]
 
   return (
@@ -38,7 +37,7 @@ export default function OmsiapMarket() {
           transition={{ delay: 0.3, duration: 0.8 }}
         >
           Every <span className="highlight">purchase</span> made here online is powered
-          a blockchain technology that automatically shares transaction give away to
+          a blockchain technology that automatically shares transaction give aways to
           everyone after the order was confirmed recieved
         </motion.p>
 
@@ -72,6 +71,11 @@ export default function OmsiapMarket() {
                 if ( item === "Shop Products" ) {
                   navigate('/ecommercemarket')
                 }
+
+                if ( item === "Worldwide OMSIAP market insights" ) {
+                  navigate('/worldwideomsiapmarketinsights')
+                }
+
                 if ( item === "Blockchain Rewards" ) {
                   alert("One")
                 }
