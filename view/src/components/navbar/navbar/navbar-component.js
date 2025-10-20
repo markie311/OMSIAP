@@ -96,7 +96,7 @@ export default function NavBar(props) {
                     MARKET
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="custom-dropdown-menu">
-                    <Dropdown.Item href="market">Market</Dropdown.Item>
+                    <Dropdown.Item href="omsiapmarket">Market</Dropdown.Item>
                   </Dropdown.Menu>
                 </Dropdown>
               </div>
