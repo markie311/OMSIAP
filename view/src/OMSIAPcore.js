@@ -321,6 +321,473 @@ function OMSIAPCoreContent() {
       if (response.data && response.data.products) {
 
         alloftheproductscb(response.data.products);
+          
+        {/*
+        const dummyproducts = [
+          {
+          authentications: {
+            producttype: "Electronics",
+            id: "PRD-2025-001"
+          },
+          details: {
+            productname: "Wireless Noise Cancelling Headphones",
+            category: "Audio",
+            description:
+              "High-quality wireless headphones with active noise cancellation and 30-hour battery life.",
+            features: [
+              { data: "Active noise cancellation" },
+              { data: "Bluetooth 5.3 connectivity" },
+              { data: "30-hour battery life" },
+              { data: "Fast USB-C charging" }
+            ],
+            weightingrams: 320,
+            webaddress: "https://example.com/products/wireless-headphones",
+            warranty: "2 Years Manufacturer Warranty",
+            price: {
+              amount: 199.99,
+              capital: 120.0,
+              shipping: 10.0,
+              transactiongiveaway: 5.0,
+              profit: 64.99
+            },
+            specifications: [
+              {
+                authentications: {
+                  producttype: "Accessory",
+                  id: "SPC-001"
+                },
+                details: {
+                  productname: "Carrying Case",
+                  category: "Accessories",
+                  description: "Protective hard shell case for headphones",
+                  features: [{ data: "Shock resistant" }, { data: "Compact design" }],
+                  webaddress: "https://example.com/products/carrying-case",
+                  weightingrams: 150,
+                  warranty: "6 Months",
+                  for: {
+                    age: "All ages",
+                    part: "Headphones",
+                    gender: "Unisex",
+                    reminder: "Keep away from fire"
+                  },
+                  price: {
+                    amount: 29.99,
+                    capital: 15.0,
+                    shipping: 5.0,
+                    transactiongiveaway: 2.0,
+                    profit: 7.99
+                  },
+                  specifications: []
+                },
+                images: [{ url: "https://example.com/images/case1.jpg" }],
+                videos: [{ url: "https://example.com/videos/case-demo.mp4" }],
+                customerfeedback: { rating: 4.6, reviews: 25 },
+                system: {
+                  stocks: 120,
+                  pcs: 1,
+                  ordersummary: {
+                    merchandisetotal: 29.99,
+                    shippingtotal: 5.0,
+                    processingfee: 1.0,
+                    totalcapital: 15.0,
+                    totaltransactiongiveaway: 2.0,
+                    totalprofit: 7.99,
+                    totalitems: 1,
+                    totalweightgrams: 150,
+                    totalweightkilos: 0.15
+                  },
+                  shippinginfo: {
+                    street: "123 Market Street",
+                    trademark: "AudioWorld",
+                    baranggay: "Barangay Central",
+                    city: "Quezon City",
+                    province: "Metro Manila",
+                    zipcode: "1100",
+                    country: "Philippines"
+                  }
+                }
+              }
+            ]
+          },
+          images: [
+            { url: "https://example.com/images/headphones1.jpg" },
+            { url: "https://example.com/images/headphones2.jpg" }
+          ],
+          videos: [{ url: "https://example.com/videos/headphones-demo.mp4" }],
+          customerfeedback: {
+            rating: 4.8,
+            reviews: 542
+          },
+          system: {
+            purchases: {
+              total: [],
+              pending: [],
+              accepted: [
+                {
+                  identification: { bren: "BREN-001" },
+                  name: {
+                    firstname: "Mark",
+                    middlename: "Anthony",
+                    lastname: "Beloy",
+                    nickname: "Tony"
+                  },
+                  location: {
+                    street: "123 Mabini St",
+                    trademark: "TechMall",
+                    baranggay: "Barangay South",
+                    city: "Cebu City",
+                    province: "Cebu",
+                    postal_zip_code: "6000",
+                    country: "Philippines"
+                  },
+                  pcs: "2",
+                  date: {
+                    month: "October",
+                    year: "2025",
+                    date: "20",
+                    day: "Monday",
+                    time: "14:30"
+                  },
+                  specification: [],
+                  ordersummary: {
+                    merchandisetotal: 399.98,
+                    shippingtotal: 20.0,
+                    processingfee: 5.0,
+                    totalcapital: 240.0,
+                    totaltransactiongiveaway: 10.0,
+                    totalprofit: 124.98,
+                    totalitems: 2,
+                    totalweightgrams: 640,
+                    totalweightkilos: 0.64
+                  },
+                  shippinginfo: {
+                    street: "456 Lopez Jaena",
+                    trademark: "Mark’s Store",
+                    baranggay: "Barangay West",
+                    city: "Cebu City",
+                    province: "Cebu",
+                    zipcode: "6000",
+                    country: "Philippines"
+                  },
+                  createdAt: new Date(),
+                  updatedAt: new Date()
+                }
+              ],
+              rejected: []
+            }
+          }
+          },
+          {
+          authentications: {
+            producttype: "Electronics",
+            id: "PRD-2025-001"
+          },
+          details: {
+            productname: "Wireless Noise Cancelling Headphones",
+            category: "Apparel",
+            description:
+              "High-quality wireless headphones with active noise cancellation and 30-hour battery life.",
+            features: [
+              { data: "Active noise cancellation" },
+              { data: "Bluetooth 5.3 connectivity" },
+              { data: "30-hour battery life" },
+              { data: "Fast USB-C charging" }
+            ],
+            weightingrams: 320,
+            webaddress: "https://example.com/products/wireless-headphones",
+            warranty: "2 Years Manufacturer Warranty",
+            price: {
+              amount: 199.99,
+              capital: 120.0,
+              shipping: 10.0,
+              transactiongiveaway: 5.0,
+              profit: 64.99
+            },
+            specifications: [
+              {
+                authentications: {
+                  producttype: "Accessory",
+                  id: "SPC-001"
+                },
+                details: {
+                  productname: "Carrying Case",
+                  category: "Accessories",
+                  description: "Protective hard shell case for headphones",
+                  features: [{ data: "Shock resistant" }, { data: "Compact design" }],
+                  webaddress: "https://example.com/products/carrying-case",
+                  weightingrams: 150,
+                  warranty: "6 Months",
+                  for: {
+                    age: "All ages",
+                    part: "Headphones",
+                    gender: "Unisex",
+                    reminder: "Keep away from fire"
+                  },
+                  price: {
+                    amount: 29.99,
+                    capital: 15.0,
+                    shipping: 5.0,
+                    transactiongiveaway: 2.0,
+                    profit: 7.99
+                  },
+                  specifications: []
+                },
+                images: [{ url: "https://example.com/images/case1.jpg" }],
+                videos: [{ url: "https://example.com/videos/case-demo.mp4" }],
+                customerfeedback: { rating: 4.6, reviews: 25 },
+                system: {
+                  stocks: 120,
+                  pcs: 1,
+                  ordersummary: {
+                    merchandisetotal: 29.99,
+                    shippingtotal: 5.0,
+                    processingfee: 1.0,
+                    totalcapital: 15.0,
+                    totaltransactiongiveaway: 2.0,
+                    totalprofit: 7.99,
+                    totalitems: 1,
+                    totalweightgrams: 150,
+                    totalweightkilos: 0.15
+                  },
+                  shippinginfo: {
+                    street: "123 Market Street",
+                    trademark: "AudioWorld",
+                    baranggay: "Barangay Central",
+                    city: "Quezon City",
+                    province: "Metro Manila",
+                    zipcode: "1100",
+                    country: "Philippines"
+                  }
+                }
+              }
+            ]
+          },
+          images: [
+            { url: "https://example.com/images/headphones1.jpg" },
+            { url: "https://example.com/images/headphones2.jpg" }
+          ],
+          videos: [{ url: "https://example.com/videos/headphones-demo.mp4" }],
+          customerfeedback: {
+            rating: 4.8,
+            reviews: 542
+          },
+          system: {
+            purchases: {
+              total: [],
+              pending: [],
+              accepted: [
+                {
+                  identification: { bren: "BREN-001" },
+                  name: {
+                    firstname: "Mark",
+                    middlename: "Anthony",
+                    lastname: "Beloy",
+                    nickname: "Tony"
+                  },
+                  location: {
+                    street: "123 Mabini St",
+                    trademark: "TechMall",
+                    baranggay: "Barangay South",
+                    city: "Cebu City",
+                    province: "Cebu",
+                    postal_zip_code: "6000",
+                    country: "Philippines"
+                  },
+                  pcs: "2",
+                  date: {
+                    month: "October",
+                    year: "2025",
+                    date: "20",
+                    day: "Monday",
+                    time: "14:30"
+                  },
+                  specification: [],
+                  ordersummary: {
+                    merchandisetotal: 399.98,
+                    shippingtotal: 20.0,
+                    processingfee: 5.0,
+                    totalcapital: 240.0,
+                    totaltransactiongiveaway: 10.0,
+                    totalprofit: 124.98,
+                    totalitems: 2,
+                    totalweightgrams: 640,
+                    totalweightkilos: 0.64
+                  },
+                  shippinginfo: {
+                    street: "456 Lopez Jaena",
+                    trademark: "Mark’s Store",
+                    baranggay: "Barangay West",
+                    city: "Cebu City",
+                    province: "Cebu",
+                    zipcode: "6000",
+                    country: "Philippines"
+                  },
+                  createdAt: new Date(),
+                  updatedAt: new Date()
+                }
+              ],
+              rejected: []
+            }
+          }
+          },
+          {
+          authentications: {
+            producttype: "Electronics",
+            id: "PRD-2025-001"
+          },
+          details: {
+            productname: "Wireless Noise Cancelling Headphones",
+            category: "Agriculture",
+            description:
+              "High-quality wireless headphones with active noise cancellation and 30-hour battery life.",
+            features: [
+              { data: "Active noise cancellation" },
+              { data: "Bluetooth 5.3 connectivity" },
+              { data: "30-hour battery life" },
+              { data: "Fast USB-C charging" }
+            ],
+            weightingrams: 320,
+            webaddress: "https://example.com/products/wireless-headphones",
+            warranty: "2 Years Manufacturer Warranty",
+            price: {
+              amount: 199.99,
+              capital: 120.0,
+              shipping: 10.0,
+              transactiongiveaway: 5.0,
+              profit: 64.99
+            },
+            specifications: [
+              {
+                authentications: {
+                  producttype: "Accessory",
+                  id: "SPC-001"
+                },
+                details: {
+                  productname: "Carrying Case",
+                  category: "Accessories",
+                  description: "Protective hard shell case for headphones",
+                  features: [{ data: "Shock resistant" }, { data: "Compact design" }],
+                  webaddress: "https://example.com/products/carrying-case",
+                  weightingrams: 150,
+                  warranty: "6 Months",
+                  for: {
+                    age: "All ages",
+                    part: "Headphones",
+                    gender: "Unisex",
+                    reminder: "Keep away from fire"
+                  },
+                  price: {
+                    amount: 29.99,
+                    capital: 15.0,
+                    shipping: 5.0,
+                    transactiongiveaway: 2.0,
+                    profit: 7.99
+                  },
+                  specifications: []
+                },
+                images: [{ url: "https://example.com/images/case1.jpg" }],
+                videos: [{ url: "https://example.com/videos/case-demo.mp4" }],
+                customerfeedback: { rating: 4.6, reviews: 25 },
+                system: {
+                  stocks: 120,
+                  pcs: 1,
+                  ordersummary: {
+                    merchandisetotal: 29.99,
+                    shippingtotal: 5.0,
+                    processingfee: 1.0,
+                    totalcapital: 15.0,
+                    totaltransactiongiveaway: 2.0,
+                    totalprofit: 7.99,
+                    totalitems: 1,
+                    totalweightgrams: 150,
+                    totalweightkilos: 0.15
+                  },
+                  shippinginfo: {
+                    street: "123 Market Street",
+                    trademark: "AudioWorld",
+                    baranggay: "Barangay Central",
+                    city: "Quezon City",
+                    province: "Metro Manila",
+                    zipcode: "1100",
+                    country: "Philippines"
+                  }
+                }
+              }
+            ]
+          },
+          images: [
+            { url: "https://example.com/images/headphones1.jpg" },
+            { url: "https://example.com/images/headphones2.jpg" }
+          ],
+          videos: [{ url: "https://example.com/videos/headphones-demo.mp4" }],
+          customerfeedback: {
+            rating: 4.8,
+            reviews: 542
+          },
+          system: {
+            purchases: {
+              total: [],
+              pending: [],
+              accepted: [
+                {
+                  identification: { bren: "BREN-001" },
+                  name: {
+                    firstname: "Mark",
+                    middlename: "Anthony",
+                    lastname: "Beloy",
+                    nickname: "Tony"
+                  },
+                  location: {
+                    street: "123 Mabini St",
+                    trademark: "TechMall",
+                    baranggay: "Barangay South",
+                    city: "Cebu City",
+                    province: "Cebu",
+                    postal_zip_code: "6000",
+                    country: "Philippines"
+                  },
+                  pcs: "2",
+                  date: {
+                    month: "October",
+                    year: "2025",
+                    date: "20",
+                    day: "Monday",
+                    time: "14:30"
+                  },
+                  specification: [],
+                  ordersummary: {
+                    merchandisetotal: 399.98,
+                    shippingtotal: 20.0,
+                    processingfee: 5.0,
+                    totalcapital: 240.0,
+                    totaltransactiongiveaway: 10.0,
+                    totalprofit: 124.98,
+                    totalitems: 2,
+                    totalweightgrams: 640,
+                    totalweightkilos: 0.64
+                  },
+                  shippinginfo: {
+                    street: "456 Lopez Jaena",
+                    trademark: "Mark’s Store",
+                    baranggay: "Barangay West",
+                    city: "Cebu City",
+                    province: "Cebu",
+                    zipcode: "6000",
+                    country: "Philippines"
+                  },
+                  createdAt: new Date(),
+                  updatedAt: new Date()
+                }
+              ],
+              rejected: []
+            }
+          }
+          }
+        ]
+
+        alloftheproductscb(
+          dummyproducts
+        )*/}
 
       } else {
         // Default products if none returned
@@ -633,7 +1100,7 @@ function OMSIAPCoreContent() {
                              updatecomponent={updatecomponent}/>}>
       </Route>
       <Route path="/worldwideomsiapmarketinsights"
-             element={<WorldWideOmsiapMarketInsights />}>
+             element={<WorldWideOmsiapMarketInsights alloftheproducts={alloftheproducts}/>}>
 
       </Route>
       <Route path='/monthlyfinanceallocationtoindividualpeople'
