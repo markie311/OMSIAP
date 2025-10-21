@@ -17,6 +17,7 @@ import LandingPage from './components/landingpage/landingpage/landingpage-compon
 import HOPE from './components/hope/hope-component.js';
 import OmsiapMarket from './components/omsiapmarket/omsiapmarket/omsiapmarket-component.js';
 import WorldWideOmsiapMarketInsights from './components/omsiapmarket/worldwideomsiapmarketinsights/worldwideomsiapmarketinsights-component.js'
+import ShopperDetails from './components/omsiapmarket/shopperdetails/shopperdetails-component.js'
 import Market from './components/market/market-component.js';
 import MonthlyFinanceAllocationToIndividualPeople from './components/mfatip/mfatip-component.js';
 import Cart from './components/cart/cart-component.js';
@@ -1101,6 +1102,10 @@ function OMSIAPCoreContent() {
       </Route>
       <Route path="/worldwideomsiapmarketinsights"
              element={<WorldWideOmsiapMarketInsights alloftheproducts={alloftheproducts}/>}>
+
+      </Route>
+      <Route path='/shopperdetails'
+             element={<ShopperDetails user={user}/>}>
 
       </Route>
       <Route path='/monthlyfinanceallocationtoindividualpeople'

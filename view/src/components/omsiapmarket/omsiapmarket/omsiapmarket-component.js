@@ -16,6 +16,7 @@ export default function OmsiapMarket() {
   const navigationItems = [
     "Shop Products",
     "Worldwide OMSIAP market insights",
+    "Shopper Details"
   ]
 
   return (
@@ -76,8 +77,8 @@ export default function OmsiapMarket() {
                   navigate('/worldwideomsiapmarketinsights')
                 }
 
-                if ( item === "Blockchain Rewards" ) {
-                  alert("One")
+                if ( item === "Shopper Details" ) {
+                  navigate('/shopperdetails')
                 }
               }}
             >

@@ -502,7 +502,7 @@ const CheckoutPage = (props) => {
       console.log("Order submitted:", order)
       alert(`Order successfully placed! Total: ${preciseCalculator.formatCurrency(orderSummary.finalTotal)}`)
        // Navigate to home page after successful order
-       navigate("/market")
+       navigate("/omsiapmarket")
     } catch (error) {
       console.error("Error placing order:", error)
       alert("There was an error processing your order. Please try again.")

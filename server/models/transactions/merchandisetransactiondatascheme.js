@@ -240,6 +240,12 @@ system: {
     id: {
     type: 'string'
     },
+    citizenship: {
+     type: 'string'
+    },
+    bren: {
+     type: 'string'
+    },
     name: {
     firstname: {
     type: 'string'
