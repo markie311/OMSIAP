@@ -99,99 +99,34 @@ const productSpecificationDataSchema = new Schema({
    stocks: {
     type: Number,
     default: 0
-   },
-   pcs: {
-    type: Number,
-    default: 0
-   },
-   ordersummary: {
-    merchandisetotal: {
-    type: 'number',
-    default: 0
-    },
-    shippingtotal:{
-    type: 'number',
-    default: 0
-    },
-    processingfee: {
-     type: Number,
-     default: 0
-    },
-    totalcapital: {
-    type: 'number',
-    default: 0
-    },
-    totaltransactiongiveaway: {
-    type: 'number',
-    default: 0
-    },
-    totalprofit: {
-    type: 'number',
-    default: 0
-    },
-    totalitems: {
-    type: 'number',
-    default: 0
-    },
-    totalweightgrams: {
-    type: 'number',
-    default: 0
-    },
-    totalweightkilos: {
-    type: 'number',
-    default: 0
-    }
-  },
-  shippinginfo: {
-    street: {
-    type: 'string'
-    },
-    trademark: {
-    type: 'string'
-    },
-    baranggay: {
-    type: 'string'
-    },
-    city: {
-    type: 'string'
-    },
-    province: {
-    type: 'string'
-    },
-    zipcode: {
-    type: 'string'
-    },
-    country: {
-    type: 'string'
-    } 
-  }
+   }
   }
 });
 
 
 const purchaseSchema = new mongoose.Schema({
   identification: {
-    bren: {
-      type: String,
-      default: ""
-    }
-  },
-  name: {
-    firstname: {
+    birthcertificatereferencenumber: {
       type: String,
       default: ""
     },
-    middlename: {
-      type: String,
-      default: ""
-    },
-    lastname: {
-      type: String,
-      default: ""
-    },
-    nickname: {
-      type: String,
-      default: ""
+    name: {
+     firstname: {
+       type: String,
+       default: ""
+     },
+     middlename: {
+       type: String,
+       default: ""
+     },
+     lastname: {
+       type: String,
+       default: ""
+     },
+     nickname: {
+       type: String,
+       default: ""
+     }
     }
   },
   location: {
@@ -223,10 +158,6 @@ const purchaseSchema = new mongoose.Schema({
       type: String,
       default: ""
     }
-  },
-  pcs: {
-    type: String,
-    default: ""
   },
   date: {
     month: {

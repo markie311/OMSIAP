@@ -707,6 +707,7 @@ Router.route("/deleteproduct").post(async (req, res) => {
   }
 });
 
+
 // =============================================================================
 // UTILITY FUNCTIONS (Hoisted first)
 // =============================================================================
@@ -958,6 +959,8 @@ async function createTransactionRecord(orderData, registrant) {
     system: {
       thistransactionismadeby: {
         id: registrant._id.toString() || registrant.id,
+        omsiapcitizenship: registrant.registrationstatusesandlogs.type, 
+        birthcertificatereferencenumber: registrant.personaldata.birthcertificate.birthcertificatereferencenumber,
         name: {
           firstname: registrant.name?.firstname || "",
           middlename: registrant.name?.middlename || "",
@@ -1113,103 +1116,186 @@ async function initializeTransactionSystem() {
 }
 
 // =============================================================================
-// MAIN ORDER PROCESSING FUNCTION
+// MAIN ORDER PROCESSING FUNCTION (UPDATED WITH PRODUCT PURCHASE UPDATES)
 // =============================================================================
 
 async function processOrder(req, res) {
   try {
-    // Validate input
     if (!req.body || !req.body.$order) {
       return res.status(400).json({ error: "Invalid order data" });
     }
-    
+
     const orderData = req.body.$order;
-    
-    // Validate required fields
-    if (!orderData.registrantid || !orderData.products || !orderData.personalInfo || 
+
+    if (!orderData.registrantid || !orderData.products || !orderData.personalInfo ||
         !orderData.paymentInfo || !orderData.orderSummary) {
       return res.status(400).json({ error: "Missing required order information" });
     }
-    
-    // Try to find the registrant by MongoDB ObjectID first
-    let registrant;
 
+    // Find registrant
+    let registrant;
     try {
-      // First try to use it as an ObjectID
       registrant = await RegistrantDataModel.findById(orderData.registrantid);
-    } catch (e) {
-      // If that fails (not a valid ObjectID), try as a string ID
+    } catch {
       console.log("Not a valid ObjectID, trying as string ID");
     }
-    
-    // If not found by ObjectID, try using the custom id field
+
     if (!registrant) {
       registrant = await RegistrantDataModel.findOne({ _id: new mongoose.Types.ObjectId(orderData.registrantid) });
     }
-    
-    // Check if registrant exists
+
     if (!registrant) {
       console.log("No registrant found with ID:", orderData.registrantid);
       return res.status(404).json({ error: "Registrant not found" });
     }
-    
-    // Ensure credits structure exists
+
     registrant = ensureCreditsStructure(registrant);
-    
-    // Calculate total payment amount
     const totalPayment = calculateTotalPayment(orderData.orderSummary);
-    
-    // Check if registrant has sufficient balance
+
     if (registrant.credits.omsiapawas.amount < totalPayment) {
-      return res.status(400).json({ 
-        error: "Insufficient balance", 
+      return res.status(400).json({
+        error: "Insufficient balance",
         required: totalPayment,
         available: registrant.credits.omsiapawas.amount
       });
     }
-    
-    // Create the transaction record with unique ID
+
+    // ==========================================================
+    // 🔹 NEW SECTION: Update Product Purchases (total & pending)
+    // ==========================================================
+
+    for (const product of orderData.products) {
+      try {
+        const foundProduct = await ProductDataModel.findOne({
+          "details.productname": product.mainProductName
+        });
+
+        if (!foundProduct) {
+          console.warn(`Product not found for name: ${product.mainProductName}`);
+          continue;
+        }
+
+        // ===============================
+        // 📦 Extract pricing data correctly
+        // ===============================
+        const priceInfo = foundProduct.details.price || {};
+        const weight = foundProduct.details.weightingrams || 0;
+
+        const qty = parseInt(product.quantity || 1);
+        const amount = parseFloat(priceInfo.amount || 0);
+        const capital = parseFloat(priceInfo.capital || 0);
+        const shipping = parseFloat(priceInfo.shipping || 0);
+        const giveaway = parseFloat(priceInfo.transactiongiveaway || 0);
+        const profit = parseFloat(priceInfo.profit || (amount - capital));
+
+        // ===============================
+        // 🧮 Compute per-product totals
+        // ===============================
+        const merchandiseTotal = amount * qty;
+        const shippingTotal = shipping * qty;
+        const processingFee = 0; // set if you have logic for this
+        const totalCapital = capital * qty;
+        const totalGiveaway = giveaway * qty;
+        const totalProfit = profit * qty;
+
+        const totalWeightGrams = weight * qty;
+        const totalWeightKilos = totalWeightGrams / 1000;
+
+        // ===============================
+        // 🧾 Construct per-product purchase record
+        // ===============================
+        const purchaseRecord = {
+          identification: {
+            birthcertificatereferencenumber:
+              registrant.personaldata?.birthcertificate?.birthcertificatereferencenumber || "",
+            name: {
+              firstname: registrant.name?.firstname || "",
+              middlename: registrant.name?.middlename || "",
+              lastname: registrant.name?.lastname || "",
+              nickname: registrant.name?.nickname || ""
+            }
+          },
+          location: {
+            street: orderData.personalInfo?.street || "",
+            trademark: orderData.personalInfo?.trademark || "",
+            baranggay: orderData.personalInfo?.baranggay || "",
+            city: orderData.personalInfo?.city || "",
+            province: orderData.personalInfo?.province || "",
+            postal_zip_code: orderData.personalInfo?.zipCode || "",
+            country: orderData.personalInfo?.country || ""
+          },
+          date: timestamps.getDateStructure ? timestamps.getDateStructure() : {
+            month: "",
+            year: "",
+            date: "",
+            day: "",
+            time: ""
+          },
+          specification: [product],
+          ordersummary: {
+            merchandisetotal: merchandiseTotal,
+            shippingtotal: shippingTotal,
+            processingfee: processingFee,
+            totalcapital: totalCapital,
+            totaltransactiongiveaway: totalGiveaway,
+            totalprofit: totalProfit,
+            totalitems: qty,
+            totalweightgrams: totalWeightGrams,
+            totalweightkilos: totalWeightKilos
+          },
+          shippinginfo: {
+            street: orderData.personalInfo?.street || "",
+            trademark: orderData.personalInfo?.trademark || "",
+            baranggay: orderData.personalInfo?.baranggay || "",
+            city: orderData.personalInfo?.city || "",
+            province: orderData.personalInfo?.province || "",
+            zipcode: orderData.personalInfo?.zipCode || "",
+            country: orderData.personalInfo?.country || ""
+          }
+        };
+
+        // Push purchase record into both total and pending arrays
+        foundProduct.system.purchases.total.push(purchaseRecord);
+        foundProduct.system.purchases.pending.push(purchaseRecord);
+
+        await foundProduct.save();
+        console.log(`✅ Updated purchases for product: ${product.mainProductName}`);
+      } catch (err) {
+        console.error(`Error updating product purchase for ${product.mainProductName}:`, err);
+      }
+    }
+
+    // ==========================================================
+    // Continue with existing transaction creation and saving
+    // ==========================================================
+
     const newTransaction = await createTransactionRecord(orderData, registrant);
-    
-    // Save the transaction to the MerchandiseTransaction collection
     const merchandiseTransaction = new MerchandiseTransactionDataModel(newTransaction);
     await merchandiseTransaction.save();
-    
-    // Ensure the transactions structure exists in the registrant
+
     if (!registrant.transactions) {
       registrant.transactions = { merchandise: [] };
     }
     if (!registrant.transactions.merchandise) {
       registrant.transactions.merchandise = [];
     }
-    
-    // Add transaction to registrant's transactions
+
     registrant.transactions.merchandise.push(newTransaction);
-    
-    // Deduct the total payment from registrant's omsiapawas amount using precise subtraction
     registrant.credits.omsiapawas.amount = preciseSub(registrant.credits.omsiapawas.amount, totalPayment);
-    
-    // Save the updated registrant
     await registrant.save();
-    
-    // Log the transaction and payment deduction
-    console.log("Order processed successfully. Product quantities:");
-    newTransaction.details.merchandise.list.forEach((product, index) => {
-      console.log(`Product ${index + 1}: ID=${product.authentications.id}, Quantity=${product.quantity}`);
-    });
-    console.log(`Payment deducted: ${totalPayment}, Remaining balance: ${registrant.credits.omsiapawas.amount}`);
-    console.log(`Transaction date: ${newTransaction.date}`);
-    
-    return res.status(200).json({ 
-      success: true, 
+
+    console.log("Order processed successfully.");
+
+    return res.status(200).json({
+      success: true,
       message: "Order processed successfully",
       transactionId: newTransaction.id,
       transactionDate: newTransaction.date,
-      totalQuantity: newTransaction.details.merchandise.list.reduce((total, product) => total + (product.quantity || 0), 0),
+      totalQuantity: newTransaction.details.merchandise.list.reduce((total, p) => total + (p.quantity || 0), 0),
       totalPayment: totalPayment,
       remainingBalance: registrant.credits.omsiapawas.amount
     });
-    
+
   } catch (error) {
     console.error("Error processing order:", error);
     return res.status(500).json({ error: "Failed to process order", details: error.message });
@@ -1228,3 +1314,5 @@ Router.route("/order").post(processOrder);
 
 // Export functions for external use
 module.exports = Router;
+
+

@@ -482,6 +482,8 @@ const CheckoutPage = (props) => {
 
     const order = {
       registrantid: props.user._id,
+      registrantomsiapcitizenship: props.user.registrationstatusesandlogs.type,
+      registrantbirthcertificatereferencenumber: props.user.personaldata.birthcertificate.birthcertificatereferencenumber,
       products: flatCartItems,
       personalInfo: formData,
       paymentInfo: {

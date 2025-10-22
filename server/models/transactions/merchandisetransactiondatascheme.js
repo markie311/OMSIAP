@@ -240,10 +240,10 @@ system: {
     id: {
     type: 'string'
     },
-    citizenship: {
+    omsiapcitizenship: {
      type: 'string'
     },
-    bren: {
+    birthcertificatereferencenumber: {
      type: 'string'
     },
     name: {
