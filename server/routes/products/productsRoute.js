@@ -73,161 +73,51 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
-// Get all products route handler
-Router.route("/getallproducts").get(async (req, res) => {
+// =============================================================================
+// Get All Products Route Handler (with system.purchases included)
+// =============================================================================
+
+Router.get("/getallproducts", async (req, res) => {
+
   try {
-    // Extract query parameters for filtering, sorting, and pagination
-    const {
-      category,
-      minPrice,
-      maxPrice,
-      producttype,
-      sortBy = 'createdAt',
-      sortOrder = 'desc',
-      page = 1,
-      limit = 50,
-      search
-    } = req.query;
+    // disable caching for always fresh data
+    res.set("Cache-Control", "no-store, no-cache, must-revalidate, proxy-revalidate");
+    res.set("Pragma", "no-cache");
+    res.set("Expires", "0");
 
-    // Build filter object
-    const filter = {};
-    
-    if (category) {
-      filter['details.category'] = { $regex: category, $options: 'i' };
-    }
-    
-    if (minPrice || maxPrice) {
-      filter['details.price.amount'] = {};
-      if (minPrice) filter['details.price.amount'].$gte = parseFloat(minPrice);
-      if (maxPrice) filter['details.price.amount'].$lte = parseFloat(maxPrice);
-    }
-    
-    if (producttype) {
-      filter['authentications.producttype'] = producttype;
-    }
-    
-    if (search) {
-      filter.$or = [
-        { 'details.productname': { $regex: search, $options: 'i' } },
-        { 'details.description': { $regex: search, $options: 'i' } },
-        { 'details.category': { $regex: search, $options: 'i' } }
-      ];
-    }
+    // just get everything
+    const products = await ProductDataModel.find().lean();
 
-    // Build sort object
-    const sort = {};
-    const validSortFields = ['createdAt', 'details.price.amount', 'details.productname', 'customerfeedback.rating'];
-    
-    if (validSortFields.includes(sortBy)) {
-      sort[sortBy] = sortOrder === 'asc' ? 1 : -1;
-    } else {
-      sort['createdAt'] = -1; // Default sort
-    }
+    // ensure system and system.purchases exist for each product
+    const formattedProducts = products.map(product => {
+      if (!product.system) product.system = {};
+      if (!product.system.purchases) {
+        product.system.purchases = {
+          total: [],
+          pending: [],
+          accepted: [],
+          rejected: []
+        };
+      } 
+      return product;
+    });
 
-    // Calculate pagination
-    const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Cap at 100 items per page
-    const skip = (pageNum - 1) * limitNum;
-
-    // Get total count for pagination info
-    const totalProducts = await ProductDataModel.countDocuments(filter);
-    
-    // Fetch products with filters, sorting, and pagination
-    const products = await ProductDataModel
-      .find(filter)
-      .sort(sort)
-      .skip(skip)
-      .limit(limitNum)
-      .select('-system.purchases') // Exclude sensitive purchase data but keep stocks
-      .lean(); // Use lean() for better performance
-
-    // Check if products exist
-    if (!products || products.length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "No products found",
-        products: [],
-        pagination: {
-          currentPage: pageNum,
-          totalPages: 0,
-          totalProducts: 0,
-          hasNextPage: false,
-          hasPrevPage: false,
-          limit: limitNum
-        },
-        filters: {
-          category,
-          minPrice,
-          maxPrice,
-          producttype,
-          search
-        }
-      });
-    }
-
-    // Keep original product structure for frontend
-    const productsForFrontend = products;
-
-    // Calculate pagination info
-    const totalPages = Math.ceil(totalProducts / limitNum);
-    const hasNextPage = pageNum < totalPages;
-    const hasPrevPage = pageNum > 1;
-
-    // Return successful response
-    res.status(200).json({
+   return res.status(200).json({
       success: true,
-      message: `Found ${productsForFrontend.length} products`,
-      products: productsForFrontend,
-      pagination: {
-        currentPage: pageNum,
-        totalPages,
-        totalProducts,
-        hasNextPage,
-        hasPrevPage,
-        limit: limitNum,
-        resultsPerPage: productsForFrontend.length
-      },
-      filters: {
-        category,
-        minPrice,
-        maxPrice,
-        producttype,
-        search,
-        sortBy,
-        sortOrder
-      }
+      count: formattedProducts.length,
+      products: formattedProducts   // 👈 renamed from "data" to "products"
     });
 
   } catch (error) {
-    console.error("Error fetching products:", error);
-    
-    // Handle different types of errors
-    let statusCode = 500;
-    let errorMessage = "Failed to fetch products";
-    
-    if (error.name === 'CastError') {
-      statusCode = 400;
-      errorMessage = "Invalid query parameters";
-    } else if (error.name === 'MongoError' || error.name === 'MongoServerError') {
-      statusCode = 503;
-      errorMessage = "Database connection failed";
-    } else if (error.name === 'MongooseError') {
-      statusCode = 500;
-      errorMessage = "Database query failed";
-    }
-    
-    res.status(statusCode).json({
+    console.error("❌ Error fetching products:", error);
+    return res.status(500).json({
       success: false,
-      message: errorMessage,
-      products: [],
-      error: process.env.NODE_ENV === 'development' ? {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      } : undefined
+      message: "Failed to fetch products",
+      error: error.message
     });
   }
 });
+
 
 // Updated route handler
 Router.route("/addproduct").post(upload.any(), async (req, res) => {
