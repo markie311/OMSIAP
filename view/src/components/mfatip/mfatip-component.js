@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react"
 
+import NavBar from "../navbar/navbar/navbar-component.js"
+
 import { useNavigate } from 'react-router-dom';
 
 import "../../styles/mfatip/mfatip.scss"
@@ -93,6 +95,9 @@ export default function MonthlyFinancialAllocation() {
 
   return (
     <div className={`mfatip-container ${isVisible ? "visible" : ""}`}>
+
+      <NavBar />
+      
       {/* Main Header */}
       <header className="mfatip-main-header">
         <div className="header-content">
