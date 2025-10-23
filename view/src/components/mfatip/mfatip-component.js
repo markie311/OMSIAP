@@ -1,750 +1,502 @@
-import React, {
-  useState,
-  useEffect
-} from 'react';
+"use client"
 
-import { Row, 
-       Col,
-       Dropdown
-     } from 'react-bootstrap';
+import { useState, useEffect } from "react"
 
-import '../../styles/mfatip/mfatip.scss'
+import { useNavigate } from 'react-router-dom';
 
-import { useNavigate } from "react-router-dom"
+import "../../styles/mfatip/mfatip.scss"
 
-import NavBar from '../navbar/navbar/navbar-component.js'
-import RapportAdvertisement from '../landingpage/rapportadvertisement/rapportadvertisement-component.js'
-import PricingTable from '../landingpage/pricingtable/pricingtable-component.js'
-import Footer from '../landingpage/footer/footer-component.js'
+export default function MonthlyFinancialAllocation() {
 
+  const navigate = useNavigate();
 
-
-export default function MonthlyFinanceAllocationToIndividualPeople(props) {
-
-  const navigate = useNavigate()
-
-return(
-  <Col id="mfatip">
-
-    <Col id='mfatip-landingpageview'>
-      <NavBar viewport={props.viewport}/>
-      <Header />
-      <HopeHeader navigate={navigate}/>
-      <RapportAdvertisement />
-      <MFATIPConfiguration navigate={navigate}/>
-      <Footer />
-    </Col>
-
-    <SetUpMFATIPACCOUNT user={props.user}
-                        usercb={props.usercb}/>
-
-  </Col>
-)
-}
-
-{/*
-function Header() {
-return ( 
-  <Row id="mfatipheaderrowcontariner">
-    <Col xs={12}
-         md={5}
-         lg={5}
-         id="mfatipheaderrowcontariner-headerindicationscontainer">
-      <h4 className="mfatipheaderrowcontariner-headerindicationscontainer-headerindication">Building Your Path to Personal Success</h4>
-      <br/>
-      <h1 className="mfatipheaderrowcontariner-headerindicationscontainer-headerindication">(M)onthly (F)inancial (A)llocation (T)o (I)ndividual (P)eople: MFATIP</h1>
-      <br/>
-      <br/>
-      <p className="mfatipheaderrowcontariner-headerindicationscontainer-headerindication">Accelerate your personal growth by receiving monthly financial allocations through your MFATIP profile. Our team will be present to support your success. We pride ourselves on providing excellent service to individuals, ensuring a positive experience for everyone.</p>
-    </Col>
-    <Col xs={12}
-         md={7}
-         lg={7}
-         id="mfatipheaderrowcontariner-dataheaderindicationcontainer">
-      <Row id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer">
-       <Col xs={12}
-            md={6}
-            lg={6}
-            id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer">
-        <Row id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer">
-          <Col xs={6}
-               md={6}
-               lg={6}
-               className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer">
-            <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer">
-              <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer">
-                <p className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer-dataheaderindication">0 WEBSITE PAGE VISITS</p>
-              </Col>
-              <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer">
-                <p className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer-dataheaderindication">0 ACTIVE MFATIP ACCOUNT PROFILE HOLDERS</p>
-              </Col>
-            </Col>
-          </Col>
-          <Col xs={6}
-               md={6}
-               lg={6}
-               className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer">
-            <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer">
-              <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer">
-                <p className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer-dataheaderindication">0 PUBLIC ACTIVE CITIZEN'S</p>
-              </Col>
-              <Col className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer">
-                <p className="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datarowcontainer-datacolcontainer-positioningcontainer-datacontainer-dataheaderindication">0 PRIVATE ACTIVE CITIZEN'S</p>
-              </Col>
-            </Col>
-          </Col>
-        </Row>
-        <Col id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datadisplayimagecontainer">
-         <img src="../images/mfatip/people.jpg"
-              id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-datacontainer-datadisplayimagecontainer-datadisplayimage"/>
-        </Col>
-       </Col>
-       <Col xs={12}
-            md={6}
-            lg={6}
-            id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-ownerbackgroundimagecontainer">
-          <img src="../images/mfatip/tuxedo.jpg"
-               id="mfatipheaderrowcontariner-dataheaderindicationcontainer-rowcontainer-ownerbackgroundimagecontainer-ownerbackgrounimage"/>
-       </Col>
-      </Row>
-    </Col>
-  </Row>
-)
-}
-*/}
-
-function Header() {
+  const [isVisible, setIsVisible] = useState(false)
   const [counts, setCounts] = useState({
-    pageVisits: 0,
-    activeProfiles: 0,
-    publicCitizens: 0,
-    privateCitizens: 0,
-  });
-
-  const [animate, setAnimate] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isVisible, setIsVisible] = useState(false);
+    ecommerce: 0,
+    business: 0,
+    stores: 0,
+    community: 0,
+  })
+  const [activeTab, setActiveTab] = useState("overview")
 
   useEffect(() => {
-    // Trigger entrance animation
-    const timer = setTimeout(() => {
-      setIsVisible(true);
-    }, 100);
+    setIsVisible(true)
+    animateCounts()
+  }, [])
 
-    // Simulate fetching data
-    const fetchData = () => {
-      return {
-        pageVisits: 1234,
-        activeProfiles: 567,
-        publicCitizens: 890,
-        privateCitizens: 123,
-      };
-    };
+  const animateCounts = () => {
+    const targetCounts = {
+      ecommerce: 1,
+      business: 0,
+      stores: 0,
+      community: 0,
+    }
 
-    const data = fetchData();
+    const duration = 2500
+    const steps = 60
+    const interval = duration / steps
+    let step = 0
 
-    // Start animation after a short delay
-    setTimeout(() => {
-      setAnimate(true);
-      animateCounts(data);
-    }, 800);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  const animateCounts = (targetCounts) => {
-    const duration = 2000;
-    const steps = 60;
-    const interval = duration / steps;
-
-    let step = 0;
     const timer = setInterval(() => {
-      step++;
-      const progress = step / steps;
+      step++
+      const progress = step / steps
 
       setCounts({
-        pageVisits: Math.round(targetCounts.pageVisits * progress),
-        activeProfiles: Math.round(targetCounts.activeProfiles * progress),
-        publicCitizens: Math.round(targetCounts.publicCitizens * progress),
-        privateCitizens: Math.round(targetCounts.privateCitizens * progress),
-      });
+        ecommerce: Math.round(targetCounts.ecommerce * progress),
+        business: Math.round(targetCounts.business * progress),
+        stores: Math.round(targetCounts.stores * progress),
+        community: Math.round(targetCounts.community * progress),
+      })
+
+      if (step === steps) clearInterval(timer)
+    }, interval)
+  }
+
+  const profitSources = [
+    {
+      id: "ecommerce",
+      title: "E-Commerce Profit",
+      icon: "🛒",
+      description: "Global online transactions",
+      allocation: "₱2,000",
+      percentage: 25,
+      color: "#00D9FF",
+    },
+    {
+      id: "business",
+      title: "Business Profit",
+      icon: "💼",
+      description: "Corporate operations",
+      allocation: "₱2,000",
+      percentage: 25,
+      color: "#00FF88",
+    },
+    {
+      id: "stores",
+      title: "Stores Profit",
+      icon: "🏪",
+      description: "Retail locations",
+      allocation: "₱2,000",
+      percentage: 25,
+      color: "#FF00FF",
+    },
+    {
+      id: "community",
+      title: "Community Projects",
+      icon: "🤝",
+      description: "Social initiatives",
+      allocation: "₱2,000",
+      percentage: 25,
+      color: "#FFD700",
+    },
+  ]
+
+  return (
+    <div className={`mfatip-container ${isVisible ? "visible" : ""}`}>
+      {/* Main Header */}
+      <header className="mfatip-main-header">
+        <div className="header-content">
+          <div className="header-badge">OMSIAP Initiative</div>
+          <h1 className="header-title">
+            This is <span className="highlight-omsiap">OMSIAP</span>, This is{" "}
+            <span className="highlight-mfatip">MFATIP</span>
+          </h1>
+          <p className="header-subtitle">Strengthening its foundation for everyone's sake</p>
+          <div className="header-divider"></div>
+        </div>
+      </header>
+
+      <ProfitSourcesSection />
+
+      {/* Navigation Tabs */}
+      <nav className="mfatip-nav">
+        <button
+          className={`nav-tab ${activeTab === "overview" ? "active" : ""}`}
+          onClick={() => setActiveTab("overview")}
+        >
+          Overview
+        </button>
+        <button
+          className={`nav-tab ${activeTab === "allocation" ? "active" : ""}`}
+          onClick={() => setActiveTab("allocation")}
+        >
+          Allocation Details
+        </button>
+        <button
+          className={`nav-tab ${activeTab === "benefits" ? "active" : ""}`}
+          onClick={() => setActiveTab("benefits")}
+        >
+          Benefits
+        </button>
+      </nav>
+
+      {/* Content Sections */}
+      <main className="mfatip-content">
+        {/* Overview Tab */}
+        {activeTab === "overview" && (
+          <section className="content-section overview-section">
+            <div className="section-header">
+              <h2>Monthly Financial Allocation Overview</h2>
+              <p>Transparent distribution from multiple profit sources</p>
+            </div>
+
+            {/* Profit Sources Grid */}
+            <div className="profit-sources-grid">
+              {profitSources.map((source, index) => (
+                <div
+                  key={source.id}
+                  className="profit-card"
+                  style={{ "--card-color": source.color, "--delay": `${index * 0.1}s` }}
+                >
+                  <div className="card-icon">{source.icon}</div>
+                  <h3 className="card-title">{source.title}</h3>
+                  <p className="card-description">{source.description}</p>
+                  <div className="card-allocation">
+                    <span className="allocation-label">Monthly Allocation</span>
+                   {/*<span className="allocation-amount">{source.allocation}</span>*/}
+                    </div>
+                  <div className="card-progress">
+                    <div className="progress-bar" style={{ width: `${source.percentage}%` }}></div>
+                  </div>
+                  <span className="card-percentage">{source.percentage}%</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Total Allocation Card */}
+            <div className="total-allocation-card">
+              <div className="total-content">
+                <h3>Total Monthly Allocation</h3>
+                <p>UP TO</p>
+                <div className="total-amount">₱15,000</div>
+                <p className="total-description">
+                  Distributed equally from all profit sources to support individual growth
+                </p>
+                 <p className="total-description">
+                  Based from available PROFIT SOURCES above
+                </p>
+              </div>
+              <div className="total-visual">
+                <div className="circle-progress">
+                  <svg viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" className="circle-bg"></circle>
+                    <circle cx="50" cy="50" r="45" className="circle-progress-bar"></circle>
+                  </svg>
+                  <div className="circle-text">100%</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Allocation Details Tab */}
+        {activeTab === "allocation" && (
+          <section className="content-section allocation-section">
+            <div className="section-header">
+              <h2>Allocation Breakdown</h2>
+              <p>Detailed view of how funds are distributed</p>
+            </div>
+
+            <div className="allocation-details">
+              {profitSources.map((source) => (
+                <div key={source.id} className="allocation-item">
+                  <div className="allocation-header">
+                    <div className="allocation-title-group">
+                      <span className="allocation-icon">{source.icon}</span>
+                      <div>
+                        <h4>{source.title}</h4>
+                        <p>{source.description}</p>
+                      </div>
+                    </div>
+                    <div className="allocation-amount-group">
+                      {/*<span className="amount">{source.allocation}</span>*/}
+                      <span className="percentage">{source.percentage}%</span>
+                    </div>
+                  </div>
+                  <div className="allocation-bar">
+                    <div
+                      className="allocation-fill"
+                      style={{
+                        width: `${source.percentage}%`,
+                        backgroundColor: source.color,
+                      }}
+                    ></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Distribution Timeline */}
+            <div className="distribution-timeline">
+              <h3>Distribution Timeline</h3>
+              <div className="timeline">
+                <div className="timeline-item">
+                  <div className="timeline-marker"></div>
+                  <div className="timeline-content">
+                    <h4>Application Submitted</h4>
+                    <p>Complete your MFATIP profile</p>
+                  </div>
+                </div>
+                <div className="timeline-item">
+                  <div className="timeline-marker"></div>
+                  <div className="timeline-content">
+                    <h4>Verification Process</h4>
+                    <p>Our team reviews your information</p>
+                  </div>
+                </div>
+                <div className="timeline-item">
+                  <div className="timeline-marker"></div>
+                  <div className="timeline-content">
+                    <h4>Approval & Activation</h4>
+                    <p>Account activated for allocations</p>
+                  </div>
+                </div>
+                <div className="timeline-item">
+                  <div className="timeline-marker"></div>
+                  <div className="timeline-content">
+                    <h4>Monthly Disbursement</h4>
+                    <p>Receive your allocation every month</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* Benefits Tab */}
+        {activeTab === "benefits" && (
+          <section className="content-section benefits-section">
+            <div className="section-header">
+              <h2>MFATIP Benefits</h2>
+              <p>Comprehensive support for your personal growth</p>
+            </div>
+
+            <div className="benefits-grid">
+              <div className="benefit-card">
+                <div className="benefit-icon">💰</div>
+                <h3>Monthly Financial Support</h3>
+                <p>Up to ₱8,000 in monthly allocations from multiple profit sources</p>
+              </div>
+              <div className="benefit-card">
+                <div className="benefit-icon">🔒</div>
+                <h3>Secure & Transparent</h3>
+                <p>All transactions are secure and fully transparent with detailed reporting</p>
+              </div>
+              <div className="benefit-card">
+                <div className="benefit-icon">⏰</div>
+                <h3>Lifetime Access</h3>
+                <p>Once approved, enjoy lifetime account access with no renewal fees</p>
+              </div>
+              <div className="benefit-card">
+                <div className="benefit-icon">📊</div>
+                <h3>Personal Dashboard</h3>
+                <p>Track your allocations and manage your account from your personal dashboard</p>
+              </div>
+              <div className="benefit-card">
+                <div className="benefit-icon">🎓</div>
+                <h3>Growth Tools</h3>
+                <p>Access portfolio builder, resume creator, and task management systems</p>
+              </div>
+              <div className="benefit-card">
+                <div className="benefit-icon">🌍</div>
+                <h3>Community Support</h3>
+                <p>Join a growing community of individuals supported by OMSIAP</p>
+              </div>
+            </div>
+
+            {/* CTA Section */}
+            <div className="cta-section">
+              <h3>Ready to Get Started?</h3>
+              <p>Join thousands of individuals already benefiting from MFATIP</p>
+              <button className="cta-button">Register Now</button>
+            </div>
+          </section>
+        )}
+      </main>
+
+
+      {/* Footer */}
+      <footer className="mfatip-footer">
+        <div className="footer-content">
+          <div className="footer-section">
+            <h4>About OMSIAP</h4>
+            <p>Empowering individuals through transparent financial allocation and community support.</p>
+          </div>
+          <div className="footer-section">
+            <h4>Contact Us</h4>
+            <p>Email: support@omsiap.com</p>
+            <p>Phone: +63 (0) 000-0000</p>
+          </div>
+          <div className="footer-section">
+            <h4>Quick Links</h4>
+            <ul>
+              <li>
+                <a href="#faq">FAQ</a>
+              </li>
+              <li>
+                <a href="#terms">Terms & Conditions</a>
+              </li>
+              <li>
+                <a href="#privacy">Privacy Policy</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>&copy; 2025 OMSIAP. All rights reserved. Strengthening foundations for everyone's sake.</p>
+        </div>
+      </footer>
+    </div>
+  )
+}
+
+function ProfitSourcesSection() {
+  const [counts, setCounts] = useState({
+    ecommerce: 0,
+    stores: 0,
+    businesses: 0,
+    community: 0,
+  })
+
+  const [animate, setAnimate] = useState(false)
+
+  useEffect(() => {
+    // Trigger animation after component mounts
+    const timer = setTimeout(() => {
+      setAnimate(true)
+      animateCounts()
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  const animateCounts = () => {
+    const targetCounts = {
+      ecommerce: 1,
+      stores: 0,
+      businesses: 0,
+      community: 0,
+    }
+
+    const duration = 2000
+    const steps = 60
+    const interval = duration / steps
+
+    let step = 0
+    const timer = setInterval(() => {
+      step++
+      const progress = step / steps
+
+      setCounts({
+        ecommerce: Math.round(targetCounts.ecommerce * progress),
+        stores: Math.round(targetCounts.stores * progress),
+        businesses: Math.round(targetCounts.businesses * progress),
+        community: Math.round(targetCounts.community * progress),
+      })
 
       if (step === steps) {
-        clearInterval(timer);
+        clearInterval(timer)
+        setCounts(targetCounts)
       }
-    }, interval);
-  };
-
-  const openImageModal = (imageSrc, imageAlt) => {
-    setSelectedImage({ src: imageSrc, alt: imageAlt });
-  };
-
-  const closeImageModal = () => {
-    setSelectedImage(null);
-  };
-
-    return (
-      <div className={`mfatip-header ${isVisible ? 'mfatip-header--visible' : ''}`}>
-        <div className="mfatip-container">
-          <div className="mfatip-grid">
-            {/* Left Content Section */}
-            <div className="mfatip-content">
-              <div className="mfatip-content__inner">
-                <h4 className="mfatip-subtitle">Building Your Path to Personal Success</h4>
-                <h1 className="mfatip-title">
-                  <span className="mfatip-title__acronym">(M)onthly (F)inancial (A)llocation (T)o (I)ndividual (P)eople:</span>
-                  <span className="mfatip-title__name">MFATIP</span>
-                </h1>
-                <p className="mfatip-description">
-                  Accelerate your personal growth by receiving monthly financial allocations through your MFATIP profile. 
-                  Our team will be present to support your success. We pride ourselves on providing excellent service to 
-                  individuals, ensuring a positive experience for everyone.
-                </p>
-              </div>
-            </div>
-
-            {/* Right Data Section */}
-            <div className="mfatip-data-section">
-              <div className="mfatip-stats-grid">
-                {/* Stats Cards */}
-                <div className="mfatip-stats-container">
-                  <div className="mfatip-stat-card mfatip-stat-card--primary">
-                    <div className="mfatip-stat-card__content">
-                      <span className={`mfatip-stat-number ${animate ? 'mfatip-stat-number--animate' : ''}`}>
-                        {counts.pageVisits}
-                      </span>
-                      <span className="mfatip-stat-label">Website Page Visits</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mfatip-stat-card mfatip-stat-card--secondary">
-                    <div className="mfatip-stat-card__content">
-                      <span className={`mfatip-stat-number ${animate ? 'mfatip-stat-number--animate' : ''}`}>
-                        {counts.activeProfiles}
-                      </span>
-                      <span className="mfatip-stat-label">Active MFATIP Account Profile Holders</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mfatip-stat-card mfatip-stat-card--accent">
-                    <div className="mfatip-stat-card__content">
-                      <span className={`mfatip-stat-number ${animate ? 'mfatip-stat-number--animate' : ''}`}>
-                        {counts.publicCitizens}
-                      </span>
-                      <span className="mfatip-stat-label">Public Active Citizens</span>
-                    </div>
-                  </div>
-                  
-                  <div className="mfatip-stat-card mfatip-stat-card--tertiary">
-                    <div className="mfatip-stat-card__content">
-                      <span className={`mfatip-stat-number ${animate ? 'mfatip-stat-number--animate' : ''}`}>
-                        {counts.privateCitizens}
-                      </span>
-                      <span className="mfatip-stat-label">Private Active Citizens</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Images Section */}
-                <div className="mfatip-images">
-                  <div className="mfatip-image-container mfatip-image-container--people">
-                    <div 
-                      className="mfatip-image-placeholder mfatip-image-placeholder--people"
-                      onClick={() => openImageModal('/images/mfatip/people.jpg', 'MFATIP Community')}
-                    >
-                      <div className="mfatip-image-overlay">
-                        <span className="mfatip-image-text">Community</span>
-                        <div className="mfatip-image-icon">👥</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="mfatip-image-container mfatip-image-container--owner">
-                    <div 
-                      className="mfatip-image-placeholder mfatip-image-placeholder--owner"
-                      onClick={() => openImageModal('/images/mfatip/tuxedo.jpg', 'Professional Excellence')}
-                    >
-                      <div className="mfatip-image-overlay">
-                        <span className="mfatip-image-text">Excellence</span>
-                        <div className="mfatip-image-icon">🎩</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Image Modal */}
-        {selectedImage && (
-          <div className="mfatip-modal" onClick={closeImageModal}>
-            <div className="mfatip-modal__backdrop"></div>
-            <div className="mfatip-modal__content" onClick={e => e.stopPropagation()}>
-              <button className="mfatip-modal__close" onClick={closeImageModal}>
-                ×
-              </button>
-              <div className="mfatip-modal__image-container">
-                <img 
-                  src={selectedImage.src} 
-                  alt={selectedImage.alt}
-                  className="mfatip-modal__image"
-                />
-              </div>
-              <div className="mfatip-modal__caption">
-                {selectedImage.alt}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-}
-
-function HopeHeader(props) {
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const images = [
-    { src: "../images/mfatip/tuxedo.jpg", alt: "Tuxedo Image 1", id: "image1" },
-    { src: "../images/mfatip/tuxedo.jpg", alt: "Tuxedo Image 2", id: "image2" },
-    { src: "../images/mfatip/tuxedo.jpg", alt: "Tuxedo Image 3", id: "image3" }
-  ];
-
-  const handleImageClick = (image) => {
-    setSelectedImage(image);
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedImage(null);
-  };
-
-  return (  
-   <div className="hope-header-wrapper">
-      <div className="hope-header-container">
-            <div className="hope-header-row">
-              <div className="hope-header-images-section">
-                <div className="hope-header-images-grid">
-                  {images.map((image, index) => (
-                    <div 
-                      key={index}
-                      className="hope-header-image-container"
-                      onClick={() => handleImageClick(image)}
-                    >
-                      <img 
-                        src={image.src} 
-                        alt={image.alt}
-                        className="hope-header-display-image"
-                      />
-                      <div className="hope-header-image-overlay">
-                        <span className="hope-header-zoom-icon">🔍</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="hope-header-content-section">
-                <h4 className="hope-header-subtitle">About HOPE</h4>
-                <h2 className="hope-header-title">LEADING ALL HOPES INTO PRECISION</h2>
-                <p className="hope-header-description">
-                  OMSIAP believes that the foundation we established was sufficient to unite everyone for constitutional change. Join our growing community that tracks market prices, shares data-driven insights about current trends, provides updates on our industrial economy and latest designs, and offers financial allocations based on OMSIAP's profits.
-                </p>
-                <button className="hope-header-cta-button"
-                         onClick={()=> {
-                          //const _setupmfatipaccountmodal = document.querySelector("#setupmfatipaccount");
-                          //_setupmfatipaccountmodal.style.display = "block";
-                          props.navigate('/mfatip/loginregister')
-                        }}>
-                  Join Community
-                </button>
-              </div>
-            </div>
-      </div>
-
-      {/* Modal */}
-      <div 
-        className={`hope-header-modal ${isModalOpen ? 'active' : ''}`}
-        onClick={closeModal}
-      >
-        <div className="hope-header-modal-content" onClick={(e) => e.stopPropagation()}>
-          <button className="hope-header-modal-close" onClick={closeModal}>
-            ×
-          </button>
-          {selectedImage && (
-            <img 
-              src={selectedImage.src} 
-              alt={selectedImage.alt}
-              className="hope-header-modal-image"
-            />
-          )}
-        </div>
-      </div>
-   </div>
-  );
-}
-
-function MFATIPConfiguration(props) {
-return (
-<Col id="mfatipconfiguration">
- <Col id="mfatipconfiguration-headerindicationcontainer">
-   <h4 className="mfatipconfiguration-headerindicationcontainer-headerindication">BUILD YOUR Self-Growth Success with OMSIAP</h4>
-   <h1 className="mfatipconfiguration-headerindicationcontainer-headerindication">REGISTER NOW</h1>
- </Col>
- <Row id="mfatipconfiguration-configurationmodalrowcontainer">
-   <Col xs={12}
-        md={12}
-        lg={12}
-        className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer">
-      <h3 className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">OMSIAP Benefits Package</h3>
-      <br />
-      <p className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">Receive Monthly Financial Support</p>
-      <ul className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">
-        <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Up to ₱8,000 Philippine Pesos</li>
-        <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> No registration fees</li>
-        <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Lifetime account access</li>
-        <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Account Features</li>
-        <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Secure permanent storage in OMSIAP database</li>
-        <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Free access to personal development tools:</li>
-        <ul>
-          <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Portfolio builder</li>
-          <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Resume creator</li>
-          <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li">  <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Task management system</li>
-        </ul>
-        <li className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication-li"> <img src="../images/mfatip/check.jpg"
-               className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-checkdisplayimage"/> Complimentary OMSIAP Map access</li>
-      </ul>
-   </Col>
-   <Col xs={12}
-        md={12}
-        lg={12}
-        className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer">
-      <h4 className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">Contact OMSIAP</h4>
-      <br/>
-      <h1 className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">Have Questions Get In Touch</h1>
-      <br/>
-      <p className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">Our team is available at,</p>
-      <br />
-      <br />
-      <br />
-      <p className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">Address: Street, Baranggay, City, Province, Country</p>
-      <p className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">Email address: Street, Baranggay, City, Province, Country</p>
-      <p className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">Phone number: 000-000-0000-000</p>
-      <p className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-headerindication">Telephone number: 000-000-0000-000</p>
-   </Col>
-   <Col xs={12}
-        md={12}
-        lg={12}
-        className="mfatipconfiguration-configurationmodalrowcontainer-colcontainer">
-     <button id="mfatipconfiguration-configurationmodalrowcontainer-colcontainer-setupmymfatipaccountbutton"
-             onClick={()=> {
-              //const _setupmfatipaccountmodal = document.querySelector("#setupmfatipaccount");
-              //_setupmfatipaccountmodal.style.display = "block";
-              props.navigate('/mfatip/loginregister')
-             }}>SET UP MY (M)onthly (F)inance (A)llocation (T)o (I)ndividual (P)eople ACCOUNT</button>
-   </Col>
- </Row>
-</Col>
-)
-}
-
-function SetUpMFATIPACCOUNT(props) {
-return (
- <Col id="setupmfatipaccount">
-   <Row id="setupmfatipaccount-navigationcontainer">
-     <Col xs={3}
-          md={3}
-          lg={3}
-          className="setupmfatipaccount-navigationcontainer-navigationheaderindicationcontainer">
-        <p className="setupmfatipaccount-navigationcontainer-navigationheaderindicationcontainer-headerindication"
-           onClick={()=> {
-            const _setupmfatipaccountmodal = document.querySelector("#setupmfatipaccount");
-            _setupmfatipaccountmodal.style.display = "none";
-           }}>Back /</p>
-     </Col>
-   </Row>
-   <MFATIPRegistrationForm />
-   
- </Col>
-)
-}
-
-
-function MFATIPRegistrationForm() { 
-// State for form data
-const [formData, setFormData] = useState({
-  firstName: '',
-  middleName: '',
-  lastName: '',
-  phoneNumber: '',
-  dateOfBirth: '',
-  civilStatus: '',
-  birthCertificateFront: null,
-  birthCertificateBack: null,
-  governmentIdFront: null,
-  governmentIdBack: null
-});
-
-// State for image previews
-const [previews, setPreviews] = useState({
-  birthCertificateFront: null,
-  birthCertificateBack: null,
-  governmentIdFront: null,
-  governmentIdBack: null
-});
-
-// Handle text input changes
-const handleInputChange = (e) => {
-  const { name, value } = e.target;
-  setFormData({
-    ...formData,
-    [name]: value
-  });
-};
-
-// Handle file input changes
-const handleFileChange = (e) => {
-  const { name, files } = e.target;
-  
-  if (files && files[0]) {
-    // Update form data with file
-    setFormData({
-      ...formData,
-      [name]: files[0]
-    });
-    
-    // Create image preview
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setPreviews({
-        ...previews,
-        [name]: event.target.result
-      });
-    };
-    reader.readAsDataURL(files[0]);
+    }, interval)
   }
-};
 
-// Handle form submission
-const handleSubmit = (e) => {
-  e.preventDefault();
-  console.log('Form submitted:', formData);
-  // Here you would typically send the data to your backend
-};
+  const sources = [
+    {
+      id: "ecommerce",
+      title: "E-Commerce Profit",
+      description:
+        "Current 1 Worldwide e-commerce website ready to support your Monthly Financial Allocations through transaction giveaways",
+      icon: "🛍️",
+      count: counts.ecommerce,
+      color: "ecommerce",
+      details: "Active worldwide platform generating sustainable revenue",
+    },
+    {
+      id: "stores",
+      title: "Physical Stores",
+      description: "Current 0 Stores ready to support your Monthly Financial Allocations through a portion of total profit",
+      icon: "🏪",
+      count: counts.stores,
+      color: "stores",
+      details: "Retail locations contributing to community growth",
+    },
+    {
+      id: "businesses",
+      title: "Active Businesses",
+      description:
+        "Current 0 Business names ready and prepared to share portions of profit for your Monthly Financial Allocations",
+      icon: "💼",
+      count: counts.businesses,
+      color: "businesses",
+      details: "Diverse business ventures supporting the initiative",
+    },
+    {
+      id: "community",
+      title: "Community Projects",
+      description:
+        "Current 0 community projects whose profit will be shared among everyone as Monthly Financial Allocations",
+      icon: "🤝",
+      count: counts.community,
+      color: "community",
+      details: "Collaborative projects benefiting all participants",
+    },
+  ]
 
-return (
-  <div className="registration-container">
-    <h2>Registration Form</h2>
-    
-    <form onSubmit={handleSubmit}>
-      <div className="form-section">
-        <h3>Personal Information</h3>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="firstName">First Name</label>
-            <input
-              type="text"
-              id="firstName"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="middleName">Middle Name</label>
-            <input
-              type="text"
-              id="middleName"
-              name="middleName"
-              value={formData.middleName}
-              onChange={handleInputChange}
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="lastName">Last Name</label>
-            <input
-              type="text"
-              id="lastName"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
+  return (
+    <section className="profit-sources">
+      <div className="profit-sources__container">
+        <div className="profit-sources__header">
+          <h2 className="profit-sources__title">Profit Sources</h2>
+          <p className="profit-sources__subtitle">Four pillars of financial allocation supporting individual growth</p>
         </div>
-        
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="phoneNumber">Phone Number</label>
-            <input
-              type="tel"
-              id="phoneNumber"
-              name="phoneNumber"
-              value={formData.phoneNumber}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="dateOfBirth">Date of Birth</label>
-            <input
-              type="date"
-              id="dateOfBirth"
-              name="dateOfBirth"
-              value={formData.dateOfBirth}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="civilStatus">Civil Status</label>
-            <select
-              id="civilStatus"
-              name="civilStatus"
-              value={formData.civilStatus}
-              onChange={handleInputChange}
-              required
+
+        <div className="profit-sources__grid">
+          {sources.map((source, index) => (
+            <div
+              key={source.id}
+              className={`profit-card profit-card--${source.color}`}
+              style={{ "--delay": `${index * 0.1}s` }}
             >
-              <option value="">Select Status</option>
-              <option value="single">Single</option>
-              <option value="married">Married</option>
-              <option value="divorced">Divorced</option>
-              <option value="widowed">Widowed</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      
-      <div className="form-section">
-        <h3>Document Uploads</h3>
-        
-        <div className="document-row">
-          <div className="document-group">
-            <h4>Birth Certificate</h4>
-            
-            <div className="document-uploads">
-              <div className="upload-item">
-                <label htmlFor="birthCertificateFront">
-                  <div className="upload-label">Front Side</div>
-                  <div className={`upload-preview ${previews.birthCertificateFront ? 'has-image' : ''}`}>
-                    {previews.birthCertificateFront ? (
-                      <img src={previews.birthCertificateFront} alt="Birth Certificate Front" />
-                    ) : (
-                      <div className="upload-placeholder">Click to upload</div>
-                    )}
-                  </div>
-                </label>
-                <input
-                  type="file"
-                  id="birthCertificateFront"
-                  name="birthCertificateFront"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  required
-                  hidden
-                />
+              <div className="profit-card__header">
+                <div className="profit-card__icon">{source.icon}</div>
+                <div className="profit-card__count-badge">
+                  <span className={`profit-card__count ${animate ? "profit-card__count--animate" : ""}`}>
+                    {source.count}
+                  </span>
+                </div>
               </div>
+
+              <h3 className="profit-card__title">{source.title}</h3>
               
-              <div className="upload-item">
-                <label htmlFor="birthCertificateBack">
-                  <div className="upload-label">Back Side</div>
-                  <div className={`upload-preview ${previews.birthCertificateBack ? 'has-image' : ''}`}>
-                    {previews.birthCertificateBack ? (
-                      <img src={previews.birthCertificateBack} alt="Birth Certificate Back" />
-                    ) : (
-                      <div className="upload-placeholder">Click to upload</div>
-                    )}
-                  </div>
-                </label>
-                <input
-                  type="file"
-                  id="birthCertificateBack"
-                  name="birthCertificateBack"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  required
-                  hidden
-                />
+              <p className="profit-card__description"> {source.description}</p>
+
+              <div className="profit-card__details">
+                <span className="profit-card__detail-text">{source.details}</span>
+              </div>
+
+              <div className="profit-card__progress">
+                <div className="profit-card__progress-bar"></div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
-        
-        <div className="document-row">
-          <div className="document-group">
-            <h4>Government ID</h4>
-            
-            <div className="document-uploads">
-              <div className="upload-item">
-                <label htmlFor="governmentIdFront">
-                  <div className="upload-label">Front Side</div>
-                  <div className={`upload-preview ${previews.governmentIdFront ? 'has-image' : ''}`}>
-                    {previews.governmentIdFront ? (
-                      <img src={previews.governmentIdFront} alt="Government ID Front" />
-                    ) : (
-                      <div className="upload-placeholder">Click to upload</div>
-                    )}
-                  </div>
-                </label>
-                <input
-                  type="file"
-                  id="governmentIdFront"
-                  name="governmentIdFront"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  required
-                  hidden
-                />
-              </div>
-              
-              <div className="upload-item">
-                <label htmlFor="governmentIdBack">
-                  <div className="upload-label">Back Side</div>
-                  <div className={`upload-preview ${previews.governmentIdBack ? 'has-image' : ''}`}>
-                    {previews.governmentIdBack ? (
-                      <img src={previews.governmentIdBack} alt="Government ID Back" />
-                    ) : (
-                      <div className="upload-placeholder">Click to upload</div>
-                    )}
-                  </div>
-                </label>
-                <input
-                  type="file"
-                  id="governmentIdBack"
-                  name="governmentIdBack"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  required
-                  hidden
-                />
-              </div>
-            </div>
+
+        <div className="profit-sources__stats">
+          <div className="stat-item">
+            <span className="stat-item__label">Total Active Sources</span>
+            <span className="stat-item__value">1</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-item__label">Potential Growth</span>
+            <span className="stat-item__value">3</span>
+          </div>
+          <div className="stat-item">
+            <span className="stat-item__label">Allocation Channels</span>
+            <span className="stat-item__value">4</span>
           </div>
         </div>
       </div>
-      
-      <div className="form-actions">
-        <button type="reset" className="btn-secondary">Reset</button>
-        <button type="submit" className="btn-primary">Submit</button>
-      </div>
-    </form>
-  </div>
-);
-};
+    </section>
+  )
+}
