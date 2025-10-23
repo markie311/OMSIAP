@@ -11,6 +11,19 @@
   overflow-x: hidden;
 }
 
+#wwomi-backbuttoncontainer {
+position:relative;
+height:7%;
+width:100%;
+}
+
+#wwomi-backbuttoncontainer-backbutton {
+position:relative;
+background-color:dodgerblue;
+height:100%;
+width:7vw;
+}
+
 /* Scrollbar Styling */
 .wwomi-analytics-root::-webkit-scrollbar {
   width: 8px;

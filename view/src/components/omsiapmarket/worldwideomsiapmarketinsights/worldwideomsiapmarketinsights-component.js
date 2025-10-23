@@ -1,7 +1,11 @@
 "use client"
 
 import { useState, useMemo } from "react"
+
+import { Col, Row } from 'react-bootstrap' 
+
 import { motion, AnimatePresence } from "framer-motion"
+
 import {
   BarChart,
   Bar,
@@ -191,6 +195,14 @@ const WorldWideOmsiapMarketInsights = ({ alloftheproducts = [] }) => {
 
   return (
     <div className="wwomi-analytics-root">
+
+      <Col id="wwomi-backbuttoncontainer">
+        <button id="wwomi-backbuttoncontainer-backbutton"
+                onClick={()=> {
+                  window.history.back()
+                }}>&larr;</button>
+      </Col>
+
       {/* Header */}
       <motion.header
         className="wwomi-analytics-header"
