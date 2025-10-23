@@ -683,6 +683,7 @@ const loadProductData = async () => {
             element={<HOPE viewport={viewport}
                            user={user}
                            usercb={usercb}
+                           alloftheproducts={alloftheproducts}
                            citizenshipregistrationtype={citizenshipregistrationtype}
                            citizenshipregistrationtypecb={citizenshipregistrationtypecb}/>}>
       </Route>

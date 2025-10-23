@@ -1,7 +1,7 @@
 "use client"
 
 import '../../styles/hope/hope.scss';
-import { useState } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Row, Col } from "react-bootstrap"
 import {
   Phone,
@@ -16,10 +16,48 @@ import {
   Construction,
 } from "lucide-react"
 
+import { motion } from "framer-motion";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  CartesianGrid,
+} from "recharts"
+
 import NavBar from "../navbar/navbar/navbar-component.js"
 import Footer from "../landingpage/footer/footer-component.js"
 
-export default function HOPE({ viewport, user, usercb }) {
+// Simple number counter (no external deps) — animates from 0 to `value` in `duration` ms
+function AnimatedCounter({ value = 0, duration = 900, format = (v) => v }) {
+  const [display, setDisplay] = useState(0)
+
+  useEffect(() => {
+    let start = null
+    const initial = Number(display)
+    const target = Number(value)
+    if (initial === target) return
+
+    const step = (timestamp) => {
+      if (!start) start = timestamp
+      const progress = Math.min((timestamp - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - progress, 3) // easeOutCubic
+      const current = initial + (target - initial) * eased
+      setDisplay(Number(current.toFixed(0)))
+      if (progress < 1) requestAnimationFrame(step)
+    }
+
+    const raf = requestAnimationFrame(step)
+    return () => cancelAnimationFrame(raf)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value])
+
+  return <span>{format(display)}</span>
+}
+
+export default function HOPE({ viewport, user, usercb, alloftheproducts = [] }) {
   const [showImageModal, setShowImageModal] = useState(false)
   const [modalImage, setModalImage] = useState("")
   const [showInfoModal, setShowInfoModal] = useState(false)
@@ -29,403 +67,29 @@ export default function HOPE({ viewport, user, usercb }) {
     icon: null,
   })
 
+  // New: which modal is active (so Market can animate on open)
+  const [activeModalKey, setActiveModalKey] = useState(null)
+
   const openImageModal = (imageSrc) => {
     setModalImage(imageSrc)
     setShowImageModal(true)
   }
 
+  const closeInfoModal = () => {
+    setShowInfoModal(false)
+    setActiveModalKey(null)
+  }
+
   const openInfoModal = (type) => {
-    let content = {}
+    setActiveModalKey(type)
 
-    switch (type) {
-      case "MARKET":
-        content = {
-          title: "Market Analysis & Opportunities",
-          icon: <ShoppingCart size={32} className="modal-header-icon" />,
-          content: (
-            <>
-              <div className="modal-section">
-                <h3>Market Overview</h3>
-                <p>
-                  Our comprehensive market analysis evaluates economic indicators, consumer trends, and competitive
-                  landscapes to provide actionable insights for strategic decision-making.
-                </p>
-              </div>
-
-              <div className="modal-section">
-                <h3>Key Market Indicators</h3>
-                <div className="graph-container">
-                  <div className="graph-header">
-                    <BarChart3 className="graph-icon" />
-                    <h4>Market Growth by Sector (2023)</h4>
-                  </div>
-                  <div className="bar-graph">
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "65%" }}></div>
-                      <span>Tech</span>
-                    </div>
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "45%" }}></div>
-                      <span>Retail</span>
-                    </div>
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "80%" }}></div>
-                      <span>Healthcare</span>
-                    </div>
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "30%" }}></div>
-                      <span>Finance</span>
-                    </div>
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "55%" }}></div>
-                      <span>Energy</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="modal-section">
-                <h3>Market Opportunities</h3>
-                <ul className="feature-list">
-                  <li>
-                    <strong>Emerging Markets:</strong> Identification of untapped market segments with high growth
-                    potential
-                  </li>
-                  <li>
-                    <strong>Consumer Behavior Analysis:</strong> Deep insights into changing consumer preferences and
-                    purchasing patterns
-                  </li>
-                  <li>
-                    <strong>Competitive Positioning:</strong> Strategic recommendations for market differentiation and
-                    competitive advantage
-                  </li>
-                  <li>
-                    <strong>Sustainable Market Practices:</strong> Implementation of eco-friendly market strategies that
-                    align with consumer values
-                  </li>
-                </ul>
-              </div>
-
-              <div className="eco-friendly-section">
-                <Leaf className="eco-icon" />
-                <div>
-                  <h3>Eco-Friendly Market Initiatives</h3>
-                  <p>
-                    Our market analysis includes sustainability metrics that help businesses reduce environmental impact
-                    while improving market performance. We identify green market opportunities and sustainable consumer
-                    segments.
-                  </p>
-                </div>
-              </div>
-            </>
-          ),
-        }
-        break
-
-      case "BUSINESS":
-        content = {
-          title: "Business Portfolio Management",
-          icon: <Building size={32} className="modal-header-icon" />,
-          content: (
-            <>
-              <div className="modal-section">
-                <h3>Business Portfolio Overview</h3>
-                <p>
-                  Our business portfolio management system provides comprehensive tools for optimizing business
-                  operations, maximizing profitability, and ensuring sustainable growth across diverse industries.
-                </p>
-              </div>
-
-              <div className="modal-section">
-                <h3>Portfolio Performance</h3>
-                <div className="graph-container">
-                  <div className="graph-header">
-                    <PieChart className="graph-icon" />
-                    <h4>Business Portfolio Distribution</h4>
-                  </div>
-                  <div className="pie-chart">
-                    <div className="pie-segment segment1" title="Technology: 35%"></div>
-                    <div className="pie-segment segment2" title="Manufacturing: 25%"></div>
-                    <div className="pie-segment segment3" title="Services: 20%"></div>
-                    <div className="pie-segment segment4" title="Retail: 15%"></div>
-                    <div className="pie-segment segment5" title="Other: 5%"></div>
-                  </div>
-                  <div className="pie-legend">
-                    <div className="legend-item">
-                      <span className="legend-color color1"></span>Technology (35%)
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-color color2"></span>Manufacturing (25%)
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-color color3"></span>Services (20%)
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-color color4"></span>Retail (15%)
-                    </div>
-                    <div className="legend-item">
-                      <span className="legend-color color5"></span>Other (5%)
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="modal-section">
-                <h3>Business Solutions</h3>
-                <ul className="feature-list">
-                  <li>
-                    <strong>Strategic Planning:</strong> Comprehensive business strategy development aligned with market
-                    opportunities
-                  </li>
-                  <li>
-                    <strong>Operational Efficiency:</strong> Process optimization and cost reduction strategies
-                  </li>
-                  <li>
-                    <strong>Risk Management:</strong> Identification and mitigation of business risks
-                  </li>
-                  <li>
-                    <strong>Growth Acceleration:</strong> Scalable business models and expansion strategies
-                  </li>
-                  <li>
-                    <strong>Digital Transformation:</strong> Technology integration for business process enhancement
-                  </li>
-                </ul>
-              </div>
-
-              <div className="eco-friendly-section">
-                <Leaf className="eco-icon" />
-                <div>
-                  <h3>Sustainable Business Practices</h3>
-                  <p>
-                    Our business portfolio management incorporates sustainability metrics to help businesses reduce
-                    their environmental footprint while improving operational efficiency. We provide guidance on
-                    implementing eco-friendly business practices that contribute to both profitability and environmental
-                    stewardship.
-                  </p>
-                </div>
-              </div>
-            </>
-          ),
-        }
-        break
-
-      case "INFRASTRUCTURES":
-        content = {
-          title: "Infrastructure Development & Management",
-          icon: <Construction size={32} className="modal-header-icon" />,
-          content: (
-            <>
-              <div className="modal-section">
-                <h3>Infrastructure Solutions</h3>
-                <p>
-                  Our infrastructure portfolio provides comprehensive solutions for developing, managing, and optimizing
-                  critical infrastructure projects that support economic growth and community development.
-                </p>
-              </div>
-
-              <div className="modal-section">
-                <h3>Infrastructure Performance Metrics</h3>
-                <div className="graph-container">
-                  <div className="graph-header">
-                    <LineChart className="graph-icon" />
-                    <h4>Infrastructure Investment Returns (5-Year Trend)</h4>
-                  </div>
-                  <div className="line-graph">
-                    <svg viewBox="0 0 300 150" className="line-chart-svg">
-                      <polyline
-                        fill="none"
-                        stroke="#0074d9"
-                        strokeWidth="3"
-                        points="
-                          0,120
-                          60,100
-                          120,110
-                          180,80
-                          240,60
-                          300,40
-                        "
-                      />
-                      <g className="axis-labels x-axis">
-                        <text x="0" y="140">
-                          2019
-                        </text>
-                        <text x="60" y="140">
-                          2020
-                        </text>
-                        <text x="120" y="140">
-                          2021
-                        </text>
-                        <text x="180" y="140">
-                          2022
-                        </text>
-                        <text x="240" y="140">
-                          2023
-                        </text>
-                        <text x="300" y="140">
-                          2024
-                        </text>
-                      </g>
-                      <g className="axis-labels y-axis">
-                        <text x="10" y="120">
-                          5%
-                        </text>
-                        <text x="10" y="90">
-                          10%
-                        </text>
-                        <text x="10" y="60">
-                          15%
-                        </text>
-                        <text x="10" y="30">
-                          20%
-                        </text>
-                      </g>
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              <div className="modal-section">
-                <h3>Infrastructure Capabilities</h3>
-                <ul className="feature-list">
-                  <li>
-                    <strong>Project Planning & Design:</strong> Comprehensive infrastructure planning with sustainable
-                    design principles
-                  </li>
-                  <li>
-                    <strong>Construction Management:</strong> Efficient project execution with quality control and
-                    timeline management
-                  </li>
-                  <li>
-                    <strong>Asset Management:</strong> Long-term infrastructure maintenance and optimization strategies
-                  </li>
-                  <li>
-                    <strong>Smart Infrastructure:</strong> Integration of technology for enhanced infrastructure
-                    performance
-                  </li>
-                  <li>
-                    <strong>Public-Private Partnerships:</strong> Innovative funding and collaboration models for
-                    infrastructure development
-                  </li>
-                </ul>
-              </div>
-
-              <div className="eco-friendly-section">
-                <Leaf className="eco-icon" />
-                <div>
-                  <h3>Eco-Friendly Infrastructure</h3>
-                  <p>
-                    Our infrastructure solutions prioritize environmental sustainability through green building
-                    practices, renewable energy integration, and resource-efficient designs. We help develop
-                    infrastructure that minimizes environmental impact while maximizing community benefits and economic
-                    returns.
-                  </p>
-                  <ul className="eco-list">
-                    <li>Reduced carbon footprint through energy-efficient designs</li>
-                    <li>Water conservation and management systems</li>
-                    <li>Sustainable materials and construction methods</li>
-                    <li>Renewable energy integration in infrastructure projects</li>
-                  </ul>
-                </div>
-              </div>
-            </>
-          ),
-        }
-        break
-
-      case "ECO_FRIENDLY":
-        content = {
-          title: "Eco-Friendly Initiatives",
-          icon: <Leaf size={32} className="modal-header-icon" />,
-          content: (
-            <>
-              <div className="modal-section">
-                <h3>Our Green Commitment</h3>
-                <p>
-                  At HOPE, we believe that environmental responsibility is crucial for sustainable development. Our eco-friendly 
-                  initiatives integrate environmental consciousness across all aspects of our operations and services.
-                </p>
-              </div>
-
-              <div className="modal-section">
-                <h3>Key Environmental Metrics</h3>
-                <div className="graph-container">
-                  <div className="graph-header">
-                    <BarChart3 className="graph-icon" />
-                    <h4>Environmental Impact Reduction (Annual)</h4>
-                  </div>
-                  <div className="bar-graph">
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "75%" }}></div>
-                      <span>Carbon</span>
-                    </div>
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "60%" }}></div>
-                      <span>Water</span>
-                    </div>
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "85%" }}></div>
-                      <span>Waste</span>
-                    </div>
-                    <div className="bar-container">
-                      <div className="bar" style={{ height: "65%" }}></div>
-                      <span>Energy</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="modal-section">
-                <h3>Sustainability Initiatives</h3>
-                <ul className="feature-list">
-                  <li>
-                    <strong>Renewable Energy Integration:</strong> Implementation of solar, wind, and other renewable energy sources
-                  </li>
-                  <li>
-                    <strong>Waste Reduction Programs:</strong> Comprehensive recycling and waste management systems
-                  </li>
-                  <li>
-                    <strong>Sustainable Supply Chain:</strong> Partnering with eco-conscious suppliers and vendors
-                  </li>
-                  <li>
-                    <strong>Carbon Neutrality:</strong> Ongoing efforts to reduce and offset carbon emissions
-                  </li>
-                  <li>
-                    <strong>Green Building Practices:</strong> Implementation of sustainable construction and operation methods
-                  </li>
-                </ul>
-              </div>
-
-              <div className="eco-friendly-section highlight">
-                <Leaf className="eco-icon" />
-                <div>
-                  <h3>Environmental Impact Assessment</h3>
-                  <p>
-                    Our environmental assessment program helps organizations measure, monitor, and minimize their ecological footprint. 
-                    Through detailed analysis and actionable recommendations, we enable sustainable operations that benefit both the 
-                    environment and business performance.
-                  </p>
-                  <ul className="eco-list">
-                    <li>Comprehensive environmental audits</li>
-                    <li>Sustainable business practice implementation</li>
-                    <li>Green certification guidance</li>
-                    <li>Environmental compliance management</li>
-                  </ul>
-                </div>
-              </div>
-            </>
-          ),
-        }
-        break
-
-      default:
-        content = {
-          title: "Information",
-          content: <p>Content not available.</p>,
-        }
-    }
-
-    setModalContent(content)
+    // We'll generate the modal's content after computing analytics (below)
+    // For MARKET we build dynamic content — for others we keep placeholders
     setShowInfoModal(true)
+
+    // We'll populate modalContent after analytics are computed via useMemo
+    // Set a temporary header while computation runs
+    setModalContent((prev) => ({ ...prev, title: "Loading...", content: <p>Loading data...</p> }))
   }
 
   // Placeholder images - replace with your actual image paths
@@ -437,12 +101,253 @@ export default function HOPE({ viewport, user, usercb }) {
   // Navigation function (simulated)
   const navigate = (path) => {
     console.log(`Navigating to: ${path}`)
-    // In a real app, you would use your router's navigation
-    // window.location.href = path;
   }
 
+  // ----------------- DATA ANALYTICS (from props.alloftheproducts) -----------------
+  // Defensive helpers
+  const safeArr = (v) => (Array.isArray(v) ? v : [])
+
+  // Compute market analytics memoized for performance
+  const marketAnalytics = useMemo(() => {
+    const analytics = {
+      totalProducts: 0,
+      totalPurchases: 0,
+      pendingPurchases: 0,
+      acceptedPurchases: 0,
+      rejectedPurchases: 0,
+      totalMerchandiseAmount: 0,
+      perProductAcceptedCount: {}, // id -> count
+      perProductAcceptedAmount: {},
+    }
+
+    if (!Array.isArray(alloftheproducts)) return analytics
+
+    analytics.totalProducts = alloftheproducts.length
+
+    for (const product of alloftheproducts) {
+      const pid = product?.authentications?.id || product?.details?.productname || "unknown"
+
+      const purchases = product?.system?.purchases || {}
+      const total = safeArr(purchases.total)
+      const pending = safeArr(purchases.pending)
+      const accepted = safeArr(purchases.accepted)
+      const rejected = safeArr(purchases.rejected)
+
+      analytics.totalPurchases += total.length
+      analytics.pendingPurchases += pending.length
+      analytics.acceptedPurchases += accepted.length
+      analytics.rejectedPurchases += rejected.length
+
+      // compute total merchandise amount from accepted purchases (ordersummary.merchandisetotal)
+      let acceptedAmountForProduct = 0
+      for (const purchase of accepted) {
+        const merchTotal = Number(purchase?.ordersummary?.merchandisetotal || 0)
+        acceptedAmountForProduct += isNaN(merchTotal) ? 0 : merchTotal
+      }
+
+      analytics.totalMerchandiseAmount += acceptedAmountForProduct
+
+      analytics.perProductAcceptedCount[pid] = (analytics.perProductAcceptedCount[pid] || 0) + accepted.length
+      analytics.perProductAcceptedAmount[pid] = (analytics.perProductAcceptedAmount[pid] || 0) + acceptedAmountForProduct
+    }
+
+    // top products array sorted by accepted count
+    const topProducts = Object.entries(analytics.perProductAcceptedCount)
+      .map(([id, count]) => {
+        // find product name and accepted amount
+        const prod = alloftheproducts.find((p) => (p?.authentications?.id || p?.details?.productname) === id) || {}
+        const name = prod?.details?.productname || id || "Unnamed"
+        const acceptedAmount = analytics.perProductAcceptedAmount[id] || 0
+        return { id, name, count, acceptedAmount }
+      })
+      .sort((a, b) => b.count - a.count)
+
+    analytics.topProducts = topProducts.slice(0, 5)
+
+    // chart data for top products
+    analytics.topProductsChart = analytics.topProducts.map((p) => ({ name: p.name, accepted: p.count }))
+
+    return analytics
+  }, [alloftheproducts])
+
+  // When the Market modal opens, populate the modalContent dynamically
+  useEffect(() => {
+    if (!showInfoModal) return
+    if (activeModalKey !== "MARKET") {
+      // For other modals, keep existing behavior (static content)
+      switch (activeModalKey) {
+        case "BUSINESS":
+          setModalContent({
+            title: "Business Portfolio Management",
+            icon: <Building size={32} className="modal-header-icon" />,
+            content: (
+              <>
+                <div className="modal-section">
+                  <h3>Business Portfolio Overview</h3>
+                  <p>
+                    Our business portfolio management system provides comprehensive tools for optimizing business
+                    operations, maximizing profitability, and ensuring sustainable growth across diverse industries.
+                  </p>
+                </div>
+                <div className="modal-section">
+                  <h3>Placeholder</h3>
+                  <p>Coming soon.</p>
+                </div>
+              </>
+            ),
+          })
+          break
+        case "INFRASTRUCTURES":
+          setModalContent({
+            title: "Infrastructure Development & Management",
+            icon: <Construction size={32} className="modal-header-icon" />,
+            content: (
+              <>
+                <div className="modal-section">
+                  <h3>Infrastructure Solutions</h3>
+                  <p>Coming soon.</p>
+                </div>
+              </>
+            ),
+          })
+          break
+        case "ECO_FRIENDLY":
+          setModalContent({
+            title: "Eco-Friendly Initiatives",
+            icon: <Leaf size={32} className="modal-header-icon" />,
+            content: (
+              <>
+                <div className="modal-section">
+                  <h3>Our Green Commitment</h3>
+                  <p>Coming soon.</p>
+                </div>
+              </>
+            ),
+          })
+          break
+        default:
+          setModalContent({ title: "Information", content: <p>Content not available.</p> })
+      }
+      return
+    }
+
+    // Build the Market modal with analytics
+    const a = marketAnalytics
+
+    const marketContent = (
+      <>
+        <div className="modal-section">
+          <h3>Market Summary</h3>
+
+          <Row className="analytics-cards" style={{ gap: 12 }}>
+            <Col xs={6} md={3}>
+              <motion.div
+                className="analytics-card"
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.35 }}
+              >
+                <p className="card-label">Products</p>
+                <h2 className="card-number special-text">
+                  <AnimatedCounter value={a.totalProducts} />
+                </h2>
+              </motion.div>
+            </Col>
+
+            <Col xs={6} md={3}>
+              <motion.div className="analytics-card" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.4 }}>
+                <p className="card-label">Total Purchases</p>
+                <h2 className="card-number">
+                  <AnimatedCounter value={a.totalPurchases} />
+                </h2>
+              </motion.div>
+            </Col>
+
+            <Col xs={6} md={3}>
+              <motion.div className="analytics-card" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.45 }}>
+                <p className="card-label">Accepted</p>
+                <h2 className="card-number special-text">
+                  <AnimatedCounter value={a.acceptedPurchases} />
+                </h2>
+              </motion.div>
+            </Col>
+
+            <Col xs={6} md={3}>
+              <motion.div className="analytics-card" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5 }}>
+                <p className="card-label">Pending</p>
+                <h2 className="card-number">
+                  <AnimatedCounter value={a.pendingPurchases} />
+                </h2>
+              </motion.div>
+            </Col>
+
+            <Col xs={6} md={3}>
+              <motion.div className="analytics-card" initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.55 }}>
+                <p className="card-label">Rejected</p>
+                <h2 className="card-number">
+                  <AnimatedCounter value={a.rejectedPurchases} />
+                </h2>
+              </motion.div>
+            </Col>
+
+            <Col xs={12} md={6}>
+              <motion.div className="analytics-card wide" initial={{ y: 14, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
+                <p className="card-label">Total Merchandise (Accepted)</p>
+                <h2 className="card-number special-text">
+                  ₱ <AnimatedCounter value={Math.round(a.totalMerchandiseAmount)} format={(v) => v.toLocaleString()} />
+                </h2>
+                <p className="muted">Sum of merchandisetotal from accepted purchases</p>
+              </motion.div>
+            </Col>
+          </Row>
+        </div>
+
+        <div className="modal-section">
+          <h3>Top Selling Products (Accepted Purchases)</h3>
+          <div style={{ width: '100%', height: 300 }}>
+            <ResponsiveContainer>
+              <BarChart data={a.topProductsChart} margin={{ top: 20, right: 20, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" strokeOpacity={0.06} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis allowDecimals={false} />
+                <Tooltip />
+                <Bar dataKey="accepted" radius={[6, 6, 0, 0]}>
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          <div className="top-products-list">
+            {a.topProducts.length === 0 ? (
+              <p className="muted">No accepted purchases found across products.</p>
+            ) : (
+              a.topProducts.map((p) => (
+                <div key={p.id} className="top-product-row">
+                  <div className="tp-name">{p.name}</div>
+                  <div className="tp-stats">{p.count} accepted — ₱ {p.acceptedAmount.toLocaleString()}</div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        <div className="modal-section">
+          <h3>Notes</h3>
+          <p className="muted">Data are pulled from <strong>product.system.purchases</strong> arrays passed in <code>alloftheproducts</code> prop.</p>
+        </div>
+      </>
+    )
+
+    setModalContent({
+      title: "Market Analysis & Opportunities",
+      icon: <ShoppingCart size={32} className="modal-header-icon" />,
+      content: marketContent,
+    })
+  }, [showInfoModal, activeModalKey, marketAnalytics])
+
+  // ----------------- RENDER -----------------
   return (
-    <div className="hope-container dark-theme">
+    <div className="hope-container dark-theme blue-accent">
       {/* NavBar */}
       <NavBar viewport={viewport} user={user} usercb={usercb} />
 
@@ -478,13 +383,17 @@ export default function HOPE({ viewport, user, usercb }) {
           <h1 className="about-title">Honesties On Constitutional Promises Evaluation (H) (O) (P) (E)</h1>
 
           <p className="about-description">
-            It all began with one man's dedication and hard work. His efforts evolved into meaningful experiences that
-            he shared freely with others, transcending fatigue, struggles, and financial constraints to create
-            purposeful opportunities. This motivation grew through experiences in various industries, from Business
-            Process Outsourcing (BPO) to remote work opportunities with different companies. These combined experiences
-            led to a single solution: That is to evaluating government systems and establishing an alternative framework
-            that ensures precision in industrial projects, market operations, to success, pension management system and
-            this is, this is, HOPE.
+            It all began with one man’s dedication and hard work.
+            His relentless efforts transformed into meaningful experiences that he shared freely with others — transcending fatigue, struggles, and financial constraints to create purposeful opportunities.
+
+            This motivation grew through years of work across different industries — from construction, to the Business Process Outsourcing (BPO) sector, and eventually to remote opportunities with global companies.
+
+            These combined experiences led to a single realization:
+            the need to evaluate transparency systems and improve data analytics displays to support government and industrial operations that lack openness.
+
+            From this vision emerged an alternative framework — one built to ensure precision in industrial projects, market operations, and pension management systems.
+            This is more than innovation.
+            This is HOPE.
           </p>
 
           <div className="eco-friendly-banner">
@@ -525,7 +434,7 @@ export default function HOPE({ viewport, user, usercb }) {
 
         <Col xs={12} md={6} className="subjects-col">
           <div className="subjects-container">
-            <div className="subject-item" onClick={() => openInfoModal("MARKET")}>
+            <div className="subject-item" onClick={() => openInfoModal("MARKET") }>
               <div className="subject-content">
                 <ShoppingCart className="subject-icon" />
                 <p className="subject-title">MARKET</p>
@@ -535,7 +444,7 @@ export default function HOPE({ viewport, user, usercb }) {
               </div>
             </div>
 
-            <div className="subject-item" onClick={() => openInfoModal("BUSINESS")}>
+            <div className="subject-item" onClick={() => openInfoModal("BUSINESS") }>
               <div className="subject-content">
                 <Building className="subject-icon" />
                 <p className="subject-title">BUSINESS</p>
@@ -545,7 +454,7 @@ export default function HOPE({ viewport, user, usercb }) {
               </div>
             </div>
 
-            <div className="subject-item" onClick={() => openInfoModal("INFRASTRUCTURES")}>
+            <div className="subject-item" onClick={() => openInfoModal("INFRASTRUCTURES") }>
               <div className="subject-content">
                 <Construction className="subject-icon" />
                 <p className="subject-title">INFRASTRUCTURES</p>
@@ -555,7 +464,7 @@ export default function HOPE({ viewport, user, usercb }) {
               </div>
             </div>
 
-            <div className="subject-item eco-item" onClick={() => openInfoModal("ECO_FRIENDLY")}>
+            <div className="subject-item eco-item" onClick={() => openInfoModal("ECO_FRIENDLY") }>
               <div className="subject-content">
                 <Leaf className="subject-icon" />
                 <p className="subject-title">ECO FRIENDLY</p>
@@ -603,9 +512,9 @@ export default function HOPE({ viewport, user, usercb }) {
 
       {/* Info Modal */}
       {showInfoModal && (
-        <div className="modal-overlay" onClick={() => setShowInfoModal(false)}>
+        <div className="modal-overlay" onClick={closeInfoModal}>
           <div className="info-modal-container dark-modal" onClick={(e) => e.stopPropagation()}>
-            <button className="modal-close-btn" onClick={() => setShowInfoModal(false)}>
+            <button className="modal-close-btn" onClick={closeInfoModal}>
               ×
             </button>
             <div className="info-modal-header">
@@ -617,133 +526,41 @@ export default function HOPE({ viewport, user, usercb }) {
         </div>
       )}
 
-      {/* CSS for dark theme */}
+      {/* local style overrides for blue accent + cards (keeps original structure) */}
       <style jsx global>{`
-        .dark-theme {
-          background-color: #000;
-          color: #fff;
-        }
+        .blue-accent { --accent: #00b7ff; }
+        .blue-accent .special-text { color: var(--accent); }
 
-        .dark-theme .hope-header,
-        .dark-theme .about-hope-section,
-        .dark-theme .subjects-container,
-        .dark-theme .help-container {
-          background-color: #000;
-          color: #fff;
-        }
+        /* Analytics cards */
+        .analytics-cards { margin-top: 12px; display: flex; flex-wrap: wrap; }
+        .analytics-card { background: rgba(10,12,18,0.6); border: 1px solid rgba(0,183,255,0.08); padding: 14px; border-radius: 10px; box-shadow: 0 6px 18px rgba(0,183,255,0.04); }
+        .analytics-card.wide { width: 100%; }
+        .card-label { font-size: 0.85rem; color: #8eaecf; margin: 0 0 6px 0; }
+        .card-number { font-size: 1.45rem; margin: 0; color: #eaf7ff; }
 
-        .dark-theme .header-title,
-        .dark-theme .header-subtitle,
-        .dark-theme .about-title,
-        .dark-theme .about-description,
-        .dark-theme .help-title,
-        .dark-theme .help-description,
-        .dark-theme .contact-text,
-        .dark-theme .subject-title {
-          color: #fff;
-        }
+        .top-products-list { margin-top: 12px; }
+        .top-product-row { display:flex; justify-content:space-between; padding:8px 10px; border-bottom:1px solid rgba(255,255,255,0.03); }
+        .tp-name { font-weight:600; color:#cfeeff }
+        .tp-stats { color:#9fbfd6; font-size:0.9rem }
 
-        .dark-theme .subject-item {
-          background-color: #111;
-          border: 1px solid #333;
-        }
+        /* Recharts bar styling - small tweak to blend with dark theme */
+        .recharts-surface { background: transparent !important }
 
-        .dark-theme .subject-item:hover {
-          background-color: #222;
-        }
+        /* Muted text */
+        .muted { color: #9fbfd6; font-size: 0.9rem }
 
-        .dark-theme .eco-friendly-banner {
-          background-color: #0a2e0a;
-          border: 1px solid #1e4e1e;
-        }
+        /* keep existing dark-theme rules but adjust hover accent */
+        .dark-theme { background-color: #000; color: #e5eef9; }
+        .dark-modal { background-color: #05060a; color: #e5eef9; border: 1px solid rgba(0,183,255,0.12); }
+        .dark-modal .info-modal-header { background: linear-gradient(90deg, rgba(0,183,255,0.04), rgba(0,0,0,0)); }
 
-        .dark-theme .subject-icon,
-        .dark-theme .arrow-icon,
-        .dark-theme .contact-icon,
-        .dark-theme .eco-banner-icon {
-          color: #4caf50;
-        }
+        /* subject hover glow */
+        .subject-item:hover { box-shadow: 0 8px 28px rgba(0,183,255,0.06); border-color: rgba(0,183,255,0.12); }
 
-        .dark-theme .help-container {
-          background-color: #111;
-          border: 1px solid #333;
-        }
-
-        .dark-overlay {
-          background-color: rgba(0, 0, 0, 0.7);
-        }
-
-        .dark-modal {
-          background-color: #111;
-          color: #fff;
-          border: 1px solid #333;
-        }
-
-        .dark-modal .modal-section h3,
-        .dark-modal .info-modal-title,
-        .dark-modal .modal-header-icon {
-          color: #fff;
-        }
-
-        .dark-modal .feature-list li,
-        .dark-modal .eco-list li {
-          color: #ddd;
-        }
-
-        .dark-modal .bar {
-          background-color: #4caf50;
-        }
-
-        .dark-modal .eco-friendly-section {
-          background-color: #0a2e0a;
-          border: 1px solid #1e4e1e;
-          padding: 15px;
-          border-radius: 5px;
-        }
-
-        .dark-modal .eco-friendly-section.highlight {
-          background-color: #0f3f0f;
-          border: 1px solid #2e6e2e;
-        }
-
-        .dark-modal .eco-icon {
-          color: #4caf50;
-        }
-
-        .dark-modal .graph-icon {
-          color: #4caf50;
-        }
-
-        .dark-modal .axis-labels text {
-          fill: #fff;
-        }
-
-        .dark-modal .legend-item {
-          color: #ddd;
-        }
-
-        .dark-modal .modal-close-btn {
-          color: #fff;
-          background-color: #333;
-        }
-
-        .dark-modal .modal-close-btn:hover {
-          background-color: #444;
-        }
-
-        /* Special text indications */
-        .dark-theme .special-text {
-          color: #4caf50;
-          font-weight: bold;
-        }
-
-        .dark-theme strong {
-          color: #4caf50;
-          font-weight: bold;
-        }
-
-        .dark-theme h1, .dark-theme h2, .dark-theme h3, .dark-theme h4, .dark-theme h5 {
-          color: #4caf50;
+        /* small responsive tweaks */
+        @media (max-width: 768px) {
+          .analytics-card { width: 48%; margin-bottom: 10px }
+          .analytics-card.wide { width: 100% }
         }
       `}</style>
     </div>
