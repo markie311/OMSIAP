@@ -105,6 +105,9 @@ const productSpecificationDataSchema = new Schema({
 
 
 const purchaseSchema = new mongoose.Schema({
+  merchandisetransactionid: {
+    type: 'string'
+  },
   identification: {
     birthcertificatereferencenumber: {
       type: String,

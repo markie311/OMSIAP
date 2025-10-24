@@ -597,7 +597,6 @@ Router.route("/deleteproduct").post(async (req, res) => {
   }
 });
 
-
 // =============================================================================
 // UTILITY FUNCTIONS (Hoisted first)
 // =============================================================================
@@ -1051,7 +1050,12 @@ async function processOrder(req, res) {
     }
 
     // ==========================================================
-    // 🔹 NEW SECTION: Update Product Purchases (total & pending)
+    // 🔹 STEP 1: Create transaction record FIRST to get ID
+    // ==========================================================
+    const newTransaction = await createTransactionRecord(orderData, registrant);
+
+    // ==========================================================
+    // 🔹 STEP 2: Update Product Purchases with Transaction ID
     // ==========================================================
 
     for (const product of orderData.products) {
@@ -1092,9 +1096,10 @@ async function processOrder(req, res) {
         const totalWeightKilos = totalWeightGrams / 1000;
 
         // ===============================
-        // 🧾 Construct per-product purchase record
+        // 🧾 Construct per-product purchase record WITH TRANSACTION ID
         // ===============================
         const purchaseRecord = {
+          merchandisetransactionid: newTransaction.id, // 🔹 TRANSACTION ID ADDED HERE
           identification: {
             birthcertificatereferencenumber:
               registrant.personaldata?.birthcertificate?.birthcertificatereferencenumber || "",
@@ -1149,17 +1154,15 @@ async function processOrder(req, res) {
         foundProduct.system.purchases.pending.push(purchaseRecord);
 
         await foundProduct.save();
-        console.log(`✅ Updated purchases for product: ${product.mainProductName}`);
+        console.log(`✅ Updated purchases for product: ${product.mainProductName} with transaction ID: ${newTransaction.id}`);
       } catch (err) {
         console.error(`Error updating product purchase for ${product.mainProductName}:`, err);
       }
     }
 
     // ==========================================================
-    // Continue with existing transaction creation and saving
+    // 🔹 STEP 3: Save transaction to database and registrant
     // ==========================================================
-
-    const newTransaction = await createTransactionRecord(orderData, registrant);
     const merchandiseTransaction = new MerchandiseTransactionDataModel(newTransaction);
     await merchandiseTransaction.save();
 

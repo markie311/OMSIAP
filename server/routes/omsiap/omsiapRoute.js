@@ -9,12 +9,11 @@ const bcrypt = require("bcryptjs")
 
 // Import models - consolidated at the top
 const RegistrantDataModel = require("../../models/people/registrantdatascheme.js")
+const ProductDataModel = require('../../models/products/productsdatascheme.js')
 const MerchandiseTransactionDataModel = require("../../models/transactions/merchandisetransactiondatascheme.js")
 const CurrencyExchangeTransactionDataModel = require("../../models/transactions/currencyexchangetransactiondatascheme.js")
 const WidthdrawalTransactionDataModel = require("../../models/transactions/withdrawaltransactiondatascheme.js")
 const PendingFundsDataModel = require("../../models/pendingfunds/pendingfundsdatascheme.js")
-
-const ProductDataModel = require("../../models/products/productsdatascheme.js")
 
 // Import utilities
 const timestamps = require("../../lib/timestamps/timestamps")
@@ -3399,7 +3398,7 @@ Router.post("/order-receive", async (req, res) => {
         // Default: distribute to all users with active indication
         distributionQuery = {
           _id: { $ne: currentRegistrant._id },
-          "registrationstatusesandlogs.indication": "active",
+          "registrationstatusesandlogs.indication": "Verified",
         }
         console.log("- Using default distribution query")
     }
@@ -3430,6 +3429,17 @@ Router.post("/order-receive", async (req, res) => {
       await updateTransactionStatus(transactionId, "completed")
       await updateUserTransactionStatus(currentRegistrant._id, transactionId, "completed")
 
+      // Move purchases from pending to accepted
+      const purchaseMoveResult = await movePurchaseFromPendingToAccepted(transactionId)
+      
+      if (purchaseMoveResult.success && purchaseMoveResult.movedCount > 0) {
+        console.log(`Successfully moved purchases from pending to accepted:`)
+        console.log(`- Products affected: ${purchaseMoveResult.movedCount}`)
+        console.log(`- Product IDs: ${purchaseMoveResult.productIds.join(', ')}`)
+      } else if (!purchaseMoveResult.success) {
+        console.error('Failed to move purchases from pending to accepted:', purchaseMoveResult.error)
+      }
+
       return res.status(200).json({
         success: true,
         message: "Order received successfully - no users eligible for distribution",
@@ -3444,6 +3454,7 @@ Router.post("/order-receive", async (req, res) => {
           transactionGiveaway: distributionPoolAmount,
           totalEligibleUsers: 0,
         },
+        purchaseUpdate: purchaseMoveResult,
       })
     }
 
@@ -3516,6 +3527,17 @@ Router.post("/order-receive", async (req, res) => {
     await updateTransactionStatus(transactionId, "completed")
     await updateUserTransactionStatus(currentRegistrant._id, transactionId, "completed")
 
+    // Move purchases from pending to accepted
+    const purchaseMoveResult = await movePurchaseFromPendingToAccepted(transactionId)
+    
+    if (purchaseMoveResult.success && purchaseMoveResult.movedCount > 0) {
+      console.log(`Successfully moved purchases from pending to accepted:`)
+      console.log(`- Products affected: ${purchaseMoveResult.movedCount}`)
+      console.log(`- Product IDs: ${purchaseMoveResult.productIds.join(', ')}`)
+    } else if (!purchaseMoveResult.success) {
+      console.error('Failed to move purchases from pending to accepted:', purchaseMoveResult.error)
+    }
+
     console.log(`Order receive processed successfully:`)
     console.log(`- Transaction ID: ${transactionId}`)
     console.log(`- Total giveaway: ${totalTransactionGiveaway}`)
@@ -3544,6 +3566,7 @@ Router.post("/order-receive", async (req, res) => {
         transactionGiveaway: distributionPoolAmount,
         totalEligibleUsers: eligibleUsersCount,
       },
+      purchaseUpdate: purchaseMoveResult,
     })
   } catch (error) {
     console.error("Error processing order receive:", error)
@@ -3590,6 +3613,66 @@ function ensureCreditsStructure(registrant) {
   }
 
   return registrant
+}
+
+/**
+ * Moves purchase from pending to accepted in all matching products
+ * @param {string} transactionId - The merchandise transaction ID to search for
+ * @returns {Promise<{success: boolean, movedCount: number, productIds: string[]}>}
+ */
+async function movePurchaseFromPendingToAccepted(transactionId) {
+  try {
+    const movedPurchases = []
+    
+    // Find all products that have this transaction ID in pending purchases
+    const productsWithPendingPurchase = await ProductDataModel.find({
+      'system.purchases.pending.merchandisetransactionid': transactionId
+    })
+
+    console.log(`Found ${productsWithPendingPurchase.length} products with pending purchase for transaction ${transactionId}`)
+
+    for (const product of productsWithPendingPurchase) {
+      // Find the pending purchase(s) that match the transaction ID
+      const matchingPurchases = product.system.purchases.pending.filter(
+        purchase => purchase.merchandisetransactionid === transactionId
+      )
+
+      if (matchingPurchases.length > 0) {
+        // Add each matching purchase to accepted array
+        product.system.purchases.accepted.push(...matchingPurchases)
+
+        // Remove matching purchases from pending array
+        product.system.purchases.pending = product.system.purchases.pending.filter(
+          purchase => purchase.merchandisetransactionid !== transactionId
+        )
+
+        // Save the updated product
+        await product.save()
+
+        movedPurchases.push({
+          productId: product.authentications.id,
+          purchaseCount: matchingPurchases.length
+        })
+
+        console.log(`Moved ${matchingPurchases.length} purchase(s) from pending to accepted for product ${product.authentications.id}`)
+      }
+    }
+
+    return {
+      success: true,
+      movedCount: movedPurchases.length,
+      productIds: movedPurchases.map(p => p.productId),
+      details: movedPurchases
+    }
+  } catch (error) {
+    console.error('Error moving purchase from pending to accepted:', error)
+    return {
+      success: false,
+      movedCount: 0,
+      productIds: [],
+      error: error.message
+    }
+  }
 }
 
 // Helper function to update transaction status in user's transaction history
