@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react"
+
 import { useNavigate } from 'react-router-dom'
 
 import { Col, Row } from "react-bootstrap"
@@ -21,6 +22,14 @@ export default function OmsiapMarket() {
 
   return (
     <Col id="omsiapmarket">
+
+      <div id="omsiapmarket-backbuttoncontainer">
+          <button id="omsiapmarket-backbuttoncontainer-backbutton"
+                  onClick={()=> {
+                    navigate("/")
+                  }}>&larr;</button>
+      </div>
+
       {/* Header Section */}
       <motion.div
         id="omsiapmarket-mainheaderscontainer"
@@ -28,6 +37,7 @@ export default function OmsiapMarket() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.9, ease: "easeOut" }}
       >
+
         <h1 className="omsiapmarket-title">
           Welcome to <span className="highlight">OMSIAP Market</span>
         </h1>

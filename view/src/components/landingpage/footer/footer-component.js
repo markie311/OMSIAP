@@ -90,7 +90,7 @@ export default function Footer() {
                 </li>
                 <li className="footer-link-item">
                   <FaAngleRight className="link-icon" />
-                  <a href="privacypolicy">Privacy Policy</a>
+                  <a href="privacyandpolicy">Privacy Policy</a>
                 </li>
               </ul>
             </Col>

@@ -1,9 +1,15 @@
 import React, { useState, useEffect } from 'react';
+
+import { useNavigate } from 'react-router-dom';
+
 import { Col, Row, Container } from 'react-bootstrap';
 import Map from '../map/map-component.js';
 import '../../../styles/landingpage/footer/contactus.scss';
 
 export default function ContactUs() {
+
+  const navigate = useNavigate()
+
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -75,6 +81,14 @@ export default function ContactUs() {
 
   return (
     <Container fluid id="contactus" className={isVisible ? 'visible' : ''}>
+
+      <div id="contactus-backbuttoncontainer">
+        <button id="contactus-backbuttoncontainer-backbutton"
+                onClick={()=> {
+                   navigate('/')
+                }}>&larr;</button>
+      </div>
+
       <Row className="contactus-header">
         <Col xs={12} className="text-center">
           <div className="header-content">

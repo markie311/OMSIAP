@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
+
+import { useNavigate } from 'react-router-dom'
+
 import { Col, Row, Container } from 'react-bootstrap';
 import '../../../styles/landingpage/footer/privacyandpolicy.scss';
 
 export default function PrivacyAndPolicy() {
+
+  const navigate = useNavigate()
+
   const [isVisible, setIsVisible] = useState(false);
   const [activeSection, setActiveSection] = useState(0);
 
@@ -74,6 +80,14 @@ export default function PrivacyAndPolicy() {
 
   return (
     <Container fluid id="privacyandpolicy" className={isVisible ? 'visible' : ''}>
+
+      <div id="privacyandpolicy-backbuttoncontainer">
+        <button id="privacyandpolicy-backbuttoncontainer-backbutton"
+                onClick={()=> {
+                  navigate('/')
+                }}>&larr;</button>
+      </div> 
+
       {/* Header Section */}
       <Row className="privacy-header">
         <Col xs={12} className="text-center">

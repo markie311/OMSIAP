@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
+
+import { useNavigate } from 'react-router-dom'
+
 import { Col, Row, Container } from 'react-bootstrap';
 import '../../../styles/landingpage/footer/howitworks.scss';
 
 export default function HowItWorks() {
+
+  const navigate = useNavigate()
+
   const [isVisible, setIsVisible] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
 
@@ -66,6 +72,14 @@ export default function HowItWorks() {
 
   return (
     <Container fluid id="howitworks" className={isVisible ? 'visible' : ''}>
+
+      <div id="howitworks-backbuttoncontainer">
+        <button id="howitworks-backbuttoncontainer-backbutton"
+                onClick={()=> {
+                   navigate('/')
+                }}>&larr;</button>
+      </div>
+
       {/* Header Section */}
       <Row className="howitworks-header">
         <Col xs={12} className="text-center">

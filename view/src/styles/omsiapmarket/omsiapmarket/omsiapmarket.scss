@@ -63,6 +63,23 @@ $text-light: #eaeaea;
   background: #b30000; 
 }
 
+#omsiapmarket-backbuttoncontainer {
+position:relative;
+height:7%;
+width:100%;
+display:flex;
+justify-content:flex-start;
+align-items:center;
+}
+
+#omsiapmarket-backbuttoncontainer-backbutton {
+position:relative;
+background-color:dodgerblue;
+height:100%;
+width:7vw;
+z-index:100;
+}
+
 @keyframes gradientShift {
   0% {
     background-position: 0% 50%;

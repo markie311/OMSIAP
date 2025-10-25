@@ -11,6 +11,20 @@
   overflow-x: hidden;
 }
 
+#termsandservice-backbuttoncontainer {
+ position:relative;
+ height:7%;
+ width:100%;
+}
+
+#termsandservice-backbuttoncontainer-backbutton {
+ position:relative;
+ background-color:dodgerblue;
+ height:100%;
+ width:7vw;
+ z-index:100;
+}
+
 .tos-container {
   background: #000000;
   color: #ffffff;

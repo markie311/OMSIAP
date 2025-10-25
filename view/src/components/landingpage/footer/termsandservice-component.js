@@ -1,8 +1,14 @@
 import React, { useEffect, useRef } from 'react';
+
+import { useNavigate } from 'react-router-dom'
+
 import { Col } from 'react-bootstrap';
 import '../../../styles/landingpage/footer/termsandservice.scss';
 
 export default function TermsAndService() {
+
+  const navigate = useNavigate()
+
   const sectionRefs = useRef([]);
 
   useEffect(() => {
@@ -35,10 +41,18 @@ export default function TermsAndService() {
 
   return (
     <Col id="termsandservice" className="tos-container">
+
       <div className="tos-background-effects">
         <div className="tos-gradient-orb tos-orb-1"></div>
         <div className="tos-gradient-orb tos-orb-2"></div>
         <div className="tos-gradient-orb tos-orb-3"></div>
+      </div>
+
+      <div id="termsandservice-backbuttoncontainer">
+        <button id="termsandservice-backbuttoncontainer-backbutton"
+                onClick={()=> {
+                  navigate('/')                
+                }}>&larr;</button>
       </div>
 
       <div className="tos-content-wrapper">
