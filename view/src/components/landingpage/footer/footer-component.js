@@ -2,6 +2,9 @@ import '../../../styles/landingpage/footer/footer.scss';
 
 import React from 'react';
 import { Row, Col, Container } from 'react-bootstrap';
+
+import { useNavigate } from 'react-router-dom'
+
 import { 
   FaMapMarkerAlt, 
   FaPhone, 
@@ -15,6 +18,9 @@ import {
 } from 'react-icons/fa';
 
 export default function Footer() {
+
+  const navigate = useNavigate()
+
   const currentYear = new Date().getFullYear();
   
   return (
@@ -62,12 +68,13 @@ export default function Footer() {
               <ul className="footer-links">
                 <li className="footer-link-item">
                   <FaAngleRight className="link-icon" />
-                  <a href="#">Contact us</a>
+                  <a href="contactus">Contact us</a>
                 </li>
                 <li className="footer-link-item">
                   <FaAngleRight className="link-icon" />
-                  <a href="#">How it works</a>
+                  <a href="howitworks">How it works</a>
                 </li>
+                {/*
                 <li className="footer-link-item">
                   <FaAngleRight className="link-icon" />
                   <a href="#">Office Create</a>
@@ -76,13 +83,14 @@ export default function Footer() {
                   <FaAngleRight className="link-icon" />
                   <a href="#">Residential Explore</a>
                 </li>
+                */}
                 <li className="footer-link-item">
                   <FaAngleRight className="link-icon" />
-                  <a href="#">Terms & Service</a>
+                  <a href="termsandservice">Terms & Service</a>
                 </li>
                 <li className="footer-link-item">
                   <FaAngleRight className="link-icon" />
-                  <a href="#">Privacy Policy</a>
+                  <a href="privacypolicy">Privacy Policy</a>
                 </li>
               </ul>
             </Col>

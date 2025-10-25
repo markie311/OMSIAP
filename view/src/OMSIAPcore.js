@@ -34,6 +34,11 @@ import CompanyAwards from './components/landingpage/awardsandachievements/readmo
 import DatabaseComponent from './components/database/database-component.js';
 import ImageUpload from './components/imageupload/imageupload-component.js';
 
+import ContactUs from './components/landingpage/footer/contactus-component.js'
+import HowItWorks from './components/landingpage/footer/howitworks-component.js'
+import PrivacyAndPolicy from './components/landingpage/footer/privacyandpolicy-component.js'
+import TermsAndService from './components/landingpage/footer/termsandservice-component.js'
+
 import axiosCreatedInstance from './components/lib/axiosutil.js';
 
 // Import Loading Context
@@ -788,6 +793,26 @@ const loadProductData = async () => {
             element={<ImageUpload />}>
 
       </Route>
+
+      <Route path='/contactus'
+             element={<ContactUs />}>
+
+      </Route>
+
+       <Route path='/howitworks'
+             element={<HowItWorks />}>
+
+      </Route>
+
+       <Route path='/privacyandpolicy'
+             element={<PrivacyAndPolicy />}>
+
+       </Route>
+
+        <Route path='/termsandservice'
+             element={<TermsAndService />}>
+
+        </Route>
 
 
       </Routes>
