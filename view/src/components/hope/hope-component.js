@@ -1,6 +1,5 @@
 "use client"
 
-import '../../styles/hope/hope.scss';
 import { useState, useMemo, useEffect } from "react"
 import { Row, Col } from "react-bootstrap"
 import {
@@ -26,6 +25,8 @@ import {
   Tooltip,
   CartesianGrid,
 } from "recharts"
+
+import '../../styles/hope/hope.scss';
 
 import NavBar from "../navbar/navbar/navbar-component.js"
 import Footer from "../landingpage/footer/footer-component.js"

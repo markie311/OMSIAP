@@ -6,6 +6,8 @@ import NavBar from "../navbar/navbar/navbar-component.js"
 
 import { useNavigate } from 'react-router-dom';
 
+import Footer from "../landingpage/footer/footer-component.js"
+
 import "../../styles/mfatip/mfatip.scss"
 
 export default function MonthlyFinancialAllocation() {
@@ -321,7 +323,7 @@ export default function MonthlyFinancialAllocation() {
 
 
       {/* Footer */}
-      <footer className="mfatip-footer">
+       <footer className="mfatip-footer">
         <div className="footer-content">
           <div className="footer-section">
             <h4>About OMSIAP</h4>
@@ -329,8 +331,8 @@ export default function MonthlyFinancialAllocation() {
           </div>
           <div className="footer-section">
             <h4>Contact Us</h4>
-            <p>Email: support@omsiap.com</p>
-            <p>Phone: +63 (0) 000-0000</p>
+            <p>Email: ofmackysinkandpaper@gmail.com</p>
+            <p>Phone: +63 (9) 567-77674</p>
           </div>
           <div className="footer-section">
             <h4>Quick Links</h4>
@@ -411,7 +413,7 @@ function ProfitSourcesSection() {
       id: "ecommerce",
       title: "E-Commerce Profit",
       description:
-        "Current 1 Worldwide e-commerce website ready to support your Monthly Financial Allocations through transaction giveaways",
+        "Current 1 nationwide e-commerce website ready to support your Monthly Financial Allocations through transaction giveaways",
       icon: "🛍️",
       count: counts.ecommerce,
       color: "ecommerce",

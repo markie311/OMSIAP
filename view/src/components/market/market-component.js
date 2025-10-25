@@ -17,6 +17,9 @@ import {
   Twitter,
   Instagram,
 } from "lucide-react"
+
+import Footer from "../landingpage/footer/footer-component.js"
+
 import "../../styles/market/market.scss"
 
 const Market = (props) => {
@@ -1073,70 +1076,8 @@ const Market = (props) => {
         </div>
       )}
 
-      <footer className="market-site-footer">
-        <div className="market-footer-content">
-          <div className="market-footer-section">
-            <h3>ShopEase</h3>
-            <p>Your one-stop shop for premium products at competitive prices.</p>
-            <div className="market-social-links">
-              <a href="#" aria-label="Facebook">
-                <Facebook />
-              </a>
-              <a href="#" aria-label="Twitter">
-                <Twitter />
-              </a>
-              <a href="#" aria-label="Instagram">
-                <Instagram />
-              </a>
-            </div>
-          </div>
-          <div className="market-footer-section">
-            <h3>Quick Links</h3>
-            <ul>
-              <li>
-                <a href="#">Home</a>
-              </li>
-              <li>
-                <a href="#">Shop</a>
-              </li>
-              <li>
-                <a href="#">About Us</a>
-              </li>
-              <li>
-                <a href="#">Contact</a>
-              </li>
-            </ul>
-          </div>
-          <div className="market-footer-section">
-            <h3>Customer Service</h3>
-            <ul>
-              <li>
-                <a href="#">FAQ</a>
-              </li>
-              <li>
-                <a href="#">Shipping Policy</a>
-              </li>
-              <li>
-                <a href="#">Returns & Refunds</a>
-              </li>
-              <li>
-                <a href="#">Privacy Policy</a>
-              </li>
-            </ul>
-          </div>
-          <div className="market-footer-section">
-            <h3>Newsletter</h3>
-            <p>Subscribe to receive updates on new arrivals and special offers.</p>
-            <form className="market-newsletter-form">
-              <input type="email" placeholder="Your email address" aria-label="Email for newsletter" />
-              <button type="submit">Subscribe</button>
-            </form>
-          </div>
-        </div>
-        <div className="market-footer-bottom">
-          <p>&copy; {new Date().getFullYear()} ShopEase. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
+
     </div>
   )
 }
