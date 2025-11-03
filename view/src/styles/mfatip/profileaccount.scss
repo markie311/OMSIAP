@@ -1,0 +1,233 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (min-width: 1200px) {
+#mfatipprofileaccount {
+position:relative;
+background-color:white;
+border:1vh solid green;
+height:100%;
+width:100%;
+}
+#mfatipprofileaccount-mainviewcontainer {
+position:relative;
+border:1vh solid red;
+height:100%;
+width:100%;
+overflow-y:scroll;
+}
+/* width */
+#mfatipprofileaccount-mainviewcontainer::-webkit-scrollbar {
+width: 20px;
+}
+
+/* Track */
+#mfatipprofileaccount-mainviewcontainer::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#mfatipprofileaccount-mainviewcontainer::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#mfatipprofileaccount-mainviewcontainer::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+
+#mfatipprofileaccount-navigationcontainer {
+position:relative;
+border:0.5vh solid red;
+height:10%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+.mfatipprofileaccount-navigationcontainer-navigationcolcontainer {
+position:relative;
+border:0.5vh solid yellow;
+height:100%;
+display:flex;
+align-items:center;
+padding-left:5vh;
+}
+.mfatipprofileaccount-navigationcontainer-navigationcolcontainer-navigationheaderindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+user-select:none;
+}
+#mfatipprofileaccount-profilepictureandfullnameheaderindicationcontainer {
+position:relative;
+background-color:black;
+height:30%;
+width:90%;
+margin-left:auto;
+margin-right:auto;  
+margin-top:5vh;
+}
+
+#mfatipprofileaccount-profilepictureandfullnameheaderindicationcontainer-profilepicturecontainer {
+position:relative;
+border:1vh solid red;
+height:100%;
+}
+#mfatipprofileaccount-profilepictureandfullnameheaderindicationcontainer-profilepicturecontainer-profilepicturecontainer {
+position:relative;
+border:0.5vh solid magenta;
+height:80%;
+width:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+#mfatipprofileaccount-profilepictureandfullnameheaderindicationcontainer-profilepicturecontainer-profilepicturecontainer-profilepicture {
+position:relative;
+border:1vh solid white;
+border-radius:50%;
+height:100%;
+width:70%;
+margin-left:auto;
+margin-right:auto;
+}
+#mfatipprofileaccount-profilepictureandfullnameheaderindicationcontainer-profilepicturecontainer-editprofilepicturecontainer {
+position:relative;
+border:0.5vh solid yellow;
+height:20%;
+width:100%;
+display:flex;
+justify-content:flex-end;
+align-items:flex-end;
+}
+#mfatipprofileaccount-profilepictureandfullnameheaderindicationcontainer-profilepicturecontainer-editprofilepicturecontainer-editprofilepicturebutton {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+}
+#mfatipprofileaccount-profilepictureandfullnameheaderindicationcontainer-fullnameheaderindicationcontainer {
+position:relative;
+border:1vh solid pink;
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+}
+.mfatipprofileaccount-profilepictureandfullnameheaderindicationcontainer-fullnameheaderindicationcontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+color:white;
+}
+
+#mfatipprofileaccount-profileaccountdetailscontainer {
+position:relative;
+border:1vh solid magenta;
+height:65%;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+}
+
+#mfatipprofileaccount-profileaccountdetailscontainer-statusescontainer {
+position:relative;
+border:1vh dotted black;
+border-right:none;
+height:100%;
+overflow-y:scroll;
+padding:40px;
+}
+/* width */
+#mfatipprofileaccount-profileaccountdetailscontainer-statusescontainer::-webkit-scrollbar {
+width: 10px;
+}
+
+/* Track */
+#mfatipprofileaccount-profileaccountdetailscontainer-statusescontainer::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#mfatipprofileaccount-profileaccountdetailscontainer-statusescontainer::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#mfatipprofileaccount-profileaccountdetailscontainer-statusescontainer::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+#mfatipprofileaccount-profileaccountdetailscontainer-statusescontainer-primarystatuscontainer {
+position:relative;
+border:0.5vh solid red;
+height:auto;
+width:100%;
+}
+#mfatipprofileaccount-profileaccountdetailscontainer-statusescontainer-primarystatuscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+ weight:900;
+}
+}
+#mfatipprofileaccount-profileaccountdetailscontainer-statusescontainer-primarystatuscontainer-statusheaderindication {
+color:red;
+}
+#mfatipprofileaccount-profileaccountdetailscontainer-personaldetailscontainer {
+position:relative;
+border:1vh solid magenta;
+height:100%;
+}
+/* width */
+#mfatipprofileaccount-profileaccountdetailscontainer-personaldetailscontainer::-webkit-scrollbar {
+width: 10px;
+}
+
+/* Track */
+#mfatipprofileaccount-profileaccountdetailscontainer-personaldetailscontainer::-webkit-scrollbar-track {
+box-shadow: inset 0 0 5px grey; 
+border-radius: 10px;
+}
+
+/* Handle */
+#mfatipprofileaccount-profileaccountdetailscontainer-personaldetailscontainer::-webkit-scrollbar-thumb {
+background: blue; 
+border-radius: 10px;
+}
+
+/* Handle on hover */
+#mfatipprofileaccount-profileaccountdetailscontainer-personaldetailscontainer::-webkit-scrollbar-thumb:hover {
+background: dodgerblue; 
+}
+.mfatipprofileaccount-profileaccountdetailscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+ weight:900;
+}
+}
+.mfatipprofileaccount-profileaccountdetailscontainer-personaldetailscontainer-detailscontainer {
+position:relative;
+border:1vh solid green;
+height:auto;
+width:100%;
+padding:180px 120px;
+}
+.mfatipprofileaccount-profileaccountdetailscontainer-personaldetailscontainer-detailscontainer-headerindication {
+position:relative;
+font: auto {
+ family: $sub-font;
+}
+}
+}

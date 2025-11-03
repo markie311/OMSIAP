@@ -1,0 +1,211 @@
+/* awards-and-achievements.css */
+
+.awards-section {
+    background-color: #000;
+    color: #fff;
+    padding: 6rem 2rem;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .awards-section .bg-glow {
+    position: absolute;
+    top: 10%;
+    right: 5%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255,215,0,0.1) 0%, rgba(0,0,0,0) 70%);
+    border-radius: 50%;
+    z-index: 0;
+  }
+  
+  .awards-section .subtitle {
+    color: #FFD700;
+    font-size: 1.2rem;
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+  
+  .awards-section .title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    background: linear-gradient(90deg, #fff, #aaa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .awards-section .view-all-btn {
+    background: linear-gradient(90deg, #FFD700, #FFA500);
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .awards-section .view-all-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+  }
+  
+  .awards-section .view-all-btn:active {
+    transform: scale(0.95);
+  }
+  
+  .awards-section .award-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    height: 100%;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+  }
+  
+  .awards-section .award-card:hover {
+    transform: scale(1.02);
+    background-color: rgba(255,255,255,0.05);
+    border-color: rgba(255,215,0,0.3);
+  }
+  
+  .awards-section .award-number {
+    color: #FFD700;
+    font-weight: 700;
+    font-size: 1.2rem;
+    opacity: 0.8;
+  }
+  
+  .awards-section .award-title {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+  }
+  
+  .awards-section .award-arrow {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255,215,0,0.2);
+    color: #FFD700;
+    transition: transform 0.3s ease;
+  }
+  
+  .awards-section .award-card:hover .award-arrow {
+    animation: arrowPulse 1s infinite;
+  }
+  
+  .awards-section .award-decoration {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    border-bottom: 2px solid rgba(255,215,0,0.3);
+    border-right: 2px solid rgba(255,215,0,0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .awards-section .award-card:hover .award-decoration {
+    opacity: 1;
+  }
+  
+  /* Awards modal styles */
+  .awards-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.9);
+    z-index: 1000;
+    padding: 2rem;
+    overflow: auto;
+  }
+  
+  .awards-modal-content {
+    background-color: #111;
+    border: 1px solid rgba(255,215,0,0.3);
+    border-radius: 8px;
+    padding: 2rem;
+    max-width: 900px;
+    margin: 2rem auto;
+    position: relative;
+  }
+  
+  .awards-modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+  }
+  
+  .awards-modal-title {
+    color: #FFD700;
+    margin-bottom: 2rem;
+  }
+  
+  /* Animations */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(-50px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  
+  @keyframes arrowPulse {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .awards-section {
+      padding: 4rem 1.5rem;
+    }
+    
+    .awards-section .title {
+      font-size: 2rem;
+    }
+    
+    .awards-section .subtitle {
+      font-size: 1rem;
+    }
+    
+    .awards-section .award-title {
+      font-size: 1.3rem;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .awards-section {
+      padding: 3rem 1rem;
+    }
+    
+    .awards-section .title {
+      font-size: 1.75rem;
+    }
+    
+    .awards-section .award-card {
+      padding: 1rem;
+    }
+  }

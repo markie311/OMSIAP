@@ -1,0 +1,744 @@
+// Scoped styles for HowItWorks component - Black Background with Blue Theme
+#howitworks {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  padding: 6rem 2rem 4rem;
+  background: #000000;
+  background-image: 
+    radial-gradient(at 30% 20%, rgba(0, 100, 200, 0.1) 0%, transparent 50%),
+    radial-gradient(at 70% 80%, rgba(0, 150, 255, 0.08) 0%, transparent 50%);
+  overflow-y:scroll;
+  overflow-x: hidden;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  padding:40px 60px;
+
+  &.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  // Header Section
+  .howitworks-header {
+    margin-bottom: 5rem;
+    position: relative;
+    z-index: 1;
+    padding:120px 0px;
+
+    .header-content {
+      animation: fadeInDown 0.8s ease-out;
+
+      .subtitle-tag {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        background: linear-gradient(135deg, #0066ff 0%, #0099ff 100%);
+        color: #ffffff;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+        animation: bounceIn 0.6s ease-out 0.2s both;
+        box-shadow: 0 0 30px rgba(0, 102, 255, 0.4);
+      }
+
+      .main-title {
+        font-size: clamp(2.5rem, 6vw, 4rem);
+        font-weight: 900;
+        margin-bottom: 1rem;
+        color: #ffffff;
+        animation: slideInUp 0.8s ease-out 0.3s both;
+
+        .highlight {
+          position: relative;
+          display: inline-block;
+          background: linear-gradient(135deg, #0066ff 0%, #00aaff 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          
+          &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #0066ff, #00aaff);
+            animation: expandWidth 1s ease-out 1s both, neonPulse 2s ease-in-out infinite;
+            box-shadow: 0 0 10px rgba(0, 102, 255, 0.8);
+          }
+        }
+      }
+
+      .description {
+        font-size: 1.125rem;
+        color: #b0b0b0;
+        max-width: 700px;
+        margin: 0 auto;
+        line-height: 1.7;
+        animation: fadeIn 0.8s ease-out 0.5s both;
+      }
+    }
+  }
+
+  // Steps Section
+  .steps-section {
+    position: relative;
+    z-index: 3;
+    margin-bottom: 4rem;
+
+    .steps-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 2rem;
+      position: relative;
+
+      .step-card {
+        background: #0a0a0a;
+        border: 1px solid #1a1a1a;
+        border-radius: 25px;
+        padding: 2rem;
+        position: relative;
+        opacity: 0;
+        animation: slideInUp 0.6s ease-out forwards;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+
+        &:hover,
+        &.active {
+          transform: translateY(-10px);
+          border-color: #0066ff;
+          box-shadow: 0 20px 50px rgba(0, 102, 255, 0.3);
+
+          .step-number {
+            background: linear-gradient(135deg, #0066ff 0%, #0099ff 100%);
+            transform: scale(1.1);
+          }
+
+          .step-icon {
+            transform: scale(1.2) rotate(5deg);
+          }
+        }
+
+        .step-number {
+          position: absolute;
+          top: -15px;
+          left: 20px;
+          width: 50px;
+          height: 50px;
+          background: #000000;
+          border: 2px solid #0066ff;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: #0066ff;
+          transition: all 0.3s ease;
+          box-shadow: 0 5px 20px rgba(0, 102, 255, 0.3);
+        }
+
+        .step-icon {
+          font-size: 3rem;
+          margin: 1.5rem 0 1rem;
+          display: block;
+          transition: transform 0.3s ease;
+        }
+
+        .step-content {
+          .step-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 1rem;
+          }
+
+          .step-description {
+            font-size: 0.95rem;
+            color: #b0b0b0;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+          }
+
+          .step-features {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+
+            li {
+              font-size: 0.875rem;
+              color: #888888;
+              margin-bottom: 0.5rem;
+              display: flex;
+              align-items: center;
+              gap: 0.5rem;
+
+              .feature-bullet {
+                color: #0066ff;
+                font-weight: 700;
+              }
+            }
+          }
+        }
+
+        .step-connector {
+          display: none;
+        }
+      }
+    }
+  }
+
+  // Timeline Section
+  .timeline-section {
+    position: relative;
+    z-index: 3;
+    margin-bottom: 5rem;
+    padding: 3rem 0;
+
+    .timeline-wrapper {
+      position: relative;
+      height: 100px;
+
+      .timeline-line {
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, 
+          #1a1a1a 0%, 
+          #0066ff 50%, 
+          #1a1a1a 100%
+        );
+        transform: translateY(-50%);
+        box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
+        animation: lineGlow 3s ease-in-out infinite;
+      }
+
+      .timeline-dot {
+        position: absolute;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        .dot-inner {
+          width: 60px;
+          height: 60px;
+          background: #0a0a0a;
+          border: 3px solid #1a1a1a;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 1.5rem;
+          transition: all 0.3s ease;
+          box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        .dot-label {
+          position: absolute;
+          top: 80px;
+          left: 50%;
+          transform: translateX(-50%);
+          white-space: nowrap;
+          font-size: 0.875rem;
+          color: #666666;
+          font-weight: 600;
+          transition: all 0.3s ease;
+        }
+
+        &:hover,
+        &.active {
+          .dot-inner {
+            background: linear-gradient(135deg, #0066ff 0%, #0099ff 100%);
+            border-color: #0066ff;
+            transform: scale(1.2);
+            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.5);
+          }
+
+          .dot-label {
+            color: #0066ff;
+            transform: translateX(-50%) translateY(-5px);
+          }
+        }
+      }
+    }
+  }
+
+  // Benefits Section
+  .benefits-section {
+    position: relative;
+    z-index: 3;
+    margin-bottom: 4rem;
+
+    .benefits-title {
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 1rem;
+      animation: fadeInUp 0.8s ease-out 0.7s both;
+    }
+
+    .benefits-subtitle {
+      font-size: 1.125rem;
+      color: #b0b0b0;
+      animation: fadeInUp 0.8s ease-out 0.8s both;
+    }
+
+    .benefit-col {
+      margin-bottom: 2rem;
+
+      .benefit-card {
+        background: #0a0a0a;
+        border: 1px solid #1a1a1a;
+        border-radius: 20px;
+        padding: 2rem;
+        height: 100%;
+        text-align: center;
+        opacity: 0;
+        animation: fadeInUp 0.6s ease-out forwards;
+        transition: all 0.3s ease;
+
+        &:hover {
+          transform: translateY(-10px);
+          border-color: #0066ff;
+          box-shadow: 0 15px 40px rgba(0, 102, 255, 0.2);
+
+          .benefit-icon {
+            transform: scale(1.2) rotate(10deg);
+          }
+        }
+
+        .benefit-icon {
+          font-size: 3rem;
+          margin-bottom: 1rem;
+          display: inline-block;
+          transition: transform 0.3s ease;
+        }
+
+        .benefit-title {
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 0.75rem;
+        }
+
+        .benefit-description {
+          font-size: 0.95rem;
+          color: #b0b0b0;
+          line-height: 1.6;
+          margin: 0;
+        }
+      }
+    }
+  }
+
+  // CTA Section
+  .cta-section {
+    position: relative;
+    z-index: 3;
+    margin-top: 5rem;
+    padding: 4rem 2rem;
+    background: linear-gradient(135deg, rgba(0, 102, 255, 0.05) 0%, rgba(0, 153, 255, 0.03) 100%);
+    border-radius: 30px;
+    border: 1px solid rgba(0, 102, 255, 0.2);
+
+    .cta-content {
+      animation: fadeInUp 0.8s ease-out 0.9s both;
+
+      .cta-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #ffffff;
+        margin-bottom: 1rem;
+      }
+
+      .cta-description {
+        font-size: 1.125rem;
+        color: #b0b0b0;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .cta-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+
+        .cta-btn {
+          padding: 1rem 2rem;
+          border-radius: 15px;
+          font-size: 1.125rem;
+          font-weight: 700;
+          border: none;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          transition: all 0.3s ease;
+          position: relative;
+          overflow: hidden;
+
+          &::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+          }
+
+          &:hover {
+            transform: translateY(-3px);
+
+            &::before {
+              left: 100%;
+            }
+
+            .btn-icon {
+              transform: translateX(5px);
+            }
+          }
+
+          .btn-icon {
+            font-size: 1.25rem;
+            transition: transform 0.3s ease;
+          }
+
+          &.primary {
+            background: linear-gradient(135deg, #0066ff 0%, #0099ff 100%);
+            color: #ffffff;
+            box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
+
+            &:hover {
+              box-shadow: 0 15px 40px rgba(0, 102, 255, 0.5);
+            }
+          }
+
+          &.secondary {
+            background: #0a0a0a;
+            color: #ffffff;
+            border: 2px solid #0066ff;
+
+            &:hover {
+              background: #000000;
+              box-shadow: 0 10px 30px rgba(0, 102, 255, 0.2);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Decorative Elements
+  .decorative-elements {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    z-index: 1;
+    pointer-events: none;
+
+    .circle {
+      position: absolute;
+      border-radius: 50%;
+      animation: float 20s ease-in-out infinite;
+
+      &.circle-1 {
+        width: 350px;
+        height: 350px;
+        top: -175px;
+        right: -175px;
+        background: radial-gradient(circle, rgba(0, 102, 255, 0.1) 0%, transparent 70%);
+        animation-delay: 0s;
+      }
+
+      &.circle-2 {
+        width: 400px;
+        height: 400px;
+        bottom: -200px;
+        left: -200px;
+        background: radial-gradient(circle, rgba(0, 102, 255, 0.12) 0%, transparent 70%);
+        animation-delay: 5s;
+      }
+
+      &.circle-3 {
+        width: 250px;
+        height: 250px;
+        top: 40%;
+        right: 5%;
+        background: radial-gradient(circle, rgba(0, 153, 255, 0.08) 0%, transparent 70%);
+        animation-delay: 10s;
+      }
+
+      &.circle-4 {
+        width: 300px;
+        height: 300px;
+        top: 60%;
+        left: 10%;
+        background: radial-gradient(circle, rgba(0, 102, 255, 0.09) 0%, transparent 70%);
+        animation-delay: 15s;
+      }
+    }
+  }
+
+  // Grid Pattern Overlay
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      linear-gradient(rgba(0, 102, 255, 0.02) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 102, 255, 0.02) 1px, transparent 1px);
+    background-size: 50px 50px;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  // Animations
+  @keyframes fadeInDown {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes bounceIn {
+    0% {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+    70% {
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes expandWidth {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translate(0, 0) scale(1);
+    }
+    33% {
+      transform: translate(30px, -30px) scale(1.1);
+    }
+    66% {
+      transform: translate(-20px, 20px) scale(0.9);
+    }
+  }
+
+  @keyframes neonPulse {
+    0%, 100% {
+      box-shadow: 0 0 10px rgba(0, 102, 255, 0.6);
+    }
+    50% {
+      box-shadow: 0 0 20px rgba(0, 102, 255, 0.8);
+    }
+  }
+
+  @keyframes lineGlow {
+    0%, 100% {
+      opacity: 0.6;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  // Responsive Design
+  @media (max-width: 992px) {
+    padding: 4rem 1.5rem 3rem;
+
+    .howitworks-header .header-content .main-title {
+      font-size: 2.5rem;
+    }
+
+    .steps-section .steps-container {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .timeline-section .timeline-wrapper {
+      height: 120px;
+
+      .timeline-dot .dot-label {
+        font-size: 0.75rem;
+      }
+    }
+
+    .benefits-section .benefits-title {
+      font-size: 2rem;
+    }
+
+    .cta-section .cta-content .cta-title {
+      font-size: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    padding: 3rem 1rem 2rem;
+
+    .howitworks-header .header-content {
+      .subtitle-tag {
+        font-size: 0.75rem;
+        padding: 0.4rem 1rem;
+      }
+
+      .main-title {
+        font-size: 2rem;
+      }
+
+      .description {
+        font-size: 1rem;
+      }
+    }
+
+    .steps-section .steps-container {
+      grid-template-columns: 1fr;
+
+      .step-card {
+        .step-number {
+          width: 45px;
+          height: 45px;
+          font-size: 1rem;
+        }
+
+        .step-icon {
+          font-size: 2.5rem;
+        }
+
+        .step-content .step-title {
+          font-size: 1.25rem;
+        }
+      }
+    }
+
+    .timeline-section {
+      display: none;
+    }
+
+    .benefits-section {
+      .benefits-title {
+        font-size: 1.75rem;
+      }
+
+      .benefit-col {
+        margin-bottom: 1rem;
+      }
+    }
+
+    .cta-section {
+      padding: 3rem 1.5rem;
+
+      .cta-content {
+        .cta-title {
+          font-size: 1.75rem;
+        }
+
+        .cta-description {
+          font-size: 1rem;
+        }
+
+        .cta-buttons {
+          flex-direction: column;
+
+          .cta-btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      }
+    }
+
+    .decorative-elements .circle {
+      &.circle-1 {
+        width: 200px;
+        height: 200px;
+      }
+      &.circle-2 {
+        width: 250px;
+        height: 250px;
+      }
+      &.circle-3, &.circle-4 {
+        display: none;
+      }
+    }
+  }
+}
+
+#howitworks-backbuttoncontainer {
+position:relative;
+height:7%;
+width:100%;
+}
+#howitworks-backbuttoncontainer-backbutton {
+position:relative;
+background-color:dodgerblue;
+height:100%;
+width:7vw;
+z-index:100;
+}
