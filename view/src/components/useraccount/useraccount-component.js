@@ -2148,9 +2148,12 @@ const handleOmsiapawasTransferSubmit = async (e) => {
                   </div>
                   <div className="userdashboard-verification-content">
                     <h3>Account Verification Required</h3>
-                    <p>Please provide the required documents to verify your account. Upload your birth certificate and government ID in the Settings section.</p>
-                    <button className="userdashboard-verification-action-btn">
-                      Go to Settings
+                    <p>Please provide the required documents to verify your account. Upload your birth certificate on regitration.</p>
+                    <button className="userdashboard-verification-action-btn"
+                            onClick={()=> {
+                                navigate('/mfatip/loginregister')
+                            }}>
+                      Go to Registration
                     </button>
                   </div>
                 </div>
