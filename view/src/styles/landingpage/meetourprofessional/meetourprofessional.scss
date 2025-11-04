@@ -1,0 +1,233 @@
+/* MeetOurProfessionals.css */
+
+.meet-professionals-section {
+    padding: 60px 0;
+    background-color: #121212;
+  }
+  
+  .meet-professionals-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .team-label {
+    color: #3498db;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+  
+  .professionals-title {
+    color: #333;
+    font-size: 36px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+  
+  .professionals-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .professional-card-col {
+    padding: 15px;
+  }
+  
+  .professional-card {
+    background-color: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    height: 100%;
+  }
+  
+  .professional-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.12);
+  }
+  
+  .photo-container {
+    position: relative;
+    padding-top: 100%; /* Creates a square aspect ratio */
+    overflow: hidden;
+  }
+  
+  .photo-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #e0e0e0;
+  }
+  
+  .photo-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  
+  .professional-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.5s ease;
+  }
+  
+  .professional-card:hover .professional-photo {
+    transform: scale(1.1);
+  }
+  
+  .professional-details {
+    padding: 20px;
+    text-align: center;
+  }
+  
+  .professional-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .professional-position {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 0;
+  }
+  
+  /* Modal Styles */
+  .professional-modal .modal-dialog {
+    max-width: 700px;
+  }
+  
+  .modal-content-wrapper {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  @media (min-width: 768px) {
+    .modal-content-wrapper {
+      flex-direction: row;
+    }
+  }
+  
+  .modal-photo-container {
+    flex: 0 0 40%;
+    max-width: 250px;
+    margin: 0 auto 20px;
+  }
+  
+  @media (min-width: 768px) {
+    .modal-photo-container {
+      margin: 0;
+    }
+  }
+  
+  .modal-professional-photo {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .modal-details {
+    flex: 1;
+    padding: 0 15px;
+  }
+  
+  .modal-position {
+    color: #3498db;
+    font-size: 20px;
+    margin-bottom: 20px;
+  }
+  
+  .modal-bio,
+  .modal-education,
+  .modal-contact {
+    margin-bottom: 20px;
+  }
+  
+  .modal-bio h4,
+  .modal-education h4,
+  .modal-contact h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .modal-bio p,
+  .modal-education p,
+  .modal-contact p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+  }
+  
+  /* Animation for modal entrance */
+  .modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+  }
+  
+  .modal.fade.show .modal-dialog {
+    transform: translate(0, 0);
+  }
+  
+  /* Button Styles */
+  .modal-footer .btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+  }
+  
+  .modal-footer .btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+  }
+  
+  /* Add fade-in animation for the section */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .meet-professionals-section {
+    animation: fadeIn 0.8s ease-out forwards;
+  }
+  
+  /* Staggered animations for card appearance */
+  .professional-card {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+  
+  .professional-card-col:nth-child(1) .professional-card {
+    animation-delay: 0.1s;
+  }
+  
+  .professional-card-col:nth-child(2) .professional-card {
+    animation-delay: 0.2s;
+  }
+  
+  .professional-card-col:nth-child(3) .professional-card {
+    animation-delay: 0.3s;
+  }
+  
+  .professional-card-col:nth-child(4) .professional-card {
+    animation-delay: 0.4s;
+  }

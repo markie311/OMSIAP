@@ -1,0 +1,731 @@
+/* LoginAndRegistrationPage Responsive CSS */
+/* Reset and base styles for the component */
+.loginandregister-auth-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.loginandregister-auth-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="0.5" fill="rgba(255,255,255,0.1)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+  pointer-events: none;
+}
+
+/* Main auth card */
+.loginandregister-auth-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1), 0 8px 16px rgba(0, 0, 0, 0.05);
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  position: relative;
+  transform: translateY(0);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.loginandregister-auth-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 32px 64px rgba(0, 0, 0, 0.15), 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Header styles */
+.loginandregister-auth-header {
+  text-align: center;
+  margin-bottom: 40px;
+  position: relative;
+}
+
+.loginandregister-auth-header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+  position: relative;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.loginandregister-auth-header p {
+  color: #6b7280;
+  font-size: 1.1rem;
+  margin: 0;
+  opacity: 0.8;
+  animation: fadeInUp 0.6s ease-out 0.2s both;
+}
+
+/* Form styles */
+.loginandregister-auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.loginandregister-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.loginandregister-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  position: relative;
+}
+
+.loginandregister-form-group label {
+  font-weight: 600;
+  color: #374151;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.loginandregister-form-group input {
+  padding: 16px 20px;
+  border: 2px solid #e5e7eb;
+  border-radius: 16px;
+  font-size: 1rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
+}
+
+.loginandregister-form-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  transform: translateY(-2px);
+}
+
+.loginandregister-form-group input:hover {
+  border-color: #d1d5db;
+  transform: translateY(-1px);
+}
+
+.loginandregister-form-group input::placeholder {
+  color: #9ca3af;
+  transition: color 0.2s ease;
+}
+
+.loginandregister-form-group input:focus::placeholder {
+  color: #d1d5db;
+}
+
+/* Error message styles */
+.loginandregister-error-message {
+  background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+  color: #dc2626;
+  padding: 16px 20px;
+  border-radius: 16px;
+  margin-bottom: 24px;
+  border: 1px solid #f87171;
+  font-weight: 500;
+  animation: shake 0.5s ease-in-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.loginandregister-error-message::before {
+  content: '⚠️';
+  margin-right: 8px;
+}
+
+.loginandregister-error {
+  color: #dc2626;
+  font-size: 0.875rem;
+  margin-top: 4px;
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Success message styles */
+.loginpage-responsemessagecontainer {
+  background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+  color: #059669;
+  padding: 20px;
+  border-radius: 16px;
+  margin: 20px 0;
+  border: 1px solid #34d399;
+  text-align: center;
+  display: none;
+  animation: slideInUp 0.5s ease-out;
+}
+
+.loginpage-responsemessagecontainer p {
+  margin: 8px 0;
+  font-weight: 500;
+}
+
+.loginpage-responsemessagecontainer a {
+  display: inline-block;
+  background: #059669;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  margin-top: 12px;
+  transition: all 0.3s ease;
+}
+
+.loginpage-responsemessagecontainer a:hover {
+  background: #047857;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(5, 150, 105, 0.3);
+}
+
+/* Forgot password link */
+.loginandregister-forgot-password {
+  text-align: center;
+  margin: 16px 0;
+}
+
+.loginandregister-forgot-password a {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.loginandregister-forgot-password a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  transition: width 0.3s ease;
+}
+
+.loginandregister-forgot-password a:hover::after {
+  width: 100%;
+}
+
+/* Button styles */
+.loginandregister-auth-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 18px 32px;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.loginandregister-auth-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.loginandregister-auth-button:hover::before {
+  left: 100%;
+}
+
+.loginandregister-auth-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 24px rgba(102, 126, 234, 0.4);
+}
+
+.loginandregister-auth-button:active {
+  transform: translateY(-1px);
+}
+
+/* Footer styles */
+.loginandregister-auth-footer {
+  text-align: center;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.loginandregister-auth-footer p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.loginandregister-text-button {
+  background: none;
+  border: none;
+  color: #667eea;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.loginandregister-text-button:hover {
+  color: #764ba2;
+  transform: translateY(-1px);
+}
+
+/* Modal styles */
+.loginandregister-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.loginandregister-modal-content {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  animation: slideInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.loginandregister-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.loginandregister-modal-header h2 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.loginandregister-close-button {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #6b7280;
+  transition: all 0.2s ease;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.loginandregister-close-button:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.1);
+  transform: rotate(90deg);
+}
+
+/* Registration form styles */
+.loginandregister-registration-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.loginandregister-field-reminder {
+  margin-bottom: 8px;
+}
+
+.loginandregister-field-reminder small {
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  display: block;
+  padding: 8px 12px;
+  background: rgba(102, 126, 234, 0.05);
+  border-radius: 8px;
+  border-left: 3px solid #667eea;
+}
+
+/* File input styles */
+.loginandregister-file-input {
+  border: 2px dashed #d1d5db !important;
+  background: rgba(249, 250, 251, 0.8) !important;
+  padding: 20px !important;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.loginandregister-file-input:hover {
+  border-color: #667eea !important;
+  background: rgba(102, 126, 234, 0.05) !important;
+}
+
+.loginandregister-file-input:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+}
+
+/* File preview styles */
+.loginandregister-file-preview {
+  margin-top: 16px;
+  padding: 16px;
+  background: rgba(34, 197, 94, 0.05);
+  border-radius: 12px;
+  border: 1px solid #bbf7d0;
+}
+
+.loginandregister-file-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.loginandregister-file-info span {
+  color: #059669;
+  font-weight: 500;
+}
+
+.loginandregister-view-button {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.loginandregister-view-button:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.loginandregister-image-thumbnail {
+  display: flex;
+  justify-content: center;
+}
+
+.loginandregister-thumbnail-image {
+  transition: all 0.3s ease;
+  border-radius: 12px !important;
+}
+
+.loginandregister-thumbnail-image:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Document notice styles */
+.loginandregister-document-notice {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid #f59e0b;
+  margin: 24px 0;
+}
+
+.loginandregister-document-notice h3 {
+  color: #92400e;
+  margin-bottom: 16px;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.loginandregister-document-notice p {
+  color: #78350f;
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.loginandregister-document-notice ul {
+  color: #78350f;
+  margin-left: 20px;
+}
+
+.loginandregister-document-notice li {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+/* Registration results styles */
+#registration-results {
+  display: none;
+  animation: slideInUp 0.5s ease-out;
+}
+
+.registration-results-registrationresultsheaderindication {
+  margin-bottom: 12px;
+}
+
+/* Form actions */
+.loginandregister-form-actions {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.loginandregister-cancel-button {
+  background: #f3f4f6;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  padding: 16px 24px;
+  border-radius: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loginandregister-cancel-button:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+/* Image modal styles */
+.loginandregister-image-modal {
+  background: white;
+  border-radius: 20px;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  position: relative;
+  animation: zoomIn 0.3s ease-out;
+}
+
+.loginandregister-image-container {
+  padding: 20px;
+  text-align: center;
+}
+
+.loginandregister-preview-image {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.loginandregister-modal-footer {
+  padding: 20px;
+  text-align: center;
+  border-top: 1px solid #e5e7eb;
+}
+
+/* Spinner styles */
+.spinner-border {
+  width: 24px;
+  height: 24px;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .loginandregister-auth-container {
+    padding: 16px;
+  }
+  
+  .loginandregister-auth-card {
+    padding: 24px;
+    margin: 0;
+  }
+  
+  .loginandregister-auth-header h1 {
+    font-size: 2rem;
+  }
+  
+  .loginandregister-form-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .loginandregister-modal-content {
+    padding: 24px;
+    margin: 0;
+  }
+  
+  .loginandregister-form-actions {
+    flex-direction: column;
+  }
+  
+  .loginandregister-form-actions button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .loginandregister-auth-card {
+    padding: 20px;
+  }
+  
+  .loginandregister-auth-header h1 {
+    font-size: 1.75rem;
+  }
+  
+  .loginandregister-form-group input {
+    padding: 14px 16px;
+  }
+  
+  .loginandregister-auth-button {
+    padding: 16px 24px;
+  }
+  
+  .loginandregister-modal-content {
+    padding: 20px;
+  }
+  
+  .loginandregister-file-input {
+    padding: 16px !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .loginandregister-auth-card {
+    border: 2px solid #000;
+  }
+  
+  .loginandregister-form-group input {
+    border-color: #000;
+  }
+  
+  .loginandregister-auth-button {
+    background: #000;
+    border: 2px solid #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .loginandregister-auth-container {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+  }
+  
+  .loginandregister-auth-card {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .loginandregister-auth-header h1 {
+    -webkit-text-fill-color: white;
+    background: linear-gradient(135deg, #a855f7 0%, #3b82f6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+  }
+  
+  .loginandregister-form-group label {
+    color: #e2e8f0;
+  }
+  
+  .loginandregister-form-group input {
+    background: rgba(51, 65, 85, 0.8);
+    border-color: #475569;
+    color: #e2e8f0;
+  }
+  
+  .loginandregister-modal-content {
+    background: #1e293b;
+    color: #e2e8f0;
+  }
+}

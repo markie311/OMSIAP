@@ -1,0 +1,476 @@
+// Scoped styles for Terms and Service component
+// All selectors prefixed with 'tos-' to prevent conflicts
+
+#termsandservice {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  overflow-y:scroll;
+  overflow-x: hidden;
+}
+
+#termsandservice-backbuttoncontainer {
+ position:relative;
+ height:7%;
+ width:100%;
+}
+
+#termsandservice-backbuttoncontainer-backbutton {
+ position:relative;
+ background-color:dodgerblue;
+ height:100%;
+ width:7vw;
+ z-index:100;
+}
+
+.tos-container {
+  background: #000000;
+  color: #ffffff;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+// Animated background effects
+.tos-background-effects {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.tos-gradient-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  animation: tos-float 20s ease-in-out infinite;
+}
+
+.tos-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, #0066ff, #003d99);
+  top: -200px;
+  left: -200px;
+  animation-delay: 0s;
+}
+
+.tos-orb-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #0088ff, #0055cc);
+  bottom: -250px;
+  right: -250px;
+  animation-delay: -7s;
+}
+
+.tos-orb-3 {
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, #00aaff, #0077dd);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: -14s;
+}
+
+@keyframes tos-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  25% {
+    transform: translate(50px, 100px) scale(1.1);
+  }
+  50% {
+    transform: translate(-30px, 50px) scale(0.9);
+  }
+  75% {
+    transform: translate(80px, -70px) scale(1.05);
+  }
+}
+
+// Content wrapper
+.tos-content-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 80px 40px;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px;
+  }
+}
+
+// Header section
+.tos-header {
+  text-align: center;
+  margin-bottom: 100px;
+  opacity: 0;
+  animation: tos-fadeInUp 1s ease forwards;
+
+  @media (max-width: 768px) {
+    margin-bottom: 60px;
+  }
+}
+
+.tos-title-container {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+
+.tos-main-title {
+  font-size: 4.5rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #00aaff, #0066ff, #00ccff);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0;
+  letter-spacing: -2px;
+  animation: tos-gradientShift 4s ease infinite;
+
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+    letter-spacing: -1px;
+  }
+}
+
+.tos-title-underline {
+  height: 4px;
+  background: linear-gradient(90deg, transparent, #0088ff, transparent);
+  margin-top: 15px;
+  animation: tos-expandWidth 1.5s ease forwards 0.5s;
+  transform-origin: center;
+  transform: scaleX(0);
+}
+
+.tos-subtitle {
+  font-size: 1.5rem;
+  color: #00aaff;
+  margin: 20px 0 10px;
+  font-weight: 500;
+  letter-spacing: 1px;
+
+  @media (max-width: 768px) {
+    font-size: 1.2rem;
+  }
+}
+
+.tos-effective-date {
+  font-size: 1rem;
+  color: #6699cc;
+  font-style: italic;
+}
+
+// Section styling
+.tos-section {
+  position: relative;
+  margin-bottom: 80px;
+  padding: 40px;
+  background: rgba(0, 34, 68, 0.3);
+  border-left: 4px solid #0088ff;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  transform: translateY(50px);
+  transition: all 0.6s ease;
+
+  &:hover {
+    background: rgba(0, 51, 102, 0.4);
+    border-left-width: 6px;
+    transform: translateX(10px);
+    box-shadow: 0 10px 40px rgba(0, 136, 255, 0.2);
+  }
+
+  &.tos-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 768px) {
+    padding: 30px 20px;
+    margin-bottom: 50px;
+  }
+}
+
+.tos-section-number {
+  position: absolute;
+  top: -20px;
+  left: 30px;
+  font-size: 3rem;
+  font-weight: 900;
+  color: rgba(0, 136, 255, 0.2);
+  letter-spacing: -2px;
+  animation: tos-pulse 2s ease infinite;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+    top: -15px;
+    left: 15px;
+  }
+}
+
+.tos-section-title {
+  font-size: 2rem;
+  color: #00aaff;
+  margin-bottom: 20px;
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 15px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(90deg, #0088ff, transparent);
+    animation: tos-shimmer 3s ease infinite;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+}
+
+.tos-text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #d0e0f0;
+  margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+}
+
+.tos-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.tos-list-item {
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 15px;
+  font-size: 1.1rem;
+  color: #d0e0f0;
+  line-height: 1.7;
+  transition: all 0.3s ease;
+
+  &::before {
+    content: '▶';
+    position: absolute;
+    left: 0;
+    color: #0088ff;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+  }
+
+  &:hover {
+    color: #ffffff;
+    transform: translateX(5px);
+
+    &::before {
+      color: #00ccff;
+      transform: scale(1.2);
+    }
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    padding-left: 30px;
+  }
+}
+
+// Highlight box
+.tos-highlight-box {
+  background: rgba(0, 102, 255, 0.1);
+  border: 2px solid rgba(0, 136, 255, 0.3);
+  border-radius: 10px;
+  padding: 30px;
+  margin: 30px 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 170, 255, 0.1), transparent);
+    animation: tos-scan 3s ease infinite;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px;
+    margin: 20px 0;
+  }
+}
+
+.tos-highlight-title {
+  font-size: 1.5rem;
+  color: #00ccff;
+  margin-bottom: 15px;
+  font-weight: 600;
+
+  @media (max-width: 768px) {
+    font-size: 1.3rem;
+  }
+}
+
+// Contact box
+.tos-contact-box {
+  background: rgba(0, 68, 136, 0.2);
+  border-radius: 10px;
+  padding: 25px;
+  margin-top: 20px;
+  border: 1px solid rgba(0, 136, 255, 0.3);
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+}
+
+.tos-contact-item {
+  font-size: 1.1rem;
+  color: #d0e0f0;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  strong {
+    color: #00aaff;
+    min-width: 100px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+
+    strong {
+      min-width: auto;
+    }
+  }
+}
+
+// Footer
+.tos-footer {
+  text-align: center;
+  margin-top: 100px;
+  padding-top: 50px;
+  opacity: 0;
+  animation: tos-fadeInUp 1s ease forwards 0.5s;
+
+  @media (max-width: 768px) {
+    margin-top: 60px;
+    padding-top: 30px;
+  }
+}
+
+.tos-footer-divider {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #0088ff, transparent);
+  margin-bottom: 40px;
+  animation: tos-expandWidth 2s ease forwards;
+}
+
+.tos-footer-text {
+  font-size: 1.2rem;
+  color: #88b3d9;
+  margin-bottom: 20px;
+  font-weight: 500;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+}
+
+.tos-footer-copyright {
+  font-size: 1rem;
+  color: #6699cc;
+
+  @media (max-width: 768px) {
+    font-size: 0.9rem;
+  }
+}
+
+// Animations
+@keyframes tos-fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes tos-expandWidth {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes tos-gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes tos-pulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes tos-shimmer {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes tos-scan {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+// Smooth scrolling
+html {
+  scroll-behavior: smooth;
+}

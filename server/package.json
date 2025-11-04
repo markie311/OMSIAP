@@ -1,0 +1,22 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "nodemon": "nodemon server.js",
+    "heroku-postbuild": "cd client && nnpm install && npm run build"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "decimal.js": "^10.5.0",
+    "express": "^4.21.2",
+    "multer": "^1.4.5-lts.1",
+    "resend": "^6.3.0",
+    "uuid": "^11.1.0"
+  }
+}

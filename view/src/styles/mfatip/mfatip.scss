@@ -1,0 +1,1288 @@
+/* ============================================
+MFATIP - Monthly Financial Allocation Component
+Black Background with Blue Theme
+Fully scoped under .mfatip-container to avoid leaking styles
+NOTE: CSS @keyframes must exist at the top level; to avoid name collisions
+we keep your original animation names but output them at root using @at-root.
+If you want absolute zero global names, I can prefix all keyframes/IDs next.
+============================================ */
+
+.mfatip-container {
+/* -------------------------
+Scoped CSS variables (previously :root)
+------------------------- */
+--primary-blue: #0066ff;
+--secondary-blue: #00d9ff;
+--accent-cyan: #00ff88;
+--accent-magenta: #ff00ff;
+--accent-gold: #ffd700;
+--dark-bg: #0a0a0a;
+--darker-bg: #050505;
+--card-bg: #1a1a2e;
+--border-color: #2a2a4e;
+--text-primary: #ffffff;
+--text-secondary: #b0b0d0;
+--text-muted: #808099;
+--bright-cyan: #00d9ff; /* used in gradients where referenced */
+
+/* ========================
+Global-like resets but scoped to component
+(these will only affect elements inside .mfatip-container)
+======================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  }
+
+/* Component container base styles */
+background: linear-gradient(135deg, var(--dark-bg) 0%, var(--darker-bg) 100%);
+color: var(--text-primary);
+height: 100%;
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+overflow-y: scroll;
+overflow-x: hidden;
+opacity: 0;
+animation: fadeInContainer 0.8s ease-out forwards;
+
+
+
+/* ============================================
+MAIN HEADER
+============================================ */
+  .mfatip-main-header {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    padding: 80px 40px;
+    text-align: center;
+    background: linear-gradient(180deg, rgba(0, 102, 255, 0.1) 0%, transparent 100%);
+    border-bottom: 1px solid var(--border-color);
+    overflow: hidden;
+    min-height: 60vh; // ensures vertical centering space
+  }
+
+    .mfatip-main-header::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0, 102, 255, 0.15) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    margin: 0 auto;
+    animation: slideInDown 0.8s ease-out;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-left:auto;
+    margin-right:auto;
+  }
+
+  .header-badge {
+    display: inline-block;
+    padding: 8px 20px;
+    background: rgba(0, 102, 255, 0.2);
+    border: 1px solid var(--primary-blue);
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--secondary-blue);
+    margin-bottom: 20px;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .header-title {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    letter-spacing: -1px;
+    text-align: center;
+  }
+
+  .highlight-omsiap {
+    background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--accent-cyan) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  .highlight-mfatip {
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 3s ease-in-out infinite 0.5s;
+  }
+
+  .header-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    margin-bottom: 30px;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  .header-divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));
+    margin: 0 auto;
+    border-radius: 2px;
+    animation: expandWidth 0.8s ease-out 0.3s forwards;
+    transform-origin: center;
+    transform: scaleX(0);
+  }
+
+/* ============================================
+PROFIT SOURCES SECTION
+============================================ */
+.profit-sources {
+padding: 100px 20px;
+background: var(--dark-bg);
+}
+
+.profit-sources__container {
+max-width: 1200px;
+margin: 0 auto;
+}
+
+.profit-sources__header {
+text-align: center;
+margin-bottom: 60px;
+animation: fadeInUp 0.8s ease-out;
+}
+
+.profit-sources__title {
+font-size: clamp(2rem, 4vw, 2.8rem);
+font-weight: 800;
+margin-bottom: 15px;
+background: linear-gradient(90deg, var(--bright-cyan), var(--primary-blue));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+}
+
+.profit-sources__subtitle {
+font-size: 1.1rem;
+color: var(--text-secondary);
+}
+
+.profit-sources__grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 25px;
+margin-bottom: 60px;
+}
+
+/* Profit Cards */
+.profit-card {
+background: linear-gradient(135deg, var(--card-bg) 0%, rgba(0, 102, 255, 0.05) 100%);
+border: 1px solid var(--border-color);
+border-radius: 16px;
+padding: 30px;
+position: relative;
+overflow: hidden;
+transition: all 0.3s ease;
+animation: slideInUp 0.6s ease-out backwards;
+animation-delay: var(--delay, 0s);
+}
+
+.profit-card::before {
+content: "";
+position: absolute;
+top: 0;
+left: 0;
+right: 0;
+height: 3px;
+background: linear-gradient(90deg, var(--primary-blue), var(--bright-cyan));
+opacity: 0;
+transition: opacity 0.3s ease;
+}
+
+.profit-card:hover {
+border-color: var(--primary-blue);
+transform: translateY(-8px);
+box-shadow: 0 20px 40px rgba(0, 102, 255, 0.15);
+}
+
+.profit-card:hover::before {
+opacity: 1;
+}
+
+.profit-card--ecommerce {
+--card-accent: #00d9ff;
+}
+
+.profit-card--stores {
+--card-accent: #0099ff;
+}
+
+.profit-card--businesses {
+--card-accent: #00b8ff;
+}
+
+.profit-card--community {
+--card-accent: #00d97e;
+}
+
+.profit-card__header {
+display: flex;
+justify-content: space-between;
+align-items: flex-start;
+margin-bottom: 20px;
+}
+
+.profit-card__icon {
+font-size: 2.5rem;
+animation: float 3s ease-in-out infinite;
+}
+
+.profit-card__count-badge {
+background: linear-gradient(135deg, var(--primary-blue), var(--bright-cyan));
+padding: 8px 16px;
+border-radius: 20px;
+font-weight: 700;
+font-size: 1.2rem;
+min-width: 50px;
+text-align: center;
+}
+
+.profit-card__count {
+display: inline-block;
+transition: all 0.3s ease;
+}
+
+.profit-card__count--animate {
+animation: countPulse 0.5s ease-out;
+}
+
+.profit-card__title {
+font-size: 1.3rem;
+font-weight: 700;
+margin-bottom: 12px;
+color: var(--text-primary);
+}
+
+.profit-card__description {
+font-size: 0.95rem;
+color: var(--text-secondary);
+line-height: 1.6;
+margin-bottom: 15px;
+}
+
+.profit-card__details {
+background: rgba(0, 102, 255, 0.05);
+padding: 12px;
+border-radius: 8px;
+margin-bottom: 15px;
+border-left: 3px solid var(--card-accent);
+}
+
+.profit-card__detail-text {
+font-size: 0.9rem;
+color: var(--text-secondary);
+}
+
+.profit-card__progress {
+height: 4px;
+background: rgba(0, 102, 255, 0.1);
+border-radius: 2px;
+overflow: hidden;
+}
+
+.profit-card__progress-bar {
+height: 100%;
+background: linear-gradient(90deg, var(--primary-blue), var(--bright-cyan));
+width: 0;
+animation: expandWidth 2s ease-out forwards;
+animation-delay: var(--delay, 0s);
+}
+
+/* Stats Section */
+.profit-sources__stats {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+gap: 20px;
+padding: 40px;
+background: rgba(0, 102, 255, 0.05);
+border: 1px solid var(--border-color);
+border-radius: 16px;
+}
+
+.stat-item {
+text-align: center;
+animation: fadeInUp 0.8s ease-out 0.5s backwards;
+}
+
+.stat-item__label {
+display: block;
+font-size: 0.9rem;
+color: var(--text-secondary);
+margin-bottom: 8px;
+}
+
+.stat-item__value {
+display: block;
+font-size: 2.5rem;
+font-weight: 800;
+background: linear-gradient(90deg, var(--bright-cyan), var(--primary-blue));
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+}
+
+/* ============================================
+NAVIGATION TABS
+============================================ */
+.mfatip-nav {
+display: flex;
+justify-content: center;
+gap: 20px;
+padding: 40px 20px;
+border-bottom: 1px solid var(--border-color);
+flex-wrap: wrap;
+}
+
+.nav-tab {
+padding: 12px 30px;
+background: transparent;
+border: 2px solid var(--border-color);
+border-radius: 50px;
+color: var(--text-secondary);
+font-size: 1rem;
+font-weight: 600;
+cursor: pointer;
+transition: all 0.3s ease;
+position: relative;
+overflow: hidden;
+}
+
+.nav-tab::before {
+content: "";
+position: absolute;
+top: 0;
+left: -100%;
+width: 100%;
+height: 100%;
+background: linear-gradient(90deg, var(--primary-blue), var(--secondary-blue));
+z-index: -1;
+transition: left 0.3s ease;
+}
+
+.nav-tab:hover {
+border-color: var(--primary-blue);
+color: var(--text-primary);
+transform: translateY(-2px);
+}
+
+.nav-tab.active {
+border-color: var(--primary-blue);
+color: var(--text-primary);
+background: linear-gradient(135deg, rgba(0, 102, 255, 0.2) 0%, rgba(0, 217, 255, 0.1) 100%);
+box-shadow: 0 0 20px rgba(0, 102, 255, 0.3);
+}
+
+/* ============================================
+CONTENT SECTIONS
+============================================ */
+.mfatip-content {
+max-width: 1400px;
+margin: 0 auto;
+padding: 60px 40px;
+}
+
+.content-section {
+animation: fadeInUp 0.8s ease-out;
+}
+
+.section-header {
+text-align: center;
+margin-bottom: 60px;
+}
+
+.section-header h2 {
+font-size: 2.5rem;
+margin-bottom: 15px;
+background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+}
+
+.section-header p {
+font-size: 1.1rem;
+color: var(--text-secondary);
+}
+
+/* ============================================
+PROFIT SOURCES GRID
+============================================ */
+.profit-sources-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+gap: 30px;
+margin-bottom: 60px;
+}
+
+/* reuse .profit-card (kept earlier) - ensure no duplicate rules conflict */
+
+.card-icon {
+font-size: 3rem;
+margin-bottom: 20px;
+display: inline-block;
+animation: bounce 2s ease-in-out infinite;
+}
+
+.card-title {
+font-size: 1.5rem;
+font-weight: 700;
+margin-bottom: 10px;
+color: var(--text-primary);
+}
+
+.card-description {
+font-size: 0.95rem;
+color: var(--text-secondary);
+margin-bottom: 25px;
+line-height: 1.5;
+}
+
+.card-allocation {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 20px;
+padding-bottom: 20px;
+border-bottom: 1px solid var(--border-color);
+}
+
+.allocation-label {
+font-size: 0.85rem;
+color: var(--text-muted);
+text-transform: uppercase;
+letter-spacing: 0.5px;
+}
+
+.allocation-amount {
+font-size: 1.5rem;
+font-weight: 700;
+color: var(--card-color);
+}
+
+.card-progress {
+width: 100%;
+height: 6px;
+background: rgba(255, 255, 255, 0.1);
+border-radius: 3px;
+overflow: hidden;
+margin-bottom: 10px;
+}
+
+.progress-bar {
+height: 100%;
+background: linear-gradient(90deg, var(--card-color), rgba(255, 255, 255, 0.3));
+border-radius: 3px;
+animation: expandBar 1.5s ease-out forwards;
+}
+
+.card-percentage {
+font-size: 0.9rem;
+color: var(--card-color);
+font-weight: 600;
+}
+
+/* ============================================
+TOTAL ALLOCATION CARD
+============================================ */
+.total-allocation-card {
+background: linear-gradient(135deg, rgba(0, 102, 255, 0.15) 0%, rgba(0, 217, 255, 0.1) 100%);
+border: 2px solid var(--primary-blue);
+border-radius: 20px;
+padding: 50px;
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 50px;
+align-items: center;
+animation: slideInUp 0.8s ease-out 0.3s forwards;
+opacity: 0;
+}
+
+.total-content h3 {
+font-size: 1.3rem;
+color: var(--text-secondary);
+margin-bottom: 15px;
+text-transform: uppercase;
+letter-spacing: 1px;
+}
+
+.total-amount {
+font-size: 3.5rem;
+font-weight: 800;
+background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--accent-cyan) 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+background-clip: text;
+margin-bottom: 20px;
+}
+
+.total-description {
+font-size: 1rem;
+color: var(--text-secondary);
+line-height: 1.6;
+}
+
+.total-visual {
+display: flex;
+justify-content: center;
+align-items: center;
+}
+
+.circle-progress {
+position: relative;
+width: 200px;
+height: 200px;
+}
+
+.circle-progress svg {
+width: 100%;
+height: 100%;
+transform: rotate(-90deg);
+}
+
+.circle-bg {
+fill: none;
+stroke: var(--border-color);
+stroke-width: 8;
+}
+
+.circle-progress-bar {
+fill: none;
+stroke-width: 8;
+stroke-linecap: round;
+stroke-dasharray: 282;
+stroke-dashoffset: 0;
+animation: fillCircle 2s ease-out forwards;
+}
+
+.circle-text {
+position: absolute;
+top: 50%;
+left: 50%;
+transform: translate(-50%, -50%);
+font-size: 2rem;
+font-weight: 700;
+color: var(--secondary-blue);
+}
+
+/* ============================================
+ALLOCATION DETAILS
+============================================ */
+.allocation-details {
+display: flex;
+flex-direction: column;
+gap: 25px;
+margin-bottom: 60px;
+}
+
+.allocation-item {
+background: var(--card-bg);
+border: 1px solid var(--border-color);
+border-radius: 15px;
+padding: 25px;
+transition: all 0.3s ease;
+animation: slideInLeft 0.6s ease-out forwards;
+}
+
+.allocation-item:hover {
+border-color: var(--primary-blue);
+box-shadow: 0 10px 30px rgba(0, 102, 255, 0.15);
+}
+
+.allocation-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 15px;
+}
+
+.allocation-title-group {
+display: flex;
+align-items: center;
+gap: 15px;
+}
+
+.allocation-icon {
+font-size: 2rem;
+}
+
+.allocation-title-group h4 {
+font-size: 1.2rem;
+margin-bottom: 5px;
+}
+
+.allocation-title-group p {
+font-size: 0.9rem;
+color: var(--text-secondary);
+}
+
+.allocation-amount-group {
+display: flex;
+align-items: center;
+gap: 20px;
+}
+
+.allocation-amount-group .amount {
+font-size: 1.3rem;
+font-weight: 700;
+color: var(--secondary-blue);
+}
+
+.allocation-amount-group .percentage {
+font-size: 1rem;
+color: var(--text-secondary);
+min-width: 50px;
+text-align: right;
+}
+
+.allocation-bar {
+width: 100%;
+height: 8px;
+background: rgba(255, 255, 255, 0.1);
+border-radius: 4px;
+overflow: hidden;
+}
+
+.allocation-fill {
+height: 100%;
+border-radius: 4px;
+animation: expandBar 1.5s ease-out forwards;
+}
+
+/* ============================================
+DISTRIBUTION TIMELINE
+============================================ */
+.distribution-timeline {
+margin-top: 60px;
+}
+
+.distribution-timeline h3 {
+font-size: 1.8rem;
+margin-bottom: 40px;
+text-align: center;
+}
+
+.timeline {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 30px;
+}
+
+.timeline-item {
+position: relative;
+padding-left: 50px;
+animation: fadeInUp 0.8s ease-out forwards;
+}
+
+.timeline-marker {
+position: absolute;
+left: 0;
+top: 0;
+width: 30px;
+height: 30px;
+background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+border-radius: 50%;
+border: 3px solid var(--dark-bg);
+animation: scaleIn 0.6s ease-out;
+}
+
+.timeline-item h4 {
+font-size: 1.1rem;
+margin-bottom: 8px;
+color: var(--text-primary);
+}
+
+.timeline-item p {
+font-size: 0.95rem;
+color: var(--text-secondary);
+}
+
+/* ============================================
+BENEFITS GRID
+============================================ */
+.benefits-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+gap: 30px;
+margin-bottom: 60px;
+}
+
+.benefit-card {
+background: linear-gradient(135deg, var(--card-bg) 0%, rgba(26, 26, 46, 0.5) 100%);
+border: 1px solid var(--border-color);
+border-radius: 15px;
+padding: 35px;
+text-align: center;
+transition: all 0.4s ease;
+animation: slideInCard 0.6s ease-out forwards;
+}
+
+.benefit-card:hover {
+border-color: var(--primary-blue);
+transform: translateY(-8px);
+box-shadow: 0 15px 40px rgba(0, 102, 255, 0.2);
+}
+
+.benefit-icon {
+font-size: 2.5rem;
+margin-bottom: 20px;
+display: inline-block;
+animation: float 3s ease-in-out infinite;
+}
+
+.benefit-card h3 {
+font-size: 1.3rem;
+margin-bottom: 15px;
+color: var(--text-primary);
+}
+
+.benefit-card p {
+font-size: 0.95rem;
+color: var(--text-secondary);
+line-height: 1.6;
+}
+
+/* ============================================
+CTA SECTION
+============================================ */
+.cta-section {
+text-align: center;
+padding: 60px 40px;
+background: linear-gradient(135deg, rgba(0, 102, 255, 0.1) 0%, rgba(0, 217, 255, 0.05) 100%);
+border: 2px solid var(--border-color);
+border-radius: 20px;
+animation: slideInUp 0.8s ease-out 0.4s forwards;
+opacity: 0;
+}
+
+.cta-section h3 {
+font-size: 2rem;
+margin-bottom: 15px;
+color: var(--text-primary);
+}
+
+.cta-section p {
+font-size: 1.1rem;
+color: var(--text-secondary);
+margin-bottom: 30px;
+}
+
+.cta-button {
+padding: 15px 50px;
+background: linear-gradient(135deg, var(--primary-blue) 0%, var(--secondary-blue) 100%);
+border: none;
+border-radius: 50px;
+color: var(--text-primary);
+font-size: 1.1rem;
+font-weight: 700;
+cursor: pointer;
+transition: all 0.3s ease;
+box-shadow: 0 10px 30px rgba(0, 102, 255, 0.3);
+text-transform: uppercase;
+letter-spacing: 1px;
+}
+
+.cta-button:hover {
+transform: translateY(-3px);
+box-shadow: 0 15px 40px rgba(0, 102, 255, 0.4);
+}
+
+.cta-button:active {
+transform: translateY(-1px);
+}
+
+/* ============================================
+FOOTER
+============================================ */
+.mfatip-footer {
+background: linear-gradient(180deg, transparent 0%, rgba(0, 102, 255, 0.05) 100%);
+border-top: 1px solid var(--border-color);
+padding: 60px 40px 30px;
+margin-top: 80px;
+}
+
+.footer-content {
+max-width: 1400px;
+margin: 0 auto;
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+gap: 40px;
+margin-bottom: 40px;
+}
+
+.footer-section h4 {
+font-size: 1.1rem;
+margin-bottom: 15px;
+color: var(--text-primary);
+}
+
+.footer-section p {
+font-size: 0.95rem;
+color: var(--text-secondary);
+line-height: 1.8;
+margin-bottom: 10px;
+}
+
+.footer-section ul {
+list-style: none;
+}
+
+.footer-section ul li {
+margin-bottom: 10px;
+}
+
+.footer-section ul li a {
+color: var(--text-secondary);
+text-decoration: none;
+transition: color 0.3s ease;
+}
+
+.footer-section ul li a:hover {
+color: var(--secondary-blue);
+}
+
+.footer-bottom {
+text-align: center;
+padding-top: 30px;
+border-top: 1px solid var(--border-color);
+color: var(--text-muted);
+font-size: 0.9rem;
+}
+
+/* ============================================
+RESPONSIVE DESIGN
+============================================ */
+@media (max-width: 1024px) {
+.mfatip-main-header {
+padding: 60px 30px;
+}
+
+
+.mfatip-content {
+  padding: 40px 30px;
+}
+
+.total-allocation-card {
+  grid-template-columns: 1fr;
+  gap: 30px;
+  padding: 40px;
+}
+
+.profit-sources-grid {
+  gap: 20px;
+}
+
+
+}
+
+@media (max-width: 768px) {
+.mfatip-main-header {
+padding: 40px 20px;
+}
+
+.header-title {
+  font-size: 2rem;
+}
+
+.header-subtitle {
+  font-size: 1rem;
+}
+
+.mfatip-nav {
+  gap: 10px;
+  padding: 20px 10px;
+}
+
+.nav-tab {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+}
+
+.mfatip-content {
+  padding: 30px 20px;
+}
+
+.section-header h2 {
+  font-size: 1.8rem;
+}
+
+.profit-sources-grid {
+  grid-template-columns: 1fr;
+}
+
+.profit-card {
+  padding: 30px 20px;
+}
+
+.total-allocation-card {
+  padding: 30px 20px;
+}
+
+.total-amount {
+  font-size: 2.5rem;
+}
+
+.circle-progress {
+  width: 150px;
+  height: 150px;
+}
+
+.circle-text {
+  font-size: 1.5rem;
+}
+
+.benefits-grid {
+  grid-template-columns: 1fr;
+}
+
+.cta-section {
+  padding: 40px 20px;
+}
+
+.cta-section h3 {
+  font-size: 1.5rem;
+}
+
+.footer-content {
+  gap: 30px;
+}
+
+}
+
+@media (max-width: 480px) {
+.mfatip-main-header {
+padding: 30px 15px;
+}
+
+.header-title {
+  font-size: 1.5rem;
+}
+
+.header-subtitle {
+  font-size: 0.9rem;
+}
+
+.mfatip-nav {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.nav-tab {
+  width: 100%;
+}
+
+.mfatip-content {
+  padding: 20px 15px;
+}
+
+.section-header h2 {
+  font-size: 1.5rem;
+}
+
+.profit-card {
+  padding: 20px 15px;
+}
+
+.card-icon {
+  font-size: 2.5rem;
+}
+
+.card-title {
+  font-size: 1.2rem;
+}
+
+.total-allocation-card {
+  padding: 20px 15px;
+}
+
+.total-amount {
+  font-size: 2rem;
+}
+
+.allocation-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 15px;
+}
+
+.allocation-amount-group {
+  width: 100%;
+  justify-content: space-between;
+}
+
+.cta-button {
+  width: 100%;
+  padding: 12px 30px;
+}
+
+.footer-content {
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+
+}
+
+/* ============================================
+ANIMATIONS & TRANSITIONS (KEYFRAMES)
+--------------------------------------------
+NOTE: keyframes are emitted at root using @at-root so
+they remain valid CSS. Their names are unchanged to
+preserve your original animation names per request.
+If you'd like them prefixed to avoid global collisions,
+I can update them (recommended for absolute isolation).
+============================================ */
+
+/* local named-animation usage still occurs inside .mfatip-container */
+@at-root {
+@keyframes fadeInContainer {
+from {
+opacity: 0;
+}
+to {
+opacity: 1;
+}
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 102, 255, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 10px rgba(0, 102, 255, 0);
+  }
+}
+
+@keyframes shimmer {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes countPulse {
+  0% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes expandWidth {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes expandBar {
+  from {
+    width: 0 !important;
+  }
+}
+
+@keyframes fillCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    box-shadow: 0 0 10px rgba(0, 102, 255, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 102, 255, 0.6);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+}
+
+/* Smooth scrolling scoped to component */
+html {
+scroll-behavior: smooth;
+}
+
+/* Selection styling scoped to component */
+::selection {
+background: var(--primary-blue);
+color: var(--text-primary);
+}
+
+/* Scrollbar styling scoped by using nested selectors for WebKit inside component */
+& ::-webkit-scrollbar {
+width: 10px;
+}
+
+& ::-webkit-scrollbar-track {
+background: var(--dark-bg);
+}
+
+& ::-webkit-scrollbar-thumb {
+background: var(--primary-blue);
+border-radius: 5px;
+}
+
+& ::-webkit-scrollbar-thumb:hover {
+background: var(--secondary-blue);
+}
+
+} /* end .mfatip-container */
+/* width */
+.mfatip-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+.mfatip-container::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey; 
+  border-radius: 10px;
+}
+ 
+/* Handle */
+.mfatip-container::-webkit-scrollbar-thumb {
+  background: dodgerblue; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+.mfatip-container::-webkit-scrollbar-thumb:hover {
+  background: #b30000; 
+}
+/* ==========================
+NOTES & RECOMMENDATIONS
+=======================
+
+* I preserved your exact class names and animation names as requested.
+* Keyframes must be emitted at the root level (CSS requirement). To keep them valid
+  while avoiding collisions, you should consider prefixing keyframe names (e.g.
+  mfatip-fadeInContainer). If you'd like, I can automatically prefix them across
+  the stylesheet — this yields the strongest isolation.
+* All element/reset rules and CSS variables are scoped inside .mfatip-container to
+  prevent leakage to other folders/components.
+
+If you want the prefixed-keyframes version (100% isolated, no global names), reply
+with "Prefix keyframes" and I will regenerate the file with all animation names
+and references prefixed (e.g. mfatip-...).
+*/

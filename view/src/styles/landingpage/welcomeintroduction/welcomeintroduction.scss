@@ -1,0 +1,254 @@
+/* Welcome Introduction Component Styles */
+
+.welcome-introduction {
+    width: 100%;
+    padding: 4rem 0;
+    background-color: #121212;
+    color: #ffffff;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  
+  .content-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -1rem;
+  }
+  
+  /* Text Column Styles */
+  .text-column {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+    margin-bottom: 3rem; /* Increased spacing between text and images on mobile */
+    position: relative;
+  }
+  
+  .text-content {
+    margin-bottom: 3rem; /* Increased space between text and shield image */
+  }
+  
+  .subheading {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #f0f0f0;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  }
+  
+  .main-heading {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+  }
+  
+  .description p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: #cccccc;
+    margin-bottom: 1rem;
+  }
+  
+  .shield-image {
+    max-width: 150px; /* Reduced size */
+    margin: 0 auto;
+    position: relative;
+    padding-top: 1rem; /* Added padding above the shield */
+    clear: both; /* Ensures it doesn't overlap with text */
+  }
+  
+  .shield-image img {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  
+  .shield-image img.animate {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  /* Image Grid Styles */
+  .image-grid-column {
+    flex: 0 0 100%;
+    max-width: 100%;
+    padding: 0 1rem;
+  }
+  
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  
+  .grid-item {
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    height: 0;
+    padding-bottom: 75%; /* 4:3 aspect ratio */
+    background-color: #1a1a1a;
+  }
+  
+  .grid-item img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+  }
+  
+  /* Different animation styles for each image */
+  .animation-fade-in img.animate {
+    animation: fadeIn 1s ease forwards;
+  }
+  
+  .animation-scale-in img.animate {
+    animation: scaleIn 1s ease forwards;
+  }
+  
+  .animation-slide-in img.animate {
+    animation: slideIn 1s ease forwards;
+  }
+  
+  .animation-rotate-in img.animate {
+    animation: rotateIn 1s ease forwards;
+  }
+  
+  /* Animation Keyframes */
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes scaleIn {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateX(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+  
+  @keyframes rotateIn {
+    from {
+      opacity: 0;
+      transform: rotate(-10deg) scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(0) scale(1);
+    }
+  }
+  
+  /* Hover Effects */
+  .grid-item:hover img {
+    filter: brightness(1.2);
+  }
+  
+  /* Responsive Styles */
+  @media (min-width: 768px) {
+    .text-column {
+      flex: 0 0 50%;
+      max-width: 50%;
+      margin-bottom: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .image-grid-column {
+      flex: 0 0 50%;
+      max-width: 50%;
+    }
+    
+    .main-heading {
+      font-size: 2.25rem;
+    }
+    
+    .text-content {
+      flex: 1; /* Take up available space */
+      margin-bottom: 2rem; /* Space before shield */
+    }
+    
+    .shield-image {
+      position: relative; /* Changed from absolute to prevent overlapping */
+      bottom: auto;
+      right: auto;
+      align-self: flex-end; /* Align to right side */
+      width: 120px;
+      margin: 0; /* Reset the auto margins */
+      margin-right: 1rem; /* Add some right margin */
+    }
+  }
+  
+  @media (min-width: 992px) {
+    .main-heading {
+      font-size: 2.5rem;
+    }
+    
+    .grid-item {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    
+    .grid-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+    }
+    
+    /* Ensure text content has enough room */
+    .text-content {
+      padding-bottom: 1rem;
+    }
+    
+    /* Adjust shield position on larger screens */
+    .shield-image {
+      margin-top: 1rem;
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .shield-image {
+      width: 130px; /* Slightly smaller than before */
+    }
+    
+    .image-grid {
+      gap: 1.5rem;
+    }
+    
+    /* Add more spacing between text and shield */
+    .text-content {
+      margin-bottom: 3rem;
+    }
+  }
+  

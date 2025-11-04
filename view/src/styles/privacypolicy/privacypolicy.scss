@@ -1,0 +1,288 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #202020;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+@media only screen and (min-width: 1200px) {
+
+// styles.css */
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+background-color: #f5f7fa;
+color: #333;
+}
+
+.app-container {
+position:relative;
+background-color:rgba(255,255,255, 0.4);
+height: 100%;
+width:100%;
+display: flex;
+justify-content: center;
+align-items: center;
+padding: 20px;
+z-index:10;
+display:none;
+}
+
+/* Welcome Page Styles */
+.welcome-container {
+width: 100%;
+max-width: 600px;
+}
+
+.welcome-card {
+background-color: white;
+padding: 30px;
+border-radius: 12px;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+color: #2c3e50;
+margin-bottom: 20px;
+text-align: center;
+font-size: 24px;
+}
+
+p {
+line-height: 1.6;
+margin-bottom: 20px;
+}
+
+.input-group {
+margin-bottom: 20px;
+position: relative;
+}
+
+label {
+display: block;
+margin-bottom: 8px;
+font-weight: 500;
+}
+
+input[type="text"],
+input[type="password"] {
+width: 100%;
+padding: 12px;
+border: 1px solid #ddd;
+border-radius: 6px;
+font-size: 16px;
+transition: border-color 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+border-color: #3498db;
+outline: none;
+}
+
+.error-message {
+color: #e74c3c;
+font-size: 14px;
+margin-top: 5px;
+margin-bottom: 0;
+}
+
+.password-reminder {
+margin-bottom: 20px;
+padding: 12px;
+background-color: #fff8e1;
+border-left: 4px solid #ffc107;
+border-radius: 4px;
+}
+
+.password-reminder p {
+margin-bottom: 0;
+font-size: 14px;
+}
+
+.checkbox-group {
+display: flex;
+align-items: flex-start;
+margin-bottom: 15px;
+}
+
+input[type="checkbox"] {
+margin-right: 10px;
+margin-top: 4px;
+}
+
+.policy-btn {
+background: none;
+border: none;
+color: #3498db;
+text-decoration: underline;
+cursor: pointer;
+font-size: inherit;
+padding: 0;
+}
+
+.submit-btn {
+width: 100%;
+padding: 12px;
+background-color: #3498db;
+color: white;
+border: none;
+border-radius: 6px;
+font-size: 16px;
+cursor: pointer;
+transition: background-color 0.3s;
+margin-top: 10px;
+}
+
+.submit-btn:hover {
+background-color: #2980b9;
+}
+
+.submit-btn:disabled {
+background-color: #95a5a6;
+cursor: not-allowed;
+}
+
+/* Privacy Policy Styles */
+.privacy-policy {
+margin-top: 20px;
+padding: 20px;
+background-color: #f8f9fa;
+border-radius: 6px;
+border: 1px solid #e9ecef;
+margin-bottom: 20px;
+max-height: 300px;
+overflow-y: auto;
+}
+
+.privacy-policy h2 {
+font-size: 20px;
+margin-bottom: 15px;
+}
+
+.privacy-policy h3 {
+font-size: 16px;
+margin: 15px 0 8px;
+}
+
+.privacy-policy ul {
+padding-left: 20px;
+margin-bottom: 15px;
+}
+
+.privacy-policy li {
+margin-bottom: 5px;
+}
+
+.close-btn {
+padding: 8px 15px;
+background-color: #e9ecef;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+margin-top: 10px;
+}
+
+.close-btn:hover {
+background-color: #dee2e6;
+}
+
+/* Content Page Styles */
+.content-container {
+width: 100%;
+max-width: 800px;
+}
+
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 30px;
+padding-bottom: 15px;
+border-bottom: 1px solid #e9ecef;
+}
+
+.logout-btn {
+padding: 8px 15px;
+background-color: #e74c3c;
+color: white;
+border: none;
+border-radius: 4px;
+cursor: pointer;
+}
+
+.logout-btn:hover {
+background-color: #c0392b;
+}
+
+.main-content {
+background-color: white;
+padding: 30px;
+border-radius: 12px;
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.main-content h2 {
+color: #2c3e50;
+margin-bottom: 20px;
+}
+
+.transaction-info {
+margin-top: 30px;
+padding: 15px;
+background-color: #e8f4fd;
+border-radius: 8px;
+border-left: 4px solid #3498db;
+}
+
+.transaction-info h3 {
+color: #2c3e50;
+margin-bottom: 10px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+.welcome-card, .main-content {
+padding: 20px;
+}
+
+h1 {
+font-size: 22px;
+}
+
+.header {
+flex-direction: column;
+align-items: flex-start;
+}
+
+.logout-btn {
+margin-top: 10px;
+}
+}
+
+@media (max-width: 480px) {
+.welcome-card, .main-content {
+padding: 15px;
+}
+
+.privacy-policy {
+padding: 15px;
+}
+
+h1 {
+font-size: 20px;
+}
+
+.password-reminder p {
+font-size: 13px;
+}
+}
+    
+    
+
+}

@@ -1,0 +1,277 @@
+// OMSIAP Market Dark Futuristic Theme
+// -------------------------------
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$blue-accent: #0099ff;
+$red-accent: #ff0033;
+$bg-dark: #000;
+$text-light: #eaeaea;
+
+// Root Container
+#omsiapmarket {
+  position: relative;
+  background: linear-gradient(135deg, #000010, #040406 40%, #000);
+  height: 100%;
+  width: 100%;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  color: $text-light;
+  font-family: $sub-font;
+  text-align: center;
+  padding: 60px 20px;
+  scroll-behavior: smooth;
+  background-size: 400% 400%;
+  animation: gradientShift 10s ease infinite;
+
+  // glowing pulse overlay
+  &::after {
+    content: "";
+    position: absolute;
+    top: -20%;
+    left: -20%;
+    width: 140%;
+    height: 140%;
+    background: radial-gradient(
+      circle at center,
+      rgba($blue-accent, 0.08),
+      transparent 70%
+    );
+    animation: glowPulse 6s ease-in-out infinite alternate;
+    z-index: 0;
+  }
+}
+
+/* width */
+#omsiapmarket::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+#omsiapmarket::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 5px grey; 
+  border-radius: 10px;
+}
+ 
+/* Handle */
+#omsiapmarket::-webkit-scrollbar-thumb {
+  background: dodgerblue; 
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #b30000; 
+}
+
+#omsiapmarket-backbuttoncontainer {
+position:relative;
+height:7%;
+width:100%;
+display:flex;
+justify-content:flex-start;
+align-items:center;
+}
+
+#omsiapmarket-backbuttoncontainer-backbutton {
+position:relative;
+background-color:dodgerblue;
+height:100%;
+width:7vw;
+z-index:100;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes glowPulse {
+  0% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+// Header Section
+#omsiapmarket-mainheaderscontainer {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 35px 25px;
+  border-radius: 18px;
+  background: rgba(15, 15, 25, 0.85);
+  box-shadow: 0 0 40px rgba($blue-accent, 0.25),
+              inset 0 0 20px rgba($red-accent, 0.15);
+  backdrop-filter: blur(10px);
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+  z-index: 2;
+  position: relative;
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 0 50px rgba($blue-accent, 0.4),
+                inset 0 0 25px rgba($red-accent, 0.25);
+  }
+}
+
+.omsiapmarket-title {
+  font-family: $main-font;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: $text-light;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 18px;
+  text-shadow: 0 0 10px rgba($blue-accent, 0.6);
+
+  .highlight {
+    color: $blue-accent;
+    text-shadow: 0 0 15px rgba($red-accent, 0.9);
+  }
+}
+
+.omsiapmarket-description {
+  font-size: 1.1rem;
+  line-height: 1.7;
+  margin-top: 10px;
+  animation: fadeInText 1.2s ease both;
+}
+
+.omsiapmarket-subtext {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin-top: 10px;
+  animation: fadeInText 1.8s ease both;
+}
+
+@keyframes fadeInText {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Navigation Section
+#omsiapmarket-navigationcontainer {
+  margin-top: 70px;
+  padding: 10px 5%;
+}
+
+.omsiapmarket-navigationrow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 25px;
+}
+
+.omsiapmarket-navigationcontainer-colcontainer {
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.omsiapmarket-navigationcontainer-headerindication {
+  font-family: $sub-font;
+  font-weight: 700;
+  font-size: 1rem;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.2));
+  color: $text-light;
+  border: 1px solid rgba($blue-accent, 0.5);
+  border-radius: 14px;
+  padding: 14px 22px;
+  min-width: 160px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  box-shadow: 0px 0px 12px rgba($red-accent, 0.1);
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      120deg,
+      rgba($red-accent, 0.4),
+      rgba($blue-accent, 0.6),
+      rgba($red-accent, 0.4)
+    );
+    transition: all 0.6s ease;
+    z-index: -1;
+  }
+
+  &:hover::before {
+    left: 0;
+  }
+
+  &:hover {
+    border-color: transparent;
+    color: #fff;
+    text-shadow: 0px 0px 6px rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 25px rgba($blue-accent, 0.8), 0 0 15px rgba($red-accent, 0.5);
+  }
+}
+
+// Footer
+.omsiapmarket-footer {
+  margin-top: 90px;
+  color: #888;
+  font-size: 0.9rem;
+  text-align: center;
+  animation: fadeInFooter 1s ease forwards;
+  text-shadow: 0 0 8px rgba($blue-accent, 0.4);
+}
+
+@keyframes fadeInFooter {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive Design
+@media (max-width: 992px) {
+  .omsiapmarket-title {
+    font-size: 2.2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  #omsiapmarket {
+    padding: 40px 10px;
+  }
+
+  .omsiapmarket-title {
+    font-size: 1.8rem;
+  }
+
+  .omsiapmarket-navigationcontainer-headerindication {
+    min-width: 130px;
+    font-size: 0.9rem;
+  }
+}
+
+

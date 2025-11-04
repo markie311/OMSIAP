@@ -1,0 +1,320 @@
+$main-font: "Titillium Web", sans-serif;
+$sub-font: "Quicksand", sans-serif;
+$robotic-font: "Nova Round", cursive;
+$mainbgcolor: #2b2b31;
+$subbgcolor: #27272b;
+$containersonidlebgcolor: #e2e4e1;
+
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+
+#rapportadvertisement {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:20vh;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+overflow:hidden;
+margin-top:5vh;
+}
+
+#rapportadvertisement-animationcontainer {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:100%;
+width:auto;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-wrap:nowrap;
+animation: rapportadvertisementanimation 50s infinite;
+}
+
+@keyframes rapportadvertisementanimation {
+0%   {left: 0px;}
+25%  {left: -4000px;}
+75%  {left: 0px}
+100% {left: 0px;}
+}
+
+.rapportadvertisement-colcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.rapportadvertisement-colcontainer-rapportindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+top:1vh;
+}
+
+.rapportadvertisement-colcontainer-rapporthighlightindication {
+position:absolute;
+font: auto {
+family:$sub-font;
+size:10vh;
+}
+color:white;
+top:-2.5vh;
+left:-5vh;
+}
+
+}
+
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+
+#rapportadvertisement {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:20vh;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+overflow:hidden;
+margin-top:5vh;
+}
+
+#rapportadvertisement-animationcontainer {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:100%;
+width:auto;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-wrap:nowrap;
+animation: rapportadvertisementanimation 50s infinite;
+}
+
+@keyframes rapportadvertisementanimation {
+0%   {left: 0px;}
+25%  {left: -4000px;}
+75%  {left: 0px}
+100% {left: 0px;}
+}
+
+.rapportadvertisement-colcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.rapportadvertisement-colcontainer-rapportindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+top:1vh;
+}
+
+.rapportadvertisement-colcontainer-rapporthighlightindication {
+position:absolute;
+font: auto {
+family:$sub-font;
+size:10vh;
+}
+color:white;
+top:-2.5vh;
+left:-5vh;
+}
+
+}
+
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+
+#rapportadvertisement {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:20vh;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+overflow:hidden;
+margin-top:5vh;
+}
+
+#rapportadvertisement-animationcontainer {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:100%;
+width:auto;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-wrap:nowrap;
+animation: rapportadvertisementanimation 50s infinite;
+}
+
+@keyframes rapportadvertisementanimation {
+0%   {left: 0px;}
+25%  {left: -4000px;}
+75%  {left: 0px}
+100% {left: 0px;}
+}
+
+.rapportadvertisement-colcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.rapportadvertisement-colcontainer-rapportindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+top:1vh;
+}
+
+.rapportadvertisement-colcontainer-rapporthighlightindication {
+position:absolute;
+font: auto {
+family:$sub-font;
+size:10vh;
+}
+color:white;
+top:-2.5vh;
+left:-5vh;
+}
+
+}
+
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+
+#rapportadvertisement {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:10vh;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+overflow:hidden;
+margin-top:5vh;
+}
+
+#rapportadvertisement-animationcontainer {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:100%;
+width:auto;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-wrap:nowrap;
+animation: rapportadvertisementanimation 50s infinite;
+}
+
+@keyframes rapportadvertisementanimation {
+0%   {left: 0px;}
+25%  {left: -4000px;}
+75%  {left: 0px}
+100% {left: 0px;}
+}
+
+.rapportadvertisement-colcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.rapportadvertisement-colcontainer-rapportindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+top:1vh;
+}
+
+.rapportadvertisement-colcontainer-rapporthighlightindication {
+position:absolute;
+font: auto {
+family:$sub-font;
+size:10vh;
+}
+color:white;
+top:-2.5vh;
+left:-5vh;
+}
+}
+
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+
+#rapportadvertisement {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:10vh;
+width:100%;
+margin-left:auto;
+margin-right:auto;
+overflow:hidden;
+margin-top:5vh;
+}
+
+#rapportadvertisement-animationcontainer {
+position:relative;
+background-color:rgb(63, 35, 24);
+height:100%;
+width:auto;
+margin-left:auto;
+margin-right:auto;
+display:flex;
+flex-wrap:nowrap;
+animation: rapportadvertisementanimation 50s infinite;
+}
+
+@keyframes rapportadvertisementanimation {
+0%   {left: 0px;}
+25%  {left: -4000px;}
+75%  {left: 0px}
+100% {left: 0px;}
+}
+
+.rapportadvertisement-colcontainer {
+position:relative;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+}
+
+.rapportadvertisement-colcontainer-rapportindication {
+position:relative;
+font: auto {
+family:$sub-font;
+}
+color:white;
+top:1vh;
+}
+
+.rapportadvertisement-colcontainer-rapporthighlightindication {
+position:absolute;
+font: auto {
+family:$sub-font;
+size:10vh;
+}
+color:white;
+top:-2.5vh;
+left:-5vh;
+}
+
+}
