@@ -57,6 +57,7 @@ function OMSIAPCoreContent() {
   const { loadingState, updateLoadingState, setAllLoaded } = useLoading()
 
   const [viewport, viewportcb] = useState('xs')
+  
   const [, states] = useState()
   const updatecomponent = useCallback(() => states({}), [])
   const [userIdCookie, setUserIdCookie] = useState("")
