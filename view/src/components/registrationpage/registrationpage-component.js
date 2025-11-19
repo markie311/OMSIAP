@@ -613,7 +613,10 @@ const handleRegistration = async (e) => {
           </div>
 
           <div className="loginandregister-forgot-password">
-            <a href="#reset">Forgot Password?</a>
+            <a href="/forgotpassword">Forgot Password?</a>
+            <br/>
+            <br/>
+            <a href="/changepassword">Change password</a>
           </div>
           
           {

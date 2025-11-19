@@ -42,6 +42,9 @@ import TermsAndService from './components/landingpage/footer/termsandservice-com
 import PaymentSuccess from './components/paymongo/paymentsuccess-component.js'
 import PaymentCancel from './components/paymongo/paymentcancel-component.js'
 
+import ForgotPassword from './components/forgotpassword/forgotpassword-component.js'
+import ChangePassword from './components/changepassword/changepassword-component.js'
+
 import axiosCreatedInstance from './components/lib/axiosutil.js';
 
 // Import Loading Context
@@ -824,8 +827,15 @@ function OMSIAPCoreContent() {
 
         </Route>
 
+         <Route path='/forgotpassword'
+               element={<ForgotPassword />}>
 
+        </Route>
 
+         <Route path='/changepassword'
+               element={<ChangePassword />}>
+
+        </Route>
 
       </Routes>
 
