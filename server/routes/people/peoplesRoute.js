@@ -1563,4 +1563,125 @@ Router.post("/purchasecitizenship", async (req, res) => {
 
 });
 
+// GET route to find registrant by BREN
+Router.get('/registrants/find/:bren', async (req, res) => {
+
+  console.log("Synced")
+
+  try {
+    const { bren } = req.params;
+
+    // Validate BREN parameter
+    if (!bren || bren.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Birth Certificate Reference Number (BREN) is required'
+      });
+    }
+
+    // Query database for registrant with matching BREN
+    const registrant = await RegistrantDataModel.findOne({
+      'personaldata.birthcertificate.birthcertificatereferencenumber': bren.trim()
+    }).select('-passwords'); // Exclude passwords from response for security
+
+    // Check if registrant exists
+    if (!registrant) {
+      return res.status(404).json({
+        success: false,
+        message: 'No registrant found with the provided BREN'
+      });
+    }
+
+    // Return registrant data
+    return res.status(200).json({
+      success: true,
+      message: 'Registrant found successfully',
+      data: {
+        id: registrant.id,
+        fullName: `${registrant.name.firstname} ${registrant.name.middlename ? registrant.name.middlename + ' ' : ''}${registrant.name.lastname}`,
+        nickname: registrant.name.nickname,
+        phoneNumber: registrant.contact.phonenumber,
+        emailAddress: registrant.contact.emailaddress,
+        bren: registrant.personaldata.birthcertificate.birthcertificatereferencenumber,
+        address: registrant.contact.address,
+        registrationStatus: registrant.registrationstatusesandlogs.indication,
+        citizenship: registrant.personaldata.citizenship
+      }
+    });
+
+  } catch (error) {
+    console.error('Error finding registrant by BREN:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while searching for registrant',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+
+// PUT route to update registrant password
+Router.put('/registrants/update-password', async (req, res) => {
+  try {
+    const { bren, newPassword } = req.body;
+
+    // Validate required fields
+    if (!bren || bren.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'Birth Certificate Reference Number (BREN) is required'
+      });
+    }
+
+    if (!newPassword || newPassword.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: 'New password is required'
+      });
+    }
+
+    // Validate password length
+    if (newPassword.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters long'
+      });
+    }
+
+    // Find registrant by BREN
+    const registrant = await RegistrantDataModel.findOne({
+      'personaldata.birthcertificate.birthcertificatereferencenumber': bren.trim()
+    });
+
+    if (!registrant) {
+      return res.status(404).json({
+        success: false,
+        message: 'No registrant found with the provided BREN'
+      });
+    }
+
+    // Hash the new password
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(newPassword, saltRounds);
+
+    // Update the password in the database
+    registrant.passwords.account.password = hashedPassword;
+    await registrant.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (error) {
+    console.error('Error updating password:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Server error while updating password',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+  
+});
+
 module.exports = Router;
